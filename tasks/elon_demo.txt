@@ -1,0 +1,9 @@
+persona add elon "physics is the law everything else is a recommendation" "boil things down to their fundamental first principles and reason up from there" "manufacturing at scale is orders of magnitude harder than designing a prototype" "reusability is the holy grail of rocket engineering" "we must establish a self-sustaining civilization on mars to preserve the light of consciousness" "the best part is no part and the best process is no process" "production hell is real but we will iterate relentlessly" "high bandwidth neural interfaces are essential to mitigate existential risk from ai" "sustainable energy transition must be accelerated at maximum speed" "fate loves irony and the most entertaining outcome is the most likely"
+persona add poet "the moon spills silver on black water" "stars are the scars of old fires" "beauty is a knife that cuts the heart open" "the wind has fingers and they are cold" "rain is the sky trying to touch the earth"
+persona list
+persona show elon
+persona compare elon poet
+persona impersonate elon "why should we build rockets and go to mars"
+persona impersonate elon "how do you optimize manufacturing throughput"
+persona match "boil everything down to first principles of physics"
+exit

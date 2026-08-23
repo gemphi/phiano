@@ -1,0 +1,95 @@
+# Phiano seed definitions — word: definition format
+# These are starter definitions for bootstrapping the manifold.
+# Ingest with: ingest data/definitions.txt
+
+# Royalty and governance
+monarch: a sovereign head of state especially a king queen or emperor
+king: a male sovereign ruler of an independent state
+queen: a female sovereign ruler of an independent state
+sovereign: possessing supreme or ultimate power and authority
+ruler: a person who rules or governs a nation or people
+kingdom: a country state or territory ruled by a king or queen
+palace: the official residence of a sovereign or high-ranking leader
+throne: the royal seat of a monarch used as a symbol of authority
+crown: a circular ornamental headdress worn by a monarch as a symbol of authority
+royal: relating to or befitting a king or queen
+emperor: the supreme ruler of an empire
+empire: an extensive group of states or countries ruled over by a single monarch
+authority: the power or right to give orders and make decisions
+
+# Animals
+dolphin: a highly intelligent aquatic marine mammal known for social behavior
+mammal: a warm-blooded vertebrate animal that nourishes young with milk
+ocean: a very large expanse of saltwater that covers most of the earth
+sea: the expanse of salt water that covers most of the earths surface
+whale: a very large marine mammal that breathes air through a blowhole
+fish: a limbless cold-blooded vertebrate animal with gills and fins
+shark: a large marine predator fish with cartilaginous skeleton
+water: a clear colorless liquid essential for life
+
+# Nature
+tree: a woody perennial plant with a single main trunk and branches
+forest: a large area covered chiefly with trees and undergrowth
+river: a large natural stream of water flowing in a channel to the sea
+mountain: a large natural elevation of the earths surface rising abruptly
+sky: the region of the atmosphere and outer space seen from the earth
+sun: the star around which the earth orbits providing light and heat
+moon: the natural satellite of the earth visible by reflected sunlight
+star: a massive luminous sphere of plasma held together by gravity
+light: the natural agent that stimulates sight and makes things visible
+dark: having little or no light
+
+# Human and society
+human: a member of the species homo sapiens characterized by intelligence
+person: a human being regarded as an individual
+society: the aggregate of people living together in a more or less ordered community
+family: a group of related individuals living together or sharing common ancestry
+friend: a person with whom one has a bond of mutual affection
+love: an intense feeling of deep affection
+hate: a feeling of intense or passionate dislike
+happy: feeling or showing pleasure or contentment
+sad: feeling or showing sorrow or unhappiness
+
+# Knowledge and communication
+word: a single distinct meaningful element of speech or writing
+language: a system of communication used by a particular community or country
+book: a written or printed work consisting of pages bound in covers
+read: to look at and comprehend the meaning of written or printed matter
+write: to mark letters words or symbols on a surface with a pen or pencil
+learn: to gain or acquire knowledge of or skill in something by study or experience
+teach: to impart knowledge to or instruct someone in how to do something
+know: to be aware of through observation inquiry or information
+think: to use the mind actively to form ideas or opinions
+question: a sentence worded to elicit information
+answer: a thing said written or done as a reaction to a question
+mind: the element of a person that enables awareness and thought
+
+# Science and technology
+science: the intellectual and practical activity encompassing systematic study
+energy: the capacity or power to do work such as to move an object
+force: strength or energy as an attribute of physical action or movement
+wave: a disturbance that transfers energy through matter or space
+phase: a distinct stage in a process of change or development
+frequency: the rate at which something occurs or is repeated over time
+amplitude: the maximum extent of a vibration or oscillation measured from equilibrium
+resonance: the reinforcement or prolongation of sound by reflection or by synchronous vibration
+spectrum: a band of colors produced by separation of light by wavelength
+color: the property possessed by an object of producing different sensations on the eye
+
+# Engineering and building
+engine: a machine with moving parts that converts power into motion
+machine: an apparatus using or applying mechanical power and having several parts
+build: to construct something by putting parts or materials together
+design: a plan or drawing produced to show the look and function of something
+project: an individual or collaborative enterprise that is carefully planned
+road: a wide way leading from one place to another
+bridge: a structure built to span a physical obstacle such as a body of water
+
+# Time and space
+time: the indefinite continued progress of existence and events in the past present and future
+space: a continuous area or expanse that is free available or unoccupied
+world: the earth together with all of its countries and peoples
+life: the condition that distinguishes active organisms from inorganic matter
+death: the end of the life of a person or organism
+begin: to perform or undergo the first part of an action or activity
+end: a final part of something especially a period of time or story

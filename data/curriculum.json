@@ -1,0 +1,106 @@
+{
+  "stages": [
+    {
+      "name": "basic_nouns",
+      "description": "Learning names for things in the world",
+      "words": ["cat","dog","house","food","water","tree","book","hand","eye","face","door","road","sun","moon","star","fire","table","chair","bed","room","car","bird","fish","child","mother","father","friend","name","day","night","world","life"],
+      "sentences": [
+        "the cat sits on the mat",
+        "the dog runs in the park",
+        "the house has a door and a window",
+        "food and water are needed for life",
+        "the tree grows in the garden",
+        "the book is on the table",
+        "the child plays with the dog",
+        "the sun shines in the day and the moon at night",
+        "the mother and father love the child",
+        "the road goes to the house"
+      ]
+    },
+    {
+      "name": "action_verbs",
+      "description": "Learning words for actions and events",
+      "words": ["run","walk","eat","drink","see","hear","speak","think","make","give","take","find","lose","open","close","break","build","grow","learn","teach","help","play","work","rest","move","stop","start","change","keep","send","bring","hold"],
+      "sentences": [
+        "the child runs and plays in the garden",
+        "we eat food and drink water to live",
+        "i see the cat and hear the dog",
+        "the teacher helps the child learn",
+        "we build houses and grow trees",
+        "the bird flies and the fish swims",
+        "open the door and close the window",
+        "the sun gives light and heat to the world",
+        "the child finds the book and reads it",
+        "the mother teaches the child to speak"
+      ]
+    },
+    {
+      "name": "adjectives",
+      "description": "Learning words that describe and qualify",
+      "words": ["big","small","good","bad","hot","cold","fast","slow","happy","sad","old","new","long","short","high","low","strong","weak","beautiful","ugly","clean","dirty","safe","dangerous","easy","hard","right","wrong","true","false","real","fake"],
+      "sentences": [
+        "the big dog is strong and fast",
+        "the small cat is beautiful and clean",
+        "hot food is good but cold food is bad",
+        "the happy child plays with the new toy",
+        "the old house is safe but the new road is dangerous",
+        "it is hard to find true friends",
+        "the right answer is easy if you think",
+        "a long road takes a slow walk",
+        "the high tree gives clean air",
+        "real knowledge is better than fake news"
+      ]
+    },
+    {
+      "name": "abstract_concepts",
+      "description": "Learning abstract ideas and emotions",
+      "words": ["time","love","truth","knowledge","justice","freedom","beauty","wisdom","fear","hope","dream","memory","reason","logic","mind","soul","spirit","nature","science","art","music","language","history","future","past","present","change","power","peace","war","life","death"],
+      "sentences": [
+        "time changes everything in life",
+        "love and hope give meaning to life",
+        "knowledge and wisdom come from learning",
+        "justice and freedom are important to people",
+        "science seeks truth through reason and logic",
+        "art and music express beauty and emotion",
+        "language helps us share knowledge and memory",
+        "history teaches us about the past and the future",
+        "the mind thinks and the soul feels",
+        "peace is better than war because life is precious"
+      ]
+    },
+    {
+      "name": "relationships",
+      "description": "Learning how concepts connect and relate",
+      "words": ["because","therefore","however","although","while","since","between","through","against","without","within","among","cause","effect","same","different","part","whole","before","after","above","below","inside","outside","together","alone","both","neither","either","all","none"],
+      "sentences": [
+        "because the sun shines the flowers grow",
+        "i think therefore i am",
+        "however hard the task we must try",
+        "although the road is long we walk together",
+        "the cause and effect are connected through time",
+        "the part is inside the whole",
+        "the same truth can have different meanings",
+        "before the storm the air is still",
+        "knowledge comes from both study and experience",
+        "all life needs water and none can live without it"
+      ]
+    },
+    {
+      "name": "technical",
+      "description": "Learning technical and scientific concepts",
+      "words": ["computer","program","data","system","network","algorithm","function","variable","memory","process","input","output","energy","force","mass","velocity","atom","molecule","cell","gene","evolution","experiment","theory","evidence","number","equation","graph","probability","statistics","model"],
+      "sentences": [
+        "a computer program processes data through algorithms",
+        "a function takes input and produces output",
+        "memory stores data for the system to use",
+        "a network connects computers together",
+        "energy and force govern the physical world",
+        "atoms form molecules which build all matter",
+        "cells contain genes that drive evolution",
+        "science uses experiments to test theory with evidence",
+        "mathematics uses numbers and equations to model reality",
+        "probability and statistics help us understand data"
+      ]
+    }
+  ]
+}

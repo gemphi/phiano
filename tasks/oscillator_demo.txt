@@ -1,0 +1,12 @@
+om eval "the moon spills silver on black water"
+om eval "the system processes data at 3.2 gigahertz with parallel pipelines"
+om eval "freedom demands responsibility for the consequences of action"
+om eval "she walked into the tavern and the room went quiet"
+om compare "the moon spills silver on black water"
+om compare "the system processes data at 3.2 gigahertz with parallel pipelines"
+om compare "freedom demands responsibility for the consequences of action"
+om compare "she walked into the tavern and the room went quiet"
+om wheel
+om sphere "the nature of consciousness"
+save
+exit

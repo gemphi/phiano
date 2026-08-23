@@ -1,0 +1,21 @@
+{
+  "indirect_patterns": ["can you", "could you", "would you"],
+  "commissive_markers": ["i will", "i promise", "i'll", "i commit", "i shall"],
+  "expressive_markers": ["i feel", "i think", "i love", "i hate", "i am happy", "i am sad", "i apologize", "thank you", "congratulate"],
+  "declarative_markers": ["i declare", "hereby", "i pronounce", "i name", "i define"],
+  "directive_question_markers": ["what is", "explain", "describe", "tell me", "how does", "why does", "what are", "what does"],
+  "directive_command_markers": ["write", "create", "generate", "make", "build", "implement"],
+  "rhetorical_markers": ["who knows", "who cares", "what's the point"],
+  "institutional_markers": ["law","rights","money","marriage","property","government","contract","promise","rule","norm","social","cultural","language","institution","convention","citizenship","ownership","debt","credit","salary","divorce","election","court","university","degree","certificate","license","passport"],
+  "brute_markers": ["mass","energy","force","atom","molecule","gravity","light","heat","chemical","physical","biological","electron","proton","neutron","dna","protein","cell","mountain","river","ocean","star","planet","photosynthesis"],
+  "counts_as_rules": {
+    "money": "this paper counts as currency in economic context",
+    "marriage": "this ceremony counts as a legal union in legal context",
+    "property": "this possession counts as ownership in legal context",
+    "promise": "this utterance counts as an obligation in social context",
+    "contract": "this document counts as a binding agreement in legal context",
+    "university": "this institution counts as an educational authority in academic context",
+    "ownership": "this possession counts as a right in legal context"
+  },
+  "observer_relative_markers": ["good","bad","useful","beautiful","valuable","important"]
+}

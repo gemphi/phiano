@@ -1,0 +1,33 @@
+compose "the nature of consciousness" 5
+compose "memory and time" 3 "the river carries the bones of mountains" "dawn is a wound that bleeds light"
+persona add poet "the moon spills silver on black water" "stars are the scars of old fires" "beauty is a knife that cuts the heart open" "the wind has fingers and they are cold" "rain is the sky trying to touch the earth" "dawn is a wound that bleeds light" "the river carries the bones of mountains" "silence screams louder than any thunder" "flowers are the mouths of the hungry earth" "the ocean swallows the sun every evening"
+persona add engineer "the system processes data at 3.2 gigahertz with parallel pipelines" "efficiency is the primary constraint in resource allocation" "we need to optimize the throughput of the messaging queue" "the architecture separates concerns into modular components" "latency is dominated by network round trip time" "the cache hit ratio determines overall response performance" "we benchmarked the algorithm against the baseline implementation" "memory usage scales linearly with input size" "the protocol handles edge cases with graceful degradation" "concurrent threads synchronize via atomic compare and swap"
+persona add philosopher "what exists precedes essence and choice defines the self" "consciousness is the ground upon which meaning is constructed" "freedom demands responsibility for the consequences of action" "the unexamined life is not worth living for a thinking being" "truth emerges through dialectic not through assertion alone" "ethics requires universality yet must account for particularity" "being is revealed through time and temporality structures existence" "the other presents an irreducible challenge to solipsistic certainty" "language is the house of being and thought dwells within it" "justice is the first virtue of social institutions as fairness"
+persona add storyteller "she walked into the tavern and the room went quiet" "the old man on the hill had a secret he would never tell" "the door creaked open revealing a room frozen in time" "he found the letter tucked inside the old book on the shelf" "the dog barked at shadows that moved wrong in the moonlight" "they rode hard through the night chasing a dawn that kept moving" "the map showed a path that did not exist on any other chart" "she counted the coins twice and still could not believe the total" "the storm came from nowhere and changed everything in its path" "he swore he would return but the years had other plans"
+persona list
+persona compare poet engineer
+persona compare poet philosopher
+persona compare poet storyteller
+persona compare engineer philosopher
+persona compare engineer storyteller
+persona compare philosopher storyteller
+persona match "the stars bleed silver and the night opens its mouth"
+persona match "we need to optimize the throughput of the messaging queue"
+persona match "the unexamined life is not worth living for a thinking being"
+persona match "the door creaked open and the room had not changed in twenty years"
+persona match "the candle is a small war against the night"
+persona match "the database shards by hash partitioning for horizontal scale"
+persona match "freedom demands responsibility for the consequences of action"
+persona match "she kept a journal of every dream and some of them came true"
+persona impersonate poet "the night sky over the ocean"
+persona impersonate engineer "the data flows through the system"
+persona impersonate philosopher "the nature of existence"
+persona impersonate storyteller "the stranger arrived at dawn"
+persona chat poet
+what do you see when you look at the sky
+bye
+persona chat engineer
+how do you handle latency
+bye
+save
+exit

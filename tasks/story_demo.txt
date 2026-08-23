@@ -1,0 +1,24 @@
+persona from hemingway "The old man fished alone in the skiff. He had gone eighty-four days without taking a fish. Every day was a repetition of the last. The boy had left him after forty days. The old man was thin and gaunt with deep wrinkles in the back of his neck. The brown blotches of skin cancer were on his cheeks. His hands had deep scars from handling heavy fish. But none of these scars were fresh. They were as old as erosions in a fishless desert. Everything about him was old except his eyes. They were the same color as the sea and were cheerful and undefeated"
+persona from austen "It is a truth universally acknowledged that a single man in possession of a good fortune must be in want of a wife. However little known the feelings of such a man may be, this truth is well fixed in the minds of the surrounding families. He is considered the rightful property of one of their daughters. My dear Mr Bennet said his lady to him one day have you heard that Netherfield Park is let at last Mr Bennet replied that he had not"
+persona from kafka "When Gregor Samsa woke one morning from uneasy dreams he found himself transformed into a monstrous vermin. He was lying on his hard shell-like back. He could see his brown belly slightly domed and divided by arches into stiff sections. The bed was hardly firm enough to carry him. His numerous legs pitifully thin compared with his bulk waved helplessly before his eyes. What has happened to me he thought. It was no dream. His room a regular human room only rather too small lay quietly between the four familiar walls"
+persona list
+persona show hemingway
+persona show austen
+persona show kafka
+persona compare hemingway austen
+persona compare hemingway kafka
+persona compare austen kafka
+persona match "The fish was a marlin and it was the largest he had ever seen"
+persona match "She was a woman of considerable fortune and uncertain temper"
+persona match "He awoke and found himself changed into something unbearable"
+persona impersonate hemingway "the sea at dawn"
+persona impersonate austen "a ball at the great house"
+persona impersonate kafka "the weight of existence"
+persona chat hemingway
+what do you think about the sea
+bye
+persona chat kafka
+what happened when you woke up
+bye
+save
+exit

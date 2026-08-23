@@ -1,0 +1,117 @@
+pub mod flow;
+pub mod better;
+pub mod worse;
+pub mod tune;
+
+use crate::facet::Facet;
+use crate::trainer::Trainer;
+use std::fmt;
+
+/// Maps a sector index to a color name.
+///
+/// Works with any sector resolution by mapping proportionally
+/// to the color wheel. The 12 base colors are distributed evenly
+/// across whatever sector count is configured (64, 128, 256, ...).
+pub fn sector_color(sector: u16) -> String {
+    let n = crate::wave::sectors();
+    let colors = [
+        "crimson", "red", "scarlet", "orange", "amber", "gold",
+        "yellow", "lime", "green", "emerald", "teal", "blue",
+        "indigo", "violet", "magenta", "rose",
+    ];
+    let color_count = colors.len() as u16;
+    let bucket = (sector * color_count) / n;
+    colors[(bucket as usize) % colors.len()].to_string()
+}
+
+/// Composition — the result of a full recursive compose cycle.
+///
+/// Based on the Flower-Hayes (1981) cognitive process model:
+///   Planning → Translating → Reviewing (evaluating + revising)
+///
+/// The model generates 64 variations (one per sector), evaluates them
+/// (better.rs), discards the worst (worse.rs), trains on the best
+/// (Kuramoto re-tuning), and recurses. The final composition is the
+/// one that survived the tournament.
+pub struct Composition {
+    /// The prompt that seeded the composition.
+    pub prompt: String,
+    /// The final winning text.
+    pub text: String,
+    /// The sector that produced the winner.
+    pub winning_sector: u16,
+    /// The color of the winning sector.
+    pub winning_color: String,
+    /// Number of recursive refinement rounds completed.
+    pub rounds: usize,
+    /// The evaluation scores of the winner.
+    pub eval: crate::eval::Eval,
+    /// All sector scores from the final round: (sector, score) pairs.
+    pub sector_scores: Vec<(u16, f64)>,
+    /// Examples that were learned from before composing.
+    pub examples: Vec<String>,
+}
+
+impl Composition {
+    /// Runs the full recursive compose cycle.
+    ///
+    /// 1. Learn from examples (teacher's specimens)
+    /// 2. Generate 64 variations — one per sector (Planning + Translating)
+    /// 3. Evaluate each variation (Reviewing → Evaluating)
+    /// 4. Discard the worse, keep the better (Reviewing → Revising)
+    /// 5. Train on the better (Kuramoto re-tunes the facet)
+    /// 6. Recurse with the improved facet
+    /// 7. Repeat until convergence or max rounds
+    pub fn compose(
+        facet: &mut Facet,
+        trainer: &Trainer,
+        prompt: &str,
+        examples: &[String],
+        max_rounds: usize,
+    ) -> Self {
+        let mut tuner = tune::CompositionTuner::new(max_rounds);
+
+        // Phase 1: Learn from the teacher's examples
+        for example in examples {
+            trainer.train_sentence(facet, example);
+        }
+
+        // Phase 2-7: Recursive refinement via the monitor
+        tuner.refine(facet, trainer, prompt, examples)
+    }
+}
+
+impl fmt::Display for Composition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "  ── composition ──")?;
+        writeln!(f, "  prompt: \"{}\"", self.prompt)?;
+        if !self.examples.is_empty() {
+            writeln!(f, "  learned from {} examples", self.examples.len())?;
+        }
+        writeln!(
+            f,
+            "  winner: sector {} ({}) after {} rounds",
+            self.winning_sector, self.winning_color, self.rounds,
+        )?;
+        writeln!(f)?;
+        // Indent each line of the composition for readability
+        for line in self.text.lines() {
+            writeln!(f, "    {}", line)?;
+        }
+        writeln!(f)?;
+        writeln!(f, "  ── evaluation ──")?;
+        write!(f, "{}", self.eval)?;
+
+        // Show top 8 sectors from the tournament
+        writeln!(f)?;
+        writeln!(f, "  ── sector tournament (top 8) ──")?;
+        let mut ranked = self.sector_scores.clone();
+        ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        for (i, (sector, score)) in ranked.iter().take(8).enumerate() {
+            let color = sector_color(*sector);
+            writeln!(f, "    #{}: sector {} ({}) score {:.4}", i + 1, sector, color, score)?;
+        }
+
+        Ok(())
+    }
+}

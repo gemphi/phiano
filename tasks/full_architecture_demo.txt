@@ -1,0 +1,8 @@
+layers "concurrency"
+generate "Rust ownership and memory model"
+instruct "explain ownership in Rust"
+reason "solve deadlock in multithreaded mutex channels"
+synthetic pairs
+persona add elon "physics is the law everything else is a recommendation" "boil things down to their fundamental first principles and reason up from there" "manufacturing at scale is orders of magnitude harder than designing a prototype" "reusability is the holy grail of rocket engineering" "we must establish a self-sustaining civilization on mars to preserve the light of consciousness"
+persona impersonate elon "why build reusable rockets"
+exit
