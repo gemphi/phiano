@@ -1,235 +1,184 @@
 # Phiano
 
-*From **piano** (Italian: soft/loud) — a phase instrument for language.*
+> _From **piano** (Italian: soft/loud) — A continuous phase manifold and cognitive oscillator engine for language._
 
-Phiano maps words onto a continuous phase manifold where semantic similarity
-is measured by destructive interference between complex wave representations.
-Words are keys, phasors are notes, sentences are chords, and training is
-tuning — the model self-organizes like a piano that tunes itself.
+[![Rust](https://img.shields.io/badge/Language-Rust%202021-orange.svg)](Cargo.toml)
+[![Architecture](https://img.shields.io/badge/Architecture-28%20Core%20Modules-blue.svg)](docs/MASTER_CONNECTIONS.md)
+[![Docs](https://img.shields.io/badge/Documentation-44%20Technical%20Whitepapers-green.svg)](docs/README.md)
+[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
-## How It Works
+---
 
-Phiano represents each word as a **SpectralPhasor** — a complex number on
-a 2π phase circle. When words co-occur in a sentence, their phases are
-pulled toward the sentence's centroid phase using Kuramoto coupling.
-Over many epochs, words that appear in similar contexts converge to
-similar phases, creating a self-organizing semantic space.
+## 1. How It Works
 
-The complex wave representation is:
+Phiano maps words onto a continuous phase manifold where semantic similarity is measured by destructive wave interference. Words are keys, phasors are notes, sentences are chords, and training is tuning — the model self-organizes like an acoustic instrument that tunes itself.
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'background': 'transparent', 'mainBkg': 'transparent', 'nodeBorder': '#3b82f6', 'clusterBkg': 'transparent', 'clusterBorder': '#475569', 'lineColor': '#60a5fa', 'textColor': '#ffffff', 'primaryTextColor': '#ffffff', 'nodeTextColor': '#ffffff', 'edgeLabelBackground': '#0f172a'}}}%%
+graph LR
+    subgraph "Continuous Phase Manifold"
+        Token["Word Token"] --> Phasor["SpectralPhasor<br/>Z = A · exp(i(φ + nα))"]
+        Phasor --> Superposition["Wave Superposition<br/>(Sentence Chords)"]
+        Superposition --> Kuramoto["Kuramoto Coupling<br/>(Centroid Phase Pull)"]
+        Kuramoto --> Convergence["Harmonic Equilibrium<br/>(Semantic Clustering)"]
+    end
 ```
-Z = A · e^(i·(φ + n·α))
-```
+
+### The Complex Phasor Equation
+
+Each vocabulary token is represented as a complex coordinate on a continuous $2\pi$ circle:
+
+$$\mathbf{Z} = A \cdot e^{i(\phi + n\alpha)}$$
 
 Where:
-- **A** is amplitude (familiarity weight)
-- **φ** is the primary phase angle
-- **n** is the quantized energy sub-band level
-- **α** is the fine-structure constant (~1/137)
+- **$A$** is the amplitude (familiarity and usage weight).
+- **$\phi$** is the primary phase angle $\in [0, 2\pi)$.
+- **$n$** is the quantized energy sub-band level $\in \{0, 1, 2, \dots, 15\}$.
+- **$\alpha$** is the Sommerfeld fine-structure constant ($\approx 1/137.036$).
 
-Semantic similarity between words is measured by the energy delta
-(destructive interference): `Δ = α · |Z₁ - Z₂|²`. Lower delta means
-the words are more semantically similar.
+### Destructive Interference Distance Metric
 
-## Recursive Learning Cycle
+Semantic distance between two concepts is calculated through destructive wave interference:
+
+$$\Delta(\mathbf{Z}_1, \mathbf{Z}_2) = \alpha \cdot \|\mathbf{Z}_1 - \mathbf{Z}_2\|^2$$
+
+Lower energy delta indicates stronger semantic alignment and constructive resonance.
+
+---
+
+## 2. Recursive 5-Stage Learning Cycle
+
+Every interaction triggers the self-tuning feedback loop:
+
+$$\text{envision} \longrightarrow \text{apply} \longrightarrow \text{eval} \longrightarrow \text{iterate} \longrightarrow \text{scale}$$
+
+1. **Envision** ([`src/envision.rs`](src/envision.rs)) — Detects unknown words and constructs initial semantic hypotheses.
+2. **Apply** ([`src/trainer/mod.rs`](src/trainer/mod.rs)) — Updates phasor angles using Kuramoto non-linear phase attraction:
+   $$\phi_i \leftarrow \phi_i + K \sin(\psi_{\text{centroid}} - \phi_i)$$
+3. **Eval** ([`src/eval.rs`](src/eval.rs)) — Measures coherence order parameter $r \in [0, 1]$, novelty delta $\Delta$, and harmonic resonance.
+4. **Iterate** ([`src/memory/mod.rs`](src/memory/mod.rs)) — Logs insights across the 16-layer memory hierarchy.
+5. **Scale** ([`src/storage.rs`](src/storage.rs)) — Persists the tuned manifold state to disk using high-speed binary serialization.
+
+---
+
+## 3. Generative Engine & Narrative Composition
+
+Phiano provides two generative mechanisms:
+
+1. **Phase-Guided Sequence Generator** ([`src/generate.rs`](src/generate.rs)):
+   Maintains a `ContextWaveBuffer` running superposition and uses harmonic attention ([`src/attention.rs`](src/attention.rs)) with ray-casting to emit coherent next-token sequences.
+
+2. **Recursive Narrative Composer (`RiverFlow`)** ([`src/compose/flow/mod.rs`](src/compose/flow/mod.rs)):
+   Wove narratives along chromatic phase sectors across three harmonic movements:
+   - **Opening** (Source Oscillator Frequency)
+   - **Tension** (Orthogonal Wave Offset & Contrast)
+   - **Resolution** (Kuramoto Synchronization & Harmonic Equilibrium)
+
+---
+
+## 4. 16-Layer Cognitive Memory Hierarchy
+
+Interactions are classified into 16 discrete memory layers across 4 octave bands:
+
+| Band | Layers | Cognitive Level & Description |
+|:---|:---|:---|
+| **Deep Band** | 12–15 | Universal archetypes, cross-domain morphisms, and high-level discourse strategy |
+| **Semantic Band** | 8–11 | Formal dictionary definitions, thematic roles, synonym clustering, and etymology |
+| **Pattern Band** | 4–7 | Bigram/trigram transition probabilities, idiomatic expressions, and cadence |
+| **Surface Band** | 0–3 | Raw orthographic token phasors, phonetic frequencies, and byte streams |
+
+---
+
+## 5. Persona Fingerprinting & Impersonation
+
+Phiano extracts an author's unique voice into a 16-sector chromatic fingerprint:
+
+```bash
+# Extract persona from raw text
+phiano> persona from hemingway "The old man fished alone in the skiff. He had gone eighty-four days without taking a fish."
+
+# Interactive chat in Hemingway's style
+phiano> persona chat hemingway
+```
+
+---
+
+## 6. Project Architecture
 
 ```
-envision → apply → eval → iterate → scale
+phiano/
+├── src/                  # Core Rust Engine (28 specialized modules)
+│   ├── lib.rs            # Library entrypoint
+│   ├── main.rs           # Binary entrypoint (CLI / REPL / Server)
+│   ├── generate.rs       # Phase-guided sequence generator
+│   ├── compose/          # RiverFlow narrative composer
+│   ├── reasoning.rs      # Phase-space deductive pathfinding
+│   ├── oscillator/       # 3D spinning sphere oscillator field
+│   ├── persona/          # Persona fingerprinting & voice synthesis
+│   ├── trainer/          # Kuramoto phase attraction trainer
+│   ├── facet.rs          # Facet lexicon & phasor store
+│   ├── wave.rs           # Wave superposition & ray-casting
+│   └── server/           # Axum REST API endpoints
+├── web/                  # React + Vite Interactive Visualization Dashboard
+├── tests/                # Comprehensive Python & integration test suite (16 tests)
+├── scripts/              # Command-line utilities, downloaders & demos (7 scripts)
+├── data/                 # Webster's dictionary & Rust Book training corpora
+├── docs/                 # 44 Technical architecture whitepapers & specifications
+├── tasks/                # Recipe scripts & demo scenarios
+└── specs/                # Formal mathematical specifications
 ```
 
-Each user input triggers this cycle:
-1. **Envision** — detect unknown words, suggest related known words
-2. **Apply** — train the facet on the input
-3. **Eval** — score the input's coherence, novelty, and resonance
-4. **Iterate** — repeat for each command
-5. **Scale** — persist knowledge to disk on exit
+---
 
-## Quick Start
+## 7. Quick Start
 
-```sh
+### Running the Rust CLI & REPL
+
+```bash
+# Start interactive REPL
 cargo run
+
+# Run full showcase demo
+cargo run < tasks/showcase.txt
 ```
+
+### REPL Commands
 
 ```
 phiano> learn "the cat sat on the mat"
 phiano> learn "the dog sat on the rug"
 phiano> synonym cat 5
 phiano> eval "the cat sat on the mat"
+phiano> reason "why does the cat sit on the mat"
 phiano> stats
 phiano> exit
 ```
 
-### Showcase
+### Running the Web Dashboard & API Server
 
-```sh
-cargo run < task\showcase.txt
+```bash
+# 1. Start the API server
+cargo run -- --server
+
+# 2. Launch the Web Dashboard
+cd web
+npm install
+npm run dev
 ```
 
-Runs a full demo: composition, persona creation, comparison, style
-attribution, impersonation, and interactive chat.
+Open `http://localhost:5173` to inspect the live 3D oscillator sphere, phase circle, and Kuramoto order parameter.
 
-### Persona Chat — Hear Their Story, Chat in Their Style
+---
 
-```
-phiano> persona from hemingway "The old man fished alone in the skiff. He had gone eighty-four days without taking a fish."
-phiano> persona chat hemingway
-```
+## 8. Master Documentation
 
-Paste someone's text, get their persona, chat with them. The `persona from`
-command auto-splits a block of text into sentences as examples — no need
-to manually quote each sentence. Then `persona chat` lets you interact.
-The persona introduces itself with derived traits, phase signature,
-and fingerprint numbers. Type `bye` to end.
+- **[Master Connections Map](docs/MASTER_CONNECTIONS.md)** — Complete mathematical dataflows and module connection matrix.
+- **[Architecture Overview](docs/02_architecture_overview.md)** — System topology and recursive learning cycle.
+- **[Complete File Map](docs/32_file_map.md)** — Detailed file index across all subdirectories.
+- **[Documentation Index](docs/README.md)** — Catalog of all 44 technical whitepapers.
 
-## Commands
-
-### Core
-
-| Command                  | Description |
-|--------------------------|-------------|
-| `learn "text"`           | Train on a sentence |
-| `define <word>`          | Fetch & learn a word's definition |
-| `eval "text"`            | Score text quality |
-| `compose "prompt" [rounds] ["ex"]` | Recursive sector composition |
-| `om eval "text"`         | Evaluate text in oscillator mode (sphere model) |
-| `om wheel`               | Show the oscillator color wheel |
-| `om sphere "text"`       | Show sphere projection for text |
-| `om compare "text"`      | Compare transform vs oscillator models |
-| `synonym <word> [n]`     | Find n nearest resonant words |
-| `resonance "text" [n]`   | Find words resonating with text |
-| `wave "text"`            | Show the sentence's complex wave |
-| `save` / `load`          | Persist / load the facet |
-| `stats`                  | Show facet + memory statistics |
-
-### Persona
-
-| Command                  | Description |
-|--------------------------|-------------|
-| `persona add <name> "ex1" "ex2" ...` | Create persona from examples |
-| `persona from <name> "text block"` | Create persona from a text block (auto-splits sentences) |
-| `persona list`           | List all personas |
-| `persona show <name>`    | Show persona fingerprint |
-| `persona compare <a> <b>` | Compare two personas |
-| `persona impersonate <name> "prompt"` | Compose text as persona |
-| `persona match "unknown text"` | Attribute text to closest persona |
-| `persona chat <name>`    | Interactive chat with a persona |
-
-### Drivers
-
-| Command                  | Description |
-|--------------------------|-------------|
-| `ingest <file.txt>`      | Bulk ingest local definitions |
-| `ingest-json <file.json>`| Bulk ingest JSON dictionary |
-| `ingest-wiktionary <f>`  | Bulk ingest Wiktionary dump |
-| `chunk <dict.json>`      | Split dictionary into chunks |
-| `train [epochs]`         | Train from chunks in parallel |
-
-Unrecognized input is treated as text to learn from.
-
-## Persona System
-
-### Fingerprint
-A persona's fingerprint is a sector histogram showing where their text
-clusters in phase space. Stop words are filtered out so content words
-dominate. Word-level contributions are weighted by inverse amplitude
-(rare distinctive words matter more).
-
-### Style Attribution
-`persona match` extracts a fingerprint from unknown text and computes
-**likelihood** against all personas. Likelihood rewards texts that
-concentrate in the persona's dominant sectors and penalizes texts in
-sectors where the persona is weak. All fingerprints are re-extracted
-at match time for fair comparison.
-
-### Personality Traits
-Traits are derived from the phase-space color distribution:
-passionate (warm sectors), contemplative (cool sectors), balanced
-(green sectors), dynamic (warm+cool mix), versatile/focused (entropy),
-elaborate/concise (avg length). Not hardcoded — computed from geometry.
-
-### Chat
-`persona chat <name>` enters an interactive loop. The persona introduces
-itself with traits, phase signature, and numbers. Each question is
-answered via impersonation — the prompt vibrates through the persona's
-fingerprint. Quality, fit, and sector metrics shown per turn.
-
-## Oscillator Mode (om)
-
-The oscillator model is an alternative to the transform model. Words are
-**spinning oscillators on a 3D sphere** instead of static points on a 2D
-circle. The sphere's surface is a color spectrum — hue from longitude,
-brightness from latitude. Your viewing angle determines which colors
-you see. The spectrum changes as you rotate.
-
-| Feature | Transform | Oscillator |
-|---------|-----------|------------|
-| Geometry | 2D circle | 3D sphere |
-| Word | Static phasor | Spinning oscillator |
-| Coherence | Wave norm / N | Kuramoto order parameter |
-| Similarity | Energy delta | Synchronization |
-| Color diversity | — | Spectral entropy |
-| Time | Static | Dynamic (rotates) |
-| Viewing angle | Fixed | Variable |
-
-See `docs/42_oscillator_mode.md` for the full depiction of the wheel/sphere.
-
-## Architecture
-
-```
-src/
-├── main.rs         Entry point
-├── model.rs        Recursive learning agent
-├── config.rs       Configuration constants
-├── facet.rs        Core lexicon (Facet)
-├── phasor.rs       Complex phasor (SpectralPhasor)
-├── wave.rs         Wave operations & ray casting (Wave, c64)
-├── oscillator.rs   Oscillator model: sphere, color wheel, sync (om)
-├── trainer.rs      Kuramoto phase attraction (Trainer)
-├── eval.rs         Semantic evaluation (Evaluator, Verdict)
-├── envision.rs     Knowledge gap detection (Envision, Vision)
-├── memory.rs       16-layer memory log (Memo, MemoryBand)
-├── storage.rs      Binary persistence (Storage)
-├── tokenizer.rs    Text normalization (Tokenizer)
-├── chunker.rs      Dictionary chunking (ChunkStore)
-├── compose/        Recursive sector composition
-│   ├── mod.rs      Composition struct, sector colors
-│   ├── flow.rs     RiverFlow: word selection by sector + ray_cast
-│   ├── better.rs   Evaluation with prompt alignment
-│   ├── worse.rs    Discard strategy
-│   └── tune.rs     CompositionTuner: recursive refinement
-├── persona/        Persona system
-│   ├── mod.rs      Persona struct, similarity
-│   ├── fingerprint.rs  Fingerprint, likelihood, traits
-│   ├── impersonate.rs  Impersonator: biased composition
-│   └── world.rs    PersonaWorld, MatchResult, comparisons
-├── command/        REPL command handlers
-│   ├── om.rs       Oscillator mode: eval, wheel, sphere, compare
-├── drivers/        Source commands (ingest, train)
-└── sources/        Dictionary data sources
-```
-
-See `src/spec.md` for the full module specification.
-See `docs/` for 42 diagrammatic documents covering every aspect of the system.
-
-## 16-Layer Memory
-
-Interactions are classified into 16 layers across 4 bands:
-
-| Band     | Layers  | Description |
-|----------|---------|-------------|
-| Surface  | 0-3     | Raw word recognition |
-| Pattern  | 4-7     | Co-occurrence, bigram resonance |
-| Semantic | 8-11    | Definition context, synonym clustering |
-| Deep     | 12-15   | Abstract concept relationships |
-
-## Dependencies
-
-- `num-complex` — Complex number arithmetic
-- `serde` + `bincode` — Binary serialization
-- `rayon` — Parallel iteration for ray casting and chunk loading
-- `rustyline` — REPL line editing
-- `reqwest` — HTTP for API dictionary source
+---
 
 ## License
 
-MIT
+MIT © [GemPhi](https://github.com/gemphi)
