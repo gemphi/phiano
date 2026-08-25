@@ -1,3 +1,4 @@
+pub mod benchmark;
 pub mod chat;
 pub mod cognitive;
 pub mod compose;
@@ -70,6 +71,7 @@ pub enum Command {
     Save,
     Load,
     Stats,
+    Benchmark,
     Exit,
     Unknown,
 }
@@ -98,6 +100,7 @@ impl Command {
             "save" => Self::Save,
             "load" => Self::Load,
             "stats" => Self::Stats,
+            "benchmark" | "bench" => Self::Benchmark,
             "exit" | "quit" => Self::Exit,
             _ => Self::Unknown,
         }
@@ -140,6 +143,7 @@ impl Dispatcher {
             Command::Save => save::Save.save(ctx),
             Command::Load => save::Save.load(ctx),
             Command::Stats => stats::Stats.apply(ctx),
+            Command::Benchmark => benchmark::Benchmark.apply(ctx),
             Command::Exit => false,
             Command::Unknown => learn::Learn.default(ctx),
         }

@@ -14,7 +14,7 @@ pub struct ArcTask {
     pub expected: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArcResults {
     pub total: usize,
     pub correct: usize,
@@ -23,7 +23,7 @@ pub struct ArcResults {
     pub details: Vec<ArcTaskResult>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArcTaskResult {
     pub task_id: String,
     pub predicted: String,

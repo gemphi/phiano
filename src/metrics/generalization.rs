@@ -6,6 +6,7 @@ use crate::config::TWO_PI;
 use crate::eval::Evaluator;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
+use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 /// Measures how well the model handles new examples close to the training distribution.
@@ -114,7 +115,7 @@ pub fn assess_generalization(
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct GeneralizationReport {
     pub local_score: f64,
     pub extreme_score: f64,

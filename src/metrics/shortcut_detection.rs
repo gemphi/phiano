@@ -3,9 +3,9 @@
 
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortcutWarning {
     pub shortcut_type: String,
     pub description: String,

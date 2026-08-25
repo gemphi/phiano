@@ -1,0 +1,124 @@
+{
+  "tasks": [
+    {
+      "id": "analogy_1",
+      "input_pairs": [["cat is to kitten", "dog is to puppy"]],
+      "test_input": "horse is to",
+      "expected": "foal"
+    },
+    {
+      "id": "analogy_2",
+      "input_pairs": [["hot is to cold", "up is to down"]],
+      "test_input": "light is to",
+      "expected": "dark"
+    },
+    {
+      "id": "analogy_3",
+      "input_pairs": [["hand is to glove", "foot is to sock"]],
+      "test_input": "head is to",
+      "expected": "hat"
+    },
+    {
+      "id": "analogy_4",
+      "input_pairs": [["river is to water", "volcano is to lava"]],
+      "test_input": "wind is to",
+      "expected": "air"
+    },
+    {
+      "id": "analogy_5",
+      "input_pairs": [["seed is to tree", "egg is to bird"]],
+      "test_input": "bud is to",
+      "expected": "flower"
+    },
+    {
+      "id": "analogy_6",
+      "input_pairs": [["pen is to write", "knife is to cut"]],
+      "test_input": "brush is to",
+      "expected": "paint"
+    },
+    {
+      "id": "analogy_7",
+      "input_pairs": [["doctor is to hospital", "teacher is to school"]],
+      "test_input": "chef is to",
+      "expected": "kitchen"
+    },
+    {
+      "id": "analogy_8",
+      "input_pairs": [["sun is to day", "moon is to night"]],
+      "test_input": "star is to",
+      "expected": "twilight"
+    },
+    {
+      "id": "analogy_9",
+      "input_pairs": [["root is to tree", "foundation is to building"]],
+      "test_input": "base is to",
+      "expected": "structure"
+    },
+    {
+      "id": "analogy_10",
+      "input_pairs": [["question is to answer", "problem is to solution"]],
+      "test_input": "puzzle is to",
+      "expected": "resolution"
+    },
+    {
+      "id": "pattern_1",
+      "input_pairs": [["1 2 3 4 5", "2 3 4 5 6"], ["3 4 5 6 7", "4 5 6 7 8"]],
+      "test_input": "5 6 7 8 9",
+      "expected": "6 7 8 9 10"
+    },
+    {
+      "id": "pattern_2",
+      "input_pairs": [["a b c d e", "b c d e f"], ["c d e f g", "d e f g h"]],
+      "test_input": "e f g h i",
+      "expected": "f g h i j"
+    },
+    {
+      "id": "pattern_3",
+      "input_pairs": [["red orange yellow", "orange yellow green"], ["yellow green blue", "green blue indigo"]],
+      "test_input": "blue indigo violet",
+      "expected": "indigo violet ultraviolet"
+    },
+    {
+      "id": "pattern_4",
+      "input_pairs": [["one two three", "two three four"], ["three four five", "four five six"]],
+      "test_input": "five six seven",
+      "expected": "six seven eight"
+    },
+    {
+      "id": "pattern_5",
+      "input_pairs": [["alpha beta gamma", "beta gamma delta"], ["gamma delta epsilon", "delta epsilon zeta"]],
+      "test_input": "epsilon zeta eta",
+      "expected": "zeta eta theta"
+    },
+    {
+      "id": "transform_1",
+      "input_pairs": [["reverse hello", "olleh"], ["reverse world", "dlrow"]],
+      "test_input": "reverse rust",
+      "expected": "tsur"
+    },
+    {
+      "id": "transform_2",
+      "input_pairs": [["sort zebra apple mango", "apple mango zebra"], ["sort dog cat bird", "bird cat dog"]],
+      "test_input": "sort gamma alpha beta",
+      "expected": "alpha beta gamma"
+    },
+    {
+      "id": "transform_3",
+      "input_pairs": [["double two", "four"], ["double three", "six"]],
+      "test_input": "double five",
+      "expected": "ten"
+    },
+    {
+      "id": "transform_4",
+      "input_pairs": [["first apple mango zebra", "apple"], ["first dog cat bird", "bird"]],
+      "test_input": "first gamma alpha beta",
+      "expected": "alpha"
+    },
+    {
+      "id": "transform_5",
+      "input_pairs": [["last apple mango zebra", "zebra"], ["last dog cat bird", "dog"]],
+      "test_input": "last gamma alpha beta",
+      "expected": "gamma"
+    }
+  ]
+}

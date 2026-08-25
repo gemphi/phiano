@@ -13,9 +13,9 @@ use crate::metrics::{
     shortcut_detection::detect_shortcuts,
 };
 use crate::trainer::Trainer;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BenchmarkReport {
     pub baselines: (f64, f64, f64),
     pub brittleness: f64,

@@ -46,7 +46,7 @@ pub fn adversarial_sensitivity(facet: &Facet, prompt: &str, n_perturbations: usi
     let mut total_delta = 0.0;
     for i in 0..n_perturbations {
         let delta = (i as f64 / n_perturbations as f64) * PI * 0.5;
-        let word = tokens[i % tokens.len()];
+        let word = tokens[i % tokens.len()].clone();
 
         let mut perturbed = facet.clone();
         if let Some(p) = perturbed.lexicon.get_mut(&word) {

@@ -3,10 +3,8 @@
 /// with discrete, program-like reasoning.
 
 use crate::facet::Facet;
-use crate::generate::ContextWaveBuffer;
-use crate::reasoning::analogy::{value_centric_analogy, find_analogies};
+use crate::reasoning::analogy::find_analogies;
 use crate::reasoning::pathfinding::ReasoningEngine;
-use crate::reasoning::program_analogy::{extract_structure, shares_structure};
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -14,18 +12,13 @@ pub struct HybridResult {
     pub pathfinding_chain: super::pathfinding::ReasoningChain,
     pub analogies: Vec<(String, f64)>,
     pub structural_matches: Vec<String>,
-    pub final_answer: String,
     pub confidence: f64,
+    pub final_answer: String,
 }
 
+#[derive(Debug, Default)]
 pub struct HybridReasoner {
-    pub engine: ReasoningEngine,
-}
-
-impl Default for HybridReasoner {
-    fn default() -> Self {
-        Self::new()
-    }
+    engine: ReasoningEngine,
 }
 
 impl HybridReasoner {
@@ -44,9 +37,9 @@ impl HybridReasoner {
         for token in tokens.iter().take(3) {
             let analogs = find_analogies(facet, token, 5);
             for (word, score) in analogs {
-                analogies.push((word, score));
+                analogies.push((word.clone(), score));
                 if score > 0.7 {
-                    structural_matches.push(word.clone());
+                    structural_matches.push(word);
                 }
             }
         }

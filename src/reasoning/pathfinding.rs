@@ -6,7 +6,7 @@ use std::f64::consts::PI;
 pub const REASONING_MAX_STEPS: usize = 16;  // 2^4
 pub const REASONING_CONVERGENCE: f64 = 0.01; // Phase angle delta threshold for convergence
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ReasoningStep {
     pub step_number: usize,
     pub focus_word: String,
@@ -16,6 +16,7 @@ pub struct ReasoningStep {
     pub sentence: String,
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ReasoningChain {
     pub problem: String,
     pub steps: Vec<ReasoningStep>,
@@ -23,6 +24,7 @@ pub struct ReasoningChain {
     pub final_answer: String,
 }
 
+#[derive(Debug, Default)]
 pub struct ReasoningEngine;
 
 impl ReasoningEngine {
