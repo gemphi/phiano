@@ -1,0 +1,24 @@
+/// Metrics module: baselines, validation-aware evaluation, capacity tuning,
+/// regularization, generalization, adversarial robustness, ARC benchmarks.
+
+pub mod baseline;
+pub mod eval_split;
+pub mod capacity;
+pub mod regularization;
+pub mod generalization;
+pub mod adversarial;
+pub mod ood_detection;
+pub mod distribution_shift;
+pub mod arc;
+pub mod shortcut_detection;
+pub mod adaptation;
+pub mod novelty_benchmark;
+pub mod benchmark_runner;
+pub mod report;
+
+pub use baseline::all_baselines;
+pub use eval_split::{EvalSummary, eval_on_split, full_eval_pipeline};
+pub use capacity::{CapacityConfig, tune_capacity};
+pub use regularization::{
+    apply_amplitude_decay, apply_phase_jitter, apply_band_regularization, prune_low_amplitude,
+};
