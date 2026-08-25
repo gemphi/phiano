@@ -2,7 +2,7 @@
 
 use super::SharedModel;
 use super::types::*;
-use super::routes_wiki::parse_wiki_extract;
+use super::routes_wiki::WikiParser;
 use crate::config::{
     CHUNK_STORE_DIR,
     DEFINITION_CHAIN_DEPTH, WIKI_SNIPPET_MAX_CHARS,
@@ -139,7 +139,7 @@ async fn try_wikipedia_learning(
     }
 
     let text = match resp.text().await { Ok(t) => t, Err(_) => return (None, None) };
-    let (title, extract) = match parse_wiki_extract(&text, &topic) {
+    let (title, extract) = match WikiParser::parse_extract(&text, &topic) {
         Ok(r) => r, Err(_) => return (None, None),
     };
 

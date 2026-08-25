@@ -204,7 +204,7 @@ impl fmt::Display for PersonaComparison {
         writeln!(f, "  top differences:")?;
 
         for &(sector, diff) in self.differences.iter().take(8) {
-            let color = crate::compose::sector_color(sector);
+            let color = crate::compose::SectorPalette::color(sector);
             let direction = if diff > 0.0 { &self.name_a } else { &self.name_b };
             writeln!(
                 f,

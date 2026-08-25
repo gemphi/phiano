@@ -7,8 +7,12 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Json;
 
-/// Parses a Wikipedia API response to extract the title and text extract.
-pub fn parse_wiki_extract(resp_text: &str, topic: &str) -> Result<(String, String), StatusCode> {
+/// Parses Wikipedia API responses into title and extract text.
+pub struct WikiParser;
+
+impl WikiParser {
+    /// Parses a Wikipedia API response to extract the title and text extract.
+    pub fn parse_extract(resp_text: &str, topic: &str) -> Result<(String, String), StatusCode> {
     let api_data: serde_json::Value = serde_json::from_str(resp_text)
         .map_err(|e| {
             eprintln!("[wiki/learn] JSON parse failed: {}", e);
@@ -25,8 +29,9 @@ pub fn parse_wiki_extract(resp_text: &str, topic: &str) -> Result<(String, Strin
     let title = page.get("title").and_then(|v| v.as_str()).unwrap_or(topic).to_string();
     let extract = page.get("extract").and_then(|v| v.as_str()).unwrap_or("").to_string();
 
-    if extract.is_empty() { return Err(StatusCode::NOT_FOUND); }
-    Ok((title, extract))
+        if extract.is_empty() { return Err(StatusCode::NOT_FOUND); }
+        Ok((title, extract))
+    }
 }
 
 pub async fn wiki_learn(
@@ -54,10 +59,10 @@ pub async fn wiki_learn(
         let resp2 = client.get(&url).send().await
             .map_err(|e| { eprintln!("[wiki/learn] retry failed: {}", e); StatusCode::BAD_GATEWAY })?;
         if !resp2.status().is_success() { return Err(StatusCode::BAD_GATEWAY); }
-        parse_wiki_extract(&resp2.text().await.map_err(|_| StatusCode::BAD_GATEWAY)?, &topic)?
+        WikiParser::parse_extract(&resp2.text().await.map_err(|_| StatusCode::BAD_GATEWAY)?, &topic)?
     } else {
         if !resp.status().is_success() { return Err(StatusCode::BAD_GATEWAY); }
-        parse_wiki_extract(&resp.text().await.map_err(|_| StatusCode::BAD_GATEWAY)?, &topic)?
+        WikiParser::parse_extract(&resp.text().await.map_err(|_| StatusCode::BAD_GATEWAY)?, &topic)?
     };
 
     let extract_truncated = if extract.len() > 2000 { extract[..2000].to_string() } else { extract.clone() };

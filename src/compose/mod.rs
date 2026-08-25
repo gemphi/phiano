@@ -7,21 +7,31 @@ use crate::facet::Facet;
 use crate::trainer::Trainer;
 use std::fmt;
 
-/// Maps a sector index to a color name.
-///
-/// Works with any sector resolution by mapping proportionally
-/// to the color wheel. The 12 base colors are distributed evenly
-/// across whatever sector count is configured (64, 128, 256, ...).
+/// Color mapping palette for phase-space sectors.
+pub struct SectorPalette;
+
+impl SectorPalette {
+    /// Maps sector indices to color names.
+    ///
+    /// Works with any sector resolution by mapping proportionally
+    /// to the color wheel. The 16 base colors are distributed evenly
+    /// across whatever sector count is configured (64, 128, 256, ...).
+    pub fn color(sector: u16) -> String {
+        let n = crate::wave::Wave::sector_count();
+        let colors = [
+            "crimson", "red", "scarlet", "orange", "amber", "gold",
+            "yellow", "lime", "green", "emerald", "teal", "blue",
+            "indigo", "violet", "magenta", "rose",
+        ];
+        let color_count = colors.len() as u16;
+        let bucket = (sector * color_count) / n;
+        colors[(bucket as usize) % colors.len()].to_string()
+    }
+}
+
+/// Module-level function for mapping sector indices to color names.
 pub fn sector_color(sector: u16) -> String {
-    let n = crate::wave::Wave::sector_count();
-    let colors = [
-        "crimson", "red", "scarlet", "orange", "amber", "gold",
-        "yellow", "lime", "green", "emerald", "teal", "blue",
-        "indigo", "violet", "magenta", "rose",
-    ];
-    let color_count = colors.len() as u16;
-    let bucket = (sector * color_count) / n;
-    colors[(bucket as usize) % colors.len()].to_string()
+    SectorPalette::color(sector)
 }
 
 /// Composition - the result of a full recursive compose cycle.
@@ -108,7 +118,7 @@ impl fmt::Display for Composition {
         let mut ranked = self.sector_scores.clone();
         ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         for (i, (sector, score)) in ranked.iter().take(8).enumerate() {
-            let color = sector_color(*sector);
+            let color = SectorPalette::color(*sector);
             writeln!(f, "    #{}: sector {} ({}) score {:.4}", i + 1, sector, color, score)?;
         }
 

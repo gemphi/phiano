@@ -1,6 +1,6 @@
 use crate::command::Context;
 use crate::generate::Generator;
-use crate::instruction::generate_response;
+use crate::instruction::InstructionEngine;
 
 /// Instruct - executes an instruction using the shared cognitive pipeline.
 ///
@@ -24,7 +24,7 @@ impl InstructionCmd {
         let prompt = crate::command::Parser::strip_quotes(ctx.arg);
         let generator = Generator::new(128, 0.15);
 
-        let response = generate_response(
+        let response = InstructionEngine::generate_response(
             ctx.manifold,
             ctx.trainer,
             ctx.cognitive_core,

@@ -3,6 +3,7 @@
 
 use crate::eval::Evaluator;
 use crate::facet::Facet;
+use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
 use serde::Serialize;
 
@@ -37,7 +38,7 @@ impl MetaLearner {
             let after = evaluator.eval(facet, task).coherence;
             adaptation_rates.push(after - before);
 
-            for token in crate::tokenizer::Tokenizer::tokenize(task) {
+            for token in Tokenizer::tokenize(task) {
                 if let Some(p) = facet.lexicon.get(&token) {
                     all_phases.push(p.phase);
                 }
@@ -63,7 +64,7 @@ impl MetaLearner {
 impl MetaModel {
     /// Uses meta-learned patterns to speed up learning on a new task.
     pub fn adapt(&self, facet: &mut Facet, _trainer: &Trainer, new_task: &str) {
-        let tokens = crate::tokenizer::Tokenizer::tokenize(new_task);
+        let tokens = Tokenizer::tokenize(new_task);
 
         for token in &tokens {
             facet.get_or_init(token);

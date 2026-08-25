@@ -1,7 +1,7 @@
 use crate::compose::better::{Evaluator as ComposerEvaluator, SectorScore};
 use crate::compose::flow::RiverFlow;
 use crate::compose::worse::Discarder;
-use crate::compose::{sector_color, Composition};
+use crate::compose::{SectorPalette, Composition};
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 
@@ -121,7 +121,7 @@ impl CompositionTuner {
             prompt: prompt.to_string(),
             text: winner.text.clone(),
             winning_sector: winner.sector,
-            winning_color: sector_color(winner.sector),
+            winning_color: SectorPalette::color(winner.sector),
             rounds: rounds_completed,
             eval,
             sector_scores,

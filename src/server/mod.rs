@@ -20,24 +20,35 @@ use tower_http::services::{ServeDir, ServeFile};
 /// Shared model state - wrapped in Arc<Mutex> for thread-safe access.
 pub type SharedModel = Arc<Mutex<Model>>;
 
-/// Starts the web server on the given port.
+/// HTTP and WebSocket service runner for Phiano.
+pub struct PhianoServer;
+
+impl PhianoServer {
+    /// Starts the web server on the given port.
+    pub async fn run(model: Model, port: u16) {
+        let state: SharedModel = Arc::new(Mutex::new(model));
+
+        let serve_dir = ServeDir::new("web/dist")
+            .not_found_service(ServeFile::new("web/dist/index.html"));
+
+        let app = api::ApiRouter::build(state)
+            .layer(CorsLayer::permissive())
+            .fallback_service(serve_dir);
+
+        let addr = format!("127.0.0.1:{}", port);
+        println!("  [web] Phiano web interface at http://{}", addr);
+
+        let listener = tokio::net::TcpListener::bind(&addr)
+            .await
+            .expect("Failed to bind");
+        axum::serve(listener, app)
+            .await
+            .expect("Server error");
+    }
+}
+
+/// Starts the web server on the given port (delegates to [`PhianoServer::run`]).
+#[inline]
 pub async fn run(model: Model, port: u16) {
-    let state: SharedModel = Arc::new(Mutex::new(model));
-
-    let serve_dir = ServeDir::new("web/dist")
-        .not_found_service(ServeFile::new("web/dist/index.html"));
-
-    let app = api::router(state)
-        .layer(CorsLayer::permissive())
-        .fallback_service(serve_dir);
-
-    let addr = format!("127.0.0.1:{}", port);
-    println!("  [web] Phiano web interface at http://{}", addr);
-
-    let listener = tokio::net::TcpListener::bind(&addr)
-        .await
-        .expect("Failed to bind");
-    axum::serve(listener, app)
-        .await
-        .expect("Server error");
+    PhianoServer::run(model, port).await;
 }

@@ -154,7 +154,7 @@ impl Evaluator {
             1.0
         };
 
-        let overall = config::eval_overall(coherence, novelty, resonance);
+        let overall = config::PhiConfig::eval_overall(coherence, novelty, resonance);
         let verdict = Verdict::from_scores(coherence, novelty, resonance);
 
         Eval {

@@ -1,6 +1,7 @@
 /// Counterfactual reasoning: swaps a key word's phase and re-evaluates.
 /// Implements Ch 14.2's reasoning about hypothetical situations.
 
+use crate::config::TWO_PI;
 use crate::eval::Evaluator;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
@@ -51,7 +52,7 @@ impl Counterfactual {
 
         let mut perturbed = facet.clone();
         if let Some(p) = perturbed.lexicon.get_mut(word) {
-            p.phase = new_phase.rem_euclid(crate::config::TWO_PI);
+            p.phase = new_phase.rem_euclid(TWO_PI);
         }
 
         let perturbed_score = evaluator.eval(&perturbed, prompt).coherence;

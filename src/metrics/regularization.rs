@@ -1,7 +1,7 @@
 /// Regularization controls: amplitude decay, phase jitter, band capping.
 /// Prevents overfitting in the phase-oscillator model.
 
-use crate::config::{AMPLITUDE_MAX, BAND_N_INITIAL};
+use crate::config::{AMPLITUDE_MAX, BAND_N_INITIAL, TWO_PI};
 use crate::facet::Facet;
 
 #[derive(Debug, Default)]
@@ -29,7 +29,7 @@ impl Regularization {
             let mut hasher = DefaultHasher::new();
             word.hash(&mut hasher);
             let noise = ((hasher.finish() as f64 / f64::MAX) - 0.5) * 2.0 * jitter;
-            phasor.phase = (phasor.phase + noise).rem_euclid(crate::config::TWO_PI);
+            phasor.phase = (phasor.phase + noise).rem_euclid(TWO_PI);
         }
     }
 

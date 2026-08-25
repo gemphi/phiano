@@ -1,5 +1,5 @@
 use crate::compose::better::SectorScore;
-use crate::compose::sector_color;
+use crate::compose::SectorPalette;
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 
@@ -99,7 +99,7 @@ impl Discarder {
             if i > 0 {
                 print!(", ");
             }
-            print!("{} ({})", sector, sector_color(sector));
+            print!("{} ({})", sector, SectorPalette::color(sector));
         }
         if result.kept.len() > 8 {
             print!(", ... ({} total)", result.kept.len());
@@ -111,7 +111,7 @@ impl Discarder {
             if i > 0 {
                 print!(", ");
             }
-            print!("{} ({})", sector, sector_color(sector));
+            print!("{} ({})", sector, SectorPalette::color(sector));
         }
         if result.discarded.len() > 8 {
             print!(", ... ({} total)", result.discarded.len());

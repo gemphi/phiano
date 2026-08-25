@@ -3,6 +3,8 @@
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;
+use crate::generate::ContextWaveBuffer;
+use crate::reasoning::diagnostics::Diagnostics;
 use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine, ReasoningStep, REASONING_MAX_STEPS};
 use crate::tokenizer::Tokenizer;
 use serde::Serialize;
@@ -77,15 +79,15 @@ impl MultiPath {
     /// Returns the best path by confidence score.
     pub fn best_path(paths: &[ReasoningChain]) -> Option<&ReasoningChain> {
         paths.iter().max_by(|a, b| {
-            let ca = super::diagnostics::Diagnostics::confidence(a);
-            let cb = super::diagnostics::Diagnostics::confidence(b);
+            let ca = Diagnostics::confidence(a);
+            let cb = Diagnostics::confidence(b);
             ca.partial_cmp(&cb).unwrap_or(std::cmp::Ordering::Equal)
         })
     }
 
     /// Solves with a custom step limit.
     fn solve_with_limit(facet: &Facet, problem: &str, max_steps: usize) -> ReasoningChain {
-    let mut context_buffer = crate::generate::ContextWaveBuffer::new(4096);
+    let mut context_buffer = ContextWaveBuffer::new(4096);
     context_buffer.push_turn(facet, problem);
 
     let mut steps = Vec::new();
@@ -152,7 +154,7 @@ impl MultiPath {
 
     /// Solves starting from a specific sector offset.
     fn solve_from_sector(facet: &Facet, problem: &str, phase_offset: f64) -> ReasoningChain {
-    let mut context_buffer = crate::generate::ContextWaveBuffer::new(4096);
+    let mut context_buffer = ContextWaveBuffer::new(4096);
     context_buffer.push_turn(facet, problem);
 
     let mut steps = Vec::new();

@@ -4,12 +4,13 @@
 
 use crate::facet::Facet;
 use crate::reasoning::analogy::Analogy;
-use crate::reasoning::pathfinding::ReasoningEngine;
+use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine};
+use crate::tokenizer::Tokenizer;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct HybridResult {
-    pub pathfinding_chain: super::pathfinding::ReasoningChain,
+    pub pathfinding_chain: ReasoningChain,
     pub analogies: Vec<(String, f64)>,
     pub structural_matches: Vec<String>,
     pub confidence: f64,
@@ -30,7 +31,7 @@ impl HybridReasoner {
     pub fn solve_hybrid(&self, facet: &Facet, problem: &str) -> HybridResult {
         let chain = self.engine.solve(facet, problem);
 
-        let tokens = crate::tokenizer::Tokenizer::tokenize(problem);
+        let tokens = Tokenizer::tokenize(problem);
         let mut analogies = Vec::new();
         let mut structural_matches = Vec::new();
 

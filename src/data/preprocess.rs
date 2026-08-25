@@ -1,6 +1,7 @@
 /// Data preprocessing: tokenization, vectorization, and normalization.
 /// Reuses existing Tokenizer and Facet infrastructure.
 
+use crate::config::TWO_PI;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
@@ -54,7 +55,7 @@ impl Preprocessor {
     pub fn wave_phase(sum_x: f64, sum_y: f64) -> f64 {
         let angle = sum_y.atan2(sum_x);
         if angle < 0.0 {
-            angle + crate::config::TWO_PI
+            angle + TWO_PI
         } else {
             angle
         }

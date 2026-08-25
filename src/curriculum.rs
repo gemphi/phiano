@@ -4,7 +4,7 @@
 /// Loads stage definitions from data/curriculum.json (no hardcoded words).
 
 use crate::chunker::ChunkStore;
-use crate::cognitive::definition_ground_phases;
+use crate::cognitive::DefinitionGrounder;
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 use serde::Deserialize;
@@ -126,7 +126,7 @@ impl ChildCurriculum {
             });
         }
 
-        let grounded = definition_ground_phases(facet, chunk_store);
+        let grounded = DefinitionGrounder::ground_phases(facet, chunk_store);
 
         CurriculumResult {
             stages_completed: self.stages.len(),

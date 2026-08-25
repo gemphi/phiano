@@ -1,4 +1,24 @@
 #![allow(dead_code)]
+//! Instruction parsing, formatting, and phase-guided execution.
+//!
+//! Implements the instruction pipeline from prompt classification through
+//! grounded definition lookup, cognitive synthesis, and torus-attractor
+//! generation.  All public functions are associated methods on
+//! [`InstructionEngine`], following the Diem convention.
+//!
+//! # Architecture
+//!
+//! ```text
+//! User Prompt
+//!   │
+//!   ├─▶ InstructionKind::parse()          classify intent
+//!   ├─▶ InstructionEngine::extract_topic_words()  topic extraction
+//!   ├─▶ InstructionEngine::generate_response()    cognitive pipeline
+//!   │       ├─▶ lookup_definitions()       grounded knowledge
+//!   │       ├─▶ compose_reply()            torus attractor
+//!   │       └─▶ CognitiveCore::process()  intentional states
+//!   └─▶ ChatResponse                      structured output
+//! ```
 
 use crate::cognitive::CognitiveCore;
 use crate::facet::Facet;
@@ -42,42 +62,6 @@ impl InstructionKind {
     }
 }
 
-/// Extract content words from a prompt, then fill remaining slots from the manifold.
-pub fn extract_topic_words(facet: &Facet, prompt: &str, n: usize) -> Vec<String> {
-    let mut result = Tokenizer::content_words(prompt);
-    result.retain(|w| facet.lexicon.contains_key(w));
-    result.truncate(n);
-
-    match result.len() < n {
-        true => {
-            for seed in result.clone().iter().take(3) {
-                for (w, _) in facet.next_word_candidates(seed) {
-                    match !Tokenizer::is_function_word(&w) && !result.contains(&w) && result.len() < n {
-                        true => result.push(w),
-                        false => {}
-                    }
-                }
-            }
-        }
-        false => {}
-    }
-
-    match result.len() < n {
-        true => {
-            let tokens = Tokenizer::tokenize(prompt);
-            let wave = Wave::sentence(facet, &tokens);
-            for (w, _) in Wave::ray_cast(facet, wave, n * 4) {
-                match !Tokenizer::is_function_word(&w) && !result.contains(&w) && result.len() < n {
-                    true => result.push(w),
-                    false => {}
-                }
-            }
-        }
-        false => {}
-    }
-
-    result
-}
 
 /// Looks up grounded definitions for content words in the prompt.
 fn lookup_definitions(cognitive_core: &CognitiveCore, prompt: &str) -> Vec<(String, String)> {
@@ -130,56 +114,7 @@ fn compose_reply(
     }
 }
 
-/// Generate readable sentences using templates filled with resonant words.
-pub fn templated_output(facet: &Facet, prompt: &str, kind: InstructionKind) -> String {
-    let words = extract_topic_words(facet, prompt, 8);
-    match words.len() < 3 {
-        true => return format!("I need more context to respond to: {}", prompt),
-        false => {}
-    }
 
-    let w = |i: usize| -> &str { words.get(i).map(|s| s.as_str()).unwrap_or("concepts") };
-
-    match kind {
-        InstructionKind::Explain => {
-            let mut lines = Vec::new();
-            lines.push(format!("{} is a concept that relates to {} and {}.", w(0), w(1), w(2)));
-            lines.push(format!("It involves understanding how {} connects to {}.", w(1), w(3)));
-            lines.push(format!("Key aspects include {}, {}, and {}.", w(2), w(4), w(5)));
-            lines.push(format!("In practice, {} requires considering {} alongside {}.", w(0), w(6), w(7)));
-            lines.join(" ")
-        }
-        InstructionKind::Analyze => {
-            let mut lines = Vec::new();
-            lines.push(format!("Analyzing: {} in relation to {}.", w(0), w(1)));
-            lines.push(format!("{} and {} share connections through {}.", w(0), w(1), w(2)));
-            lines.push(format!("However, {} differs from {} in terms of {}.", w(3), w(4), w(5)));
-            lines.push(format!("Overall, {} and {} are complementary aspects of {}.", w(0), w(1), w(6)));
-            lines.join(" ")
-        }
-        InstructionKind::Code => {
-            let mut lines = Vec::new();
-            lines.push(format!("To implement {}, consider the role of {} and {}.", w(0), w(1), w(2)));
-            lines.push(format!("The pattern involves {} for structure and {} for safety.", w(3), w(4)));
-            lines.push(format!("Use {} to manage {} effectively.", w(5), w(6)));
-            lines.join(" ")
-        }
-        InstructionKind::Creative => {
-            let mut lines = Vec::new();
-            lines.push(format!("{} dances with {} in the light of {}.", w(0), w(1), w(2)));
-            lines.push(format!("Through {} and {}, the story unfolds.", w(3), w(4)));
-            lines.push(format!("{} whispers of {} and the promise of {}.", w(5), w(6), w(7)));
-            lines.join(" ")
-        }
-        InstructionKind::Command => {
-            let mut lines = Vec::new();
-            lines.push(format!("Processing: {} with context from {}.", w(0), w(1)));
-            lines.push(format!("Related factors: {}, {}, and {}.", w(2), w(3), w(4)));
-            lines.push(format!("Result: {} informed by {}.", w(0), w(5)));
-            lines.join(" ")
-        }
-    }
-}
 
 /// ChatResponse - clean response from the chat/instruct pipeline.
 /// Separates the conversational text from cognitive metadata.
@@ -212,44 +147,7 @@ impl fmt::Display for ChatResponse {
     }
 }
 
-/// Generates a chat response using shared cognitive core + context buffer.
-/// Trains the manifold online, then answers from grounded definitions or ray-cast decoding.
-pub fn generate_response(
-    facet: &mut Facet,
-    trainer: &Trainer,
-    cognitive_core: &CognitiveCore,
-    context_buffer: &mut ContextWaveBuffer,
-    generator: &Generator,
-    prompt: &str,
-) -> ChatResponse {
-    trainer.train_online(facet, prompt);
 
-    let kind = InstructionKind::parse(prompt);
-    let definitions = lookup_definitions(cognitive_core, prompt);
-    for (word, def) in &definitions {
-        trainer.train_definition(facet, word, def);
-    }
-
-    let cognitive_result = cognitive_core.process(facet, context_buffer, prompt);
-    let text = compose_reply(facet, context_buffer, generator, prompt, &definitions);
-    let phase_trace = match definitions.is_empty() {
-        true => text.clone(),
-        false => generator.generate(facet, context_buffer, prompt),
-    };
-
-    context_buffer.push_turn(facet, prompt);
-    context_buffer.push_turn(facet, &text);
-
-    ChatResponse {
-        text,
-        cognitive_synthesis: cognitive_result.synthesized_output,
-        intent: kind,
-        speech_act: cognitive_result.speech_act,
-        direction_of_fit: cognitive_result.direction_of_fit,
-        satisfaction: cognitive_result.satisfaction,
-        phase_trace,
-    }
-}
 
 /// InstructionEngine - handles instruction parsing, formatting, and phase-guided execution (Phase 4).
 pub struct InstructionEngine {
@@ -265,6 +163,10 @@ impl Default for InstructionEngine {
 }
 
 impl InstructionEngine {
+    /// Creates a new [`InstructionEngine`] with default capacity.
+    ///
+    /// - Context buffer: 4096 tokens
+    /// - Generator: 128-step decode, 0.15 temperature
     pub fn new() -> Self {
         Self {
             context_buffer: ContextWaveBuffer::new(4096),
@@ -273,12 +175,177 @@ impl InstructionEngine {
         }
     }
 
-    /// Formats prompt into a clean instruction template.
+    /// Formats a prompt into a clean instruction template.
+    ///
+    /// ```text
+    /// user
+    /// {prompt}
+    /// <|end|>
+    /// assistant
+    /// ```
     pub fn format_template(prompt: &str) -> String {
         format!("user\n{}\n<|end|>\nassistant\n", prompt.trim())
     }
 
+    /// Extracts content words from a prompt, filling remaining slots from the
+    /// phase manifold via bigram candidates and ray-cast decoding.
+    ///
+    /// # Arguments
+    ///
+    /// - `facet` — the trained phase-space manifold
+    /// - `prompt` — raw user input
+    /// - `n` — maximum number of topic words to return
+    ///
+    /// # Returns
+    ///
+    /// Up to `n` content words, ordered by prompt occurrence then manifold
+    /// proximity.
+    pub fn extract_topic_words(facet: &Facet, prompt: &str, n: usize) -> Vec<String> {
+        let mut result = Tokenizer::content_words(prompt);
+        result.retain(|w| facet.lexicon.contains_key(w));
+        result.truncate(n);
+
+        match result.len() < n {
+            true => {
+                for seed in result.clone().iter().take(3) {
+                    for (w, _) in facet.next_word_candidates(seed) {
+                        match !Tokenizer::is_function_word(&w) && !result.contains(&w) && result.len() < n {
+                            true => result.push(w),
+                            false => {}
+                        }
+                    }
+                }
+            }
+            false => {}
+        }
+
+        match result.len() < n {
+            true => {
+                let tokens = Tokenizer::tokenize(prompt);
+                let wave = Wave::sentence(facet, &tokens);
+                for (w, _) in Wave::ray_cast(facet, wave, n * 4) {
+                    match !Tokenizer::is_function_word(&w) && !result.contains(&w) && result.len() < n {
+                        true => result.push(w),
+                        false => {}
+                    }
+                }
+            }
+            false => {}
+        }
+
+        result
+    }
+
+    /// Generates readable sentences using templates filled with resonant words.
+    ///
+    /// Each [`InstructionKind`] produces a different rhetorical structure
+    /// (explanatory, analytical, creative, code-oriented, or command).
+    pub fn templated_output(facet: &Facet, prompt: &str, kind: InstructionKind) -> String {
+        let words = Self::extract_topic_words(facet, prompt, 8);
+        match words.len() < 3 {
+            true => return format!("I need more context to respond to: {}", prompt),
+            false => {}
+        }
+
+        let w = |i: usize| -> &str { words.get(i).map(|s| s.as_str()).unwrap_or("concepts") };
+
+        match kind {
+            InstructionKind::Explain => {
+                let mut lines = Vec::new();
+                lines.push(format!("{} is a concept that relates to {} and {}.", w(0), w(1), w(2)));
+                lines.push(format!("It involves understanding how {} connects to {}.", w(1), w(3)));
+                lines.push(format!("Key aspects include {}, {}, and {}.", w(2), w(4), w(5)));
+                lines.push(format!("In practice, {} requires considering {} alongside {}.", w(0), w(6), w(7)));
+                lines.join(" ")
+            }
+            InstructionKind::Analyze => {
+                let mut lines = Vec::new();
+                lines.push(format!("Analyzing: {} in relation to {}.", w(0), w(1)));
+                lines.push(format!("{} and {} share connections through {}.", w(0), w(1), w(2)));
+                lines.push(format!("However, {} differs from {} in terms of {}.", w(3), w(4), w(5)));
+                lines.push(format!("Overall, {} and {} are complementary aspects of {}.", w(0), w(1), w(6)));
+                lines.join(" ")
+            }
+            InstructionKind::Code => {
+                let mut lines = Vec::new();
+                lines.push(format!("To implement {}, consider the role of {} and {}.", w(0), w(1), w(2)));
+                lines.push(format!("The pattern involves {} for structure and {} for safety.", w(3), w(4)));
+                lines.push(format!("Use {} to manage {} effectively.", w(5), w(6)));
+                lines.join(" ")
+            }
+            InstructionKind::Creative => {
+                let mut lines = Vec::new();
+                lines.push(format!("{} dances with {} in the light of {}.", w(0), w(1), w(2)));
+                lines.push(format!("Through {} and {}, the story unfolds.", w(3), w(4)));
+                lines.push(format!("{} whispers of {} and the promise of {}.", w(5), w(6), w(7)));
+                lines.join(" ")
+            }
+            InstructionKind::Command => {
+                let mut lines = Vec::new();
+                lines.push(format!("Processing: {} with context from {}.", w(0), w(1)));
+                lines.push(format!("Related factors: {}, {}, and {}.", w(2), w(3), w(4)));
+                lines.push(format!("Result: {} informed by {}.", w(0), w(5)));
+                lines.join(" ")
+            }
+        }
+    }
+
+    /// Generates a chat response using the full cognitive pipeline.
+    ///
+    /// # Pipeline
+    ///
+    /// 1. Online-trains the manifold with the user prompt
+    /// 2. Classifies the instruction kind
+    /// 3. Looks up grounded definitions from the chunk store
+    /// 4. Runs cognitive synthesis (intentional states)
+    /// 5. Composes the reply from definitions or torus attractor generation
+    /// 6. Pushes both prompt and reply into the context buffer
+    ///
+    /// # Returns
+    ///
+    /// A [`ChatResponse`] containing the reply text, cognitive metadata,
+    /// speech act classification, and phase trace.
+    pub fn generate_response(
+        facet: &mut Facet,
+        trainer: &Trainer,
+        cognitive_core: &CognitiveCore,
+        context_buffer: &mut ContextWaveBuffer,
+        generator: &Generator,
+        prompt: &str,
+    ) -> ChatResponse {
+        trainer.train_online(facet, prompt);
+
+        let kind = InstructionKind::parse(prompt);
+        let definitions = lookup_definitions(cognitive_core, prompt);
+        for (word, def) in &definitions {
+            trainer.train_definition(facet, word, def);
+        }
+
+        let cognitive_result = cognitive_core.process(facet, context_buffer, prompt);
+        let text = compose_reply(facet, context_buffer, generator, prompt, &definitions);
+        let phase_trace = match definitions.is_empty() {
+            true => text.clone(),
+            false => generator.generate(facet, context_buffer, prompt),
+        };
+
+        context_buffer.push_turn(facet, prompt);
+        context_buffer.push_turn(facet, &text);
+
+        ChatResponse {
+            text,
+            cognitive_synthesis: cognitive_result.synthesized_output,
+            intent: kind,
+            speech_act: cognitive_result.speech_act,
+            direction_of_fit: cognitive_result.direction_of_fit,
+            satisfaction: cognitive_result.satisfaction,
+            phase_trace,
+        }
+    }
+
     /// Executes an incoming instruction using shared cognitive core + context buffer.
+    ///
+    /// Builds the hierarchical phase field first, then delegates to
+    /// [`Self::generate_response`].
     pub fn execute_instruction(
         &mut self,
         facet: &mut Facet,
@@ -288,7 +355,7 @@ impl InstructionEngine {
         prompt: &str,
     ) -> ChatResponse {
         self.phase_field.build_hierarchy(facet);
-        generate_response(facet, _trainer, cognitive_core, context_buffer, &self.generator, prompt)
+        Self::generate_response(facet, _trainer, cognitive_core, context_buffer, &self.generator, prompt)
     }
 }
 

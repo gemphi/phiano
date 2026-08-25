@@ -2,7 +2,8 @@
 /// Provides readable step output and side-by-side comparison of reasoning methods.
 
 use crate::facet::Facet;
-use crate::reasoning::hybrid::HybridReasoner;
+use crate::reasoning::diagnostics::Diagnostics;
+use crate::reasoning::hybrid::{HybridReasoner, HybridResult};
 use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine, ReasoningStep};
 use serde::Serialize;
 
@@ -10,7 +11,7 @@ use serde::Serialize;
 #[derive(Debug, Clone, Serialize)]
 pub struct ReasoningComparison {
     pub pathfinding: ReasoningChain,
-    pub hybrid: super::hybrid::HybridResult,
+    pub hybrid: HybridResult,
     pub best_method: String,
 }
 
@@ -64,7 +65,7 @@ impl ReasoningComparison {
         let hybrid_reasoner = HybridReasoner::new();
         let hybrid = hybrid_reasoner.solve_hybrid(facet, problem);
 
-        let pf_confidence = super::diagnostics::Diagnostics::confidence(&pathfinding);
+        let pf_confidence = Diagnostics::confidence(&pathfinding);
         let hybrid_confidence = hybrid.confidence;
 
         let best_method = if hybrid_confidence > pf_confidence {

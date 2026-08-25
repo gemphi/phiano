@@ -1,7 +1,7 @@
 use crate::chunker::ChunkStore;
 use crate::command::{Context, Dispatcher};
 use crate::config;
-use crate::cognitive::{definition_ground_phases, CognitiveCore};
+use crate::cognitive::{CognitiveCore, DefinitionGrounder};
 use crate::envision::Envision;
 use crate::facet::Facet;
 use crate::memory::Memo;
@@ -63,7 +63,7 @@ impl Model {
         // Replaces word.len()*PHI with definition centroid phases
         match !facet.lexicon.is_empty() {
             true => {
-                definition_ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
+                DefinitionGrounder::ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
             }
             false => {}
         }

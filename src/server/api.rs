@@ -12,7 +12,10 @@ use super::routes_reasoning::*;
 use axum::routing::{get, post};
 use axum::Router;
 
-pub fn router(state: SharedModel) -> Router {
+pub struct ApiRouter;
+
+impl ApiRouter {
+    pub fn build(state: SharedModel) -> Router {
     Router::new()
         .route("/api/eval", post(eval))
         .route("/api/learn", post(learn))
@@ -46,4 +49,5 @@ pub fn router(state: SharedModel) -> Router {
         .route("/api/reason/compare", post(compare_reason))
         .route("/api/benchmark", get(benchmark))
         .with_state(state)
+    }
 }

@@ -1,7 +1,7 @@
 use crate::config;
 use crate::facet::Facet;
 use crate::compose::flow::RiverFlow;
-use crate::compose::sector_color;
+use crate::compose::SectorPalette;
 
 /// Evaluator - scores each of the 64 sector variations.
 ///
@@ -119,7 +119,7 @@ impl Evaluator {
 
             scores.push(SectorScore {
                 sector: flow.source_sector,
-                color: sector_color(flow.source_sector),
+                color: SectorPalette::color(flow.source_sector),
                 text: flow.text.clone(),
                 score: comp_score,
             });

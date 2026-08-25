@@ -26,7 +26,7 @@ pub struct Fingerprint {
 
 impl Fingerprint {
     fn is_stop_word(word: &str) -> bool {
-        crate::config::is_stop_word(word)
+        crate::config::PhiConfig::is_stop_word(word)
     }
 
     /// Extracts a fingerprint from text examples using the facet.
@@ -166,9 +166,8 @@ impl Fingerprint {
         diffs
     }
 
-    /// Derives personality traits from the dominant sector colors.
     pub fn personality_traits(&self) -> Vec<String> {
-        traits::personality_traits(self)
+        traits::PersonalityMapper::personality_traits(self)
     }
 }
 
@@ -179,7 +178,7 @@ impl fmt::Display for Fingerprint {
         writeln!(f, "  diversity (entropy): {:.3}", self.diversity)?;
         writeln!(f, "  dominant sectors:")?;
         for (sector, weight) in self.dominant_sectors(8) {
-            let color = crate::compose::sector_color(sector);
+            let color = crate::compose::SectorPalette::color(sector);
             writeln!(f, "    sector {} ({}) weight {:.4}", sector, color, weight)?;
         }
         Ok(())

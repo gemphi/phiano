@@ -80,7 +80,7 @@ pub async fn infinity_visualize(
 
     for flow in flows {
         let sector = flow.source_sector;
-        let color = crate::compose::sector_color(sector);
+        let color = crate::compose::SectorPalette::color(sector);
         let text = flow.text;
         let wave = crate::wave::Wave::text(&facet, &text);
         let theta = (sector as f64) * 2.0 * std::f64::consts::PI / (crate::wave::Wave::sector_count() as f64);

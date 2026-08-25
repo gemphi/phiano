@@ -10,7 +10,7 @@ pub struct Stats;
 impl Stats {
     /// Prints facet and memory statistics to stdout.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        crate::config::print_summary();
+        crate::config::PhiConfig::print_summary();
         println!();
         println!("  ── facet ──");
         println!("  Vocabulary:     {} words", ctx.manifold.vocabulary_size());

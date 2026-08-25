@@ -43,10 +43,10 @@ impl MentalCausationAgent {
             .rem_euclid(2.0 * std::f64::consts::PI);
 
         // Select words using intentional states as guides
-        let synthesis_words = word_selection::select_words(facet, prompt, &states, collective_phase);
+        let synthesis_words = word_selection::WordSelector::select_words(facet, prompt, &states, collective_phase);
 
         // Synthesize output using intentional state-driven construction
-        let output = word_selection::synthesize(&synthesis_words, act, &states, prompt);
+        let output = word_selection::WordSelector::synthesize(&synthesis_words, act, &states, prompt);
 
         let contrib = AgentContribution {
             agent_name: "MentalCausation",

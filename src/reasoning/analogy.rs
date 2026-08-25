@@ -3,6 +3,7 @@
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;
+use crate::reasoning::program_analogy::ProgramAnalogy;
 use serde::Serialize;
 use std::f64::consts::PI;
 
@@ -32,7 +33,7 @@ impl Analogy {
             _ => 0.0,
         };
 
-        let program_score = crate::reasoning::program_analogy::ProgramAnalogy::compare(facet, source, target);
+        let program_score = ProgramAnalogy::compare(facet, source, target);
 
         AnalogyResult {
             source: source.to_string(),

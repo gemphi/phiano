@@ -3,6 +3,7 @@
 
 use crate::reasoning::pathfinding::ReasoningChain;
 use serde::Serialize;
+use std::f64::consts::PI;
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub enum ConvergenceMode {
@@ -83,7 +84,7 @@ impl Diagnostics {
         } else {
             chain.steps.iter().map(|s| s.phase_delta).sum::<f64>() / n_steps
         };
-        let coherence = (1.0 - avg_delta / std::f64::consts::PI).max(0.0);
+        let coherence = (1.0 - avg_delta / PI).max(0.0);
 
         let novelty = if chain.steps.is_empty() {
             0.0
@@ -100,13 +101,15 @@ impl Diagnostics {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::facet::Facet;
+    use crate::reasoning::pathfinding::ReasoningEngine;
 
     #[test]
     fn test_convergence_mode_converged() {
-        let mut facet = crate::facet::Facet::new();
+        let mut facet = Facet::new();
         facet.get_or_init("a");
         facet.get_or_init("b");
-        let engine = crate::reasoning::pathfinding::ReasoningEngine;
+        let engine = ReasoningEngine;
         let chain = engine.solve(&facet, "a b");
         let mode = Diagnostics::diagnose(&chain);
         assert!(mode == ConvergenceMode::Converged || mode == ConvergenceMode::Stuck);

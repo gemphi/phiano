@@ -4,6 +4,7 @@
 use super::program::Program;
 use crate::config::TWO_PI;
 use crate::facet::Facet;
+use crate::tokenizer::Tokenizer;
 use serde::Serialize;
 use std::f64::consts::PI;
 
@@ -63,7 +64,7 @@ impl ComponentLibrary {
     }
 
     fn compute_phase_signature(facet: &Facet, text: &str) -> Vec<f64> {
-        let tokens = crate::tokenizer::Tokenizer::tokenize(text);
+        let tokens = Tokenizer::tokenize(text);
         tokens
             .iter()
             .filter_map(|t| facet.lexicon.get(t).map(|p| p.phase))

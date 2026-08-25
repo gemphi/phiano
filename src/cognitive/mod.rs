@@ -34,8 +34,10 @@ pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCo
 pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
 pub use speech_acts::SpeechActAgent;
 #[allow(unused_imports)]
-pub use reasoning::{ReasoningResult, ReasoningStep, reason_chain};
-pub use grounding::definition_ground_phases;
+pub use reasoning::{ReasoningResult, ReasoningStep, ReasoningChain};
+pub use grounding::DefinitionGrounder;
+#[allow(unused_imports)]
+pub use word_selection::WordSelector;
 
 use crate::chunker::ChunkStore;
 use crate::facet::Facet;
@@ -137,6 +139,6 @@ impl CognitiveCore {
         prompt: &str,
         max_steps: usize,
     ) -> ReasoningResult {
-        reason_chain(self, facet, context_buffer, prompt, max_steps)
+        ReasoningChain::reason_chain(self, facet, context_buffer, prompt, max_steps)
     }
 }

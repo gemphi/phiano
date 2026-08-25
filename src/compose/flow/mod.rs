@@ -116,10 +116,10 @@ impl RiverFlow {
         // Reorder each bank using bigram transition probabilities
         let reordered_banks: Vec<Vec<String>> = banks
             .iter()
-            .map(|bank| compose::reorder_with_bigrams(facet, bank))
+            .map(|bank| compose::Composer::reorder_with_bigrams(facet, bank))
             .collect();
 
-        let text = compose::compose(&path, &reordered_banks, &resonant_words);
+        let text = compose::Composer::compose(&path, &reordered_banks, &resonant_words);
 
         RiverFlow {
             prompt: prompt.to_string(),

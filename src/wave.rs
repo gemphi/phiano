@@ -118,7 +118,7 @@ impl Wave {
 
     /// Returns the configured number of phase sectors.
     pub fn sector_count() -> u16 {
-        config::sector_resolution()
+        config::PhiConfig::sector_resolution()
     }
 
     /// Maps a phase angle to a sector index (0-63).

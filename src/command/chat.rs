@@ -1,7 +1,7 @@
 use crate::command::Context;
 use crate::command::Parser;
 use crate::generate::Generator;
-use crate::instruction::generate_response;
+use crate::instruction::InstructionEngine;
 use std::io::{BufRead, Write};
 
 /// Chat - conversational mode with the cognitive pipeline.
@@ -43,7 +43,7 @@ impl ChatCmd {
     fn single_shot(&self, ctx: &mut Context, arg: &str, verbose: bool) -> bool {
         let prompt = Parser::strip_quotes(arg);
         let generator = Generator::new(128, 0.15);
-        let response = generate_response(
+        let response = InstructionEngine::generate_response(
             ctx.manifold,
             ctx.trainer,
             ctx.cognitive_core,
@@ -121,7 +121,7 @@ impl ChatCmd {
                 false => {}
             }
 
-            let response = generate_response(
+            let response = InstructionEngine::generate_response(
                 ctx.manifold,
                 ctx.trainer,
                 ctx.cognitive_core,
