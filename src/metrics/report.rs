@@ -44,21 +44,23 @@ impl fmt::Display for BenchmarkReport {
     }
 }
 
-/// Compares two reports and returns a diff string.
-pub fn compare_reports(old: &BenchmarkReport, new: &BenchmarkReport) -> String {
-    let mut lines = Vec::new();
+impl BenchmarkReport {
+    /// Compares two reports and returns a diff string.
+    pub fn compare(old: &BenchmarkReport, new: &BenchmarkReport) -> String {
+        let mut lines = Vec::new();
 
-    let coh_delta = new.baselines.2 - old.baselines.2;
-    lines.push(format!("Phase baseline:    {:.4} → {:.4} ({:+.4})", old.baselines.2, new.baselines.2, coh_delta));
+        let coh_delta = new.baselines.2 - old.baselines.2;
+        lines.push(format!("Phase baseline:    {:.4} → {:.4} ({:+.4})", old.baselines.2, new.baselines.2, coh_delta));
 
-    let brit_delta = new.brittleness - old.brittleness;
-    lines.push(format!("Brittleness:       {:.4} → {:.4} ({:+.4})", old.brittleness, new.brittleness, brit_delta));
+        let brit_delta = new.brittleness - old.brittleness;
+        lines.push(format!("Brittleness:       {:.4} → {:.4} ({:+.4})", old.brittleness, new.brittleness, brit_delta));
 
-    let adapt_delta = new.adaptation_efficiency - old.adaptation_efficiency;
-    lines.push(format!("Adaptation:        {:.4} → {:.4} ({:+.4})", old.adaptation_efficiency, new.adaptation_efficiency, adapt_delta));
+        let adapt_delta = new.adaptation_efficiency - old.adaptation_efficiency;
+        lines.push(format!("Adaptation:        {:.4} → {:.4} ({:+.4})", old.adaptation_efficiency, new.adaptation_efficiency, adapt_delta));
 
-    let gap_delta = new.generalization.gap - old.generalization.gap;
-    lines.push(format!("Gen gap:           {:.4} → {:.4} ({:+.4})", old.generalization.gap, new.generalization.gap, gap_delta));
+        let gap_delta = new.generalization.gap - old.generalization.gap;
+        lines.push(format!("Gen gap:           {:.4} → {:.4} ({:+.4})", old.generalization.gap, new.generalization.gap, gap_delta));
 
-    lines.join("\n")
+        lines.join("\n")
+    }
 }

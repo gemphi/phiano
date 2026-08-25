@@ -8,6 +8,7 @@ pub mod routes_cognitive;
 pub mod routes_chat;
 pub mod routes_flow;
 pub mod routes_stream;
+pub mod routes_reasoning;
 pub mod chat_intent;
 
 use crate::model::Model;

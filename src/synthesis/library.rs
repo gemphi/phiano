@@ -27,7 +27,7 @@ impl ComponentLibrary {
 
     /// Registers a new reusable component.
     pub fn register(&mut self, name: &str, program: Program, facet: &Facet) {
-        let phase_sig = compute_phase_signature(facet, &name);
+        let phase_sig = Self::compute_phase_signature(facet, &name);
         self.components.push(Component {
             name: name.to_string(),
             program,
@@ -38,11 +38,11 @@ impl ComponentLibrary {
 
     /// Finds a component with matching phase signature.
     pub fn find_reusable(&self, facet: &Facet, task: &str) -> Option<&Component> {
-        let task_sig = compute_phase_signature(facet, task);
+        let task_sig = Self::compute_phase_signature(facet, task);
         let mut best: Option<(&Component, f64)> = None;
 
         for comp in &self.components {
-            let similarity = signature_similarity(&comp.phase_signature, &task_sig);
+            let similarity = Self::signature_similarity(&comp.phase_signature, &task_sig);
             match &best {
                 Some((_, best_sim)) if similarity <= *best_sim => {}
                 _ => best = Some((comp, similarity)),
@@ -61,28 +61,28 @@ impl ComponentLibrary {
             }
         }
     }
-}
 
-fn compute_phase_signature(facet: &Facet, text: &str) -> Vec<f64> {
-    let tokens = crate::tokenizer::Tokenizer::tokenize(text);
-    tokens
-        .iter()
-        .filter_map(|t| facet.lexicon.get(t).map(|p| p.phase))
-        .collect()
-}
-
-fn signature_similarity(a: &[f64], b: &[f64]) -> f64 {
-    if a.is_empty() || b.is_empty() {
-        return 0.0;
+    fn compute_phase_signature(facet: &Facet, text: &str) -> Vec<f64> {
+        let tokens = crate::tokenizer::Tokenizer::tokenize(text);
+        tokens
+            .iter()
+            .filter_map(|t| facet.lexicon.get(t).map(|p| p.phase))
+            .collect()
     }
-    let min_len = a.len().min(b.len());
-    let mut total = 0.0;
-    for i in 0..min_len {
-        let mut diff = (a[i] - b[i]).abs();
-        if diff > PI {
-            diff = TWO_PI - diff;
+
+    fn signature_similarity(a: &[f64], b: &[f64]) -> f64 {
+        if a.is_empty() || b.is_empty() {
+            return 0.0;
         }
-        total += 1.0 - diff / PI;
+        let min_len = a.len().min(b.len());
+        let mut total = 0.0;
+        for i in 0..min_len {
+            let mut diff = (a[i] - b[i]).abs();
+            if diff > PI {
+                diff = TWO_PI - diff;
+            }
+            total += 1.0 - diff / PI;
+        }
+        total / min_len as f64
     }
-    total / min_len as f64
 }

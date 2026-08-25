@@ -1,16 +1,15 @@
 /// Benchmark runner: runs all metrics and produces a comprehensive report.
 
-use crate::eval::Evaluator;
 use crate::facet::Facet;
 use crate::metrics::{
-    adaptation::adaptation_efficiency,
-    adversarial::brittleness_score,
-    arc::{evaluate_arc, load_arc_tasks, ArcResults},
-    baseline::all_baselines,
-    generalization::assess_generalization,
-    novelty_benchmark::novel_task_score,
-    ood_detection::ood_score,
-    shortcut_detection::detect_shortcuts,
+    adaptation::Adaptation,
+    adversarial::Adversarial,
+    arc::{ArcBenchmark, ArcResults},
+    baseline::Baselines,
+    generalization::Generalization,
+    novelty_benchmark::NoveltyBenchmark,
+    ood_detection::OodDetector,
+    shortcut_detection::ShortcutDetector,
 };
 use crate::trainer::Trainer;
 use serde::{Deserialize, Serialize};
@@ -27,40 +26,45 @@ pub struct BenchmarkReport {
     pub shortcut_warnings: Vec<super::shortcut_detection::ShortcutWarning>,
 }
 
-/// Runs all benchmarks and returns a comprehensive report.
-pub fn run_all(facet: &mut Facet, trainer: &Trainer) -> BenchmarkReport {
-    let prompt = "rust ownership borrowing lifetime";
-    let baselines = all_baselines(facet, prompt);
-    let brittleness = brittleness_score(facet, prompt);
-    let ood = ood_score(facet, prompt);
-    let adaptation = adaptation_efficiency(facet, trainer, "ownership borrowing", 16);
-    let novel = novel_task_score(facet, trainer, "quantum entanglement physics");
+#[derive(Debug, Default)]
+pub struct BenchmarkRunner;
 
-    let train_words: Vec<String> = facet.lexicon.keys().take(20).cloned().collect();
-    let test_words: Vec<String> = facet.lexicon.keys().skip(20).take(10).cloned().collect();
-    let novel_words: Vec<String> = facet.lexicon.keys().skip(30).take(10).cloned().collect();
-    let generalization = assess_generalization(facet, &train_words, &test_words, &novel_words);
+impl BenchmarkRunner {
+    /// Runs all benchmarks and returns a comprehensive report.
+    pub fn run_all(facet: &mut Facet, trainer: &Trainer) -> BenchmarkReport {
+        let prompt = "rust ownership borrowing lifetime";
+        let baselines = Baselines::all(facet, prompt);
+        let brittleness = Adversarial::brittleness(facet, prompt);
+        let ood = OodDetector::score(facet, prompt);
+        let adaptation = Adaptation::efficiency(facet, trainer, "ownership borrowing", 16);
+        let novel = NoveltyBenchmark::task_score(facet, trainer, "quantum entanglement physics");
 
-    let arc_results = {
-        let tasks = load_arc_tasks("data/arc_tasks.json");
-        if tasks.is_empty() {
-            None
-        } else {
-            Some(evaluate_arc(facet, trainer, &tasks))
+        let train_words: Vec<String> = facet.lexicon.keys().take(20).cloned().collect();
+        let test_words: Vec<String> = facet.lexicon.keys().skip(20).take(10).cloned().collect();
+        let novel_words: Vec<String> = facet.lexicon.keys().skip(30).take(10).cloned().collect();
+        let generalization = Generalization::assess(facet, &train_words, &test_words, &novel_words);
+
+        let arc_results = {
+            let tasks = ArcBenchmark::load_tasks("data/arc_tasks.json");
+            if tasks.is_empty() {
+                None
+            } else {
+                Some(ArcBenchmark::evaluate(facet, trainer, &tasks))
+            }
+        };
+
+        let response = format!("{} is a concept", prompt);
+        let shortcuts = ShortcutDetector::detect(facet, prompt, &response);
+
+        BenchmarkReport {
+            baselines,
+            brittleness,
+            ood_score: ood,
+            adaptation_efficiency: adaptation,
+            novel_task_score: novel,
+            generalization,
+            arc_results,
+            shortcut_warnings: shortcuts,
         }
-    };
-
-    let response = format!("{} is a concept", prompt);
-    let shortcuts = detect_shortcuts(facet, prompt, &response);
-
-    BenchmarkReport {
-        baselines,
-        brittleness,
-        ood_score: ood,
-        adaptation_efficiency: adaptation,
-        novel_task_score: novel,
-        generalization,
-        arc_results,
-        shortcut_warnings: shortcuts,
     }
 }

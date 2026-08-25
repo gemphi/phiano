@@ -5,17 +5,19 @@
 use crate::config::TWO_PI;
 use crate::eval::Evaluator;
 use crate::facet::Facet;
-use crate::tokenizer::Tokenizer;
-use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
-/// Measures how well the model handles new examples close to the training distribution.
-/// Uses phase-space proximity: test words near training words in phase space.
-pub fn local_generalization_score(
-    facet: &Facet,
-    train_words: &[String],
-    test_words: &[String],
-) -> f64 {
+#[derive(Debug, Default)]
+pub struct Generalization;
+
+impl Generalization {
+    /// Measures how well the model handles new examples close to the training distribution.
+    /// Uses phase-space proximity: test words near training words in phase space.
+    pub fn local_score(
+        facet: &Facet,
+        train_words: &[String],
+        test_words: &[String],
+    ) -> f64 {
     if train_words.is_empty() || test_words.is_empty() {
         return 0.0;
     }
@@ -48,16 +50,16 @@ pub fn local_generalization_score(
         }
     }
 
-    if count > 0 { total / count as f64 } else { 0.0 }
-}
+        if count > 0 { total / count as f64 } else { 0.0 }
+    }
 
-/// Measures performance on words far from the training distribution.
-/// These are "unknown unknowns" — genuinely unfamiliar situations.
-pub fn extreme_generalization_score(
-    facet: &Facet,
-    train_words: &[String],
-    novel_words: &[String],
-) -> f64 {
+    /// Measures performance on words far from the training distribution.
+    /// These are "unknown unknowns" — genuinely unfamiliar situations.
+    pub fn extreme_score(
+        facet: &Facet,
+        train_words: &[String],
+        novel_words: &[String],
+    ) -> f64 {
     if train_words.is_empty() || novel_words.is_empty() {
         return 0.0;
     }
@@ -90,28 +92,29 @@ pub fn extreme_generalization_score(
         }
     }
 
-    if count > 0 { total / count as f64 } else { 0.0 }
-}
+        if count > 0 { total / count as f64 } else { 0.0 }
+    }
 
-/// The generalization gap: difference between local and extreme performance.
-/// A large gap indicates the model relies on interpolation, not abstraction.
-pub fn generalization_gap(local: f64, extreme: f64) -> f64 {
-    local - extreme
-}
+    /// The generalization gap: difference between local and extreme performance.
+    /// A large gap indicates the model relies on interpolation, not abstraction.
+    pub fn gap(local: f64, extreme: f64) -> f64 {
+        local - extreme
+    }
 
-/// Comprehensive generalization assessment.
-pub fn assess_generalization(
-    facet: &Facet,
-    train_words: &[String],
-    test_words: &[String],
-    novel_words: &[String],
-) -> GeneralizationReport {
-    let local = local_generalization_score(facet, train_words, test_words);
-    let extreme = extreme_generalization_score(facet, train_words, novel_words);
-    GeneralizationReport {
-        local_score: local,
-        extreme_score: extreme,
-        gap: generalization_gap(local, extreme),
+    /// Comprehensive generalization assessment.
+    pub fn assess(
+        facet: &Facet,
+        train_words: &[String],
+        test_words: &[String],
+        novel_words: &[String],
+    ) -> GeneralizationReport {
+        let local = Self::local_score(facet, train_words, test_words);
+        let extreme = Self::extreme_score(facet, train_words, novel_words);
+        GeneralizationReport {
+            local_score: local,
+            extreme_score: extreme,
+            gap: Self::gap(local, extreme),
+        }
     }
 }
 
@@ -128,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_generalization_gap() {
-        let gap = generalization_gap(0.8, 0.3);
+        let gap = Generalization::gap(0.8, 0.3);
         assert!((gap - 0.5).abs() < 0.001);
     }
 }

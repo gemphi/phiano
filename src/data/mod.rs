@@ -1,4 +1,5 @@
-/// Data module: splits, preprocessing, and vectorization.
+#![allow(dead_code)]
+//! Data module: splits, preprocessing, and vectorization.
 
 pub mod splits;
 pub mod preprocess;

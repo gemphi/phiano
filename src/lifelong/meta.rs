@@ -1,7 +1,6 @@
 /// Meta-learning: extracts common patterns across multiple tasks.
 /// Uses those patterns to speed up learning on new tasks (Ch 14.5).
 
-use crate::config::TWO_PI;
 use crate::eval::Evaluator;
 use crate::facet::Facet;
 use crate::trainer::Trainer;
@@ -14,51 +13,56 @@ pub struct MetaModel {
     pub n_tasks: usize,
 }
 
-/// Trains on multiple tasks and extracts common phase patterns.
-pub fn meta_learn(
-    facet: &mut Facet,
-    trainer: &Trainer,
-    tasks: &[String],
-) -> MetaModel {
-    let mut all_phases: Vec<f64> = Vec::new();
-    let mut adaptation_rates = Vec::new();
+#[derive(Debug, Default)]
+pub struct MetaLearner;
 
-    for task in tasks {
-        let evaluator = Evaluator::new();
-        let before = evaluator.eval(facet, task).coherence;
+impl MetaLearner {
+    /// Trains on multiple tasks and extracts common phase patterns.
+    pub fn learn(
+        facet: &mut Facet,
+        trainer: &Trainer,
+        tasks: &[String],
+    ) -> MetaModel {
+        let mut all_phases: Vec<f64> = Vec::new();
+        let mut adaptation_rates = Vec::new();
 
-        for _ in 0..16 {
-            trainer.train_sentence(facet, task);
-        }
+        for task in tasks {
+            let evaluator = Evaluator::new();
+            let before = evaluator.eval(facet, task).coherence;
 
-        let after = evaluator.eval(facet, task).coherence;
-        adaptation_rates.push(after - before);
+            for _ in 0..16 {
+                trainer.train_sentence(facet, task);
+            }
 
-        for token in crate::tokenizer::Tokenizer::tokenize(task) {
-            if let Some(p) = facet.lexicon.get(&token) {
-                all_phases.push(p.phase);
+            let after = evaluator.eval(facet, task).coherence;
+            adaptation_rates.push(after - before);
+
+            for token in crate::tokenizer::Tokenizer::tokenize(task) {
+                if let Some(p) = facet.lexicon.get(&token) {
+                    all_phases.push(p.phase);
+                }
             }
         }
-    }
 
-    all_phases.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-    let common_phases = if all_phases.len() > 4 {
-        let quarter = all_phases.len() / 4;
-        all_phases[quarter..all_phases.len() - quarter].to_vec()
-    } else {
-        all_phases
-    };
+        all_phases.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        let common_phases = if all_phases.len() > 4 {
+            let quarter = all_phases.len() / 4;
+            all_phases[quarter..all_phases.len() - quarter].to_vec()
+        } else {
+            all_phases
+        };
 
-    MetaModel {
-        common_phases,
-        adaptation_rates,
-        n_tasks: tasks.len(),
+        MetaModel {
+            common_phases,
+            adaptation_rates,
+            n_tasks: tasks.len(),
+        }
     }
 }
 
 impl MetaModel {
     /// Uses meta-learned patterns to speed up learning on a new task.
-    pub fn adapt(&self, facet: &mut Facet, trainer: &Trainer, new_task: &str) {
+    pub fn adapt(&self, facet: &mut Facet, _trainer: &Trainer, new_task: &str) {
         let tokens = crate::tokenizer::Tokenizer::tokenize(new_task);
 
         for token in &tokens {

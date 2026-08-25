@@ -4,7 +4,7 @@
 use crate::facet::Facet;
 use crate::lifelong::history::BenchmarkHistory;
 use crate::metrics::benchmark_runner::BenchmarkReport;
-use crate::metrics::ood_detection::ood_score;
+use crate::metrics::ood_detection::OodDetector;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -37,7 +37,7 @@ impl ModelMonitor {
     pub fn check_drift(&self, facet: &Facet, recent_inputs: &[String]) -> Option<Alert> {
         let mut max_ood = 0.0;
         for input in recent_inputs {
-            let score = ood_score(facet, input);
+            let score = OodDetector::score(facet, input);
             if score > max_ood {
                 max_ood = score;
             }

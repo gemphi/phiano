@@ -24,44 +24,49 @@ impl Default for CapacityConfig {
     }
 }
 
-/// Sweeps learning rate and epoch count, returns best config by validation coherence.
-pub fn tune_capacity(
-    facet: &mut Facet,
-    val_sentences: &[String],
-) -> CapacityConfig {
-    let evaluator = Evaluator::new();
-    let learning_rates = [0.01, 0.03, 0.05, 0.08, 0.12];
-    let epoch_counts = [16, 32, 64];
+#[derive(Debug, Default)]
+pub struct CapacityTuner;
 
-    let mut best = CapacityConfig::default();
-    let mut tried = 0usize;
+impl CapacityTuner {
+    /// Sweeps learning rate and epoch count, returns best config by validation coherence.
+    pub fn tune(
+        facet: &mut Facet,
+        val_sentences: &[String],
+    ) -> CapacityConfig {
+        let evaluator = Evaluator::new();
+        let learning_rates = [0.01, 0.03, 0.05, 0.08, 0.12];
+        let epoch_counts = [16, 32, 64];
 
-    for &lr in &learning_rates {
-        for &epochs in &epoch_counts {
-            let trainer = Trainer::new(lr);
-            for _ in 0..epochs {
+        let mut best = CapacityConfig::default();
+        let mut tried = 0usize;
+
+        for &lr in &learning_rates {
+            for &epochs in &epoch_counts {
+                let trainer = Trainer::new(lr);
+                for _ in 0..epochs {
+                    for sentence in val_sentences {
+                        trainer.train_sentence(facet, sentence);
+                    }
+                }
+
+                let mut total_coh = 0.0;
                 for sentence in val_sentences {
-                    trainer.train_sentence(facet, sentence);
+                    total_coh += evaluator.eval(facet, sentence).coherence;
+                }
+                let mean_coh = total_coh / val_sentences.len().max(1) as f64;
+                tried += 1;
+
+                if mean_coh > best.best_coherence {
+                    best = CapacityConfig {
+                        best_learning_rate: lr,
+                        best_epochs: epochs,
+                        best_coherence: mean_coh,
+                        tried_configs: tried,
+                    };
                 }
             }
-
-            let mut total_coh = 0.0;
-            for sentence in val_sentences {
-                total_coh += evaluator.eval(facet, sentence).coherence;
-            }
-            let mean_coh = total_coh / val_sentences.len().max(1) as f64;
-            tried += 1;
-
-            if mean_coh > best.best_coherence {
-                best = CapacityConfig {
-                    best_learning_rate: lr,
-                    best_epochs: epochs,
-                    best_coherence: mean_coh,
-                    tried_configs: tried,
-                };
-            }
         }
-    }
 
-    best
+        best
+    }
 }

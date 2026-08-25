@@ -14,62 +14,69 @@ pub struct ReasoningComparison {
     pub best_method: String,
 }
 
-/// Runs all reasoning methods and returns them side by side.
-pub fn compare_reasoning(facet: &Facet, problem: &str) -> ReasoningComparison {
-    let engine = ReasoningEngine;
-    let pathfinding = engine.solve(facet, problem);
+#[derive(Debug, Default)]
+pub struct StepTemplate;
 
-    let hybrid_reasoner = HybridReasoner::new();
-    let hybrid = hybrid_reasoner.solve_hybrid(facet, problem);
+impl StepTemplate {
+    /// Templates a reasoning step into a readable sentence.
+    pub fn step(step: &ReasoningStep, facet: &Facet) -> String {
+        let word = &step.focus_word;
+        let phase_deg = step.phase_angle.to_degrees();
 
-    let pf_confidence = super::diagnostics::confidence(&pathfinding);
-    let hybrid_confidence = hybrid.confidence;
+        let nearby: Vec<String> = facet
+            .lexicon
+            .iter()
+            .filter(|(w, _)| *w != word)
+            .map(|(w, p)| {
+                let mut diff = (p.phase - step.phase_angle).abs();
+                if diff > std::f64::consts::PI {
+                    diff = 2.0 * std::f64::consts::PI - diff;
+                }
+                (w.clone(), diff)
+            })
+            .take(50)
+            .filter(|(_, d)| *d < 0.3)
+            .map(|(w, _)| w)
+            .take(3)
+            .collect();
 
-    let best_method = if hybrid_confidence > pf_confidence {
-        "hybrid".to_string()
-    } else {
-        "pathfinding".to_string()
-    };
+        if nearby.is_empty() {
+            format!("Step {}: Focusing on '{}' at {:.0}° — exploring this region of meaning.",
+                step.step_number, word, phase_deg)
+        } else {
+            format!("Step {}: Focusing on '{}' at {:.0}° — nearby concepts: {}.",
+                step.step_number, word, phase_deg, nearby.join(", "))
+        }
+    }
 
-    ReasoningComparison {
-        pathfinding,
-        hybrid,
-        best_method,
+    /// Templates all steps in a chain into readable text.
+    pub fn chain(chain: &ReasoningChain, facet: &Facet) -> Vec<String> {
+        chain.steps.iter().map(|s| Self::step(s, facet)).collect()
     }
 }
 
-/// Templates a reasoning step into a readable sentence.
-pub fn template_step(step: &ReasoningStep, facet: &Facet) -> String {
-    let word = &step.focus_word;
-    let phase_deg = step.phase_angle.to_degrees();
+impl ReasoningComparison {
+    /// Runs all reasoning methods and returns them side by side.
+    pub fn compare(facet: &Facet, problem: &str) -> ReasoningComparison {
+        let engine = ReasoningEngine;
+        let pathfinding = engine.solve(facet, problem);
 
-    let nearby: Vec<String> = facet
-        .lexicon
-        .iter()
-        .filter(|(w, _)| *w != word)
-        .map(|(w, p)| {
-            let mut diff = (p.phase - step.phase_angle).abs();
-            if diff > std::f64::consts::PI {
-                diff = 2.0 * std::f64::consts::PI - diff;
-            }
-            (w.clone(), diff)
-        })
-        .take(50)
-        .filter(|(_, d)| *d < 0.3)
-        .map(|(w, _)| w)
-        .take(3)
-        .collect();
+        let hybrid_reasoner = HybridReasoner::new();
+        let hybrid = hybrid_reasoner.solve_hybrid(facet, problem);
 
-    if nearby.is_empty() {
-        format!("Step {}: Focusing on '{}' at {:.0}° — exploring this region of meaning.",
-            step.step_number, word, phase_deg)
-    } else {
-        format!("Step {}: Focusing on '{}' at {:.0}° — nearby concepts: {}.",
-            step.step_number, word, phase_deg, nearby.join(", "))
+        let pf_confidence = super::diagnostics::Diagnostics::confidence(&pathfinding);
+        let hybrid_confidence = hybrid.confidence;
+
+        let best_method = if hybrid_confidence > pf_confidence {
+            "hybrid".to_string()
+        } else {
+            "pathfinding".to_string()
+        };
+
+        ReasoningComparison {
+            pathfinding,
+            hybrid,
+            best_method,
+        }
     }
-}
-
-/// Templates all steps in a chain into readable text.
-pub fn template_chain(chain: &ReasoningChain, facet: &Facet) -> Vec<String> {
-    chain.steps.iter().map(|s| template_step(s, facet)).collect()
 }

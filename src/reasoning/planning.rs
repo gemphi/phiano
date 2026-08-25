@@ -25,8 +25,12 @@ pub struct Plan {
     pub converged: bool,
 }
 
-/// Plans a sequence of sub-goals to reach the goal's phase.
-pub fn plan(facet: &Facet, goal: &str, max_steps: usize) -> Plan {
+#[derive(Debug, Default)]
+pub struct Planner;
+
+impl Planner {
+    /// Plans a sequence of sub-goals to reach the goal's phase.
+    pub fn plan(facet: &Facet, goal: &str, max_steps: usize) -> Plan {
     let mut context_buffer = ContextWaveBuffer::new(4096);
     context_buffer.push_turn(facet, goal);
 
@@ -99,5 +103,6 @@ pub fn plan(facet: &Facet, goal: &str, max_steps: usize) -> Plan {
         goal: goal.to_string(),
         goal_phase,
         converged,
+    }
     }
 }

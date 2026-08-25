@@ -8,6 +8,7 @@ use super::routes_cognitive::*;
 use super::routes_chat::*;
 use super::routes_flow::*;
 use super::routes_stream::*;
+use super::routes_reasoning::*;
 use axum::routing::{get, post};
 use axum::Router;
 
@@ -40,5 +41,9 @@ pub fn router(state: SharedModel) -> Router {
         .route("/api/save", post(save_manifold))
         .route("/api/generate/stream", post(generate_stream))
         .route("/api/phase_flow", post(phase_flow))
+        .route("/api/reason/hybrid", post(hybrid_reason))
+        .route("/api/reason/multi_path", post(multi_path_reason))
+        .route("/api/reason/compare", post(compare_reason))
+        .route("/api/benchmark", get(benchmark))
         .with_state(state)
 }

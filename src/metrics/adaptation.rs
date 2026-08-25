@@ -5,45 +5,50 @@ use crate::eval::Evaluator;
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 
-/// Measures adaptation efficiency: examples needed / max_examples.
-/// Lower = more efficient = more intelligent (per Ch 14.3).
-pub fn adaptation_efficiency(
-    facet: &mut Facet,
-    trainer: &Trainer,
-    task: &str,
-    max_examples: usize,
-) -> f64 {
-    let evaluator = Evaluator::new();
+#[derive(Debug, Default)]
+pub struct Adaptation;
 
-    for n in 1..=max_examples {
-        trainer.train_sentence(facet, task);
+impl Adaptation {
+    /// Measures adaptation efficiency: examples needed / max_examples.
+    /// Lower = more efficient = more intelligent (per Ch 14.3).
+    pub fn efficiency(
+        facet: &mut Facet,
+        trainer: &Trainer,
+        task: &str,
+        max_examples: usize,
+    ) -> f64 {
+        let evaluator = Evaluator::new();
 
-        let score = evaluator.eval(facet, task).coherence;
-        if score > 0.8 {
-            return n as f64 / max_examples as f64;
+        for n in 1..=max_examples {
+            trainer.train_sentence(facet, task);
+
+            let score = evaluator.eval(facet, task).coherence;
+            if score > 0.8 {
+                return n as f64 / max_examples as f64;
+            }
         }
+
+        1.0
     }
 
-    1.0
-}
+    /// Returns the number of examples needed to reach the threshold.
+    pub fn examples_to_competence(
+        facet: &mut Facet,
+        trainer: &Trainer,
+        task: &str,
+        max_examples: usize,
+        threshold: f64,
+    ) -> usize {
+        let evaluator = Evaluator::new();
 
-/// Returns the number of examples needed to reach the threshold.
-pub fn examples_to_competence(
-    facet: &mut Facet,
-    trainer: &Trainer,
-    task: &str,
-    max_examples: usize,
-    threshold: f64,
-) -> usize {
-    let evaluator = Evaluator::new();
-
-    for n in 1..=max_examples {
-        trainer.train_sentence(facet, task);
-        let score = evaluator.eval(facet, task).coherence;
-        if score >= threshold {
-            return n;
+        for n in 1..=max_examples {
+            trainer.train_sentence(facet, task);
+            let score = evaluator.eval(facet, task).coherence;
+            if score >= threshold {
+                return n;
+            }
         }
-    }
 
-    max_examples
+        max_examples
+    }
 }

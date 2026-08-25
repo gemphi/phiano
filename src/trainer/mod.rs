@@ -173,6 +173,7 @@ impl Trainer {
     }
 
     /// Batch-trains a corpus of sentences. Returns total token updates.
+    #[allow(dead_code)]
     pub fn train_corpus(&self, facet: &mut Facet, sentences: &[String]) -> usize {
         sentences.iter().map(|s| self.train_sentence(facet, s)).sum()
     }

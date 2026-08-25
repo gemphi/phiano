@@ -55,13 +55,18 @@ impl Program {
     }
 }
 
-/// Attempts to synthesize a program from input-output examples.
-pub fn synthesize(facet: &Facet, examples: &[(String, String)]) -> Option<Program> {
-    if examples.is_empty() {
-        return None;
-    }
+#[derive(Debug, Default)]
+pub struct ProgramSynthesizer;
 
-    let candidates = super::search::candidate_programs(3);
-    let best = super::search::best_program(&candidates, facet, examples);
-    best
+impl ProgramSynthesizer {
+    /// Attempts to synthesize a program from input-output examples.
+    pub fn synthesize(facet: &Facet, examples: &[(String, String)]) -> Option<Program> {
+        if examples.is_empty() {
+            return None;
+        }
+
+        let candidates = super::search::ProgramSearch::candidates(3);
+        let best = super::search::ProgramSearch::best(&candidates, facet, examples);
+        best
+    }
 }

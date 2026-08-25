@@ -3,7 +3,7 @@
 /// with discrete, program-like reasoning.
 
 use crate::facet::Facet;
-use crate::reasoning::analogy::find_analogies;
+use crate::reasoning::analogy::Analogy;
 use crate::reasoning::pathfinding::ReasoningEngine;
 use serde::Serialize;
 
@@ -35,7 +35,7 @@ impl HybridReasoner {
         let mut structural_matches = Vec::new();
 
         for token in tokens.iter().take(3) {
-            let analogs = find_analogies(facet, token, 5);
+            let analogs = Analogy::find(facet, token, 5);
             for (word, score) in analogs {
                 analogies.push((word.clone(), score));
                 if score > 0.7 {
