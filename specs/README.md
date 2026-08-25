@@ -1,21 +1,10 @@
-# Phiano Formal Specifications (`specs/`)
+# Phiano Cognitive Specifications: Chapter 14 Phase Resonance & Dual Cognition
 
-This directory houses the formal mathematical, algorithmic, and architectural specifications for the Phiano continuous phase manifold.
+This directory contains formal specifications applying Chapter 14 foundations (geometric phase manifolds, Kuramoto phase synchrony, dual-cognition language resonance, and continuous telemetry) to Phiano.
 
----
-
-## Specification Areas
-
-1. **Complex Phasor Manifold**:
-   $$\mathbf{Z} = A \cdot e^{i(\phi + n\alpha)}$$
-   Continuous representation of vocabulary on a $2\pi$ circle modulated by fine-structure constant harmonics.
-
-2. **Kuramoto Coupling Dynamics**:
-   Phase synchronization of co-occurring tokens towards sentence centroid frequencies.
-
-3. **Destructive Interference Metric**:
-   $$\Delta(\mathbf{Z}_1, \mathbf{Z}_2) = \alpha \cdot |\mathbf{Z}_1 - \mathbf{Z}_2|^2$$
-   Semantic distance derived from wave interference principles.
-
-4. **16-Layer Cognitive Hierarchy**:
-   Surface (0-3), Pattern (4-7), Semantic (8-11), Deep (12-15) memory bands.
+| Spec ID | Specification Document | Focus Area |
+| :--- | :--- | :--- |
+| **SPEC-001** | [`001_phase_resonance_geometry.md`](./001_phase_resonance_geometry.md) | Continuous Phasor Geometries & Manifold Transformations |
+| **SPEC-002** | [`002_kuramoto_order_parameter.md`](./002_kuramoto_order_parameter.md) | Kuramoto Phase Synchronization $R(t)$ for OOD Anomaly Detection |
+| **SPEC-003** | [`003_dual_cognition_language.md`](./003_dual_cognition_language.md) | Dual-Cognition Language Engine (Continuous Resonance + Discrete Grammar) |
+| **SPEC-004** | [`004_streaming_sse_telemetry.md`](./004_streaming_sse_telemetry.md) | Continuous Real-Time SSE Telemetry & Cognitive Spaces Bridge |
