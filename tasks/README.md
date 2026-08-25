@@ -6,14 +6,14 @@ This folder contains training examples for the persona matching system.
 
 ```
 task/
-├── README.md           — This file
-├── examples/           — Text samples for each persona
-│   ├── poet.txt        — Poetry-style writing samples
-│   ├── engineer.txt    — Technical/engineering writing samples
-│   ├── philosopher.txt — Philosophical writing samples
-│   └── storyteller.txt — Narrative/fiction writing samples
-├── match.txt           — Unknown texts to match against personas
-└── run.txt             — REPL command sequence to train and match
+├── README.md           - This file
+├── examples/           - Text samples for each persona
+│   ├── poet.txt        - Poetry-style writing samples
+│   ├── engineer.txt    - Technical/engineering writing samples
+│   ├── philosopher.txt - Philosophical writing samples
+│   └── storyteller.txt - Narrative/fiction writing samples
+├── match.txt           - Unknown texts to match against personas
+└── run.txt             - REPL command sequence to train and match
 ```
 
 ## How to use
@@ -35,5 +35,5 @@ task/
 2. Add persona creation commands to `run.txt`
 3. Add match samples to `match.txt`
 
-The system is generic — feed it anyone's text and it learns their
+The system is generic - feed it anyone's text and it learns their
 phase-space fingerprint. No hardcoded names or styles.

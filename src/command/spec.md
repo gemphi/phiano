@@ -10,11 +10,11 @@ mutable `Context`.
 
 ### `Context<'a>`
 Shared context passed to every command handler:
-- `manifold: &'a mut Facet` — mutable access to the lexicon
-- `trainer: &'a Trainer` — shared trainer for learning
-- `memory: &'a mut Memo` — mutable memory log
-- `arg: &'a str` — command arguments (after the command name)
-- `line: &'a str` — full raw input line
+- `manifold: &'a mut Facet` - mutable access to the lexicon
+- `trainer: &'a Trainer` - shared trainer for learning
+- `memory: &'a mut Memo` - mutable memory log
+- `arg: &'a str` - command arguments (after the command name)
+- `line: &'a str` - full raw input line
 
 ### `Command` (enum)
 All recognized commands, parsed via `Command::from_str()`:
@@ -52,7 +52,7 @@ Utility for stripping quotes from command arguments.
 ## Design Rules
 
 1. Each command is a unit struct (no state)
-2. `execute` returns `bool` — `true` to continue REPL, `false` to stop
+2. `execute` returns `bool` - `true` to continue REPL, `false` to stop
 3. Unrecognized input falls through to `Learn::default()` (treats input as text to learn)
 4. Commands use `Parser::strip_quotes` for quoted arguments
 5. All commands print their own output with `println!`

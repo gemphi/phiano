@@ -1,4 +1,4 @@
-# 36 — Sector Resolution: 64 / 128 / 256 / 512 / 1024
+# 36 - Sector Resolution: 64 / 128 / 256 / 512 / 1024
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -25,7 +25,7 @@ sector. The number of sectors is configurable:
 
 | Resolution | Sector width | Use case |
 |-----------|-------------|----------|
-| 64 | 5.625° | Base — 64 variations, 64 colors, 64 persona archetypes |
+| 64 | 5.625° | Base - 64 variations, 64 colors, 64 persona archetypes |
 | 128 | 2.8125° | More nuance, more shades of meaning |
 | 256 | 1.40625° | High-definition semantic space |
 | 512 | 0.703° | Very fine-grained, large vocabularies |
@@ -43,7 +43,7 @@ evenly across whatever N is configured. See `compose::sector_color()`.
 
 ## File references
 
-- `src/config.rs:36-57` — `SECTOR_RESOLUTION` constant and validator
-- `src/wave.rs:14-16` — `sectors()` function
-- `src/wave.rs:118-130` — `sector_of()`, `opposite_sector()`
-- `src/compose/mod.rs:20-30` — `sector_color()` proportional mapping
+- `src/config.rs:36-57` - `SECTOR_RESOLUTION` constant and validator
+- `src/wave.rs:14-16` - `sectors()` function
+- `src/wave.rs:118-130` - `sector_of()`, `opposite_sector()`
+- `src/compose/mod.rs:20-30` - `sector_color()` proportional mapping

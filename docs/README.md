@@ -24,4 +24,9 @@
 | [`38_persona_system.md`](./38_persona_system.md) | Persona fingerprint extraction, voice modeling, and interactive chat |
 | [`42_oscillator_mode.md`](./42_oscillator_mode.md) | High-dimensional oscillator modes: sphere, wheel, and harmonic resonance |
 | [`43_phi_recursive_machine.md`](./43_phi_recursive_machine.md) | Phi recursive state machine architecture |
+| [`44_phi4_roadmap_achievement.md`](./44_phi4_roadmap_achievement.md) | Phi-4 class phase oscillator capabilities and roadmap achievements |
+| [`45_native_learning_vs_bloated_llms.md`](./45_native_learning_vs_bloated_llms.md) | Native continuous learning vs. bloated static LLMs (Phi-4, GLM-5.2) |
+| [`62_getting_started.md`](./62_getting_started.md) | 5-minute install, bootstrap, generate, stream, bench |
+| [`63_configuration.md`](./63_configuration.md) | Tunable constants: learning rate, β, momentum, paths |
 | [`COGNITIVE_SPACES_OSCILLATOR_PAPER.md`](./COGNITIVE_SPACES_OSCILLATOR_PAPER.md) | Full theoretical whitepaper on cognitive phase oscillators |
+

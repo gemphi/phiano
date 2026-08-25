@@ -1,14 +1,14 @@
 # Beyond the Chinese Room: John Searle's Intentionality, Speech Acts, and the Physics of Semantic Resonance
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 
 ## Abstract
 
-In 1980, philosopher John Searle presented the famous *Chinese Room Argument*, proving that purely formal, syntactic symbol manipulation cannot yield genuine semantic understanding or intentionality: *syntax is not semantics*. Modern Large Language Models (LLMs) are the ultimate realization of the Chinese Room—performing massive static statistical lookups without grounding or intrinsic *aboutness*.
+In 1980, philosopher John Searle presented the famous *Chinese Room Argument*, proving that purely formal, syntactic symbol manipulation cannot yield genuine semantic understanding or intentionality: *syntax is not semantics*. Modern Large Language Models (LLMs) are the ultimate realization of the Chinese Room-performing massive static statistical lookups without grounding or intrinsic *aboutness*.
 
 In this paper, we present the philosophical foundations and architectural implementation of **John Searle’s Theory of Intentionality and Speech Acts** within the Phiano Oscillator Framework. We demonstrate that by replacing static discrete tokens with continuous **Spectral Phasors** $Z = A e^{i(\phi + n\alpha)}$ embedded in dynamical cognitive fields, semantic *aboutness* emerges as a directed phase vector pointing toward topological attractors. Furthermore, we formalize Searle’s speech acts (assertives, directives, commissives, expressives, declaratives) and the pre-intentional *Background* as accumulated context wave amplitudes. We show that the Symbol Grounding Problem is resolved through direct physical and acoustic resonance in non-Euclidean phase spaces.
 
@@ -115,7 +115,7 @@ let intentionality = IntentionalityAgent::process(&facet, prompt);
 // -> Intentional content: about 'kuramoto, synchronization, solves, grounding, problem' (phase = 2.147 rad)
 
 let background = BackgroundAgent::process(&context_buffer);
-// -> Background capacity: 84% (amplitude = 42.1) — pre-reflective stance active
+// -> Background capacity: 84% (amplitude = 42.1) - pre-reflective stance active
 ```
 
 ---

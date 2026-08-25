@@ -1,16 +1,16 @@
 use crate::command::Context;
 use crate::compose::Composition;
 
-/// Compose — recursive composition via the Flower-Hayes cognitive process.
+/// Compose - recursive composition via the Flower-Hayes cognitive process.
 ///
 /// Generates 64 sector variations, evaluates them, keeps the better,
 /// discards the worse, trains on the better (Kuramoto), and recurses.
 ///
 /// Usage:
-///   compose "prompt"                              — 3 rounds, no examples
-///   compose "prompt" 5                            — 5 rounds
-///   compose "prompt" 3 "example 1" "example 2"   — learn examples, 3 rounds
-///   compose "prompt" 5 "ex1" "ex2" "ex3" "ex4"   — learn 4 examples, 5 rounds
+///   compose "prompt"                              - 3 rounds, no examples
+///   compose "prompt" 5                            - 5 rounds
+///   compose "prompt" 3 "example 1" "example 2"   - learn examples, 3 rounds
+///   compose "prompt" 5 "ex1" "ex2" "ex3" "ex4"   - learn 4 examples, 5 rounds
 ///
 /// The prompt determines where the river starts.
 /// Examples are trained on before composing (teacher's specimens).
@@ -48,12 +48,12 @@ impl Compose {
 
         if examples.is_empty() {
             println!(
-                "  [compose] \"{}\" — {} rounds, 64 sectors per round",
+                "  [compose] \"{}\" - {} rounds, 64 sectors per round",
                 prompt, max_rounds,
             );
         } else {
             println!(
-                "  [compose] \"{}\" — {} rounds, learning {} examples first",
+                "  [compose] \"{}\" - {} rounds, learning {} examples first",
                 prompt,
                 max_rounds,
                 examples.len(),

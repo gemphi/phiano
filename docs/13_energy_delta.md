@@ -1,4 +1,4 @@
-# 13 — Energy Delta Calculation
+# 13 - Energy Delta Calculation
 
 ## Formula
 

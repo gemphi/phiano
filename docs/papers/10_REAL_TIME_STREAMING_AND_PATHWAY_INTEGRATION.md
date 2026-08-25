@@ -1,8 +1,8 @@
 # Real-Time Continuous Streaming AI: Unifying Phiano Oscillators with Reactive Dataflow Architectures
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 

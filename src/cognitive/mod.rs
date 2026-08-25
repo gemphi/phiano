@@ -1,4 +1,4 @@
-/// Cognitive core — Searle-inspired 16-agent cognitive architecture.
+/// Cognitive core - Searle-inspired 16-agent cognitive architecture.
 ///
 /// Module structure:
 /// - types.rs: Core data structures (IntentionalState, FelicityConditions, etc.)
@@ -7,7 +7,7 @@
 /// - speech_acts.rs: SpeechAct agent (illocutionary force, felicity conditions)
 /// - dof.rs: DirectionOfFit + Satisfaction agents
 /// - reference.rs: Reference, Network, TruthCondition agents
-/// - semantics.rs: Semantics, Syntax, Consciousness agents
+/// - semantics.rs: Semantics, Syntax, Awareness agents
 /// - social.rs: SocialOntology, ObserverRelativity, CollectiveIntention agents
 /// - synthesis.rs: MentalCausation agent (intentional states -> output)
 /// - word_selection.rs: word selection + synthesis templates
@@ -28,10 +28,12 @@ pub mod word_selection;
 pub mod reasoning;
 pub mod grounding;
 
-// Re-export key types
+#[allow(unused_imports)]
 pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityConditions};
+#[allow(unused_imports)]
 pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
 pub use speech_acts::SpeechActAgent;
+#[allow(unused_imports)]
 pub use reasoning::{ReasoningResult, ReasoningStep, reason_chain};
 pub use grounding::definition_ground_phases;
 
@@ -39,7 +41,7 @@ use crate::chunker::ChunkStore;
 use crate::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 
-/// CognitiveCore — coordinates all 16 agents and synthesizes output.
+/// CognitiveCore - coordinates all 16 agents and synthesizes output.
 pub struct CognitiveCore {
     pub chunk_store: ChunkStore,
 }
@@ -73,7 +75,7 @@ impl CognitiveCore {
         let a8 = reference::NetworkAgent::process(facet, prompt);
 
         // Agents 10-12: Semantics cluster
-        let a10 = semantics::ConsciousnessAgent::process(facet, prompt);
+        let a10 = semantics::AwarenessAgent::process(facet, prompt);
         let a10b = semantics::SemanticsAgent::process(facet, prompt);
         let a11 = reference::TruthConditionAgent::process(facet, prompt);
         let a12 = semantics::SyntaxAgent::process(facet, prompt);

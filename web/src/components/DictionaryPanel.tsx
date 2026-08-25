@@ -4,7 +4,7 @@ import {
   ArrowRight, ArrowLeft, RotateCcw, Activity, Layers, Tag,
   Cpu, Zap, Volume2, ShieldCheck, ChevronRight
 } from 'lucide-react';
-import { fetchDefinition } from '../hooks/useApi';
+import { fetchDefinition } from '../hooks/api/dictionary';
 import type { DefineResult } from '../types';
 
 interface DictionaryPanelProps {
@@ -27,7 +27,7 @@ function phaseToSecondaryHsl(phaseRad?: number, alpha = 1.0): string {
 // Component to render text with every single word clickable
 function ClickableText({ text, onWordClick }: { text: string; onWordClick: (word: string) => void }) {
   const parts = useMemo(() => {
-    return text.split(/(\s+|[.,;:"'!?()[\]{}—\n]+)/);
+    return text.split(/(\s+|[.,;:"'!?()[\]{}\n-]+)/);
   }, [text]);
 
   return (

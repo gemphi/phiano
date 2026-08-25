@@ -1,8 +1,8 @@
-# 43 — Phi (φ): The Recursive Constant
+# 43 - Phi (φ): The Recursive Constant
 
 ## What is Phi?
 
-Phi (φ) — the golden ratio — is the number that contains itself:
+Phi (φ) - the golden ratio - is the number that contains itself:
 
 ```
   φ = 1 + 1/φ
@@ -17,7 +17,7 @@ It is the **only** number whose reciprocal equals its fractional part:
   φ - 1 = 0.6180339887498948...
 ```
 
-So `1/φ = φ - 1`. This means φ is **self-referential** — it is
+So `1/φ = φ - 1`. This means φ is **self-referential** - it is
 defined in terms of itself. You cannot write φ without φ appearing
 in its own definition.
 
@@ -25,7 +25,7 @@ This is why phi is the recursive constant.
 
 ## The Continued Fraction
 
-Phi has the simplest possible continued fraction — all 1s:
+Phi has the simplest possible continued fraction - all 1s:
 
 ```
   φ = 1 + ───────────────
@@ -36,7 +36,7 @@ Phi has the simplest possible continued fraction — all 1s:
 ```
 
 Every other number needs variety in its continued fraction. Phi needs
-only repetition. It is the **most irrational number** — the hardest
+only repetition. It is the **most irrational number** - the hardest
 to approximate with fractions. Its convergents (1/1, 2/1, 3/2, 5/3,
 8/5, 13/8, ...) are ratios of consecutive Fibonacci numbers, and they
 converge more slowly than for any other real number.
@@ -54,7 +54,7 @@ converge more slowly than for any other real number.
   Self-similarity at every scale.
 ```
 
-This is the golden section — a line divided so that the ratio of
+This is the golden section - a line divided so that the ratio of
 the whole to the large part equals the ratio of the large to the
 small. Zoom in on the large part and you get the same ratio again.
 Zoom in again. Again. Forever.
@@ -196,7 +196,7 @@ In this system, phi is the **seed of recursion**:
   seed_phase = (word_length × φ) mod 2π
 ```
 Each new word gets a deterministic phase derived from φ. This
-ensures words are maximally spread around the phase circle —
+ensures words are maximally spread around the phase circle -
 φ's irrationality prevents any two words from ever landing on
 the same sector, no matter how many words you add.
 
@@ -206,14 +206,14 @@ the same sector, no matter how many words you add.
 ```
 The golden angle is the most uniform distribution angle on a circle.
 When we space sectors or compose paths using the golden angle, we
-get the same packing strategy that sunflowers use for their seeds —
+get the same packing strategy that sunflowers use for their seeds -
 maximum coverage, minimum clustering.
 
 ### 3. Amplitude Growth
 ```
   amplitude += 1/φ² per epoch
 ```
-Amplitude grows by the inverse of φ² — a decaying increment that
+Amplitude grows by the inverse of φ² - a decaying increment that
 naturally saturates. Each epoch adds less than the last, approaching
 the ceiling asymptotically, just as Fibonacci ratios approach φ.
 
@@ -228,7 +228,7 @@ Each round unfolds the previous round's output, just as:
 ```
   φ → 1 + 1/φ → 1 + 1/(1 + 1/φ) → ...
 ```
-The composition converges to a "golden" text — the one that best
+The composition converges to a "golden" text - the one that best
 balances coherence and novelty, the same way φ balances the whole
 and the part.
 
@@ -275,12 +275,12 @@ and the part.
 
 ## Conclusion
 
-Phi is not just a number. It is the **grammar of recursion** —
+Phi is not just a number. It is the **grammar of recursion** -
 the rule that says "the output can be the input." Unix discovered
 this grammar for computation. Nature discovered it for growth.
 Phiano uses it for language.
 
 The recursive machine does not need to be told what to do. It needs
 only a primitive, a combinator, and permission to feed itself.
-The rest emerges — like a sunflower, like a shell, like a sentence
+The rest emerges - like a sunflower, like a shell, like a sentence
 that writes itself.

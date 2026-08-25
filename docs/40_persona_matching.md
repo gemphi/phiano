@@ -1,4 +1,4 @@
-# 40 — Training Pipeline for Persona Matching
+# 40 - Training Pipeline for Persona Matching
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -36,7 +36,7 @@ Given an unknown text sample, the system:
 3. Compares against all stored persona fingerprints
 4. Returns the persona with highest cosine similarity
 
-This is **style attribution** — determining who wrote something
+This is **style attribution** - determining who wrote something
 based on their phase-space signature.
 
 ## Training approach
@@ -56,7 +56,7 @@ With 10+ examples, personas become even more distinguishable.
 ## Sector resolution impact
 
 Higher resolution (128, 256, 512, 1024) creates more distinct
-fingerprints — personas that look similar at 64 sectors may differ
+fingerprints - personas that look similar at 64 sectors may differ
 at 256. But it also requires more examples to fill the histogram.
 
 | Resolution | Min examples/persona | Distinctiveness |
@@ -69,7 +69,7 @@ at 256. But it also requires more examples to fill the histogram.
 
 ## File references
 
-- `src/persona/fingerprint.rs` — Fingerprint::extract(), similarity()
-- `src/persona/world.rs` — PersonaWorld::compare()
-- `src/persona/impersonate.rs` — Impersonator::impersonate()
-- `task/` — Training examples and matching scripts
+- `src/persona/fingerprint.rs` - Fingerprint::extract(), similarity()
+- `src/persona/world.rs` - PersonaWorld::compare()
+- `src/persona/impersonate.rs` - Impersonator::impersonate()
+- `task/` - Training examples and matching scripts

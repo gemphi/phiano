@@ -3,7 +3,7 @@ use crate::tokenizer::Tokenizer;
 use std::cmp::Ordering;
 use std::fmt;
 
-/// Vision — a projection of what the model doesn't yet know.
+/// Vision - a projection of what the model doesn't yet know.
 ///
 /// Produced by the envision phase of the recursive learning cycle.
 /// Contains the list of unknown words and, for each, a list of
@@ -19,7 +19,7 @@ impl fmt::Display for Vision {
     }
 }
 
-/// Envision — detects knowledge gaps and projects what to learn next.
+/// Envision - detects knowledge gaps and projects what to learn next.
 ///
 /// This is the "envision" phase of the recursive learning cycle:
 /// `envision → apply → eval → iterate → scale`.

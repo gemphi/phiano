@@ -1,5 +1,5 @@
 /// Searle markers loaded from data/searle_markers.json.
-/// No hardcoded word lists — all markers are data-driven.
+/// No hardcoded word lists - all markers are data-driven.
 
 use serde::Deserialize;
 use std::collections::HashMap;

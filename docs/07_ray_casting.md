@@ -1,4 +1,4 @@
-# 07 — Ray Casting Search
+# 07 - Ray Casting Search
 
 ## Parallel Ray Projection
 

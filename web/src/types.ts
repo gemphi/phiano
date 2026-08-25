@@ -42,9 +42,37 @@ export interface Stats {
   memory_entries: number;
 }
 
+export interface ChatApiResponse {
+  response: string;
+  speech_act: string;
+  direction_of_fit: string;
+  words_learned: number;
+  definitions_learned: number;
+  wiki_learned: string | null;
+  vocabulary: number;
+  coherence: number;
+}
+
+export interface StreamToken {
+  token: string;
+  step: number;
+  collective_phase: number;
+  resonance: number;
+  done: boolean;
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
+  speech_act?: string;
+  direction_of_fit?: string;
+  words_learned?: number;
+  definitions_learned?: number;
+  wiki_learned?: string | null;
+  coherence?: number;
+  streaming?: boolean;
+  collective_phase?: number;
+  resonance?: number;
   eval?: EvalResult;
   oscEval?: OscEvalResult;
 }
@@ -146,6 +174,44 @@ export interface DefineResult {
   phase?: number;
   amplitude?: number;
   vocabulary: number;
+}
+
+export interface FlowNode {
+  word: string;
+  phase: number;
+  amplitude: number;
+  band_n: number;
+  activation: number;
+  novelty: number;
+}
+
+export interface FlowEdge {
+  from: number;
+  to: number;
+  coupling: 'bigram' | 'syntax_lag' | 'semantic' | 'anti_phase';
+  lag: number;
+  weight: number;
+}
+
+export interface FlowStep {
+  step: number;
+  collective_phase: number;
+  momentum: number;
+  selected_word: string | null;
+  resonance_score: number;
+  novelty: number;
+}
+
+export interface FlowResponse {
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+  trajectory: FlowStep[];
+  collective_phase: number;
+  momentum: number;
+  order_parameter: number;
+  novelty: number;
+  node_count: number;
+  edge_count: number;
 }
 
 

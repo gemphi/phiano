@@ -5,11 +5,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
 }
 
 body {
   font-family: var(--font-body);
-  background: var(--bg-primary);
+  background: var(--gradient-bg) fixed;
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -18,7 +20,7 @@ body {
   position: relative;
 }
 
-/* Ambient Neon Glowing Orbs in the background */
+/* Ambient Glowing Background Accents */
 body::before {
   content: '';
   position: fixed;
@@ -45,10 +47,10 @@ body::after {
   filter: blur(40px);
 }
 
-/* Custom Scrollbars */
+/* Custom Sleek Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -258,6 +260,11 @@ a {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
 }
 
 .spinner {

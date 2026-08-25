@@ -1,4 +1,4 @@
-# 06 — Kuramoto Phase Attraction
+# 06 - Kuramoto Phase Attraction
 
 ## The Kuramoto Model
 
@@ -53,7 +53,7 @@
 
   Words that co-occur converge to similar phases.
   Words that never co-occur stay at their initial positions.
-  This is self-organizing — no labels, no gradients.
+  This is self-organizing - no labels, no gradients.
 ```
 
 ## Band_n Promotion

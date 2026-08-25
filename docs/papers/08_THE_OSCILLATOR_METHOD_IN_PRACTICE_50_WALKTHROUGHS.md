@@ -1,8 +1,8 @@
 # The Oscillator Method in Practice: 50 Concrete Walkthroughs from Word Synonyms to Persona Choirs
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 
@@ -137,7 +137,7 @@ phiano> cognitive "We hereby designate Phiano as the PyTorch of Oscillators"
 ### Example 16: Pre-Intentional Background Tracking
 ```sh
 # As the session progresses, background capacity accumulates
-# Background: 92% capacity (amplitude = 46.2) — pre-reflective stance stable
+# Background: 92% capacity (amplitude = 46.2) - pre-reflective stance stable
 ```
 
 ### Example 17: Symbol Grounding Test (Physical vs Abstract)

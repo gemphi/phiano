@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::cognitive::CognitiveCore;
 use crate::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Generator};
@@ -5,8 +7,9 @@ use crate::layers::HierarchicalPhaseField;
 use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
 use crate::wave::Wave;
+use std::fmt;
 
-/// InstructionKind — type of instruction issued by user.
+/// InstructionKind - type of instruction issued by user.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InstructionKind {
     Code,
@@ -19,16 +22,12 @@ pub enum InstructionKind {
 impl InstructionKind {
     pub fn parse(prompt: &str) -> Self {
         let p = prompt.to_lowercase();
-        if p.contains("explain") || p.contains("what is") || p.contains("how does") || p.contains("how do") || p.contains("why") {
-            InstructionKind::Explain
-        } else if p.contains("code") || p.contains("function") || p.contains("implement") || p.contains("fix") || p.contains("debug") {
-            InstructionKind::Code
-        } else if p.contains("compare") || p.contains("benchmark") || p.contains("analyze") {
-            InstructionKind::Analyze
-        } else if p.contains("write") || p.contains("story") || p.contains("haiku") || p.contains("poem") {
-            InstructionKind::Creative
-        } else {
-            InstructionKind::Command
+        match () {
+            _ if p.contains("explain") || p.contains("what is") || p.contains("how does") || p.contains("how do") || p.contains("why") => InstructionKind::Explain,
+            _ if p.contains("code") || p.contains("function") || p.contains("implement") || p.contains("fix") || p.contains("debug") => InstructionKind::Code,
+            _ if p.contains("compare") || p.contains("benchmark") || p.contains("analyze") => InstructionKind::Analyze,
+            _ if p.contains("write") || p.contains("story") || p.contains("haiku") || p.contains("poem") => InstructionKind::Creative,
+            _ => InstructionKind::Command,
         }
     }
 
@@ -43,50 +42,100 @@ impl InstructionKind {
     }
 }
 
-/// Extract key topic words from a prompt, prioritizing words that exist in the lexicon.
-/// Falls back to ray cast for unknown words.
-fn extract_topic_words(facet: &Facet, prompt: &str, n: usize) -> Vec<String> {
-    let tokens = Tokenizer::tokenize(prompt);
-    let mut result: Vec<String> = Vec::new();
+/// Extract content words from a prompt, then fill remaining slots from the manifold.
+pub fn extract_topic_words(facet: &Facet, prompt: &str, n: usize) -> Vec<String> {
+    let mut result = Tokenizer::content_words(prompt);
+    result.retain(|w| facet.lexicon.contains_key(w));
+    result.truncate(n);
 
-    // First, use prompt words that exist in the lexicon
-    for token in &tokens {
-        if facet.lexicon.contains_key(token) && !result.contains(token) {
-            result.push(token.clone());
-        }
-    }
-
-    // Then, fill remaining slots using bigram followers of known prompt words
-    if result.len() < n {
-        for seed_word in result.clone().iter().take(3) {
-            let followers = facet.next_word_candidates(seed_word);
-            for (w, _) in followers {
-                if !result.contains(&w) && result.len() < n {
-                    result.push(w);
+    match result.len() < n {
+        true => {
+            for seed in result.clone().iter().take(3) {
+                for (w, _) in facet.next_word_candidates(seed) {
+                    match !Tokenizer::is_function_word(&w) && !result.contains(&w) && result.len() < n {
+                        true => result.push(w),
+                        false => {}
+                    }
                 }
             }
         }
+        false => {}
     }
 
-    // Final fallback: ray cast for remaining slots
-    if result.len() < n {
-        let wave = Wave::sentence(facet, &tokens);
-        let ray_results = Wave::ray_cast(facet, wave, n * 2);
-        for (w, _) in ray_results {
-            if !result.contains(&w) && result.len() < n {
-                result.push(w);
+    match result.len() < n {
+        true => {
+            let tokens = Tokenizer::tokenize(prompt);
+            let wave = Wave::sentence(facet, &tokens);
+            for (w, _) in Wave::ray_cast(facet, wave, n * 4) {
+                match !Tokenizer::is_function_word(&w) && !result.contains(&w) && result.len() < n {
+                    true => result.push(w),
+                    false => {}
+                }
             }
         }
+        false => {}
     }
 
     result
 }
 
+/// Looks up grounded definitions for content words in the prompt.
+fn lookup_definitions(cognitive_core: &CognitiveCore, prompt: &str) -> Vec<(String, String)> {
+    Tokenizer::content_words(prompt)
+        .into_iter()
+        .filter_map(|word| {
+            cognitive_core
+                .chunk_store
+                .load_definition(&word)
+                .map(|def| (word, def))
+        })
+        .collect()
+}
+
+/// Builds a conversational reply from grounded definitions, then torus attractor generation.
+fn compose_reply(
+    facet: &Facet,
+    context_buffer: &mut ContextWaveBuffer,
+    generator: &Generator,
+    prompt: &str,
+    definitions: &[(String, String)],
+) -> String {
+    let def_reply: Option<String> = match definitions.is_empty() {
+        false => {
+            let parts: Vec<String> = definitions.iter().take(3).filter_map(|(word, def)| {
+                let short: String = def.chars().take(220).collect();
+                let trimmed = short.trim();
+                match trimmed.is_empty() {
+                    true => None,
+                    false => Some(format!("{}: {}", word, trimmed)),
+                }
+            }).collect();
+            match parts.is_empty() {
+                false => Some(parts.join("\n")),
+                true => None,
+            }
+        }
+        true => None,
+    };
+
+    match def_reply {
+        Some(reply) => reply,
+        None => {
+            let generated = generator.generate(facet, context_buffer, prompt);
+            match generated.split_whitespace().count() >= 3 {
+                true => generated,
+                false => format!("I heard you, but I do not yet have a grounded meaning for: {}", prompt),
+            }
+        }
+    }
+}
+
 /// Generate readable sentences using templates filled with resonant words.
-fn templated_output(facet: &Facet, prompt: &str, kind: InstructionKind) -> String {
+pub fn templated_output(facet: &Facet, prompt: &str, kind: InstructionKind) -> String {
     let words = extract_topic_words(facet, prompt, 8);
-    if words.len() < 3 {
-        return format!("I need more context to respond to: {}", prompt);
+    match words.len() < 3 {
+        true => return format!("I need more context to respond to: {}", prompt),
+        false => {}
     }
 
     let w = |i: usize| -> &str { words.get(i).map(|s| s.as_str()).unwrap_or("concepts") };
@@ -132,7 +181,77 @@ fn templated_output(facet: &Facet, prompt: &str, kind: InstructionKind) -> Strin
     }
 }
 
-/// InstructionEngine — handles instruction parsing, formatting, and phase-guided execution (Phase 4).
+/// ChatResponse - clean response from the chat/instruct pipeline.
+/// Separates the conversational text from cognitive metadata.
+pub struct ChatResponse {
+    /// The main response text shown to the user.
+    pub text: String,
+    /// The cognitive synthesis output (intentional state-driven).
+    pub cognitive_synthesis: String,
+    /// Detected intent type.
+    pub intent: InstructionKind,
+    /// Speech act classification.
+    pub speech_act: String,
+    /// Direction of fit (mind→world, world→mind, etc.).
+    pub direction_of_fit: String,
+    /// Satisfaction score [0, 1].
+    pub satisfaction: f64,
+    /// Phase-guided generation trace.
+    pub phase_trace: String,
+}
+
+impl fmt::Display for ChatResponse {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "  {}
+", self.text)?;
+        writeln!(f, "  ── cognitive synthesis ──")?;
+        writeln!(f, "  {}", self.cognitive_synthesis)?;
+        writeln!(f)?;
+        writeln!(f, "  [intent: {:?} | speech act: {} | satisfaction: {:.0}%]", self.intent, self.speech_act, self.satisfaction * 100.0)?;
+        writeln!(f, "  [phase trace: {}]", self.phase_trace)
+    }
+}
+
+/// Generates a chat response using shared cognitive core + context buffer.
+/// Trains the manifold online, then answers from grounded definitions or ray-cast decoding.
+pub fn generate_response(
+    facet: &mut Facet,
+    trainer: &Trainer,
+    cognitive_core: &CognitiveCore,
+    context_buffer: &mut ContextWaveBuffer,
+    generator: &Generator,
+    prompt: &str,
+) -> ChatResponse {
+    trainer.train_online(facet, prompt);
+
+    let kind = InstructionKind::parse(prompt);
+    let definitions = lookup_definitions(cognitive_core, prompt);
+    for (word, def) in &definitions {
+        trainer.train_definition(facet, word, def);
+    }
+
+    let cognitive_result = cognitive_core.process(facet, context_buffer, prompt);
+    let text = compose_reply(facet, context_buffer, generator, prompt, &definitions);
+    let phase_trace = match definitions.is_empty() {
+        true => text.clone(),
+        false => generator.generate(facet, context_buffer, prompt),
+    };
+
+    context_buffer.push_turn(facet, prompt);
+    context_buffer.push_turn(facet, &text);
+
+    ChatResponse {
+        text,
+        cognitive_synthesis: cognitive_result.synthesized_output,
+        intent: kind,
+        speech_act: cognitive_result.speech_act,
+        direction_of_fit: cognitive_result.direction_of_fit,
+        satisfaction: cognitive_result.satisfaction,
+        phase_trace,
+    }
+}
+
+/// InstructionEngine - handles instruction parsing, formatting, and phase-guided execution (Phase 4).
 pub struct InstructionEngine {
     pub context_buffer: ContextWaveBuffer,
     pub phase_field: HierarchicalPhaseField,
@@ -154,41 +273,22 @@ impl InstructionEngine {
         }
     }
 
-    /// Formats prompt into standardized Chat / Instruction Template
+    /// Formats prompt into a clean instruction template.
     pub fn format_template(prompt: &str) -> String {
-        format!("DonaldTrump\n{}\n<|end|>\nDonaldTrump\n", prompt.trim())
+        format!("user\n{}\n<|end|>\nassistant\n", prompt.trim())
     }
 
-    /// Executes an incoming instruction end-to-end
+    /// Executes an incoming instruction using shared cognitive core + context buffer.
     pub fn execute_instruction(
         &mut self,
         facet: &mut Facet,
         _trainer: &Trainer,
+        cognitive_core: &CognitiveCore,
+        context_buffer: &mut ContextWaveBuffer,
         prompt: &str,
-    ) -> String {
-        let kind = InstructionKind::parse(prompt);
-        let persona_name = kind.to_persona_name();
-
-        // Update 4-layer hierarchical phase field
+    ) -> ChatResponse {
         self.phase_field.build_hierarchy(facet);
-
-        // Run cognitive core for meaning-grounded output
-        let cognitive_core = CognitiveCore::new(crate::chunker::ChunkStore::new("data/chunks"));
-        let cognitive_result = cognitive_core.process(facet, &mut self.context_buffer, prompt);
-
-        // Also run phase-guided generation for comparison
-        let formatted_prompt = Self::format_template(prompt);
-        let generated_text = self.generator.generate(facet, &mut self.context_buffer, &formatted_prompt);
-
-        format!(
-            "[Instruction Executed as {} ({:?})]\n\n{}\n\n[Speech act: {} | Direction of fit: {} | Satisfaction: {:.0}%]\n\n[Phase resonance trace: {}]",
-            persona_name, kind,
-            cognitive_result.synthesized_output,
-            cognitive_result.speech_act,
-            cognitive_result.direction_of_fit,
-            cognitive_result.satisfaction * 100.0,
-            generated_text
-        )
+        generate_response(facet, _trainer, cognitive_core, context_buffer, &self.generator, prompt)
     }
 }
 

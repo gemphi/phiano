@@ -1,4 +1,4 @@
-# 16 — Evaluation Scoring
+# 16 - Evaluation Scoring
 
 ## Three Dimensions
 
@@ -47,9 +47,9 @@
   │  ██████░░░░░░░░░░░░░░░░░░░  novelty   15%  │
   └────────────────────────────────────────────┘
 
-  Coherence matters most — aligned words = understanding.
-  Resonance is nearly equal — knowing words is fundamental.
-  Novelty is a tiebreaker — new but coherent is best.
+  Coherence matters most - aligned words = understanding.
+  Resonance is nearly equal - knowing words is fundamental.
+  Novelty is a tiebreaker - new but coherent is best.
 ```
 
 ## Verdict Decision Tree

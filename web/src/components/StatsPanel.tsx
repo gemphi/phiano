@@ -33,7 +33,7 @@ export function StatsPanel({ stats }: StatsPanelProps) {
         <div style={{ marginTop: '1.25rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Zap size={16} style={{ color: 'var(--color-warning)' }} />
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            Phiano uses Kuramoto oscillator synchronization for language understanding — a non-transformer architecture.
+            Phiano uses Kuramoto oscillator synchronization for language understanding - a non-transformer architecture.
           </span>
         </div>
       </div>

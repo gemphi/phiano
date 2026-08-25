@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Phi4LearnSummary — metrics from learning the Phi-4 model references.
+/// Phi4LearnSummary - metrics from learning the Phi-4 model references.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Phi4LearnSummary {
     pub vocab_tokens_loaded: usize,
@@ -15,7 +15,7 @@ pub struct Phi4LearnSummary {
     pub final_vocabulary_size: usize,
 }
 
-/// Phi4Source — extracts vocabulary, BPE token merges, and technical reasoning contexts
+/// Phi4Source - extracts vocabulary, BPE token merges, and technical reasoning contexts
 /// from the Phi-4 multimodal / instruct model files in the `refs/` directory.
 pub struct Phi4Source {
     pub model_dir: PathBuf,

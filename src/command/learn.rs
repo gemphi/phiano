@@ -4,11 +4,11 @@ use crate::envision::Envision;
 use crate::eval::Evaluator;
 use crate::trainer::MultiEpochResult;
 
-/// Learn — trains the facet on a sentence (online learning mode).
+/// Learn - trains the facet on a sentence (online learning mode).
 ///
 /// Usage:
 ///   learn "some text to learn from"
-///   learn multi "text" [epochs] [warmup]  — multi-epoch with convergence
+///   learn multi "text" [epochs] [warmup]  - multi-epoch with convergence
 ///
 /// If the user types text that doesn't match any command, the `default`
 /// method is called instead, which trains, evaluates, and envisions.
@@ -54,14 +54,14 @@ impl Learn {
             ctx.manifold, &text, epochs, warmup,
         );
         println!(
-            "  [multi-train] {} — facet: {} words",
+            "  [multi-train] {} - facet: {} words",
             result,
             ctx.manifold.vocabulary_size(),
         );
         true
     }
 
-    /// Default handler for unrecognized input — treats it as text to learn.
+    /// Default handler for unrecognized input - treats it as text to learn.
     ///
     /// Trains on the input, evaluates it, and runs the envision phase
     /// to detect knowledge gaps.

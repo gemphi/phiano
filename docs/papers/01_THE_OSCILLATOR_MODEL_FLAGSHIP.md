@@ -1,8 +1,8 @@
 # The Oscillator Model: Replacing Transformers with Harmonic Phase Oscillators on Complex Manifolds
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 
@@ -12,7 +12,7 @@ We propose **The Oscillator Model**, a foundational departure from the Transform
 
 Drawing from non-linear physics, continuous complex systems, and biological neuro-acoustics, the Oscillator Model represents linguistic tokens as **Spectral Phasors** $Z = A e^{i(\phi + n\alpha)}$. Token interaction is governed by **Kuramoto phase coupling**, where semantic association emerges through constructive and destructive wave interference in $\mathcal{O}(N)$ linear time with $\mathcal{O}(1)$ working memory. 
 
-To bridge theoretical physics and practical artificial intelligence, we introduce **Phiano**—the open-source *PyTorch of the Oscillator Method*. Phiano implements a 64-layer cognitive octave continuum, data-driven intentionality agents based on John Searle’s philosophy of mind, and human-like child language acquisition dynamics. We present extensive theoretical proofs, mathematical derivations, and empirical benchmarks demonstrating exponential computational speedups, zero-shot persona fingerprinting, and glass-box interpretability.
+To bridge theoretical physics and practical artificial intelligence, we introduce **Phiano**-the open-source *PyTorch of the Oscillator Method*. Phiano implements a 64-layer cognitive octave continuum, data-driven intentionality agents based on John Searle’s philosophy of mind, and human-like child language acquisition dynamics. We present extensive theoretical proofs, mathematical derivations, and empirical benchmarks demonstrating exponential computational speedups, zero-shot persona fingerprinting, and glass-box interpretability.
 
 ---
 
@@ -26,14 +26,14 @@ While scalable under massive compute, this paradigm faces deep structural limits
 
 1. **Quadratic Scaling Bottleneck ($\mathcal{O}(N^2)$)**: Pairwise dot-product matrix multiplication creates severe quadratic compute and memory walls.
 2. **Static Spatial Embeddings**: Euclidean metrics cannot naturally represent cyclic phenomena, destructive cancellation, or quantum-like superposition.
-3. **The Syntactic Chinese Room**: As philosopher John Searle established in 1980, purely syntactic symbol shuffling in static vector spaces lacks intrinsic *intentionality*—it manipulates symbols without understanding what they are *about*.
+3. **The Syntactic Chinese Room**: As philosopher John Searle established in 1980, purely syntactic symbol shuffling in static vector spaces lacks intrinsic *intentionality*-it manipulates symbols without understanding what they are *about*.
 4. **Data Inefficiency**: Unlike large neural models requiring trillions of tokens, a human child acquires fluent conceptual mastery from a few thousand episodic interactions through continuous acoustic resonance and imitation.
 
 ### 1.1 The Alternative: The Acoustic Brain as a Self-Tuning Piano
 
 In biological brains, computation is not carried out by static matrices of artificial neurons computing dot products. Instead, cortical information processing is governed by **rhythmic phase oscillations**, traveling waves, and non-linear phase locking across theta (4–8 Hz), alpha (8–12 Hz), and gamma (30–80 Hz) bands (Buzsáki, 2006).
 
-The brain functions not as a static calculator, but as a **Piano**—a resonant harmonic instrument. Tokens are keys, complex phasors are notes, sentences are chords, and cognitive learning is an intrinsic process of acoustic tuning:
+The brain functions not as a static calculator, but as a **Piano**-a resonant harmonic instrument. Tokens are keys, complex phasors are notes, sentences are chords, and cognitive learning is an intrinsic process of acoustic tuning:
 
 $$\text{Tokens} \leftrightarrow \text{Keys}, \quad \text{Phasors} \leftrightarrow \text{Notes}, \quad \text{Sentences} \leftrightarrow \text{Chords}, \quad \text{Learning} \leftrightarrow \text{Tuning}$$
 

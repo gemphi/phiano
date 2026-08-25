@@ -1,4 +1,4 @@
-/// Fingerprint — a style signature extracted from text examples.
+/// Fingerprint - a style signature extracted from text examples.
 ///
 /// Captures how a persona's text distributes across the phase circle's
 /// sectors. Each text sample is converted to a wave, mapped to a sector,
@@ -8,7 +8,7 @@ mod traits;
 
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::wave::{Wave, sectors};
+use crate::wave::Wave;
 use std::fmt;
 
 pub struct Fingerprint {
@@ -31,7 +31,7 @@ impl Fingerprint {
 
     /// Extracts a fingerprint from text examples using the facet.
     pub fn extract(facet: &Facet, examples: &[String]) -> Self {
-        let n = sectors() as usize;
+        let n = Wave::sector_count() as usize;
         let mut histogram = vec![0.0f64; n];
         let mut total_length = 0usize;
 

@@ -1,4 +1,4 @@
-# 10 — Tokenizer Pipeline
+# 10 - Tokenizer Pipeline
 
 ```
   Raw Input: "The Cat's SAT on the mat!"

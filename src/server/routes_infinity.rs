@@ -83,7 +83,7 @@ pub async fn infinity_visualize(
         let color = crate::compose::sector_color(sector);
         let text = flow.text;
         let wave = crate::wave::Wave::text(&facet, &text);
-        let theta = (sector as f64) * 2.0 * std::f64::consts::PI / (crate::wave::sectors() as f64);
+        let theta = (sector as f64) * 2.0 * std::f64::consts::PI / (crate::wave::Wave::sector_count() as f64);
         let diff = theta - wave.arg();
         let denom = 1.0 - 0.95 * diff.cos();
         let resonance = wave.norm() / denom;

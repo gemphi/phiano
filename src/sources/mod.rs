@@ -1,10 +1,11 @@
 pub mod api;
+pub mod dialogue;
 pub mod json;
 pub mod local;
 pub mod phi4;
 pub mod wiktionary;
 
-/// DictionarySource — a source of word definitions for bootstrapping the facet.
+/// DictionarySource - a source of word definitions for bootstrapping the facet.
 ///
 /// Implementations include local files, JSON dictionaries, API sources,
 /// Wiktionary dumps, and Phi-4 references.

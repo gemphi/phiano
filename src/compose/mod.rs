@@ -13,7 +13,7 @@ use std::fmt;
 /// to the color wheel. The 12 base colors are distributed evenly
 /// across whatever sector count is configured (64, 128, 256, ...).
 pub fn sector_color(sector: u16) -> String {
-    let n = crate::wave::sectors();
+    let n = crate::wave::Wave::sector_count();
     let colors = [
         "crimson", "red", "scarlet", "orange", "amber", "gold",
         "yellow", "lime", "green", "emerald", "teal", "blue",
@@ -24,7 +24,7 @@ pub fn sector_color(sector: u16) -> String {
     colors[(bucket as usize) % colors.len()].to_string()
 }
 
-/// Composition — the result of a full recursive compose cycle.
+/// Composition - the result of a full recursive compose cycle.
 ///
 /// Based on the Flower-Hayes (1981) cognitive process model:
 ///   Planning → Translating → Reviewing (evaluating + revising)
@@ -56,7 +56,7 @@ impl Composition {
     /// Runs the full recursive compose cycle.
     ///
     /// 1. Learn from examples (teacher's specimens)
-    /// 2. Generate 64 variations — one per sector (Planning + Translating)
+    /// 2. Generate 64 variations - one per sector (Planning + Translating)
     /// 3. Evaluate each variation (Reviewing → Evaluating)
     /// 4. Discard the worse, keep the better (Reviewing → Revising)
     /// 5. Train on the better (Kuramoto re-tunes the facet)

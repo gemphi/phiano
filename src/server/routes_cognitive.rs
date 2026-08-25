@@ -43,6 +43,7 @@ pub async fn cognitive(
     }))
 }
 
+#[allow(dead_code)]
 pub async fn run_curriculum(
     State(state): State<SharedModel>,
 ) -> Result<Json<CurriculumResult>, StatusCode> {

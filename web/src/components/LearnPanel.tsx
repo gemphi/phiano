@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { BookOpen, Layers, Search, Sparkles, Compass, CheckCircle2, Globe, Volume2 } from 'lucide-react';
-import { learnText, learnMulti, fetchDefinition } from '../hooks/useApi';
+import { learnText, learnMulti } from '../hooks/api/learn';
+import { fetchDefinition } from '../hooks/api/dictionary';
 import type { LearnResult, MultiLearnResult, DefineResult } from '../types';
 
 interface LearnPanelProps {

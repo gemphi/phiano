@@ -5,7 +5,7 @@
 ### Current State
 - **Facet lexicon**: 155,768 words, each with (phase, amplitude, band_n) phasor
 - **Oscillator field**: sphere model with (longitude, latitude, frequency, amplitude)
-- **Training**: Kuramoto phase attraction — words co-occurring in sentences converge phases
+- **Training**: Kuramoto phase attraction - words co-occurring in sentences converge phases
 - **Evaluation**: coherence (Kuramoto order parameter), novelty (angular distance to centroid), resonance (known word fraction)
 - **Composition**: sector-based river flow through 64-sector phase circle
 - **Memory**: 16-layer chromatic memory log
@@ -45,18 +45,18 @@
 | Inference | Token-by-token autoregressive | Phase superposition |
 
 ### Phi-4 Key Innovations (from tech report)
-1. **Synthetic data generation** — majority of training data is synthetic, not web scrapes
-2. **Curriculum training** — data quality > quantity, staged difficulty
-3. **Midtraining** — context extension from 4K to 16K with long-context data
-4. **SFT + DPO post-training** — supervised fine-tuning then direct preference optimization
-5. **tiktoken tokenizer** — 100,352 vocab, better multilingual support
+1. **Synthetic data generation** - majority of training data is synthetic, not web scrapes
+2. **Curriculum training** - data quality > quantity, staged difficulty
+3. **Midtraining** - context extension from 4K to 16K with long-context data
+4. **SFT + DPO post-training** - supervised fine-tuning then direct preference optimization
+5. **tiktoken tokenizer** - 100,352 vocab, better multilingual support
 
 ### GLM-5.2 Ideas Worth Borrowing (without transformers)
-1. **IndexShare** — reuse computation across layers (we can reuse facet lookups across composition rounds)
-2. **Multi-Token Prediction (MTP)** — speculative decoding (we can predict multiple next words via ray cast)
-3. **Sparse attention** — only attend to relevant words (our ray cast already does this)
-4. **Hybrid reasoning modes** — "thinking" vs "instant" (our eval vs compose separation)
-5. **Flexible effort levels** — adjust composition depth/rounds based on task complexity
+1. **IndexShare** - reuse computation across layers (we can reuse facet lookups across composition rounds)
+2. **Multi-Token Prediction (MTP)** - speculative decoding (we can predict multiple next words via ray cast)
+3. **Sparse attention** - only attend to relevant words (our ray cast already does this)
+4. **Hybrid reasoning modes** - "thinking" vs "instant" (our eval vs compose separation)
+5. **Flexible effort levels** - adjust composition depth/rounds based on task complexity
 
 ---
 
@@ -72,9 +72,9 @@ Target:  conversation = [turn1, turn2, ...] → context wave → scores + genera
 ```
 
 **Steps**:
-1. **Context wave buffer** — maintain a running superposition wave of the last N turns
-2. **Context-aware coherence** — measure input against context wave, not just facet centroid
-3. **Decay function** — older turns contribute less (exponential decay with E constant)
+1. **Context wave buffer** - maintain a running superposition wave of the last N turns
+2. **Context-aware coherence** - measure input against context wave, not just facet centroid
+3. **Decay function** - older turns contribute less (exponential decay with E constant)
 4. **Context length**: 4096 tokens (power of 2 = 2^12), matching Phi-4's initial context
 
 **New constants** (all powers of 2):
@@ -91,11 +91,11 @@ pub const CONTEXT_DECAY_BASE: f64 = 0.5;     // 2^(-1)
 **Goal**: Generate text, not just score it.
 
 **Approach**: Phase-guided sampling (NOT autoregressive transformer)
-1. **Prompt → context wave** — tokenize prompt, compute superposition wave
-2. **Ray cast** — find words that resonate with the context wave (already have `Wave::ray_cast_word`)
-3. **Sector traversal** — walk the phase circle guided by prompt sectors
-4. **Composition** — use existing `compose` with context-aware scoring
-5. **Multi-token prediction** — cast multiple rays at different phase offsets (GLM-5.2 MTP idea)
+1. **Prompt → context wave** - tokenize prompt, compute superposition wave
+2. **Ray cast** - find words that resonate with the context wave (already have `Wave::ray_cast_word`)
+3. **Sector traversal** - walk the phase circle guided by prompt sectors
+4. **Composition** - use existing `compose` with context-aware scoring
+5. **Multi-token prediction** - cast multiple rays at different phase offsets (GLM-5.2 MTP idea)
 
 **Key insight**: We don't need attention. We need phase resonance.
 - Transformer attention = "which words matter?" → softmax(Q·K^T)
@@ -116,7 +116,7 @@ pub struct Generator {
 
 ### Phase 3: Multi-Layer Depth (Weeks 5-6)
 
-**Goal**: Add depth — currently the facet is a flat 1-layer lexicon.
+**Goal**: Add depth - currently the facet is a flat 1-layer lexicon.
 
 **Phi-4 has 40 layers. We don't need 40, but we need > 1.**
 
@@ -161,10 +161,10 @@ pub const LAYER_SECTORS: [u16; 4] = [64, 32, 16, 8];  // halving
 **Goal**: Phi-4's secret weapon is synthetic data. We need our own.
 
 **Approach**: Self-generating curriculum
-1. **Definition generation** — for each word, generate synthetic sentences using its synonyms
-2. **Contrast pairs** — generate "similar but different" word pairs for fine-tuning
-3. **Curriculum staging** — easy definitions first, then complex sentences, then reasoning chains
-4. **Quality filtering** — use our own evaluator (coherence + novelty + resonance) to filter
+1. **Definition generation** - for each word, generate synthetic sentences using its synonyms
+2. **Contrast pairs** - generate "similar but different" word pairs for fine-tuning
+3. **Curriculum staging** - easy definitions first, then complex sentences, then reasoning chains
+4. **Quality filtering** - use our own evaluator (coherence + novelty + resonance) to filter
 
 **Pipeline**:
 ```
@@ -231,7 +231,7 @@ pub const REASONING_CONVERGENCE: f64 = 0.01;
 | Phi-4 (Q4 GGUF) | ~8,000 MB | 14B quantized |
 | Phi-3 mini (Q4) | ~2,400 MB | 3.8B quantized |
 | **Phiano (initial weights)** | **~27 MB** | ~0 (phasor table) |
-| **Phiano (full training)** | **~27 MB** | Same — no weight matrices |
+| **Phiano (full training)** | **~27 MB** | Same - no weight matrices |
 
 **Phiano is ~1000x smaller than Phi-4 Q4.** The tradeoff: no transformer, no attention matrices, no feed-forward weights. All "knowledge" is stored as phase positions, not weight values.
 
@@ -248,18 +248,18 @@ pub const REASONING_CONVERGENCE: f64 = 0.01;
 6. **Reasoning capability** → Phase 6 (phase-space pathfinding)
 
 ### What We Keep That Phi-4 Doesn't Have
-1. **Sub-millisecond inference** — no matrix multiplication (CPU)
-2. **27 MB model size** — no weight matrices
-3. **Online learning** — learns from every input instantly
-4. **Deterministic** — no random sampling, phase math is exact
-5. **Interpretable** — every word's position is visible on the phase circle
-6. **GPU optional** — Phiano runs on CPU; GPU only used for inkling + optional Phi-4 fallback
+1. **Sub-millisecond inference** - no matrix multiplication (CPU)
+2. **27 MB model size** - no weight matrices
+3. **Online learning** - learns from every input instantly
+4. **Deterministic** - no random sampling, phase math is exact
+5. **Interpretable** - every word's position is visible on the phase circle
+6. **GPU optional** - Phiano runs on CPU; GPU only used for inkling + optional Phi-4 fallback
 
 ### What We Sacrifice
-1. **Fluency** — generated text will be less fluent than a 14B transformer
-2. **Complex reasoning** — phase traversal can't match 40-layer attention
-3. **Multilingual** — currently English-only (but tiktoken-style tokenizer could fix this)
-4. **Code generation** — phase model doesn't naturally encode syntax trees
+1. **Fluency** - generated text will be less fluent than a 14B transformer
+2. **Complex reasoning** - phase traversal can't match 40-layer attention
+3. **Multilingual** - currently English-only (but tiktoken-style tokenizer could fix this)
+4. **Code generation** - phase model doesn't naturally encode syntax trees
 
 ### Realistic Target
 - **Match Phi-3 mini (3.8B)** on simple QA and creative writing: achievable
@@ -270,7 +270,7 @@ pub const REASONING_CONVERGENCE: f64 = 0.01;
 
 ## 6. Inkling: Pre-trained Initial Weights (GPU-Accelerated)
 
-The "inkling" concept — seeding Phiano with initial weights from a pre-trained model.
+The "inkling" concept - seeding Phiano with initial weights from a pre-trained model.
 We have a local GPU available, which makes this much faster.
 
 ### Approach (GPU-Accelerated)
@@ -281,7 +281,7 @@ We have a local GPU available, which makes this much faster.
        .unwrap_or(Device::Cpu);
    ```
 3. Extract token embeddings (100,352 × 3072 matrix) from the transformer
-4. **GPU PCA** — reduce 3072-dim embeddings to 2D using candle tensor ops:
+4. **GPU PCA** - reduce 3072-dim embeddings to 2D using candle tensor ops:
    - Compute covariance matrix on GPU (matmul)
    - Eigendecomposition on GPU
    - Project to first 2 principal components
@@ -291,7 +291,7 @@ We have a local GPU available, which makes this much faster.
    - band_n = 1 (initial)
 6. Initialize facet lexicon with these pre-trained phase assignments
 7. Fine-tune with Kuramoto learning on top
-8. **Delete the GGUF** — knowledge is now compressed into ~6 MB of phases
+8. **Delete the GGUF** - knowledge is now compressed into ~6 MB of phases
 
 ### GPU vs CPU Time for Inkling
 | Step | CPU | GPU |
@@ -310,7 +310,7 @@ With a local GPU, we can also run a **hybrid mode**:
 - The web UI routes to Phi-4 only when Phiano's confidence is low
 - Phi-4 runs on GPU with ~8 GB VRAM, Phiano runs on CPU simultaneously
 
-**New API endpoint**: `/api/hybrid` — tries Phiano first, falls back to Phi-4
+**New API endpoint**: `/api/hybrid` - tries Phiano first, falls back to Phi-4
 
 **Cargo.toml additions** (optional, behind feature flag):
 ```toml
@@ -331,7 +331,7 @@ pub fn from_phi4_embeddings(gguf_path: &str, device: &Device) -> Facet {
 }
 ```
 
-**Size after inkling**: Still ~27 MB — the GGUF is only used during initialization,
+**Size after inkling**: Still ~27 MB - the GGUF is only used during initialization,
 not at runtime. The knowledge is compressed from 14B weights into phase positions.
 
 ---
@@ -356,7 +356,7 @@ All non-power-of-2 values have been corrected:
 
 ## 8. References
 
-- `refs/phi4_rust_inference.rs` — Microsoft's official Rust inference code for Phi-3/4 using candle
+- `refs/phi4_rust_inference.rs` - Microsoft's official Rust inference code for Phi-3/4 using candle
 - Phi-4 Tech Report: https://www.microsoft.com/en-us/research/wp-content/uploads/2024/12/P4TechReport.pdf
 - Phi-4 on HuggingFace: https://huggingface.co/microsoft/phi-4
 - PhiCookBook Rust: https://github.com/microsoft/PhiCookBook/blob/main/md/01.Introduction/03/Rust_Inference.md

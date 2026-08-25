@@ -1,4 +1,4 @@
-# 12 — Wave Superposition
+# 12 - Wave Superposition
 
 ## Sentence Wave Construction
 

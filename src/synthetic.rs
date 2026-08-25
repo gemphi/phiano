@@ -3,7 +3,7 @@ use crate::facet::Facet;
 use crate::trainer::Trainer;
 use std::f64::consts::PI;
 
-/// ContrastPair — a pair of terms used for fine-tuning phase separation and attraction.
+/// ContrastPair - a pair of terms used for fine-tuning phase separation and attraction.
 #[derive(Debug, Clone)]
 pub struct ContrastPair {
     pub term_a: String,
@@ -11,7 +11,7 @@ pub struct ContrastPair {
     pub relationship: &'static str, // "synonym", "contrast", "co_occur"
 }
 
-/// SyntheticGenerator — generates self-curated training data (Phase 5).
+/// SyntheticGenerator - generates self-curated training data (Phase 5).
 pub struct SyntheticGenerator;
 
 impl SyntheticGenerator {
@@ -81,7 +81,7 @@ impl SyntheticGenerator {
     }
 }
 
-/// SyntheticCurriculumPipeline — manages multi-stage synthetic data generation, filtering, and retraining.
+/// SyntheticCurriculumPipeline - manages multi-stage synthetic data generation, filtering, and retraining.
 pub struct SyntheticCurriculumPipeline {
     pub min_coherence: f64, // Default: 0.45
     pub min_resonance: f64, // Default: 0.70

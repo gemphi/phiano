@@ -1,4 +1,4 @@
-# 27 — Verdict Enum & Display
+# 27 - Verdict Enum & Display
 
 ## Verdict Variants
 
@@ -40,10 +40,10 @@
   ┌──────────────────────────────────────────────────────┐
   │  Coherence: 0.85  Novelty: 0.72  Resonance: 1.00    │
   │  Overall: 0.89                                       │
-  │  Verdict: Coherent and novel — insightful            │
+  │  Verdict: Coherent and novel - insightful            │
   └──────────────────────────────────────────────────────┘
 
-  vs. old format() method — now uses {} format specifier:
+  vs. old format() method - now uses {} format specifier:
     println!("{}", eval);  // uses Display trait
 ```
 

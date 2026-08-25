@@ -3,58 +3,64 @@
 /// All tunable parameters and mathematical constants live here.
 /// The system is built on four fundamental constants:
 ///
-///   α  (alpha)  — fine-structure constant (~1/137)
-///   φ  (phi)    — golden ratio (1.618...)
-///   π  (pi)     — circle constant (3.14159...)
-///   2ⁿ          — power-of-2 sector resolution (2⁶ = 64 minimum)
+///   α  (alpha)  - fine-structure constant (~1/137)
+///   φ  (phi)    - golden ratio (1.618...)
+///   π  (pi)     - circle constant (3.14159...)
+///   2ⁿ          - power-of-2 sector resolution (2⁶ = 64 minimum)
 
 use std::f64::consts::PI;
 
 // ── FUNDAMENTAL CONSTANTS ──────────────────────────────────────────────────
 
-/// Fine-structure constant (α) — spectral interference coupling.
-/// α ≈ 1/137 — controls sub-band phase spacing:
+/// Fine-structure constant (α) - spectral interference coupling.
+/// α ≈ 1/137 - controls sub-band phase spacing:
 ///   φ_effective = φ + n·α
 pub const ALPHA: f64 = 1.0 / 137.0;
 
-/// Golden ratio (φ) — 1.6180339887498948...
+/// Golden ratio (φ) - 1.6180339887498948...
 /// Used for deterministic seeding, amplitude growth, color distribution.
 pub const PHI: f64 = 1.6180339887498948;
 
-/// Golden ratio squared (φ²) — 2.6180339887498948...
+/// Golden ratio conjugate / inverse (1/φ) - 0.6180339887498948...
+pub const PHI_CONJUGATE: f64 = 1.0 / PHI;
+
+/// Golden ratio squared (φ²) - 2.6180339887498948...
 pub const PHI_SQUARED: f64 = PHI * PHI;
 
-/// Golden angle in radians — 2π/φ² ≈ 2.39996...
+/// Golden angle in radians - 2π/φ² ≈ 2.39996...
 /// Produces the most uniform distribution of points on a circle/sphere.
 pub const GOLDEN_ANGLE: f64 = 2.0 * PI / PHI_SQUARED;
 
-/// Pi (π) — 3.141592653589793...
+/// Pi (π) - 3.141592653589793...
 pub const PI_CONST: f64 = PI;
 
-/// Euler's number (e) — 2.718281828459045...
+/// Full circle (2π) - 6.283185307179586...
+pub const TWO_PI: f64 = 2.0 * PI;
+
+/// Euler's number (e) - 2.718281828459045...
 /// Used in exponential decay/growth for novelty, sync, saturation.
 pub const E: f64 = std::f64::consts::E;
 
 // ── PRIME NUMBERS ──────────────────────────────────────────────────────────
 
-/// The first prime ≥ 64 — mixing constant for sector hashing.
+/// The first prime ≥ 64 - mixing constant for sector hashing.
 pub const PRIME_64: u64 = 67;
 
-/// The first prime ≥ 128 — mixing constant at 128-sector resolution.
+/// The first prime ≥ 128 - mixing constant at 128-sector resolution.
 pub const PRIME_128: u64 = 131;
 
-/// The first prime ≥ 256 — mixing constant at 256-sector resolution.
+/// The first prime ≥ 256 - mixing constant at 256-sector resolution.
 pub const PRIME_256: u64 = 257;
 
-/// The first prime ≥ 512 — mixing constant at 512-sector resolution.
+/// The first prime ≥ 512 - mixing constant at 512-sector resolution.
 pub const PRIME_512: u64 = 521;
 
-/// The first prime ≥ 1024 — mixing constant at 1024-sector resolution.
+/// The first prime ≥ 1024 - mixing constant at 1024-sector resolution.
 pub const PRIME_1024: u64 = 1031;
 
 // ── SECTOR RESOLUTION (2ⁿ where n ≥ 6) ────────────────────────────────────
 
-/// Sector resolution — number of sectors dividing the 2π phase circle.
+/// Sector resolution - number of sectors dividing the 2π phase circle.
 /// Must be a power of 2 with exponent ≥ 6 (64, 128, 256, 512, 1024).
 pub const SECTOR_RESOLUTION: u16 = 64;
 
@@ -70,14 +76,22 @@ pub const COLOR_BANDS: u16 = 16;
 /// Recommended range: [0.01, 0.15]. Default: 0.05 (balanced).
 pub const LEARNING_RATE: f64 = 0.05;
 
-/// Phase convergence threshold — when |sin(φ_target - φ_old)| < this,
+/// Kuramoto-Sakaguchi asymmetric syntax phase lag (β = π/16).
+/// Enforces time-ordered syntactic flow in sequences.
+pub const SYNTACTIC_LAG_BETA: f64 = PI_CONST / 16.0;
+
+/// Instantaneous anti-phase pulse (π rad = 180°) for live negative feedback and self-correction.
+#[allow(dead_code)]
+pub const ANTI_PHASE_PULSE: f64 = PI_CONST;
+
+/// Phase convergence threshold - when |sin(φ_target - φ_old)| < this,
 /// band_n is incremented (prevents phase collapse).
 pub const CONVERGENCE_THRESHOLD: f64 = 0.0005;
 
 /// Amplitude increment per learning epoch (familiarity growth).
 pub const AMPLITUDE_INCREMENT: f64 = 0.001;
 
-/// Maximum amplitude — the familiarity ceiling.
+/// Maximum amplitude - the familiarity ceiling.
 pub const AMPLITUDE_MAX: f64 = 2.0;
 
 /// Initial amplitude for new words.
@@ -91,10 +105,10 @@ pub const INGEST_EPOCHS: usize = 64;
 
 // ── COMPOSITION PARAMETERS ─────────────────────────────────────────────────
 
-/// Default composition depth — how many sectors the river flow traverses.
+/// Default composition depth - how many sectors the river flow traverses.
 pub const COMPOSE_DEPTH_DEFAULT: usize = 4;
 
-/// Maximum composition depth — the deepest river flow allowed.
+/// Maximum composition depth - the deepest river flow allowed.
 pub const COMPOSE_DEPTH_MAX: usize = 16;
 
 /// Default number of recursive refinement rounds for composition.
@@ -118,7 +132,7 @@ pub const WEIGHT_COVERAGE: f64 = 0.05;
 /// Weight for prompt alignment in composition scoring.
 pub const WEIGHT_ALIGNMENT: f64 = 0.30;
 
-/// Convergence delta for composition — stop refining if improvement is below this.
+/// Convergence delta for composition - stop refining if improvement is below this.
 pub const COMPOSE_CONVERGENCE_DELTA: f64 = 0.001;
 
 // ── PERSONA PARAMETERS ─────────────────────────────────────────────────────
@@ -129,7 +143,7 @@ pub const FINGERPRINT_WORD_WEIGHT: f64 = 0.3;
 /// Number of dominant sectors shown in persona displays.
 pub const PERSONA_DOMINANT_SECTORS: usize = 8;
 
-/// Impersonation rounds — how many recursive refinement rounds.
+/// Impersonation rounds - how many recursive refinement rounds.
 pub const IMPERSONATE_ROUNDS_DEFAULT: usize = 4;
 
 /// Impersonation quality weight vs persona fit weight.
@@ -138,7 +152,7 @@ pub const IMPERSONATE_QUALITY_WEIGHT: f64 = 0.4;
 /// Impersonation fit weight.
 pub const IMPERSONATE_FIT_WEIGHT: f64 = 0.6;
 
-/// Convergence delta — stop refining if improvement is below this.
+/// Convergence delta - stop refining if improvement is below this.
 pub const IMPERSONATE_CONVERGENCE_DELTA: f64 = 0.001;
 
 /// Quality sub-weights for impersonation scoring.
@@ -158,7 +172,7 @@ pub const OSCILLATOR_FREQ_SCALE: f64 = 100.0;
 /// Frequency tolerance for synchronization.
 pub const OSCILLATOR_FREQ_TOLERANCE: f64 = 5.0;
 
-/// Latitude scaling — maps amplitude to latitude on the sphere.
+/// Latitude scaling - maps amplitude to latitude on the sphere.
 pub const OSCILLATOR_LAT_SCALE: f64 = 4.0;
 
 /// Number of latitude bands shown in sphere projection.
@@ -196,6 +210,39 @@ pub const RAY_CAST_POOL_SIZE: usize = 512;
 /// Default top-K for ray cast word queries.
 pub const RAY_CAST_DEFAULT_K: usize = 16;
 
+// ── GENERATIVE & TORUS CONSTANTS ───────────────────────────────────────────
+
+/// Number of discrete harmonics evaluated on the multi-frequency torus (T^D).
+pub const TORUS_HARMONICS_COUNT: usize = 32;
+
+/// Default subject→verb syntactic phase lag (β_ij).
+#[allow(dead_code)]
+pub const SYNTAX_LAG_DEFAULT: f64 = SYNTACTIC_LAG_BETA;
+
+/// EMA rate for learning pairwise phase lags from word order.
+pub const SYNTAX_LAG_LEARN_RATE: f64 = 0.08;
+
+/// Anti-phase pulse applied to a misunderstood concept (π radians).
+pub const PHASE_REPULSION: f64 = std::f64::consts::PI;
+
+/// Candidate pool size for torus attractor decoding.
+pub const TORUS_DECODE_POOL: usize = 48;
+
+/// Default context window ring buffer capacity.
+pub const DEFAULT_CONTEXT_WINDOW: usize = 4096;
+
+/// Default reasoning chain iteration limit.
+pub const DEFAULT_REASONING_STEPS: usize = 5;
+
+/// Default syntactic forward phase momentum velocity.
+pub const SYNTACTIC_MOMENTUM_DEFAULT: f64 = 0.15;
+
+/// Default definition chain search depth.
+pub const DEFINITION_CHAIN_DEPTH: usize = 3;
+
+/// Maximum characters extracted from Wikipedia introduction.
+pub const WIKI_SNIPPET_MAX_CHARS: usize = 1200;
+
 // ── FILE PATHS ─────────────────────────────────────────────────────────────
 
 /// Path to the serialized facet (lexicon) binary file.
@@ -203,6 +250,9 @@ pub const CHROMA_FILE: &str = "data/manifold.chroma";
 
 /// Path to the serialized 16-layer memory log.
 pub const MEMORY_FILE: &str = "data/memory.chroma";
+
+/// Path to the dictionary chunk directory.
+pub const CHUNK_STORE_DIR: &str = "data/chunks";
 
 /// Path to the local definitions text file.
 pub const DEFINITIONS_FILE: &str = "data/definitions.txt";
@@ -212,3 +262,4 @@ pub const API_CACHE_FILE: &str = "data/api_cache.txt";
 
 /// Path to the stop words file (one word per line, space-separated).
 pub const STOP_WORDS_FILE: &str = "data/stop_words.txt";
+

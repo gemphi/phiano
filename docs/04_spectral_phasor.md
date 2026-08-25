@@ -1,4 +1,4 @@
-# 04 — SpectralPhasor Structure
+# 04 - SpectralPhasor Structure
 
 ## 16-Byte Fixed-Width Representation
 

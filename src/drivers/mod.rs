@@ -4,13 +4,13 @@ pub mod train;
 
 use crate::command::Context;
 
-/// Driver — represents a source/device command, separate from the core.
+/// Driver - represents a source/device command, separate from the core.
 ///
 /// Like Unix device drivers, these are not part of the kernel core.
 /// They interface with external data sources (files, APIs, dumps, models)
 /// and feed data into the facet. The core Command enum stays clean.
 ///
-/// Drivers are dispatched before core commands — if a line matches
+/// Drivers are dispatched before core commands - if a line matches
 /// a driver command, it's handled here. Otherwise it falls through
 /// to the core Dispatcher.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -19,6 +19,7 @@ pub enum Driver {
     IngestJson,
     IngestWiktionary,
     IngestPhi4,
+    IngestDialogue,
     Chunk,
     Train,
 }
@@ -33,6 +34,7 @@ impl Driver {
             "ingest-json" => Some(Self::IngestJson),
             "ingest-wiktionary" => Some(Self::IngestWiktionary),
             "ingest-phi4" | "learn-phi4" => Some(Self::IngestPhi4),
+            "ingest-dialogue" | "learn-dialogue" | "learn-chat" => Some(Self::IngestDialogue),
             "chunk" => Some(Self::Chunk),
             "train" => Some(Self::Train),
             _ => None,
@@ -42,13 +44,14 @@ impl Driver {
     /// Dispatches a driver command.
     ///
     /// Returns true if handled (REPL continues), false if it should stop.
-    /// Drivers always return true — they never exit the REPL.
+    /// Drivers always return true - they never exit the REPL.
     pub fn dispatch<'a>(driver: Self, ctx: &mut Context<'a>) -> bool {
         match driver {
             Self::Ingest => ingest::Ingest.local(ctx),
             Self::IngestJson => ingest::Ingest.json(ctx),
             Self::IngestWiktionary => ingest::Ingest.wiktionary(ctx),
             Self::IngestPhi4 => ingest::Ingest.phi4(ctx),
+            Self::IngestDialogue => ingest::Ingest.dialogue(ctx),
             Self::Chunk => chunk::Chunk.apply(ctx),
             Self::Train => train::Train.apply(ctx),
         }

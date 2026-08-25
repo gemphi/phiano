@@ -1,4 +1,4 @@
-/// Multi-step reasoning chain — cognitive core runs multiple times,
+/// Multi-step reasoning chain - cognitive core runs multiple times,
 /// feeding each step's output as context into the next step.
 
 use crate::facet::Facet;
@@ -39,11 +39,15 @@ pub fn reason_chain(
         let result = cognitive_core.process(facet, context_buffer, &current_prompt);
 
         // Check if we've converged (output repeats)
-        if step_num > 0 {
-            let prev_output = &steps[step_num - 1].output;
-            if prev_output == &result.synthesized_output {
-                break;
+        match step_num > 0 {
+            true => {
+                let prev_output = &steps[step_num - 1].output;
+                match prev_output == &result.synthesized_output {
+                    true => break,
+                    false => {}
+                }
             }
+            false => {}
         }
 
         steps.push(ReasoningStep {
@@ -58,8 +62,9 @@ pub fn reason_chain(
         current_prompt = format!("{} relates to what?", result.synthesized_output);
 
         // Stop if coherence is high enough (we're confident)
-        if result.coherence > 0.85 && step_num >= 1 {
-            break;
+        match result.coherence > 0.85 && step_num >= 1 {
+            true => break,
+            false => {}
         }
     }
 

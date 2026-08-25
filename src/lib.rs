@@ -15,6 +15,7 @@ pub mod layers;
 pub mod memory;
 pub mod model;
 pub mod oscillator;
+pub mod phase_flow;
 pub mod persona;
 pub mod phasor;
 pub mod reasoning;

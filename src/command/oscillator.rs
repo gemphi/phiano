@@ -6,17 +6,17 @@ use crate::oscillator::{
 };
 
 
-/// OscillatorCmd — oscillator model commands.
+/// OscillatorCmd - oscillator model commands.
 ///
 /// The oscillator model is an alternative to the transform model.
 /// Words are oscillators on a sphere, not static points on a circle.
 ///
 /// Subcommands:
-///   oscillator eval "text"           — Evaluate text in oscillator mode
-///   oscillator sphere "text"         — Show the sphere projection for text
-///   oscillator wheel                 — Show the equatorial color wheel
-///   oscillator compare "text"        — Compare transform vs oscillator models
-///   oscillator train "text" [epochs] — Train using oscillator synchronization
+///   oscillator eval "text"           - Evaluate text in oscillator mode
+///   oscillator sphere "text"         - Show the sphere projection for text
+///   oscillator wheel                 - Show the equatorial color wheel
+///   oscillator compare "text"        - Compare transform vs oscillator models
+///   oscillator train "text" [epochs] - Train using oscillator synchronization
 pub struct OscillatorCmd;
 
 impl OscillatorCmd {
@@ -49,11 +49,11 @@ impl OscillatorCmd {
     }
 
     fn print_help(&self) {
-        println!("  oscillator eval \"text\"        — Evaluate text in oscillator mode");
-        println!("  oscillator sphere \"text\"      — Show sphere projection for text");
-        println!("  oscillator wheel              — Show the equatorial color wheel");
-        println!("  oscillator compare \"text\"     — Compare transform vs oscillator models");
-        println!("  oscillator train \"text\" [n]   — Train using oscillator sync (n epochs)");
+        println!("  oscillator eval \"text\"        - Evaluate text in oscillator mode");
+        println!("  oscillator sphere \"text\"      - Show sphere projection for text");
+        println!("  oscillator wheel              - Show the equatorial color wheel");
+        println!("  oscillator compare \"text\"     - Compare transform vs oscillator models");
+        println!("  oscillator train \"text\" [n]   - Train using oscillator sync (n epochs)");
     }
 
     fn eval(&self, ctx: &mut Context, rest: &str) -> bool {

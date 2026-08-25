@@ -1,4 +1,4 @@
-# 22 — Trainer Algorithm Deep Dive
+# 22 - Trainer Algorithm Deep Dive
 
 ## train_sentence() Step by Step
 
@@ -63,12 +63,12 @@
   sin(Δφ) properties:
     Δφ = 0    → sin = 0     (no change needed, already aligned)
     Δφ = π/2  → sin = 1     (maximum pull toward centroid)
-    Δφ = π    → sin = 0     (opposite — no pull! ambiguous)
+    Δφ = π    → sin = 0     (opposite - no pull! ambiguous)
     Δφ = -π/2 → sin = -1    (maximum pull in opposite direction)
 
   This creates a smooth attraction that:
     ✓ Is zero when already aligned
     ✓ Is strongest at 90° offset
-    ✓ Is zero at 180° (antipodal — needs multiple passes)
+    ✓ Is zero at 180° (antipodal - needs multiple passes)
     ✓ Always pulls in the shortest direction
 ```

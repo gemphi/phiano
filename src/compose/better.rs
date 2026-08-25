@@ -3,12 +3,12 @@ use crate::facet::Facet;
 use crate::compose::flow::RiverFlow;
 use crate::compose::sector_color;
 
-/// Evaluator — scores each of the 64 sector variations.
+/// Evaluator - scores each of the 64 sector variations.
 ///
 /// Based on the Flower-Hayes "Reviewing" process:
 ///   evaluating + revising
 ///
-/// This is the "better" half — it identifies which compositions
+/// This is the "better" half - it identifies which compositions
 /// are strong and worth keeping. It works with `Discarder` (worse.rs)
 /// which removes the weak ones.
 ///
@@ -23,7 +23,7 @@ pub struct Evaluator {
     inner: crate::eval::Evaluator,
 }
 
-/// SectorScore — the evaluation of a single sector variation.
+/// SectorScore - the evaluation of a single sector variation.
 #[derive(Debug, Clone)]
 pub struct SectorScore {
     pub sector: u16,
@@ -79,7 +79,7 @@ impl Evaluator {
                     sectors_used.insert(s);
                 }
             }
-            let n = crate::wave::sectors() as f64;
+            let n = crate::wave::Wave::sector_count() as f64;
             let coverage = sectors_used.len() as f64 / n;
 
             // Length factor: penalize very short compositions
@@ -91,7 +91,7 @@ impl Evaluator {
 
             // Prompt alignment: how well does the composition's wave
             // align with the prompt's wave? This is the key semantic
-            // differentiator — each sector produces different words,
+            // differentiator - each sector produces different words,
             // so the wave alignment varies even with large vocabularies.
             let comp_wave = crate::wave::Wave::sentence(facet, &tokens);
             let prompt_norm = prompt_wave.norm();
@@ -144,9 +144,9 @@ impl Evaluator {
 
     /// Computes the spread (standard deviation) of sector scores.
     ///
-    /// A low spread means all sectors produce similar quality —
+    /// A low spread means all sectors produce similar quality -
     /// the facet is uniform. A high spread means some sectors
-    /// are much better than others — the facet has structure.
+    /// are much better than others - the facet has structure.
     pub fn score_spread(&self, scores: &[SectorScore]) -> f64 {
         if scores.len() < 2 {
             return 0.0;

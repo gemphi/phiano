@@ -1,4 +1,4 @@
-# 01 — Phiano Etymology: From Piano to Phasor
+# 01 - Phiano Etymology: From Piano to Phasor
 
 ## The Name
 

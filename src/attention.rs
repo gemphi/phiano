@@ -16,11 +16,13 @@ use std::f64::consts::PI;
 /// Number of attention heads (phase sectors).
 pub const NUM_HEADS: usize = 8;
 
-/// Attention weights for a set of tokens.
+pub struct Attention;
+
+#[allow(dead_code)]
 pub struct AttentionOutput {
     /// Weighted combination of token phasors (one per head).
     pub head_outputs: Vec<c64>,
-    /// Attention weights [head][token_index] — how much each token was attended to.
+    /// Attention weights [head][token_index] - how much each token was attended to.
     pub weights: Vec<Vec<f64>>,
     /// Combined attention vector across all heads.
     pub combined: c64,
@@ -36,7 +38,8 @@ pub struct AttentionOutput {
 ///
 /// This allows the model to attend to words in different semantic regions
 /// of the phase space simultaneously.
-pub fn self_attention(
+impl Attention {
+pub fn self_attend(
     facet: &Facet,
     tokens: &[String],
     context_phase: f64,
@@ -110,11 +113,12 @@ pub fn self_attention(
 
 /// Returns the top-k attended words from a token list for a given head.
 /// Useful for understanding which words the model is focusing on.
+#[allow(dead_code)]
 pub fn top_attended(
-    tokens: &[String],
-    weights: &[f64],
-    k: usize,
-) -> Vec<(String, f64)> {
+        tokens: &[String],
+        weights: &[f64],
+        k: usize,
+    ) -> Vec<(String, f64)> {
     let mut indexed: Vec<(usize, f64)> = weights.iter()
         .enumerate()
         .map(|(i, &w)| (i, w))
@@ -128,24 +132,24 @@ pub fn top_attended(
 
 /// Attention-guided word selection: uses attention weights to pick the
 /// most relevant next words, combining n-gram probabilities with attention scores.
-pub fn attention_next_words(
-    facet: &Facet,
-    context_tokens: &[String],
-    candidates: &[(String, u32)],
-    context_phase: f64,
-    top_k: usize,
-) -> Vec<(String, f64)> {
+pub fn next_words(
+        facet: &Facet,
+        context_tokens: &[String],
+        candidates: &[(String, u32)],
+        context_phase: f64,
+        top_k: usize,
+    ) -> Vec<(String, f64)> {
     if candidates.is_empty() {
         return Vec::new();
     }
 
     // Run self-attention on context tokens
-    let attn = self_attention(facet, context_tokens, context_phase);
+        let attn = Self::self_attend(facet, context_tokens, context_phase);
 
-    // Score each candidate by attention alignment
+    // Score each candidate by normalized log n-gram and phase attention alignment
     let mut scored: Vec<(String, f64)> = candidates.iter()
         .map(|(word, count)| {
-            let ngram_score = *count as f64;
+            let log_ngram = (*count as f64 + 1.0).ln();
 
             // Attention score: how well does this word's phase align with attention output?
             let attn_score = facet.lexicon.get(word).map(|p| {
@@ -154,8 +158,8 @@ pub fn attention_next_words(
                 1.0 / (1.0 + diff)
             }).unwrap_or(0.0);
 
-            // Blend: 50% n-gram, 50% attention
-            let combined = 0.5 * ngram_score + 0.5 * attn_score * 10.0;
+            // Balanced blend: 40% log n-gram frequency + 60% semantic phase alignment
+            let combined = 0.4 * log_ngram + 0.6 * attn_score * 10.0;
             (word.clone(), combined)
         })
         .collect();
@@ -163,4 +167,5 @@ pub fn attention_next_words(
     scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
     scored.truncate(top_k);
     scored
+}
 }

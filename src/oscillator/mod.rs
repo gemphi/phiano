@@ -1,8 +1,8 @@
-/// Oscillator module — sphere model for language.
+/// Oscillator module - sphere model for language.
 ///
 /// In the oscillator model, words are living oscillators on a sphere.
 /// Each word spins at its own frequency. The sphere's surface is a color
-/// spectrum — hue from longitude, brightness from latitude.
+/// spectrum - hue from longitude, brightness from latitude.
 
 pub mod field;
 pub mod eval;
@@ -20,13 +20,13 @@ use std::f64::consts::PI;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Oscillator {
-    /// Longitude on sphere [0, 2π) — maps to hue.
+    /// Longitude on sphere [0, 2π) - maps to hue.
     pub longitude: f64,
-    /// Latitude on sphere [-π/2, +π/2] — maps to brightness.
+    /// Latitude on sphere [-π/2, +π/2] - maps to brightness.
     pub latitude: f64,
-    /// Angular frequency — rotation speed.
+    /// Angular frequency - rotation speed.
     pub frequency: f64,
-    /// Amplitude — intensity / vividness.
+    /// Amplitude - intensity / vividness.
     pub amplitude: f64,
 }
 

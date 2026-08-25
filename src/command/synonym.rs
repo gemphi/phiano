@@ -1,7 +1,7 @@
 use crate::command::Context;
 use crate::wave::Wave;
 
-/// Synonym — finds the nearest resonant words for a given word.
+/// Synonym - finds the nearest resonant words for a given word.
 ///
 /// Usage: `synonym <word> [count]`
 ///

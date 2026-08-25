@@ -1,4 +1,4 @@
-/// RiverFlow — generates text by flowing through color sectors.
+/// RiverFlow - generates text by flowing through color sectors.
 ///
 /// Based on the Flower-Hayes cognitive process model:
 /// - **Planning**: the prompt determines the source sector (color)
@@ -12,7 +12,7 @@ mod compose;
 use crate::config;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::wave::{Wave, sectors};
+use crate::wave::Wave;
 
 pub struct RiverFlow {
     /// The prompt that seeded the flow.
@@ -25,7 +25,7 @@ pub struct RiverFlow {
 
 impl RiverFlow {
     /// Traces a river flow from a prompt, starting at a specific sector.
-    /// Computes its own ray cast — use generate_variations for batch efficiency.
+    /// Computes its own ray cast - use generate_variations for batch efficiency.
     pub fn trace(
         facet: &Facet,
         prompt: &str,
@@ -74,7 +74,7 @@ impl RiverFlow {
             in_sector.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
             words.extend(in_sector.into_iter().take(4).map(|(w, _)| w));
 
-            let n = sectors();
+            let n = crate::wave::Wave::sector_count();
             let prev_s = if sector == 0 { n - 1 } else { sector - 1 };
             let next_s = (sector + 1) % n;
             let mut adj: Vec<(String, f64)> = resonant_pool
@@ -137,9 +137,9 @@ impl RiverFlow {
         prompt: &str,
         depth: usize,
     ) -> Vec<RiverFlow> {
-        let n = sectors();
+        let n = Wave::sector_count();
 
-        // Compute ray cast once — same prompt wave for all sectors
+        // Compute ray cast once - same prompt wave for all sectors
         let tokens = Tokenizer::tokenize(prompt);
         let wave = Wave::sentence(facet, &tokens);
         let resonant_pool = Wave::ray_cast(facet, wave, config::RAY_CAST_POOL_SIZE);
@@ -168,7 +168,7 @@ impl RiverFlow {
     /// Pre-computes fallback words (top 4 by amplitude) for each sector.
     /// Done once instead of per-empty-sector during composition.
     fn build_fallback_map(facet: &Facet) -> std::collections::HashMap<u16, Vec<String>> {
-        let n = sectors();
+        let n = Wave::sector_count();
         let mut map: std::collections::HashMap<u16, Vec<(&String, f64)>> =
             std::collections::HashMap::new();
 
@@ -190,7 +190,7 @@ impl RiverFlow {
 
     /// Builds the river's path through sectors.
     fn build_path(source: u16, depth: usize) -> Vec<u16> {
-        let n = sectors();
+        let n = Wave::sector_count();
         let half = (depth / 2).max(2).min((n / 2 - 1) as usize);
         let mut path = Vec::new();
 

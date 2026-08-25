@@ -6,7 +6,7 @@ Every reference in Rust has a **lifetime**, which is the scope for which that re
 ---
 
 ## The Borrow Checker & Dangling References
-The Rust borrow checker prevents **dangling references**—accessing memory that has already been deallocated.
+The Rust borrow checker prevents **dangling references**-accessing memory that has already been deallocated.
 
 ```rust
 // Lifetime Annotations in Function Signatures

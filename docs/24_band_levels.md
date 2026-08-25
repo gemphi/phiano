@@ -1,4 +1,4 @@
-# 24 — Band_n Sub-Levels
+# 24 - Band_n Sub-Levels
 
 ## Purpose: Preventing Phase Collapse
 
@@ -9,7 +9,7 @@
               ●     ●  ●
 
   Epoch 50:             ●        (ALL words converged to
-              ●         ●         same phase — useless!)
+              ●         ●         same phase - useless!)
               ●         ●
 
   With band_n promotion:
@@ -28,8 +28,8 @@
 ```
   2D space: (φ, n)
 
-  φ ∈ [0, 2π)    — continuous
-  n ∈ {1, 2, 3, ...} — discrete
+  φ ∈ [0, 2π)    - continuous
+  n ∈ {1, 2, 3, ...} - discrete
 
   effective_phase = φ + n·α
 

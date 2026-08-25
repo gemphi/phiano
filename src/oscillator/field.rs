@@ -1,4 +1,4 @@
-/// OscillatorField — a collection of oscillators built from the facet.
+/// OscillatorField - a collection of oscillators built from the facet.
 
 use super::Oscillator;
 use crate::facet::Facet;
@@ -7,7 +7,7 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 
-/// OscillatorField — the oscillator equivalent of the facet + wave system.
+/// OscillatorField - the oscillator equivalent of the facet + wave system.
 pub struct OscillatorField {
     pub oscillators: Vec<(String, Oscillator)>,
     pub index: HashMap<String, usize>,

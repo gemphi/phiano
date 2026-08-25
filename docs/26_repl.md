@@ -1,4 +1,4 @@
-# 26 — REPL Interface
+# 26 - REPL Interface
 
 ## rustyline Integration
 
@@ -44,7 +44,7 @@
 
 ```
   ╔══════════════════════════════════════════════════╗
-  ║  PHIANO — Chromatic Resonance Agent              ║
+  ║  PHIANO - Chromatic Resonance Agent              ║
   ║  Recursive learning: envision → apply → eval     ║
   ║                   → iterate → scale              ║
   ╚══════════════════════════════════════════════════╝
@@ -53,10 +53,10 @@
   Vocabulary: 30214 words
 
   Commands:
-    learn "text"               — Train on a sentence
-    define <word>              — Fetch & learn a definition
+    learn "text"               - Train on a sentence
+    define <word>              - Fetch & learn a definition
     ...
-    exit                       — Save and quit
+    exit                       - Save and quit
 
   phiano> _
 ```

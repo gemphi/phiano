@@ -1,3 +1,5 @@
+pub mod chat;
+pub mod cognitive;
 pub mod compose;
 pub mod define;
 pub mod eval;
@@ -16,6 +18,7 @@ pub mod synthetic;
 pub mod synonym;
 pub mod wave;
 
+use crate::cognitive::CognitiveCore;
 use crate::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::memory::Memo;
@@ -26,23 +29,25 @@ use crate::trainer::Trainer;
 ///
 /// Provides mutable access to the facet, memory, world, and multi-turn context buffer.
 pub struct Context<'a> {
-    /// The facet — mutable so commands can train or modify the lexicon.
+    /// The facet - mutable so commands can train or modify the lexicon.
     pub manifold: &'a mut Facet,
-    /// The trainer — shared across commands for consistent learning.
+    /// The trainer - shared across commands for consistent learning.
     pub trainer: &'a Trainer,
-    /// The memo — mutable so commands can record interactions.
+    /// The memo - mutable so commands can record interactions.
     pub memory: &'a mut Memo,
-    /// The world — mutable so persona commands can add/modify personas.
+    /// The world - mutable so persona commands can add/modify personas.
     pub world: &'a mut World,
     /// Multi-turn context wave buffer for conversational continuity.
     pub context_buffer: &'a mut ContextWaveBuffer,
+    /// The cognitive core - 16 Searle-inspired agents.
+    pub cognitive_core: &'a CognitiveCore,
     /// The argument string after the command name (trimmed).
     pub arg: &'a str,
     /// The full raw input line.
     pub line: &'a str,
 }
 
-/// Command — core REPL commands only.
+/// Command - core REPL commands only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Command {
     Help,
@@ -52,11 +57,13 @@ pub enum Command {
     Compose,
     Generate,
     Instruct,
+    Chat,
     Reason,
     Layers,
     Synthetic,
     Oscillator,
     Persona,
+    Cognitive,
     Synonym,
     Resonance,
     Wave,
@@ -78,11 +85,13 @@ impl Command {
             "compose" => Self::Compose,
             "generate" | "gen" => Self::Generate,
             "instruct" | "instruction" | "ask" => Self::Instruct,
+            "chat" => Self::Chat,
             "reason" | "solve" | "chain" => Self::Reason,
             "layers" | "hierarchy" | "tree" => Self::Layers,
             "synthetic" | "synth" => Self::Synthetic,
             "oscillator" | "om" => Self::Oscillator,
             "persona" => Self::Persona,
+            "cognitive" | "cog" => Self::Cognitive,
             "synonym" | "synonyms" => Self::Synonym,
             "resonance" => Self::Resonance,
             "wave" => Self::Wave,
@@ -95,13 +104,13 @@ impl Command {
     }
 }
 
-/// Dispatcher — routes input lines to the appropriate command handler.
+/// Dispatcher - routes input lines to the appropriate command handler.
 pub struct Dispatcher;
 
 impl Dispatcher {
     /// Dispatches a command line to the appropriate handler.
     pub fn dispatch<'a>(line: &'a str, ctx: &mut Context<'a>) -> bool {
-        // Drivers first — source/device commands are separate from core
+        // Drivers first - source/device commands are separate from core
         if let Some(result) = crate::drivers::Driver::try_dispatch(line, ctx) {
             return result;
         }
@@ -118,11 +127,13 @@ impl Dispatcher {
             Command::Compose => compose::Compose.apply(ctx),
             Command::Generate => generate::GenerateCmd.apply(ctx),
             Command::Instruct => instruction::InstructionCmd.apply(ctx),
+            Command::Chat => chat::ChatCmd.apply(ctx),
             Command::Reason => reasoning::ReasoningCmd.apply(ctx),
             Command::Layers => layers::LayersCmd.apply(ctx),
             Command::Synthetic => synthetic::SyntheticCmd.apply(ctx),
             Command::Oscillator => oscillator::OscillatorCmd.apply(ctx),
             Command::Persona => persona::PersonaCmd.apply(ctx),
+            Command::Cognitive => cognitive::CognitiveCmd.apply(ctx),
             Command::Synonym => synonym::Synonym.apply(ctx),
             Command::Resonance => resonance::Resonance.apply(ctx),
             Command::Wave => wave::WaveCmd.apply(ctx),
@@ -135,7 +146,7 @@ impl Dispatcher {
     }
 }
 
-/// Parser — utility for parsing command arguments.
+/// Parser - utility for parsing command arguments.
 pub struct Parser;
 
 impl Parser {
@@ -144,13 +155,12 @@ impl Parser {
     /// Returns the string unchanged if it's not quoted.
     pub fn strip_quotes(s: &str) -> String {
         let s = s.trim();
-        let is_double_quoted = s.starts_with('"') && s.ends_with('"');
-        let is_single_quoted = s.starts_with('\'') && s.ends_with('\'');
+        let is_quoted = (s.starts_with('"') && s.ends_with('"'))
+            || (s.starts_with('\'') && s.ends_with('\''));
 
-        if is_double_quoted || is_single_quoted {
-            s[1..s.len() - 1].to_string()
-        } else {
-            s.to_string()
+        match is_quoted {
+            true => s[1..s.len() - 1].to_string(),
+            false => s.to_string(),
         }
     }
 }

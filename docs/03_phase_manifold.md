@@ -1,4 +1,4 @@
-# 03 — The Phase Manifold
+# 03 - The Phase Manifold
 
 ## 2π Phase Circle
 

@@ -6,7 +6,7 @@ use crate::sources::api::ApiSource;
 use crate::sources::local::LocalSource;
 use crate::sources::DictionarySource;
 
-/// Define — fetches, displays, and learns a word's rich definition.
+/// Define - fetches, displays, and learns a word's rich definition.
 ///
 /// Usage: `define <word>`
 ///

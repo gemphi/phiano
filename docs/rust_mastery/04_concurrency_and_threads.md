@@ -1,7 +1,7 @@
 # 04. Concurrency, Threads, and Shared State in Rust
 
 ## Overview
-Rust guarantees **Fearless Concurrency**—preventing data races at compile time using ownership, `Send`, and `Sync` traits.
+Rust guarantees **Fearless Concurrency**-preventing data races at compile time using ownership, `Send`, and `Sync` traits.
 
 ---
 

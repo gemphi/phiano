@@ -3,8 +3,11 @@
 use crate::facet::Facet;
 use crate::phasor::SpectralPhasor;
 
+pub struct CrossAttention;
+
+impl CrossAttention {
 /// Returns attention weights [prompt_token][generated_token].
-pub fn cross_attention(
+pub fn weights(
     facet: &Facet,
     prompt_tokens: &[String],
     generated_tokens: &[String],
@@ -47,4 +50,5 @@ pub fn cross_attention(
     }
 
     result
+}
 }

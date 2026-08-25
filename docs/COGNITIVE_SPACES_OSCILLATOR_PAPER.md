@@ -1,8 +1,8 @@
 # Cognitive Spaces via Harmonic Phase Oscillators: The Phiano Framework for Non-Euclidean Linguistic Dynamics
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 
@@ -12,7 +12,7 @@ Contemporary natural language processing is predominantly anchored to Euclidean 
 
 In this paper, we introduce **Cognitive Spaces via Harmonic Phase Oscillators**, a post-Transformer computational paradigm where linguistic entities are modeled not as static geometric vectors, but as dynamic limit-cycle oscillators defined on non-Euclidean toroidal manifolds $\mathbb{T}^d = (\mathbb{S}^1)^d$ and Riemannian spherical shells $\mathbb{S}^2$. Interaction between semantic tokens is governed by non-linear **Kuramoto phase coupling**, where meaning emerges through constructive and destructive wave interference, spectral phase alignment, and transient attractor states.
 
-To realize this paradigm for practical artificial intelligence, we introduce **Phiano**—the *PyTorch of the Oscillator Method*. Phiano provides a modular, differentiable, and SIMD-parallelized computational runtime in Rust that natively executes spectral phasor transformations, continuous phase synchronization, multi-band memory manifolds, and dynamic sector-based resonance composition. We establish the formal mathematical foundations of Cognitive Spaces, derive the phase-energy metric space, prove stability via Lyapunov energy potentials, and present empirical benchmarks demonstrating linear-time $\mathcal{O}(N)$ phase alignment, zero-shot persona fingerprinting, and dynamic glass-box interpretability.
+To realize this paradigm for practical artificial intelligence, we introduce **Phiano**-the *PyTorch of the Oscillator Method*. Phiano provides a modular, differentiable, and SIMD-parallelized computational runtime in Rust that natively executes spectral phasor transformations, continuous phase synchronization, multi-band memory manifolds, and dynamic sector-based resonance composition. We establish the formal mathematical foundations of Cognitive Spaces, derive the phase-energy metric space, prove stability via Lyapunov energy potentials, and present empirical benchmarks demonstrating linear-time $\mathcal{O}(N)$ phase alignment, zero-shot persona fingerprinting, and dynamic glass-box interpretability.
 
 ---
 
@@ -273,7 +273,7 @@ Phiano extracts **Persona Fingerprints** as directional sector histograms over t
 The introduction of Cognitive Spaces and the Phiano framework opens several major research frontiers:
 
 1. **Continuous-Time Temporal AI**: Unlike static context windows, harmonic phase oscillators can be continuously updated in real-time streaming environments without reprocessing historical token sequences from scratch.
-2. **Glass-Box Explainability**: Every internal representation in Phiano is physically grounding—angles represent topical sectors, amplitudes denote familiarity, and order parameters measure coherence.
+2. **Glass-Box Explainability**: Every internal representation in Phiano is physically grounding-angles represent topical sectors, amplitudes denote familiarity, and order parameters measure coherence.
 3. **Neuromorphic & Analog Silicon Mapping**: Harmonic phase coupling equations directly map to analog oscillator networks and optical computing hardware, enabling ultra-low-power edge intelligence.
 
 ---

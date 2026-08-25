@@ -5,7 +5,7 @@ use crate::compose::{sector_color, Composition};
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 
-/// CompositionTuner — the "Monitor" in the Flower-Hayes model.
+/// CompositionTuner - the "Monitor" in the Flower-Hayes model.
 ///
 /// The monitor orchestrates the recursive writing process:
 ///
@@ -69,10 +69,10 @@ impl CompositionTuner {
         for round in 0..self.max_rounds {
             println!("  [round {}/{}] generating 64 sector variations...", round + 1, self.max_rounds);
 
-            // Phase 1: PROPOSE — generate 64 variations
+            // Phase 1: PROPOSE - generate 64 variations
             let flows = RiverFlow::generate_variations(facet, prompt, self.depth);
 
-            // Phase 2: EVALUATE — score all 64
+            // Phase 2: EVALUATE - score all 64
             all_scores = self.evaluator.evaluate_variations(facet, &flows);
 
             best_score = all_scores[0].clone();
@@ -90,11 +90,11 @@ impl CompositionTuner {
                 spread,
             );
 
-            // Phase 3: DISCARD + TRAIN — keep better, discard worse, train on better
+            // Phase 3: DISCARD + TRAIN - keep better, discard worse, train on better
             let result = self.discarder.discard_and_train(facet, trainer, &all_scores);
             self.discarder.print_summary(&result);
 
-            // Phase 4: CONVERGE — check if we're done
+            // Phase 4: CONVERGE - check if we're done
             if self.evaluator.has_converged(&all_scores, prev_best) && round > 0 {
                 println!("  [converged] improvement below threshold");
                 rounds_completed = round + 1;

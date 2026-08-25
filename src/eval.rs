@@ -5,28 +5,28 @@ use crate::wave::Wave;
 use std::fmt;
 use std::f64::consts::PI;
 
-/// Verdict — qualitative assessment of a text's semantic quality.
+/// Verdict - qualitative assessment of a text's semantic quality.
 ///
 /// Derived from the coherence, novelty, and resonance scores.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Verdict {
-    /// Input was empty — no tokens to evaluate.
+    /// Input was empty - no tokens to evaluate.
     Empty,
-    /// Mostly unknown vocabulary — sounds like noise.
+    /// Mostly unknown vocabulary - sounds like noise.
     Noise,
-    /// Words don't resonate but the input is novel — possibly creative.
+    /// Words don't resonate but the input is novel - possibly creative.
     DissonantNovel,
     /// Words do not resonate together at all.
     Incoherent,
     /// Coherent and well-grounded in existing knowledge.
     CoherentGrounded,
-    /// Coherent and introduces novel ideas — insightful.
+    /// Coherent and introduces novel ideas - insightful.
     CoherentNovel,
     /// Moderately coherent with some novel elements.
     ModerateNovel,
-    /// Coherent but familiar — no new information.
+    /// Coherent but familiar - no new information.
     CoherentFamiliar,
-    /// Weakly coherent — marginal meaning.
+    /// Weakly coherent - marginal meaning.
     WeaklyCoherent,
 }
 
@@ -57,18 +57,18 @@ impl fmt::Display for Verdict {
         match self {
             Self::Empty => write!(f, "Empty input"),
             Self::Noise => write!(f, "Noise-like, mostly unknown vocabulary"),
-            Self::DissonantNovel => write!(f, "Dissonant but novel — may be creative or nonsensical"),
-            Self::Incoherent => write!(f, "Incoherent — words do not resonate together"),
+            Self::DissonantNovel => write!(f, "Dissonant but novel - may be creative or nonsensical"),
+            Self::Incoherent => write!(f, "Incoherent - words do not resonate together"),
             Self::CoherentGrounded => write!(f, "Coherent and well-grounded"),
-            Self::CoherentNovel => write!(f, "Coherent and novel — insightful"),
+            Self::CoherentNovel => write!(f, "Coherent and novel - insightful"),
             Self::ModerateNovel => write!(f, "Moderately coherent with novel elements"),
             Self::CoherentFamiliar => write!(f, "Coherent and familiar"),
-            Self::WeaklyCoherent => write!(f, "Weakly coherent — marginal meaning"),
+            Self::WeaklyCoherent => write!(f, "Weakly coherent - marginal meaning"),
         }
     }
 }
 
-/// Eval — the result of evaluating a text against the facet.
+/// Eval - the result of evaluating a text against the facet.
 ///
 /// Contains quantitative scores (coherence, novelty, resonance, overall)
 /// and a qualitative verdict.
@@ -96,7 +96,7 @@ impl fmt::Display for Eval {
     }
 }
 
-/// Evaluator — scores text against the facet's semantic space.
+/// Evaluator - scores text against the facet's semantic space.
 ///
 /// Produces an `Eval` result with coherence, novelty, and resonance scores.
 pub struct Evaluator;

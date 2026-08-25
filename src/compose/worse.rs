@@ -3,7 +3,7 @@ use crate::compose::sector_color;
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 
-/// Discarder — the "worse" half of the reviewing process.
+/// Discarder - the "worse" half of the reviewing process.
 ///
 /// Based on the Flower-Hayes "Revising" subprocess:
 ///   discarding weak material and reinforcing strong material.
@@ -26,7 +26,7 @@ pub struct Discarder {
     pub discard_count: usize,
 }
 
-/// DiscardResult — the outcome of a discard round.
+/// DiscardResult - the outcome of a discard round.
 #[derive(Debug, Clone)]
 pub struct DiscardResult {
     /// Sectors that were kept (trained on).

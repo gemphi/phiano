@@ -1,4 +1,4 @@
-# 28 — MemoryBand Enum
+# 28 - MemoryBand Enum
 
 ## Four Bands
 

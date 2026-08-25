@@ -2,7 +2,7 @@ use crate::chunker::ChunkStore;
 use crate::command::Context;
 use crate::command::Parser;
 
-/// Chunk — splits a large JSON dictionary into letter-based chunk files.
+/// Chunk - splits a large JSON dictionary into letter-based chunk files.
 ///
 /// Usage: `chunk <dictionary.json>`
 ///

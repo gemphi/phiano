@@ -1,22 +1,23 @@
 pub mod metrics;
 pub use metrics::{TrainingMetrics, MultiEpochResult};
 
-use crate::config::{self, PHI};
+use crate::config::{
+    PHI, TWO_PI, PHASE_REPULSION,
+    CONVERGENCE_THRESHOLD, AMPLITUDE_INCREMENT, AMPLITUDE_MAX,
+    AMPLITUDE_INITIAL, BAND_N_INITIAL,
+};
 use crate::facet::Facet;
 use crate::phasor::SpectralPhasor;
 use crate::tokenizer::Tokenizer;
-use std::f64::consts::PI;
 
-/// Trainer — unsupervised language learning via Kuramoto phase attraction.
+/// Trainer - unsupervised language learning via Kuramoto-Sakaguchi phase attraction.
 ///
-/// The trainer learns language by reading definitions and example sentences.
 /// Words that co-occur in a sentence get their phase angles pulled toward
-/// the sentence's centroid phase. Over many epochs, words that appear in
-/// similar contexts converge to similar phases, creating a self-organizing
-/// semantic space.
+/// the sentence's centroid phase with an asymmetric phase lag (beta) to encode
+/// forward syntactic temporal direction.
 #[derive(Clone)]
 pub struct Trainer {
-    /// Kuramoto learning rate — controls how fast phases converge.
+    /// Kuramoto learning rate - controls how fast phases converge.
     pub learning_rate: f64,
 }
 
@@ -26,71 +27,133 @@ impl Trainer {
         Self { learning_rate }
     }
 
-    /// Trains on a single sentence using Kuramoto phase attraction.
+    /// Trains on a single sentence using Kuramoto-Sakaguchi asymmetric phase coupling.
     ///
     /// Steps:
     /// 1. Tokenize text; initialize unseen tokens at deterministic pseudo-random phases
-    /// 2. Compute context centroid phase from all token phasors
-    /// 3. Shift each token's phase toward centroid by `lr * sin(target - current)`
-    /// 4. Bump `band_n` for tokens already close (prevents phase collapse)
+    /// 2. Record n-gram co-occurrences for sequence modeling
+    /// 3. Compute semantic centroid phase from all token phasors
+    /// 4. Shift each token's phase toward centroid + directional syntactic neighbor lag
+    /// 5. Bump `band_n` for tokens already close (prevents phase collapse)
     ///
     /// Returns the number of tokens that were updated.
     pub fn train_sentence(&self, facet: &mut Facet, text: &str) -> usize {
         let tokens = Tokenizer::tokenize(text);
-        if tokens.is_empty() {
-            return 0;
+        match tokens.is_empty() {
+            true => return 0,
+            false => {}
         }
 
         self.initialize_tokens(facet, &tokens);
 
-        // Record bigram and trigram co-occurrences
+        // Record bigram, trigram, and learned syntactic phase lags
         for window in tokens.windows(2) {
             facet.record_bigram(&window[0], &window[1]);
+            if let (Some(p0), Some(p1)) = (facet.lexicon.get(&window[0]), facet.lexicon.get(&window[1])) {
+                let observed_lag = (p1.phase - p0.phase).rem_euclid(TWO_PI);
+                facet.record_phase_lag(&window[0], &window[1], observed_lag);
+            }
         }
         for window in tokens.windows(3) {
             facet.record_trigram(&window[0], &window[1], &window[2]);
         }
 
         let target_phase = self.compute_centroid_phase(facet, &tokens);
+        let n_tokens = tokens.len();
+
+        // Capture snapshot of current token phases and learned β_ij for asymmetric neighbor coupling
+        let token_phases: Vec<f64> = tokens.iter()
+            .map(|t| facet.lexicon.get(t).map(|p| p.phase).unwrap_or(0.0))
+            .collect();
+        let beta_prev: Vec<f64> = tokens.iter().enumerate().map(|(i, t)| {
+            match i > 0 {
+                true => facet.phase_lag(&tokens[i - 1], t),
+                false => 0.0,
+            }
+        }).collect();
+        let beta_next: Vec<f64> = tokens.iter().enumerate().map(|(i, t)| {
+            match i + 1 < n_tokens {
+                true => facet.phase_lag(t, &tokens[i + 1]),
+                false => 0.0,
+            }
+        }).collect();
 
         let mut updated = 0;
-        for token in &tokens {
+        for (i, token) in tokens.iter().enumerate() {
             let phasor = facet.lexicon.get_mut(token).unwrap();
-            let phase_error = (target_phase - phasor.phase).sin();
+            let semantic_force = (target_phase - phasor.phase).sin();
 
-            phasor.phase = (phasor.phase + self.learning_rate * phase_error)
-                .rem_euclid(2.0 * PI);
+            // Compute directional syntactic lag from preceding and subsequent words
+            let mut syntax_force = 0.0;
+            let mut syntax_neighbors = 0;
 
-            if phase_error.abs() < config::CONVERGENCE_THRESHOLD {
-                phasor.band_n += 1;
+            match i > 0 {
+                true => {
+                    let prev_phase = token_phases[i - 1];
+                    syntax_force += (prev_phase - phasor.phase + beta_prev[i]).sin();
+                    syntax_neighbors += 1;
+                }
+                false => {}
+            }
+            match i + 1 < n_tokens {
+                true => {
+                    let next_phase = token_phases[i + 1];
+                    syntax_force += (next_phase - phasor.phase - beta_next[i]).sin();
+                    syntax_neighbors += 1;
+                }
+                false => {}
             }
 
-            phasor.amplitude = (phasor.amplitude + config::AMPLITUDE_INCREMENT).min(config::AMPLITUDE_MAX);
+            let combined_error = match syntax_neighbors > 0 {
+                true => 0.7 * semantic_force + 0.3 * (syntax_force / syntax_neighbors as f64),
+                false => semantic_force,
+            };
+
+            phasor.phase = (phasor.phase + self.learning_rate * combined_error)
+                .rem_euclid(TWO_PI);
+
+            match semantic_force.abs() < CONVERGENCE_THRESHOLD {
+                true => phasor.band_n += 1,
+                false => {}
+            }
+
+            phasor.amplitude = (phasor.amplitude + AMPLITUDE_INCREMENT).min(AMPLITUDE_MAX);
             updated += 1;
         }
 
         updated
     }
 
+    /// In-chat real-time self-correction: applies an instantaneous anti-phase pulse (π radians)
+    /// to suppress erroneous associations and aligns the corrected target.
+    pub fn correct_mistake(&self, facet: &mut Facet, wrong_phrase: &str, correct_phrase: &str) {
+        let wrong_tokens = Tokenizer::tokenize(wrong_phrase);
+
+        for token in &wrong_tokens {
+            match facet.lexicon.get_mut(token) {
+                Some(phasor) => {
+                    phasor.phase = (phasor.phase + PHASE_REPULSION).rem_euclid(TWO_PI);
+                    phasor.amplitude = (phasor.amplitude * 0.8).max(AMPLITUDE_INITIAL);
+                }
+                None => {}
+            }
+        }
+        
+        // 2. Train and reinforce the correct phrase
+        self.train_sentence(facet, correct_phrase);
+    }
+
     /// Initializes unseen tokens at deterministic pseudo-random phases.
-    ///
-    /// The seed phase is derived from the token length multiplied by the
-    /// golden ratio, modulo 2*pi. This gives each new word a unique but
-    /// deterministic starting position on the phase circle.
     fn initialize_tokens(&self, facet: &mut Facet, tokens: &[String]) {
         for token in tokens {
             facet.lexicon.entry(token.clone()).or_insert_with(|| {
-                let seed_phase = (token.len() as f64 * PHI) % (2.0 * PI);
-                SpectralPhasor::new(seed_phase, config::AMPLITUDE_INITIAL, config::BAND_N_INITIAL)
+                let seed_phase = (token.len() as f64 * PHI).rem_euclid(TWO_PI);
+                SpectralPhasor::new(seed_phase, AMPLITUDE_INITIAL, BAND_N_INITIAL)
             });
         }
     }
 
     /// Computes the amplitude-weighted centroid phase across all tokens.
-    ///
-    /// Each token's phasor contributes its cosine (x) and sine (y) components
-    /// scaled by amplitude. The centroid phase is the atan2 of the summed
-    /// y and x components.
     fn compute_centroid_phase(&self, facet: &Facet, tokens: &[String]) -> f64 {
         let mut sum_x = 0.0;
         let mut sum_y = 0.0;
@@ -109,7 +172,12 @@ impl Trainer {
         self.train_sentence(facet, text)
     }
 
-    /// Trains on a word-definition pair — the core learning unit.
+    /// Batch-trains a corpus of sentences. Returns total token updates.
+    pub fn train_corpus(&self, facet: &mut Facet, sentences: &[String]) -> usize {
+        sentences.iter().map(|s| self.train_sentence(facet, s)).sum()
+    }
+
+    /// Trains on a word-definition pair - the core learning unit.
     pub fn train_definition(&self, facet: &mut Facet, word: &str, definition: &str) {
         let combined = format!("{} {}", word, definition);
         self.train_sentence(facet, &combined);
@@ -142,16 +210,15 @@ impl Trainer {
         learned: &mut Vec<String>,
         visited: &mut std::collections::HashSet<String>,
     ) {
-        if depth_left == 0 || visited.contains(word) {
-            return;
+        match depth_left == 0 || visited.contains(word) {
+            true => return,
+            false => {}
         }
         visited.insert(word.to_string());
 
-        // If word is already known with high amplitude, skip
-        if let Some(phasor) = facet.lexicon.get(word) {
-            if phasor.amplitude > 5.0 {
-                return;
-            }
+        match facet.lexicon.get(word) {
+            Some(phasor) if phasor.amplitude > 5.0 => return,
+            _ => {}
         }
 
         // Look up definition
@@ -167,8 +234,9 @@ impl Trainer {
         // Find unknown words in the definition and recurse
         let def_tokens = crate::tokenizer::Tokenizer::tokenize(&definition);
         for token in &def_tokens {
-            if !facet.lexicon.contains_key(token) && !visited.contains(token) {
-                self.learn_chain_recursive(facet, chunk_store, token, depth_left - 1, learned, visited);
+            match facet.lexicon.contains_key(token) || visited.contains(token) {
+                true => {}
+                false => self.learn_chain_recursive(facet, chunk_store, token, depth_left - 1, learned, visited),
             }
         }
     }
@@ -187,12 +255,13 @@ impl Trainer {
         warmup: usize,
     ) -> MultiEpochResult {
         let tokens = Tokenizer::tokenize(text);
-        if tokens.is_empty() {
-            return MultiEpochResult {
+        match tokens.is_empty() {
+            true => return MultiEpochResult {
                 epochs: 0,
                 tokens_learned: 0,
                 converged: false,
-            };
+            },
+            false => {}
         }
 
         self.initialize_tokens(facet, &tokens);
@@ -200,6 +269,10 @@ impl Trainer {
         // Record bigram and trigram co-occurrences
         for window in tokens.windows(2) {
             facet.record_bigram(&window[0], &window[1]);
+            let prev_phase = facet.lexicon.get(&window[0]).map(|p| p.phase).unwrap_or(0.0);
+            let curr_phase = facet.lexicon.get(&window[1]).map(|p| p.phase).unwrap_or(0.0);
+            let observed_lag = (curr_phase - prev_phase).rem_euclid(TWO_PI);
+            facet.record_phase_lag(&window[0], &window[1], observed_lag);
         }
         for window in tokens.windows(3) {
             facet.record_trigram(&window[0], &window[1], &window[2]);
@@ -209,10 +282,9 @@ impl Trainer {
         let mut epochs_done = 0;
 
         for epoch in 0..max_epochs {
-            let effective_lr = if epoch < warmup {
-                self.learning_rate * (epoch as f64 + 1.0) / warmup as f64
-            } else {
-                self.learning_rate
+            let effective_lr = match epoch < warmup {
+                true => self.learning_rate * (epoch as f64 + 1.0) / warmup as f64,
+                false => self.learning_rate,
             };
 
             let target_phase = self.compute_centroid_phase(facet, &tokens);
@@ -222,20 +294,24 @@ impl Trainer {
                 let phasor = facet.lexicon.get_mut(token).unwrap();
                 let phase_error = (target_phase - phasor.phase).sin();
                 let shift = effective_lr * phase_error;
-                phasor.phase = (phasor.phase + shift).rem_euclid(2.0 * PI);
+                phasor.phase = (phasor.phase + shift).rem_euclid(TWO_PI);
                 max_shift = max_shift.max(shift.abs());
 
-                if phase_error.abs() < config::CONVERGENCE_THRESHOLD {
-                    phasor.band_n += 1;
+                match phase_error.abs() < CONVERGENCE_THRESHOLD {
+                    true => phasor.band_n += 1,
+                    false => {}
                 }
-                phasor.amplitude = (phasor.amplitude + config::AMPLITUDE_INCREMENT)
-                    .min(config::AMPLITUDE_MAX);
+                phasor.amplitude = (phasor.amplitude + AMPLITUDE_INCREMENT)
+                    .min(AMPLITUDE_MAX);
             }
 
             epochs_done = epoch + 1;
-            if max_shift < config::CONVERGENCE_THRESHOLD {
-                converged = true;
-                break;
+            match max_shift < CONVERGENCE_THRESHOLD {
+                true => {
+                    converged = true;
+                    break;
+                }
+                false => {}
             }
         }
 

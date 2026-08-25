@@ -2,7 +2,7 @@ use crate::command::Context;
 use crate::command::Parser;
 use crate::wave::Wave as WaveUtil;
 
-/// WaveCmd — displays the complex wave representation of a sentence.
+/// WaveCmd - displays the complex wave representation of a sentence.
 ///
 /// Usage: `wave "some text"`
 ///

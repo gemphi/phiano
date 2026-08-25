@@ -6,8 +6,8 @@
 
 use super::types::*;
 use crate::facet::Facet;
+use crate::phasor::{SpectralPhasor, TorusPhasor};
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
 
 /// Selects words guided by intentional states.
 /// Beliefs pull words that match the world (phase-resonant).
@@ -22,10 +22,13 @@ pub fn select_words(
     let mut words: Vec<String> = Vec::new();
     let prompt_tokens = Tokenizer::tokenize(prompt);
 
-    // Start with prompt words that are known
     for token in &prompt_tokens {
-        if facet.lexicon.contains_key(token) && !words.contains(token) {
-            words.push(token.clone());
+        match !Tokenizer::is_function_word(token)
+            && facet.lexicon.contains_key(token)
+            && !words.contains(token)
+        {
+            true => words.push(token.clone()),
+            false => {}
         }
     }
 
@@ -33,14 +36,24 @@ pub fn select_words(
     for state in states {
         match state.mode {
             PsychologicalMode::Belief => {
-                // Beliefs pull phase-resonant words (matching the world)
-                let target = crate::wave::c64::new(
-                    collective_phase.cos(),
-                    collective_phase.sin(),
-                );
-                let ray = Wave::ray_cast(facet, target, 4);
-                for (w, _) in ray {
-                    if !words.contains(&w) { words.push(w); }
+                // Beliefs pull multi-frequency torus-resonant words (matching the world)
+                let target_phasor = SpectralPhasor::new(collective_phase, 1.0, 0);
+                let target_torus = TorusPhasor::from_spectral(&target_phasor);
+
+                let mut scored: Vec<(String, f64)> = facet
+                    .lexicon
+                    .iter()
+                    .map(|(w, p)| {
+                        let word_torus = TorusPhasor::from_spectral(p);
+                        (w.clone(), target_torus.resonance(&word_torus))
+                    })
+                    .collect();
+                scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+                for (w, _) in scored.into_iter().take(4) {
+                    match !words.contains(&w) {
+                        true => words.push(w),
+                        false => {}
+                    }
                 }
             }
             PsychologicalMode::Desire | PsychologicalMode::Intention => {
@@ -48,24 +61,35 @@ pub fn select_words(
                 for word in words.clone().iter().take(3) {
                     // Try trigram with prompt context
                     let prompt_tokens = Tokenizer::tokenize(prompt);
-                    if prompt_tokens.len() >= 2 {
-                        let prev = &prompt_tokens[prompt_tokens.len() - 2];
-                        let curr = &prompt_tokens[prompt_tokens.len() - 1];
-                        let tri = facet.trigram_candidates(prev, curr);
-                        for (w, _) in tri.iter().take(2) {
-                            if !words.contains(w) { words.push(w.clone()); }
+                    match prompt_tokens.len() >= 2 {
+                        true => {
+                            let prev = &prompt_tokens[prompt_tokens.len() - 2];
+                            let curr = &prompt_tokens[prompt_tokens.len() - 1];
+                            let tri = facet.trigram_candidates(prev, curr);
+                            for (w, _) in tri.iter().take(2) {
+                                match !Tokenizer::is_function_word(w) && !words.contains(w) {
+                                    true => words.push(w.clone()),
+                                    false => {}
+                                }
+                            }
                         }
+                        false => {}
                     }
-                    // Fall back to bigram followers
                     let candidates = facet.next_word_candidates(word);
                     for (w, _) in candidates.iter().take(3) {
-                        if !words.contains(w) { words.push(w.clone()); }
+                        match !Tokenizer::is_function_word(w) && !words.contains(w) {
+                            true => words.push(w.clone()),
+                            false => {}
+                        }
                     }
                 }
             }
             _ => {}
         }
-        if words.len() >= 12 { break; }
+        match words.len() >= 12 {
+            true => break,
+            false => {}
+        }
     }
 
     words
@@ -80,8 +104,9 @@ pub fn synthesize(
     states: &[IntentionalState],
     prompt: &str,
 ) -> String {
-    if words.len() < 3 {
-        return format!("I need more information to respond to: {}", prompt);
+    match words.len() < 3 {
+        true => return format!("I need more information to respond to: {}", prompt),
+        false => {}
     }
 
     let w = |i: usize| -> &str {
@@ -94,11 +119,13 @@ pub fn synthesize(
         SpeechActType::Directive => {
             let mut s = Vec::new();
             s.push(format!("{} concerns {} and {}.", w(0), w(1), w(2)));
-            if words.len() > 4 {
-                s.push(format!("The relationship involves {} through {}.", w(3), w(4)));
+            match words.len() > 4 {
+                true => s.push(format!("The relationship involves {} through {}.", w(3), w(4))),
+                false => {}
             }
-            if words.len() > 6 {
-                s.push(format!("Key aspects: {}, {}, and {}.", w(5), w(6), w(7.min(words.len()-1))));
+            match words.len() > 6 {
+                true => s.push(format!("Key aspects: {}, {}, and {}.", w(5), w(6), w(7.min(words.len()-1)))),
+                false => {}
             }
             s.join(" ")
         }
@@ -106,7 +133,7 @@ pub fn synthesize(
             format!("I will address {} by examining {} and {}.", w(0), w(1), w(2))
         }
         SpeechActType::Expressive => {
-            format!("{} evokes {} and {} — a sense of {}.", w(0), w(1), w(2), w(3))
+            format!("{} evokes {} and {} - a sense of {}.", w(0), w(1), w(2), w(3))
         }
         SpeechActType::Declarative => {
             format!("{} is established as {}, defined through {}.", w(0), w(1), w(2))
@@ -114,11 +141,13 @@ pub fn synthesize(
         SpeechActType::Assertive => {
             let mut s = Vec::new();
             s.push(format!("{} is connected to {}.", w(0), w(1)));
-            if words.len() > 3 {
-                s.push(format!("This involves {} and {}.", w(2), w(3)));
+            match words.len() > 3 {
+                true => s.push(format!("This involves {} and {}.", w(2), w(3))),
+                false => {}
             }
-            if has_belief && words.len() > 5 {
-                s.push(format!("Evidence suggests {} relates to {}.", w(4), w(5)));
+            match has_belief && words.len() > 5 {
+                true => s.push(format!("Evidence suggests {} relates to {}.", w(4), w(5))),
+                false => {}
             }
             s.join(" ")
         }

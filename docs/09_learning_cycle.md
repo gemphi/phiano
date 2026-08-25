@@ -1,4 +1,4 @@
-# 09 — Recursive Learning Cycle
+# 09 - Recursive Learning Cycle
 
 ```
   ┌──────────────────────────────────────────────────────────────┐

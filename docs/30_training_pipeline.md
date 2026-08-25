@@ -1,4 +1,4 @@
-# 30 — Training Pipeline (Full Run)
+# 30 - Training Pipeline (Full Run)
 
 ## Complete Training Sequence
 

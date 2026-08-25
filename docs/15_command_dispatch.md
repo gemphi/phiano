@@ -1,4 +1,4 @@
-# 15 — Command Dispatch
+# 15 - Command Dispatch
 
 ## Command Enum
 

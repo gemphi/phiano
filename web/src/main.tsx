@@ -1,9 +1,10 @@
 import { StrictMode, useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
+import { PuiProvider } from '@phiace/puijs';
 import './styles/globals.css';
 import { App } from './App';
 import type { Stats } from './types';
-import { fetchStats } from './hooks/useApi';
+import { fetchStats } from './hooks/api/stats';
 
 function Root() {
   const [dark, setDark] = useState(() => {
@@ -27,13 +28,15 @@ function Root() {
 
   return (
     <StrictMode>
-      <App
-        dark={dark}
-        toggleDark={() => setDark(d => !d)}
-        stats={stats}
-        loading={loading}
-        refreshStats={refreshStats}
-      />
+      <PuiProvider defaultTheme={dark ? 'dark' : 'light'} defaultBrand="phiano">
+        <App
+          dark={dark}
+          toggleDark={() => setDark(d => !d)}
+          stats={stats}
+          loading={loading}
+          refreshStats={refreshStats}
+        />
+      </PuiProvider>
     </StrictMode>
   );
 }

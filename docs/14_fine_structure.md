@@ -1,4 +1,4 @@
-# 14 — Fine-Structure Constant (α)
+# 14 - Fine-Structure Constant (α)
 
 ## The Constant
 
@@ -36,10 +36,10 @@
 ## Why This Constant?
 
 ```
-  1. It's dimensionless — no units to worry about
-  2. It's small — sub-bands are close but distinguishable
-  3. It's irrational — no exact resonances or periodicities
-  4. It's fundamental — a universal constant of nature
+  1. It's dimensionless - no units to worry about
+  2. It's small - sub-bands are close but distinguishable
+  3. It's irrational - no exact resonances or periodicities
+  4. It's fundamental - a universal constant of nature
   5. At n=137, the shift = 1 radian (a natural "octave")
 
   The choice is aesthetic/philosophical rather than

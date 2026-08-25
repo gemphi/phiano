@@ -144,8 +144,8 @@ mean both how quickly Rust code can run and the speed at which Rust lets you
 write programs. The Rust compiler’s checks ensure stability through feature
 additions and refactoring. This is in contrast to the brittle legacy code in
 languages without these checks, which developers are often afraid to modify. By
-striving for zero-cost abstractions—higher-level features that compile to
-lower-level code as fast as code written manually—Rust endeavors to make safe
+striving for zero-cost abstractions-higher-level features that compile to
+lower-level code as fast as code written manually-Rust endeavors to make safe
 code be fast code as well.
 The Rust language hopes to support many other users as well; those mentioned
 here are merely some of the biggest stakeholders. Overall, Rust’s greatest
@@ -373,7 +373,7 @@ the terminal. If you don’t see this output, refer back to the
 [“Troubleshooting”][troubleshooting]<!-- ignore --> part of the Installation
 section for ways to get help.
 If Hello, world! did print, congratulations! You’ve officially written a Rust
-program. That makes you a Rust programmer—welcome!
+program. That makes you a Rust programmer-welcome!
 Let’s review this “Hello, world!” program in detail. Here’s the first piece of
 fn main() {
 These lines define a function named main. The main function is special: It
@@ -1177,7 +1177,7 @@ depends on what you think is clearest in that particular situation.
 Like immutable variables, constants are values that are bound to a name and
 are not allowed to change, but there are a few differences between constants
 First, you aren’t allowed to use mut with constants. Constants aren’t just
-immutable by default—they’re always immutable. You declare constants using the
+immutable by default-they’re always immutable. You declare constants using the
 const keyword instead of the let keyword, and the type of the value must
 be annotated. We’ll cover types and type annotations in the next section,
 [“Data Types”][data-types]<!-- ignore -->, so don’t worry about the details
@@ -1275,7 +1275,7 @@ the type of an integer value.
 | Architecture-dependent | isize | usize  |
 Each variant can be either signed or unsigned and has an explicit size.
 Signed and unsigned refer to whether it’s possible for the number to be
-negative—in other words, whether the number needs to have a sign with it
+negative-in other words, whether the number needs to have a sign with it
 (signed) or whether it will only ever be positive and can therefore be
 represented without a sign (unsigned). It’s like writing numbers on paper: When
 the sign matters, a number is shown with a plus sign or a minus sign; however,
@@ -1559,7 +1559,7 @@ functions return the last expression implicitly. Here’s an example of a
 function that returns a value:
 <span class="filename">Filename: src/main.rs</span>
 There are no function calls, macros, or even let statements in the five
-function—just the number 5 by itself. That’s a perfectly valid function in
+function-just the number 5 by itself. That’s a perfectly valid function in
 Rust. Note that the function’s return type is specified too, as -> i32. Try
 running this code; the output should look like this:
 The 5 in five is the function’s return value, which is why the return type
@@ -2061,7 +2061,7 @@ When you see a call to clone, you know that some arbitrary code is being
 executed and that code may be expensive. It’s a visual indicator that something
 different is going on.
 There’s another wrinkle we haven’t talked about yet. This code using
-integers—part of which was shown in Listing 4-2—works and is valid:
+integers-part of which was shown in Listing 4-2-works and is valid:
 But this code seems to contradict what we just learned: We don’t have a call to
 clone, but x is still valid and wasn’t moved into y.
 The reason is that types such as integers that have a known size at compile
@@ -2211,8 +2211,8 @@ the Rust compiler pointing out a potential bug early (at compile time rather
 than at runtime) and showing you exactly where the problem is. Then, you don’t
 have to track down why your data isn’t what you thought it was.
 In languages with pointers, it’s easy to erroneously create a dangling
-pointer—a pointer that references a location in memory that may have been
-given to someone else—by freeing some memory while preserving a pointer to that
+pointer-a pointer that references a location in memory that may have been
+given to someone else-by freeing some memory while preserving a pointer to that
 memory. In Rust, by contrast, the compiler guarantees that references will
 never be dangling references: If you have a reference to some data, the
 compiler will ensure that the data will not go out of scope before the
@@ -2789,7 +2789,7 @@ are and how to designate a field or method as public or private in [Chapter
 > # let p1 = Point { x: 0.0, y: 0.0 };
 > # let p2 = Point { x: 5.0, y: 6.5 };
 > The first one looks much cleaner. This automatic referencing behavior works
-> because methods have a clear receiver—the type of self. Given the receiver
+> because methods have a clear receiver-the type of self. Given the receiver
 > and name of a method, Rust can figure out definitively whether the method is
 > reading (&self), mutating (&mut self), or consuming (self). The fact
 > that Rust makes borrowing implicit for method receivers is a big part of
@@ -4087,7 +4087,7 @@ bits of the + operator.
 First, s2 has an &, meaning that we’re adding a reference of the second
 string to the first string. This is because of the s parameter in the add
 function: We can only add a string slice to a String; we can’t add two
-String values together. But wait—the type of &s2 is &String, not &str,
+String values together. But wait-the type of &s2 is &String, not &str,
 as specified in the second parameter to add. So, why does Listing 8-18
 The reason we’re able to use &s2 in the call to add is that the compiler
 can coerce the &String argument into a &str. When we call the add method,
@@ -4515,7 +4515,7 @@ The code in Listing 9-4 will panic! no matter why File::open failed.
 However, we want to take different actions for different failure reasons. If
 File::open failed because the file doesn’t exist, we want to create the file
 and return the handle to the new file. If File::open failed for any other
-reason—for example, because we didn’t have permission to open the file—we still
+reason-for example, because we didn’t have permission to open the file-we still
 want the code to panic! in the same way it did in Listing 9-4. For this, we
 add an inner match expression, shown in Listing 9-5.
 <Listing number="9-5" file-name="src/main.rs" caption="Handling different kinds of errors in different ways">
@@ -4604,7 +4604,7 @@ value of the type Result<T, E>, where the generic parameter T has been
 filled in with the concrete type String and the generic type E has been
 filled in with the concrete type io::Error.
 If this function succeeds without any problems, the code that calls this
-function will receive an Ok value that holds a String—the username that
+function will receive an Ok value that holds a String-the username that
 this function read from the file. If this function encounters any problems, the
 calling code will receive an Err value that holds an instance of io::Error
 that contains more information about what the problems were. We chose
@@ -4830,7 +4830,7 @@ the IP address from some other source instead.
 It’s advisable to have your code panic when it’s possible that your code could
 end up in a bad state. In this context, a bad state is when some assumption,
 guarantee, contract, or invariant has been broken, such as when invalid values,
-contradictory values, or missing values are passed to your code—plus one or
+contradictory values, or missing values are passed to your code-plus one or
 more of the following:
 - The bad state is something that is unexpected, as opposed to something that
 will likely happen occasionally, like a user entering data in the wrong
@@ -5500,7 +5500,7 @@ parameters must start with an apostrophe (') and are usually all lowercase
 and very short, like generic types. Most people use the name 'a for the first
 lifetime annotation. We place lifetime parameter annotations after the & of a
 reference, using a space to separate the annotation from the reference’s type.
-Here are some examples—a reference to an i32 without a lifetime parameter, a
+Here are some examples-a reference to an i32 without a lifetime parameter, a
 reference to an i32 that has a lifetime parameter named 'a, and a mutable
 reference to an i32 that also has the lifetime 'a:
 &i32        // a reference
@@ -5934,7 +5934,7 @@ A common way to verify functionality is to test for equality between the result
 of the code under test and the value you expect the code to return. You could
 do this by using the assert! macro and passing it an expression using the
 == operator. However, this is such a common test that the standard library
-provides a pair of macros—asserteq! and assertne!—to perform this test
+provides a pair of macros-asserteq! and assertne!-to perform this test
 more conveniently. These macros compare two arguments for equality or
 inequality, respectively. They’ll also print the two values if the assertion
 fails, which makes it easier to see why the test failed; conversely, the
@@ -6598,7 +6598,7 @@ have extraneous information we don’t want to give to our users. Perhaps the
 technique we used in Listing 9-13 isn’t the best one to use here: A call to
 panic! is more appropriate for a programming problem than a usage problem,
 [as discussed in Chapter 9][ch9-error-guidelines]<!-- ignore -->. Instead,
-we’ll use the other technique you learned about in Chapter 9—[returning a
+we’ll use the other technique you learned about in Chapter 9-[returning a
 Result][ch9-result]<!-- ignore --> that indicates either success or an error.
 We can instead return a Result value that will contain a Config instance in
 the successful case and will describe the problem in the error case. We’re also
@@ -7259,8 +7259,8 @@ compiler won’t let us use this closure with sortbykey.
 <Listing number="13-8" file-name="src/main.rs" caption="Attempting to use an FnOnce closure with sortbykey">
 This is a contrived, convoluted way (that doesn’t work) to try to count the
 number of times sortbykey calls the closure when sorting list. This code
-attempts to do this counting by pushing value—a String from the closure’s
-environment—into the sortoperations vector. The closure captures value and
+attempts to do this counting by pushing value-a String from the closure’s
+environment-into the sortoperations vector. The closure captures value and
 then moves value out of the closure by transferring ownership of value to
 the sortoperations vector. This closure can be called once; trying to call
 it a second time wouldn’t work, because value would no longer be in the
@@ -7866,7 +7866,7 @@ continues to get bigger and you want to split your package further into
 multiple library crates. Cargo offers a feature called workspaces that can
 help manage multiple related packages that are developed in tandem.
 A workspace is a set of packages that share the same Cargo.lock and output
-directory. Let’s make a project using a workspace—we’ll use trivial code so
+directory. Let’s make a project using a workspace-we’ll use trivial code so
 that we can concentrate on the structure of the workspace. There are multiple
 ways to structure a workspace, so we'll just show one common way. We’ll have a
 workspace containing a binary and two libraries. The binary, which will provide
@@ -8455,7 +8455,7 @@ might become overloaded and crash. In Rust, you can specify that a particular
 bit of code be run whenever a value goes out of scope, and the compiler will
 insert this code automatically. As a result, you don’t need to be careful about
 placing cleanup code everywhere in a program that an instance of a particular
-type is finished with—you still won’t leak resources!
+type is finished with-you still won’t leak resources!
 You specify the code to run when a value goes out of scope by implementing the
 Drop trait. The Drop trait requires you to implement one method named
 drop that takes a mutable reference to self. To see when Rust calls drop,
@@ -9281,8 +9281,8 @@ multiple streams flowing together into one big river: Everything sent down any
 of the streams will end up in one river at the end. We’ll start with a single
 producer for now, but we’ll add multiple producers when we get this example
 The mpsc::channel function returns a tuple, the first element of which is the
-sending end—the transmitter—and the second element of which is the receiving
-end—the receiver. The abbreviations tx and rx are traditionally used in
+sending end-the transmitter-and the second element of which is the receiving
+end-the receiver. The abbreviations tx and rx are traditionally used in
 many fields for transmitter and receiver, respectively, so we name our
 variables as such to indicate each end. We’re using a let statement with a
 pattern that destructures the tuples; we’ll discuss the use of patterns in
@@ -9474,7 +9474,7 @@ Unfortunately, Rc<T> is not safe to share across threads. When Rc<T>
 manages the reference count, it adds to the count for each call to clone and
 subtracts from the count when each clone is dropped. But it doesn’t use any
 concurrency primitives to make sure that changes to the count can’t be
-interrupted by another thread. This could lead to wrong counts—subtle bugs that
+interrupted by another thread. This could lead to wrong counts-subtle bugs that
 could in turn lead to memory leaks or a value being dropped before we’re done
 with it. What we need is a type that is exactly like Rc<T>, but that makes
 changes to the reference count in a thread-safe way.
@@ -9607,7 +9607,7 @@ Let’s consider an example. Say you’re exporting a video you’ve created of 
 family celebration, an operation that could take anywhere from minutes to
 hours. The video export will use as much CPU and GPU power as it can. If you
 had only one CPU core and your operating system didn’t pause that export until
-it completed—that is, if it executed the export synchronously—you couldn’t do
+it completed-that is, if it executed the export synchronously-you couldn’t do
 anything else on your computer while that task was running. That would be a
 pretty frustrating experience. Fortunately, your computer’s operating system
 can, and does, invisibly interrupt the export often enough to let you get other
@@ -9735,7 +9735,7 @@ and dig into more of how it works, but this is enough detail to keep us moving
 This may all feel a bit abstract, so let’s write our first async program: a
 little web scraper. We’ll pass in two URLs from the command line, fetch both of
 them concurrently, and return the result of whichever one finishes first. This
-example will have a fair bit of new syntax, but don’t worry—we’ll explain
+example will have a fair bit of new syntax, but don’t worry-we’ll explain
 everything you need to know as we go.
 To keep the focus of this chapter on learning async rather than juggling parts
 of the ecosystem, we’ve created the trpl crate (trpl is short for “The Rust
@@ -9778,7 +9778,7 @@ lazy: they don’t do anything until you ask them to with the await keyword.
 (In fact, Rust will show a compiler warning if you don’t use a future.) This
 might remind you of the discussion of iterators in the [“Processing a Series of
 Items with Iterators”][iterators-lazy]<!-- ignore --> section in Chapter 13.
-Iterators do nothing unless you call their next method—whether directly or by
+Iterators do nothing unless you call their next method-whether directly or by
 using for loops or methods such as map that use next under the hood.
 Likewise, futures do nothing unless you explicitly ask them to. This laziness
 allows Rust to avoid running async code until it’s actually needed.
@@ -9889,10 +9889,10 @@ Finished dev profile [unoptimized + debuginfo] target(s) in 0.05s
 Running target/debug/asyncawait 'https://www.rust-lang.org'
 The title for https://www.rust-lang.org was
 Rust Programming Language
-Phew—we finally have some working async code! But before we add the code to
+Phew-we finally have some working async code! But before we add the code to
 race two sites against each other, let’s briefly turn our attention back to how
-Each await point—that is, every place where the code uses the await
-keyword—represents a place where control is handed back to the runtime. To make
+Each await point-that is, every place where the code uses the await
+keyword-represents a place where control is handed back to the runtime. To make
 that work, Rust needs to keep track of the state involved in the async block so
 that the runtime could kick off some other work and then come back when it’s
 ready to try advancing the first one again. This is an invisible state machine,
@@ -9959,7 +9959,7 @@ threads and futures.
 In many cases, the APIs for working with concurrency using async are very
 similar to those for using threads. In other cases, they end up being quite
 different. Even when the APIs look similar between threads and async, they
-often have different behavior—and they nearly always have different performance
+often have different behavior-and they nearly always have different performance
 The first operation we tackled in the [“Creating a New Thread with
 spawn”][thread-spawn]<!-- ignore --> section in Chapter 16 was counting up on
 two separate threads. Let’s do the same using async. The trpl crate supplies
@@ -9976,7 +9976,7 @@ Then we write two loops within that block, each containing a trpl::sleep
 call, which waits for half a second (500 milliseconds) before sending the next
 message. We put one loop in the body of a trpl::spawntask and the other in a
 top-level for loop. We also add an await after the sleep calls.
-This code behaves similarly to the thread-based implementation—including the
+This code behaves similarly to the thread-based implementation-including the
 fact that you may see the messages appear in a different order in your own
 terminal when you run it:
 the changes are likely to be due to the threads running differently rather than
@@ -10057,7 +10057,7 @@ check and how long to let it run. With async Rust, the runtime decides which
 task to check. (In practice, the details get complicated because an async
 runtime might use operating system threads under the hood as part of how it
 manages concurrency, so guaranteeing fairness can be more work for a
-runtime—but it’s still possible!) Runtimes don’t have to guarantee fairness for
+runtime-but it’s still possible!) Runtimes don’t have to guarantee fairness for
 any given operation, and they often offer different APIs to let you choose
 whether or not you want fairness.
 Try some of these variations on awaiting the futures and see what they do:
@@ -10073,7 +10073,7 @@ a slightly different path than we did in the [“Transfer Data Between Threads
 with Message Passing”][message-passing-threads]<!-- ignore --> section in
 Chapter 16 to illustrate some of the key differences between thread-based and
 futures-based concurrency. In Listing 17-9, we’ll begin with just a single
-async block—not spawning a separate task as we spawned a separate thread.
+async block-not spawning a separate task as we spawned a separate thread.
 <Listing number="17-9" caption="Creating an async channel and assigning the two halves to tx and rx" file-name="src/main.rs">
 Here, we use trpl::channel, an async version of the multiple-producer,
 single-consumer channel API we used with threads back in Chapter 16. The async
@@ -10118,7 +10118,7 @@ the future until it is ready. Once a message arrives, the future will resolve
 to Some(message) as many times as a message arrives. When the channel closes,
 regardless of whether any messages have arrived, the future will instead
 resolve to None to indicate that there are no more values and thus we should
-stop polling—that is, stop awaiting.
+stop polling-that is, stop awaiting.
 The while let loop pulls all of this together. If the result of calling
 rx.recv().await is Some(message), we get access to the message and we can
 use it in the loop body, just as we could with if let. If the result is
@@ -10144,7 +10144,7 @@ message, we need to put the tx and rx operations in their own async blocks,
 as shown in Listing 17-11. Then the runtime can execute each of them separately
 using trpl::join, just as in Listing 17-8. Once again, we await the result of
 calling trpl::join, not the individual futures. If we awaited the individual
-futures in sequence, we would just end up back in a sequential flow—exactly
+futures in sequence, we would just end up back in a sequential flow-exactly
 what we’re trying not to do.
 <Listing number="17-11" caption="Separating send and recv into their own async blocks and awaiting the futures for those blocks" file-name="src/main.rs">
 With the updated code in Listing 17-11, the messages get printed at
@@ -10450,7 +10450,7 @@ Some(title) => println!("The title for {url} was {title}"),
 None => println!("{url} had no title"),
 Pending => {
 If Rust compiled it to exactly that code, though, every await would be
-blocking—exactly the opposite of what we were going for! Instead, Rust ensures
+blocking-exactly the opposite of what we were going for! Instead, Rust ensures
 that the loop can hand off control to something that can pause work on this
 future to work on other futures and then check this one again later. As we’ve
 seen, that something is an async runtime, and this scheduling and coordination
@@ -10555,10 +10555,10 @@ of the source code, whether by taking ownership of that data or by getting a
 mutable or immutable reference to it.
 So far, so good: if we get anything wrong about the ownership or references in
 a given async block, the borrow checker will tell us. When we want to move
-around the future that corresponds to that block—like moving it into a Vec to
-pass to joinall—things get trickier.
-When we move a future—whether by pushing it into a data structure to use as an
-iterator with joinall or by returning it from a function—that actually means
+around the future that corresponds to that block-like moving it into a Vec to
+pass to joinall-things get trickier.
+When we move a future-whether by pushing it into a data structure to use as an
+iterator with joinall or by returning it from a function-that actually means
 moving the state machine Rust creates for us. And unlike most other types in
 Rust, the futures Rust creates for async blocks can end up with references to
 themselves in the fields of any given variant, as shown in the simplified illustration in Figure 17-4.
@@ -10569,7 +10569,7 @@ because references always point to the actual memory address of whatever they
 refer to (see Figure 17-5). If you move the data structure itself, those
 internal references will be left pointing to the old location. However, that
 memory location is now invalid. For one thing, its value will not be updated
-when you make changes to the data structure. For another—more important—thing,
+when you make changes to the data structure. For another-more important-thing,
 the computer is now free to reuse that memory for other purposes! You could end
 up reading completely unrelated data later.
 <img alt="Two tables, depicting two futures, fut1 and fut2, each of which has one column and three rows, representing the result of having moved a future out of fut1 into fut2. The first, fut1, is grayed out, with a question mark in each index, representing unknown memory. The second, fut2, has 0 and 1 in the first and second rows and an arrow pointing from its third row back to the second row of fut1, representing a pointer that is referencing the old location in memory of the future before it was moved." src="img/trpl17-05.svg" class="center" />
@@ -10604,7 +10604,7 @@ a Vec, for example, without worrying. Given what we have seen so far, if
 you have a Pin<Vec<String>>, you’d have to do everything via the safe but
 restrictive APIs provided by Pin, even though a Vec<String> is always safe
 to move if there are no other references to it. We need a way to tell the
-compiler that it’s fine to move items around in cases like this—and that’s
+compiler that it’s fine to move items around in cases like this-and that’s
 where Unpin comes into play.
 Unpin is a marker trait, similar to the Send and Sync traits we saw in
 Chapter 16, and thus has no functionality of its own. Marker traits exist only
@@ -10733,7 +10733,7 @@ use a fair bit of memory for each thread. Threads are also only an option when
 your operating system and hardware support them. Unlike mainstream desktop and
 mobile computers, some embedded systems don’t have an OS at all, so they also
 don’t have threads.
-The async model provides a different—and ultimately complementary—set of
+The async model provides a different-and ultimately complementary-set of
 tradeoffs. In the async model, concurrent operations don’t require their own
 threads. Instead, they can run on tasks, as when we used trpl::spawntask to
 kick off work from a synchronous function in the streams section. A task is
@@ -10745,7 +10745,7 @@ concurrency is possible between threads. Tasks act as a boundary for sets of
 asynchronous operations; concurrency is possible both between and within
 tasks, because a task can switch between futures in its body. Finally, futures
 are Rust’s most granular unit of concurrency, and each future may represent a
-tree of other futures. The runtime—specifically, its executor—manages tasks,
+tree of other futures. The runtime-specifically, its executor-manages tasks,
 and tasks manage futures. In that regard, tasks are similar to lightweight,
 runtime-managed threads with added capabilities that come from being managed by
 a runtime instead of by the operating system.
@@ -10757,7 +10757,7 @@ simply run to completion without being interrupted except by the operating
 And it turns out that threads and tasks often work
 very well together, because tasks can (at least in some runtimes) be moved
 around between threads. In fact, under the hood, the runtime we’ve been
-using—including the spawnblocking and spawntask functions—is multithreaded
+using-including the spawnblocking and spawntask functions-is multithreaded
 by default! Many runtimes use an approach called work stealing to
 transparently move tasks around between threads, based on how the threads are
 currently being utilized, to improve the system’s overall performance. That
@@ -10789,7 +10789,7 @@ This isn’t the last you’ll see of concurrency in this book. The project in
 situation than the simpler examples discussed here and compare problem-solving
 with threading versus tasks and futures more directly.
 No matter which of these approaches you choose, Rust gives you the tools you
-need to write safe, fast, concurrent code—whether for a high-throughput web
+need to write safe, fast, concurrent code-whether for a high-throughput web
 server or an embedded operating system.
 Next, we’ll talk about idiomatic ways to model problems and structure solutions
 as your Rust programs get bigger. In addition, we’ll discuss how Rust’s idioms
@@ -10809,7 +10809,7 @@ There is no consensus in the programming community about what features a
 language must have to be considered object oriented. Rust is influenced by many
 programming paradigms, including OOP; for example, we explored the features
 that came from functional programming in Chapter 13. Arguably, OOP languages
-share certain common characteristics—namely, objects, encapsulation, and
+share certain common characteristics-namely, objects, encapsulation, and
 inheritance. Let’s look at what each of those characteristics means and whether
 Rust supports it.
 The book Design Patterns: Elements of Reusable Object-Oriented Software by
@@ -10922,7 +10922,7 @@ However, sometimes we want our library user to be able to extend the set of
 types that are valid in a particular situation. To show how we might achieve
 this, we’ll create an example graphical user interface (GUI) tool that iterates
 through a list of items, calling a draw method on each one to draw it to the
-screen—a common technique for GUI tools. We’ll create a library crate called
+screen-a common technique for GUI tools. We’ll create a library crate called
 gui that contains the structure of a GUI library. This crate might include
 some types for people to use, such as Button or TextField. In addition,
 gui users will want to create their own types that can be drawn: For
@@ -11017,8 +11017,8 @@ When we wrote the library, we didn’t know that someone might add the
 SelectBox type, but our Screen implementation was able to operate on the
 new type and draw it because SelectBox implements the Draw trait, which
 means it implements the draw method.
-This concept—of being concerned only with the messages a value responds to
-rather than the value’s concrete type—is similar to the concept of duck
+This concept-of being concerned only with the messages a value responds to
+rather than the value’s concrete type-is similar to the concept of duck
 typing in dynamically typed languages: If it walks like a duck and quacks like
 a duck, then it must be a duck! In the implementation of run on Screen in
 Listing 18-5, run doesn’t need to know what the concrete type of each
@@ -11114,7 +11114,7 @@ be returned when content is called.
 Notice that the only type we’re interacting with from the crate is the Post
 type. This type will use the state pattern and will hold a value that will be
 one of three state objects representing the various states a post can be
-in—draft, review, or published. Changing from one state to another will be
+in-draft, review, or published. Changing from one state to another will be
 managed internally within the Post type. The states change in response to the
 methods called by our library’s users on the Post instance, but they don’t
 have to manage the state changes directly. Also, users can’t make a mistake
@@ -11252,7 +11252,7 @@ Note that we need lifetime annotations on this method, as we discussed in
 Chapter 10. We’re taking a reference to a post as an argument and returning a
 reference to part of that post, so the lifetime of the returned reference is
 related to the lifetime of the post argument.
-And we’re done—all of Listing 18-11 now works! We’ve implemented the state
+And we’re done-all of Listing 18-11 now works! We’ve implemented the state
 pattern with the rules of the blog post workflow. The logic related to the
 rules lives in the state objects rather than being scattered throughout Post.
 > ### Why Not An Enum?
@@ -11462,8 +11462,8 @@ To see the pattern-matching aspect of let more clearly, consider Listing
 19-1, which uses a pattern with let to destructure a tuple.
 <Listing number="19-1" caption="Using a pattern to destructure a tuple and create three variables at once">
 Here, we match a tuple against a pattern. Rust compares the value (1, 2, 3)
-to the pattern (x, y, z) and sees that the value matches the pattern—that is,
-it sees that the number of elements is the same in both—so Rust binds 1 to
+to the pattern (x, y, z) and sees that the value matches the pattern-that is,
+it sees that the number of elements is the same in both-so Rust binds 1 to
 x, 2 to y, and 3 to z. You can think of this tuple pattern as nesting
 three individual variable patterns inside it.
 If the number of elements in the pattern doesn’t match the number of elements
@@ -12504,8 +12504,8 @@ implementing the Deref trait on the Wrapper to return the inner type would
 be a solution (we discussed implementing the Deref trait in the [“Treating
 Smart Pointers Like Regular References”][smart-pointer-deref]<!-- ignore -->
 section in Chapter 15). If we didn’t want the Wrapper type to have all the
-methods of the inner type—for example, to restrict the Wrapper type’s
-behavior—we would have to implement just the methods we do want manually.
+methods of the inner type-for example, to restrict the Wrapper type’s
+behavior-we would have to implement just the methods we do want manually.
 This newtype pattern is also useful even when traits are not involved. Let’s
 switch focus and look at some advanced ways to interact with Rust’s type system.
 The Rust type system has some features that we’ve so far mentioned but haven’t
@@ -12762,7 +12762,7 @@ Behavior”][trait-objects]<!-- ignore --> in Chapter 18.
 Next, let’s look at macros!
 We’ve used macros like println! throughout this book, but we haven’t fully
 explored what a macro is and how it works. The term macro refers to a family
-of features in Rust—declarative macros with macrorules! and three kinds of
+of features in Rust-declarative macros with macrorules! and three kinds of
 - Custom #[derive] macros that specify code added with the derive attribute
 used on structs and enums
 - Attribute-like macros that define custom attributes usable on any item
@@ -13287,7 +13287,7 @@ string should look familiar; we used it when we read the contents of a file for
 our I/O project in Listing 12-4.
 Next, we use format! to add the file’s contents as the body of the success
 response. To ensure a valid HTTP response, we add the Content-Length header,
-which is set to the size of our response body—in this case, the size of
+which is set to the size of our response body-in this case, the size of
 Run this code with cargo run and load 127.0.0.1:7878 in your browser; you
 should see your HTML rendered!
 Currently, we’re ignoring the request data in httprequest and just sending
@@ -13634,8 +13634,8 @@ execute method. But we need to give thread::spawn a closure to run when we
 create each Worker during the creation of the ThreadPool.
 We want the Worker structs that we just created to fetch the code to run from
 a queue held in the ThreadPool and send that code to its thread to run.
-The channels we learned about in Chapter 16—a simple way to communicate between
-two threads—would be perfect for this use case. We’ll use a channel to function
+The channels we learned about in Chapter 16-a simple way to communicate between
+two threads-would be perfect for this use case. We’ll use a channel to function
 as the queue of jobs, and execute will send a job from the ThreadPool to
 the Worker instances, which will send the job to its thread. Here is the plan:
 1. The ThreadPool will create a channel and hold on to the sender.
@@ -13928,7 +13928,7 @@ language. The Rust Project is now robustly supported by the Rust Foundation,
 which also invests in key initiatives to ensure that Rust is secure, stable,
 This edition of The Rust Programming Language is a comprehensive update,
 reflecting the language’s evolution over the years and providing valuable new
-information. But it is not just a guide to syntax and libraries—it’s an
+information. But it is not just a guide to syntax and libraries-it’s an
 invitation to join a community that values quality, performance, and thoughtful
 design. Whether you’re a seasoned developer looking to explore Rust for the
 first time or an experienced Rustacean looking to refine your skills, this
@@ -13938,7 +13938,7 @@ growth of the language and its ecosystem is a direct reflection of the vibrant,
 diverse community behind it. The contributions of thousands of developers, from
 core language designers to casual contributors, are what make Rust such a
 unique and powerful tool. By picking up this book, you’re not just learning a
-new programming language—you’re joining a movement to make software better,
+new programming language-you’re joining a movement to make software better,
 safer, and more enjoyable to work with.
 Welcome to the Rust community!
 - Bec Rumbul, Executive Director of the Rust Foundation

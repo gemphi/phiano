@@ -1,40 +1,87 @@
-/// Chat endpoint with real-time learning and definition chain learning.
+/// Chat endpoint with real-time learning, grounded knowledge retrieval, and conversational synthesis.
 
 use super::SharedModel;
 use super::types::*;
 use super::routes_wiki::parse_wiki_extract;
+use crate::config::{
+    CHUNK_STORE_DIR,
+    DEFINITION_CHAIN_DEPTH, WIKI_SNIPPET_MAX_CHARS,
+};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Json;
+use super::chat_intent::ChatIntent;
 
 pub async fn chat(
     State(state): State<SharedModel>,
     Json(req): Json<TextRequest>,
 ) -> Result<Json<ChatResponse>, StatusCode> {
-    let prompt = &req.text;
+    let prompt = req.text.trim();
+    match prompt.is_empty() {
+        true => return Ok(Json(ChatResponse {
+            response: "Hello! How can I help you today?".to_string(),
+            speech_act: "expressive".to_string(),
+            direction_of_fit: "none".to_string(),
+            words_learned: 0,
+            definitions_learned: 0,
+            wiki_learned: None,
+            vocabulary: 0,
+            coherence: 1.0,
+        })),
+        false => {}
+    }
+
     let tokens = crate::tokenizer::Tokenizer::tokenize(prompt);
 
+    // 1. Online Learning of the prompt into the manifold
+    let (words_learned, vocab_size) = {
+        let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let model = &mut *guard;
+        let wl = model.trainer.train_online(&mut model.facet, prompt);
+        (wl, model.facet.vocabulary_size())
+    };
+
+    // 2. Identify unknown words and learn their definition chains
     let unknown: Vec<String> = {
         let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         tokens.iter().filter(|t| !guard.facet.lexicon.contains_key(*t)).cloned().collect()
     };
-
     let defs_count = learn_unknown_definitions(&state, &unknown)?;
 
-    let (wiki_learned, _) = try_wikipedia_learning(prompt, &tokens, &state).await;
+    // 3. Wikipedia lookup for explanatory topics if needed
+    let (wiki_learned, wiki_content) = try_wikipedia_learning(prompt, &tokens, &state).await;
 
-    let (response, speech_act, dof, coherence, vocab, words_learned) = {
-        let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-        let mut ctx_buf = crate::generate::ContextWaveBuffer::new(4096);
-        let result = guard.cognitive_core.process(&guard.facet, &mut ctx_buf, prompt);
-        let wl = tokens.iter().filter(|t| guard.facet.lexicon.contains_key(*t)).count();
-        (result.synthesized_output, result.speech_act, result.direction_of_fit,
-         result.coherence, guard.facet.vocabulary_size(), wl)
+    // 4. Generate structured conversational response via ChatIntent
+    let (response, speech_act, dof, coherence) = {
+        let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let model = &mut *guard;
+        
+        let cog_result = model.cognitive_core.process(&model.facet, &mut model.context_buffer, prompt);
+        
+        let intent = ChatIntent::classify(prompt, &tokens, &cog_result);
+        if let ChatIntent::SelfCorrection { statement, correction } = &intent {
+            model.trainer.correct_mistake(&mut model.facet, statement, correction);
+        }
+        let fluent_response = intent.generate_response(model, &cog_result, wiki_content.as_deref());
+
+        // Record response into context wave buffer and 16-layer memory hierarchy
+        model.context_buffer.push_turn(&model.facet, &fluent_response);
+        let resp_tokens = crate::tokenizer::Tokenizer::tokenize(&fluent_response);
+        let resp_wave = crate::wave::Wave::sentence(&model.facet, &resp_tokens);
+        model.memo.record((resp_wave.re, resp_wave.im), &fluent_response);
+
+        (fluent_response, cog_result.speech_act, cog_result.direction_of_fit, cog_result.coherence)
     };
 
     Ok(Json(ChatResponse {
-        response, speech_act, direction_of_fit: dof, words_learned,
-        definitions_learned: defs_count, wiki_learned, vocabulary: vocab, coherence,
+        response,
+        speech_act,
+        direction_of_fit: dof,
+        words_learned,
+        definitions_learned: defs_count,
+        wiki_learned,
+        vocabulary: vocab_size,
+        coherence,
     }))
 }
 
@@ -42,14 +89,17 @@ fn learn_unknown_definitions(
     state: &super::SharedModel,
     unknown: &[String],
 ) -> Result<usize, StatusCode> {
-    if unknown.is_empty() { return Ok(0); }
+    match unknown.is_empty() {
+        true => return Ok(0),
+        false => {}
+    }
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let chunk_store = crate::chunker::ChunkStore::new("data/chunks");
+    let chunk_store = crate::chunker::ChunkStore::new(CHUNK_STORE_DIR);
     let model = &mut *guard;
     let mut count = 0;
     for word in unknown {
         let learned = model.trainer.learn_definition_chain(
-            &mut model.facet, &chunk_store, word, 3,
+            &mut model.facet, &chunk_store, word, DEFINITION_CHAIN_DEPTH,
         );
         count += learned.len();
     }
@@ -60,47 +110,53 @@ async fn try_wikipedia_learning(
     prompt: &str,
     tokens: &[String],
     state: &super::SharedModel,
-) -> (Option<String>, bool) {
-    let unknown_exists = tokens.iter().any(|t| {
-        let guard = state.lock().ok();
-        guard.map(|g| !g.facet.lexicon.contains_key(t)).unwrap_or(false)
-    });
-
-    if !unknown_exists && !prompt.contains("what is") && !prompt.contains("explain") {
-        return (None, false);
+) -> (Option<String>, Option<String>) {
+    let p_lower = prompt.to_lowercase();
+    match p_lower.contains("what is") || p_lower.contains("explain") || p_lower.contains("who is") || p_lower.contains("tell me about") {
+        false => return (None, None),
+        true => {}
     }
 
-    let main_topic = tokens.iter().filter(|t| t.len() > 3).next().cloned()
-        .unwrap_or_else(|| prompt.to_string());
-    let topic_clean = main_topic.replace(' ', "_");
+    let topic = ChatIntent::extract_topic_term(tokens, prompt);
+    let topic_clean = topic.replace(' ', "_");
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(5))
         .user_agent("PhianoBot/0.1 (educational research)")
         .build();
 
-    let client = match client { Ok(c) => c, Err(_) => return (None, false) };
+    let client = match client { Ok(c) => c, Err(_) => return (None, None) };
 
     let url = format!(
         "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&titles={}&format=json&redirects=1",
         topic_clean
     );
 
-    let resp = match client.get(&url).send().await { Ok(r) => r, Err(_) => return (None, false) };
-    if !resp.status().is_success() { return (None, false); }
-
-    let text = match resp.text().await { Ok(t) => t, Err(_) => return (None, false) };
-    let (title, extract) = match parse_wiki_extract(&text, &main_topic) {
-        Ok(r) => r, Err(_) => return (None, false),
-    };
-
-    let truncated = if extract.len() > 1500 { extract[..1500].to_string() } else { extract };
-    let wiki_str = format!("{} ({} chars)", title, truncated.len());
-
-    if let Ok(mut guard) = state.lock() {
-        let model = &mut *guard;
-        model.trainer.train_online(&mut model.facet, &truncated);
+    let resp = match client.get(&url).send().await { Ok(r) => r, Err(_) => return (None, None) };
+    match resp.status().is_success() {
+        true => {}
+        false => return (None, None),
     }
 
-    (Some(wiki_str), true)
+    let text = match resp.text().await { Ok(t) => t, Err(_) => return (None, None) };
+    let (title, extract) = match parse_wiki_extract(&text, &topic) {
+        Ok(r) => r, Err(_) => return (None, None),
+    };
+
+    let truncated = match extract.len() > WIKI_SNIPPET_MAX_CHARS {
+        true => extract[..WIKI_SNIPPET_MAX_CHARS].to_string(),
+        false => extract,
+    };
+    let wiki_str = format!("{} ({} chars)", title, truncated.len());
+
+    match state.lock() {
+        Ok(mut guard) => {
+            let model = &mut *guard;
+            model.trainer.train_online(&mut model.facet, &truncated);
+        }
+        Err(_) => {}
+    }
+
+    (Some(wiki_str), Some(truncated))
 }
+

@@ -43,7 +43,7 @@ print(f"  Coherence: {comp['coherence']:.3f}  Novelty: {comp['novelty']:.3f}  Re
 print(f"  Verdict: {comp['verdict']}\n")
 print(f"  {comp['text']}")
 
-# 3. Oscillator evaluation — shows sync, entropy, colors
+# 3. Oscillator evaluation - shows sync, entropy, colors
 print("\n--- OSCILLATOR EVALUATION ---\n")
 osc_result = api_post("oscillator/eval", query)
 print(f"  Coherence: {osc_result['coherence']:.4f}")

@@ -1,4 +1,4 @@
-/// OscillatorTrainer — oscillator-based training inspired by Phi-4.
+/// OscillatorTrainer - oscillator-based training inspired by Phi-4.
 
 use super::OscillatorField;
 use crate::config;
@@ -32,7 +32,7 @@ impl std::fmt::Display for OscillatorTrainResult {
     }
 }
 
-/// OscillatorTrainer — trains the facet using oscillator synchronization.
+/// OscillatorTrainer - trains the facet using oscillator synchronization.
 ///
 /// Inspired by Phi-4's finetuning approach:
 /// - Multi-epoch training with convergence detection

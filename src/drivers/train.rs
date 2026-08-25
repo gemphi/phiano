@@ -1,7 +1,7 @@
 use crate::chunker::ChunkStore;
 use crate::command::Context;
 
-/// Train — trains the facet from all chunked dictionary files in parallel.
+/// Train - trains the facet from all chunked dictionary files in parallel.
 ///
 /// Usage: `train [epochs]`
 ///

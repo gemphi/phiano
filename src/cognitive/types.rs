@@ -1,7 +1,7 @@
-/// Core types for the cognitive system — Searle's intentional state model.
+/// Core types for the cognitive system - Searle's intentional state model.
 ///
 /// Searle's key insight: mental states have:
-/// - Content (what they're about — the propositional content)
+/// - Content (what they're about - the propositional content)
 /// - Direction of fit (mind→world or world→mind)
 /// - Satisfaction conditions (when the state is fulfilled)
 /// - Psychological mode (belief, desire, intention, fear, hope, etc.)
@@ -37,7 +37,7 @@ pub struct CognitiveResult {
     pub literal_meaning: String,
 }
 
-/// Searle's intentional state — the building block of mentality.
+/// Searle's intentional state - the building block of mentality.
 /// Each state has a mode, content, direction of fit, and satisfaction conditions.
 #[derive(Debug, Clone, Serialize)]
 pub struct IntentionalState {
@@ -48,8 +48,9 @@ pub struct IntentionalState {
     pub sincerity: f64,
 }
 
-/// Psychological modes — the type of mental state.
+/// Psychological modes - the type of mental state.
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum PsychologicalMode {
     Belief,
     Desire,
@@ -71,6 +72,7 @@ impl PsychologicalMode {
         }
     }
 
+    #[allow(dead_code)]
     pub fn direction_of_fit(&self) -> DirectionOfFit {
         match self {
             Self::Belief | Self::Perception => DirectionOfFit::MindToWorld,
@@ -80,11 +82,11 @@ impl PsychologicalMode {
     }
 }
 
-/// Direction of fit — Searle's distinction.
+/// Direction of fit - Searle's distinction.
 /// Mind→World: the mind should match the world (beliefs, assertions).
 /// World→Mind: the world should change to match the mind (desires, commands).
-/// None: no direction of fit (expressives — just express a state).
-/// Both: both directions (declaratives — create a fact by representing it).
+/// None: no direction of fit (expressives - just express a state).
+/// Both: both directions (declaratives - create a fact by representing it).
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
 pub enum DirectionOfFit {
     MindToWorld,
@@ -111,13 +113,13 @@ pub struct FelicityConditions {
     /// The propositional content must be appropriate for the act type.
     /// E.g., promises require a future act; assertions require a proposition.
     pub propositional_content_rule: String,
-    /// The preparatory condition — what must be true for the act to make sense.
+    /// The preparatory condition - what must be true for the act to make sense.
     /// E.g., for a command, the speaker must have authority.
     pub preparatory_condition: String,
-    /// The sincerity condition — the speaker must have the appropriate psychological state.
+    /// The sincerity condition - the speaker must have the appropriate psychological state.
     /// E.g., for a promise, the speaker must intend to act.
     pub sincerity_condition: String,
-    /// The essential condition — what the act counts as.
+    /// The essential condition - what the act counts as.
     /// E.g., a promise counts as an undertaking of an obligation.
     pub essential_condition: String,
     /// Whether all conditions are met.

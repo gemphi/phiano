@@ -1,11 +1,11 @@
-# 42 — Oscillator Mode: The Sphere Model
+# 42 - Oscillator Mode: The Sphere Model
 
 ## Overview
 
 The oscillator model (`om`) is the alternative to the transform model.
 Where the transform model maps words to static complex numbers on a 2D
 circle, the oscillator model maps words to **living oscillators on a 3D
-sphere**. The sphere's surface is a color spectrum — hue from longitude,
+sphere**. The sphere's surface is a color spectrum - hue from longitude,
 brightness from latitude. Your viewing angle determines which colors you
 see. The spectrum **changes** as you rotate around the sphere.
 
@@ -84,14 +84,14 @@ The sphere's surface is painted with 16 colors mapped from longitude:
 
 As oscillators spin (φ_visible(t) = φ + ω·t), their colors shift. A word
 that appears crimson at t=0 may appear orange at t=1, depending on its
-frequency. The sphere is **alive** — it breathes color.
+frequency. The sphere is **alive** - it breathes color.
 
 ## Viewing Angle
 
 The key insight: **what you see depends on where you stand**.
 
 Your viewing angle is a point (θ_v, φ_v) on the sphere. You see
-oscillators that are "facing you" — weighted by the spherical dot product:
+oscillators that are "facing you" - weighted by the spherical dot product:
 
 ```
   visibility = cos(θ)·cos(θ_v)·cos(Δφ) + sin(θ)·sin(θ_v)
@@ -149,7 +149,7 @@ Two words are "similar" in oscillator mode if they:
 ## Sentence Coherence
 
 A sentence's coherence in oscillator mode is the **Kuramoto order
-parameter** — the degree to which all word-oscillators are in phase:
+parameter** - the degree to which all word-oscillators are in phase:
 
 ```
   r = |Σⱼ e^(iφⱼ)| / N
@@ -160,7 +160,7 @@ parameter** — the degree to which all word-oscillators are in phase:
 
 This is different from the transform model's coherence, which measures
 wave norm per known word. The oscillator coherence measures **collective
-synchronization** — are the words dancing together?
+synchronization** - are the words dancing together?
 
 ## Spectral Entropy
 
@@ -175,16 +175,16 @@ The oscillator model also measures the **diversity of the color spectrum**:
 - **High entropy** (~2.8): colors spread evenly across the spectrum
 - **Low entropy** (~0.5): one or two colors dominate
 
-This is unique to the oscillator model — the transform model has no
+This is unique to the oscillator model - the transform model has no
 notion of "color diversity."
 
 ## Commands
 
 ```
-  om eval "text"        — Evaluate text: coherence, sync, entropy, colors
-  om wheel              — Show the equatorial color wheel (16 sectors)
-  om sphere "text"      — Show full sphere projection (5 latitude bands)
-  om compare "text"     — Compare transform vs oscillator models side by side
+  om eval "text"        - Evaluate text: coherence, sync, entropy, colors
+  om wheel              - Show the equatorial color wheel (16 sectors)
+  om sphere "text"      - Show full sphere projection (5 latitude bands)
+  om compare "text"     - Compare transform vs oscillator models side by side
 ```
 
 ## Comparison: Transform vs Oscillator
@@ -211,22 +211,22 @@ notion of "color diversity."
 ### When They Agree
 
 Both models measure coherence in [0, 1]. When they agree (>80%), you
-have high confidence in the assessment — the text is clearly coherent
+have high confidence in the assessment - the text is clearly coherent
 or clearly not, regardless of model.
 
 ### When They Disagree
 
-When the models disagree (<50%), the text sits at a **model boundary** —
+When the models disagree (<50%), the text sits at a **model boundary** -
 it's coherent in one framework but not the other. This is interesting:
 
 - **Transform high, oscillator low**: Words are in the right phase
   sector but don't synchronize dynamically. The text "looks right" but
-  doesn't "feel right" — like a sentence with correct grammar but
+  doesn't "feel right" - like a sentence with correct grammar but
   no rhythm.
 
 - **Oscillator high, transform low**: Words synchronize beautifully
   but their wave superposition is weak. The text "feels right" but
-  doesn't "look right" — like a poetic phrase with unusual grammar.
+  doesn't "look right" - like a poetic phrase with unusual grammar.
 
 ## The Wheel
 
@@ -262,11 +262,11 @@ concentrates. The amplitudes tell you how familiar those words are.
 
 ```
 src/
-├── oscillator.rs          — Oscillator, OscillatorField, SphereView
+├── oscillator.rs          - Oscillator, OscillatorField, SphereView
 └── command/
-    └── om.rs              — om eval, om wheel, om sphere, om compare
+    └── om.rs              - om eval, om wheel, om sphere, om compare
 ```
 
-The oscillator model is **non-destructive** — it reads from the existing
+The oscillator model is **non-destructive** - it reads from the existing
 facet but doesn't modify it. You can switch between `eval` (transform)
 and `om eval` (oscillator) freely. Both models coexist.

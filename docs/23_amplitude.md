@@ -1,4 +1,4 @@
-# 23 — Amplitude & Familiarity
+# 23 - Amplitude & Familiarity
 
 ## Amplitude Growth
 

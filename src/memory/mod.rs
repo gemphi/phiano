@@ -10,7 +10,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 /// Total number of memory layers in the system.
 pub const MEMORY_LAYERS: usize = 16;
 
-/// Memory band — a group of four layers representing a depth of understanding.
+/// Memory band - a group of four layers representing a depth of understanding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MemoryBand {
     Surface,
@@ -58,10 +58,12 @@ pub struct ContextWaveEntry {
     pub timestamp_ms: u64,
     pub superposition_wave: (f64, f64),
     pub text_hash: u64,
+    #[serde(default)]
+    pub text: String,
     pub layer: usize,
 }
 
-/// 16-layer memory log — records every interaction and organizes it by depth.
+/// 16-layer memory log - records every interaction and organizes it by depth.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Memo {
     pub entries: Vec<ContextWaveEntry>,
@@ -88,6 +90,7 @@ impl Memo {
             timestamp_ms,
             superposition_wave: wave,
             text_hash,
+            text: text.to_string(),
             layer,
         };
 

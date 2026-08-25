@@ -91,10 +91,14 @@ pub async fn instruct(
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &mut *guard;
     let mut engine = InstructionEngine::new();
-    let output = engine.execute_instruction(&mut model.facet, &model.trainer, &req.text);
+    let response = engine.execute_instruction(
+        &mut model.facet, &model.trainer,
+        &model.cognitive_core, &mut model.context_buffer,
+        &req.text,
+    );
     Ok(Json(InstructResponse {
         prompt: req.text,
-        output,
+        output: response.text,
         vocabulary: model.facet.vocabulary_size(),
     }))
 }
@@ -160,6 +164,73 @@ pub async fn phi4_learn(
     }))
 }
 
+pub async fn ingest_all(
+    State(state): State<SharedModel>,
+    Json(req): Json<IngestRequest>,
+) -> Result<Json<IngestResponse>, StatusCode> {
+    let do_curriculum = req.curriculum.unwrap_or(true);
+    let do_dialogue = req.dialogue.unwrap_or(true);
+    let do_phi4 = req.phi4.unwrap_or(true);
+    let wiki_topics = req.wiki_topics.unwrap_or(12);
+
+    let mut curriculum_sentences = 0usize;
+    let mut dialogues_trained = 0usize;
+    let mut phi4_merges = 0usize;
+    let vocab_before;
+    {
+        let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let model = &mut *guard;
+        vocab_before = model.facet.vocabulary_size();
+        if do_curriculum {
+            let cur = crate::curriculum::ChildCurriculum::new();
+            if !cur.stages.is_empty() {
+                let chunks = crate::chunker::ChunkStore::new("data/chunks");
+                let r = cur.run(&mut model.facet, &model.trainer, &chunks);
+                curriculum_sentences = r.sentences_trained;
+            }
+        }
+        if do_dialogue {
+            let src = crate::sources::dialogue::DialogueSource::default_curriculum();
+            dialogues_trained = src.learn_into_facet(&mut model.facet, &mut model.memo, &model.trainer);
+        }
+        if do_phi4 {
+            let src = Phi4Source::discover();
+            let s = src.learn_into_facet(&mut model.facet, &model.trainer);
+            phi4_merges = s.merges_trained;
+        }
+    }
+
+    let (wiki_ok, wiki_tokens) = if wiki_topics > 0 {
+        let (extracts, _errors) = crate::wiki_bulk::WikiBulk::fetch_curriculum_extracts(Some(wiki_topics)).await;
+        let wiki_ok = extracts.len();
+        let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let model = &mut *guard;
+        let wiki_tokens = crate::wiki_bulk::WikiBulk::train_extracts(&mut model.facet, &model.trainer, &extracts);
+        (wiki_ok, wiki_tokens)
+    } else {
+        (0, 0)
+    };
+
+    let vocab_after = {
+        let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        guard.facet.vocabulary_size()
+    };
+
+    Ok(Json(IngestResponse {
+        vocabulary_before: vocab_before,
+        vocabulary_after: vocab_after,
+        curriculum_sentences,
+        dialogues_trained,
+        phi4_merges,
+        wiki_topics: wiki_ok,
+        wiki_tokens,
+        message: format!(
+            "Ingested curriculum={} dialogue={} phi4_merges={} wiki={}/{} → vocab {}",
+            curriculum_sentences, dialogues_trained, phi4_merges, wiki_ok, wiki_topics, vocab_after
+        ),
+    }))
+}
+
 pub async fn stats(
     State(state): State<SharedModel>,
 ) -> Result<Json<StatsResponse>, StatusCode> {
@@ -184,6 +255,7 @@ pub async fn command(
         memory: &mut model.memo,
         world: &mut model.world,
         context_buffer: &mut model.context_buffer,
+        cognitive_core: &model.cognitive_core,
         arg,
         line: &line,
     };
@@ -275,6 +347,36 @@ pub async fn define_word(
         vocabulary: model.facet.vocabulary_size(),
     }))
 }
+
+pub async fn dialogue_learn(
+    State(state): State<SharedModel>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let model = &mut *guard;
+    let source = crate::sources::dialogue::DialogueSource::default_curriculum();
+    let count = source.learn_into_facet(&mut model.facet, &mut model.memo, &model.trainer);
+    Ok(Json(serde_json::json!({
+        "dialogues_trained": count,
+        "vocabulary": model.facet.vocabulary_size(),
+        "message": format!("Successfully trained on {} multi-turn conversational dialogues", count),
+    })))
+}
+
+pub async fn save_manifold(
+    State(state): State<SharedModel>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let model = &*guard;
+    crate::storage::Storage::save(&model.facet, "data/manifold.chroma")
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let _ = model.memo.save_to_file("data/memory.chroma");
+    Ok(Json(serde_json::json!({
+        "status": "ok",
+        "vocabulary": model.facet.vocabulary_size(),
+        "message": "Manifold and memory hierarchy successfully saved to disk",
+    })))
+}
+
 
 
 

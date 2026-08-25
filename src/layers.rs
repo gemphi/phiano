@@ -6,7 +6,7 @@ use std::f64::consts::PI;
 pub const PHASE_LAYERS: usize = 4; // 2^2
 pub const LAYER_SECTORS: [u16; 4] = [64, 32, 16, 8]; // Halving resolution per layer
 
-/// ClusterNode — represents a centroid node in a higher phase layer.
+/// ClusterNode - represents a centroid node in a higher phase layer.
 #[derive(Debug, Clone)]
 pub struct ClusterNode {
     #[allow(dead_code)]
@@ -15,7 +15,7 @@ pub struct ClusterNode {
     pub member_count: usize,
 }
 
-/// PhaseLayer — a single coarse/fine phase circle layer in the hierarchy.
+/// PhaseLayer - a single coarse/fine phase circle layer in the hierarchy.
 #[derive(Debug, Clone)]
 pub struct PhaseLayer {
     #[allow(dead_code)]
@@ -34,7 +34,7 @@ impl PhaseLayer {
     }
 }
 
-/// HierarchicalPhaseField — 4-layer deep hierarchical phase architecture (Phase 3).
+/// HierarchicalPhaseField - 4-layer deep hierarchical phase architecture (Phase 3).
 pub struct HierarchicalPhaseField {
     pub layers: Vec<PhaseLayer>,
 }

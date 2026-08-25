@@ -1,8 +1,11 @@
-/// Wikipedia bulk ingestion — downloads and trains on multiple Wikipedia
+#![allow(dead_code)]
+
+/// Wikipedia bulk ingestion - downloads and trains on multiple Wikipedia
 /// articles in sequence for large-scale knowledge acquisition.
 
 use crate::chunker::ChunkStore;
 use crate::facet::Facet;
+use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
 
 /// A curated set of topics for comprehensive knowledge ingestion.
@@ -29,7 +32,7 @@ pub const CURRICULUM_TOPICS: &[&[&str]] = &[
     // Philosophy
     &[
         "Philosophy", "Epistemology", "Metaphysics", "Ethics", "Logic",
-        "Consciousness", "Intentionality", "Phenomenology",
+        "Awareness", "Intentionality", "Phenomenology",
         "Existentialism", "Pragmatism", "Rationalism", "Empiricism",
         "Philosophy of mind", "Philosophy of language", "Aesthetics",
     ],
@@ -59,6 +62,10 @@ pub struct IngestionResult {
     pub errors: Vec<String>,
 }
 
+/// Wikipedia bulk ingestion operations.
+pub struct WikiBulk;
+
+impl WikiBulk {
 /// Fetches a Wikipedia article extract via the REST API.
 async fn fetch_wiki_extract(client: &reqwest::Client, topic: &str) -> Result<(String, String), String> {
     let url = format!(
@@ -76,14 +83,14 @@ async fn fetch_wiki_extract(client: &reqwest::Client, topic: &str) -> Result<(St
         if !resp2.status().is_success() {
             return Err(format!("status: {}", resp2.status()));
         }
-        return parse_wiki_response(resp2.text().await.map_err(|e| e.to_string())?, topic);
+        return Self::parse_wiki_response(resp2.text().await.map_err(|e| e.to_string())?, topic);
     }
 
     if !resp.status().is_success() {
         return Err(format!("status: {}", resp.status()));
     }
 
-    parse_wiki_response(resp.text().await.map_err(|e| e.to_string())?, topic)
+    Self::parse_wiki_response(resp.text().await.map_err(|e| e.to_string())?, topic)
 }
 
 fn parse_wiki_response(text: String, topic: &str) -> Result<(String, String), String> {
@@ -107,6 +114,60 @@ fn parse_wiki_response(text: String, topic: &str) -> Result<(String, String), St
     }
 
     Err("no extract found".to_string())
+}
+
+/// Fetches Wikipedia extracts without holding a facet lock.
+pub async fn fetch_curriculum_extracts(max_topics: Option<usize>) -> (Vec<(String, String)>, Vec<String>) {
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .user_agent("PhianoBot/0.1 (educational research)")
+        .build()
+        .expect("failed to build HTTP client");
+
+    let mut all_topics: Vec<&str> = Vec::new();
+    for group in CURRICULUM_TOPICS {
+        for topic in *group {
+            all_topics.push(topic);
+        }
+    }
+    if let Some(max) = max_topics {
+        all_topics.truncate(max);
+    }
+
+    let total = all_topics.len();
+    let mut extracts = Vec::new();
+    let mut errors = Vec::new();
+    for (i, topic) in all_topics.iter().enumerate() {
+        print!("  [ingest {}/{}] {}... ", i + 1, total, topic);
+        match Self::fetch_wiki_extract(&client, topic).await {
+            Ok((title, extract)) => {
+                println!("OK");
+                extracts.push((title, extract));
+            }
+            Err(e) => {
+                println!("FAIL: {}", e);
+                errors.push(format!("{}: {}", topic, e));
+            }
+        }
+        if (i + 1) % 10 == 0 {
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        }
+    }
+    (extracts, errors)
+}
+
+/// Trains a facet on already-fetched Wikipedia extracts (sync, lock-safe).
+pub fn train_extracts(facet: &mut Facet, trainer: &Trainer, extracts: &[(String, String)]) -> usize {
+    let mut total_tokens = 0;
+    for (_title, extract) in extracts {
+        let truncated = if extract.len() > 5000 { &extract[..5000] } else { extract.as_str() };
+        for sentence in Tokenizer::split_sentences(truncated) {
+            if Tokenizer::tokenize(&sentence).len() >= 4 {
+                total_tokens += trainer.train_sentence(facet, &sentence);
+            }
+        }
+    }
+    total_tokens
 }
 
 /// Runs bulk Wikipedia ingestion: downloads articles for all curriculum
@@ -143,14 +204,19 @@ pub async fn bulk_ingest(
     for (i, topic) in all_topics.iter().enumerate() {
         print!("  [ingest {}/{}] {}... ", i + 1, total, topic);
 
-        match fetch_wiki_extract(&client, topic).await {
-            Ok((title, extract)) => {
+        match Self::fetch_wiki_extract(&client, topic).await {
+            Ok((_title, extract)) => {
                 let truncated = if extract.len() > 5000 {
                     &extract[..5000]
                 } else {
                     &extract
                 };
-                let tokens = trainer.train_sentence(facet, truncated);
+                let mut tokens = 0;
+                for sentence in Tokenizer::split_sentences(truncated) {
+                    if Tokenizer::tokenize(&sentence).len() >= 4 {
+                        tokens += trainer.train_sentence(facet, &sentence);
+                    }
+                }
                 total_tokens += tokens;
                 succeeded += 1;
                 println!("OK ({} tokens)", tokens);
@@ -175,4 +241,5 @@ pub async fn bulk_ingest(
         vocabulary_after: facet.vocabulary_size(),
         errors,
     }
+}
 }

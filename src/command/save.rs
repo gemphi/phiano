@@ -2,11 +2,11 @@ use crate::command::Context;
 use crate::config;
 use crate::storage::Storage;
 
-/// Save — persists or loads the facet to/from disk.
+/// Save - persists or loads the facet to/from disk.
 ///
 /// Subcommands:
-/// - `save` — saves the facet to the chroma file
-/// - `load` — loads the facet from the chroma file
+/// - `save` - saves the facet to the chroma file
+/// - `load` - loads the facet from the chroma file
 pub struct Save;
 
 impl Save {

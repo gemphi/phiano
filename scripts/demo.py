@@ -41,7 +41,7 @@ def section(title):
 
 # ── DEMO START ────────────────────────────────────────────────────────────────
 
-banner("PHIANO — Phase Oscillator Language Model")
+banner("PHIANO - Phase Oscillator Language Model")
 print("  Investor Demo")
 print("  The world's first Kuramoto-coupled language model")
 print("=" * 60)

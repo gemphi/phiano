@@ -1,4 +1,4 @@
-# 02 — Phiano Architecture Overview
+# 02 - Phiano Architecture Overview
 
 > _High-level system topology, recursive learning cycle, and module interaction pipeline._
 

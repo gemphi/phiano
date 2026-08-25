@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Gauge } from 'lucide-react';
-import { evalText } from '../hooks/useApi';
+import { evalText } from '../hooks/api/eval';
 import type { EvalResult } from '../types';
 
 export function EvalPanel() {

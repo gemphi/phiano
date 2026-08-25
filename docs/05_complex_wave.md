@@ -1,4 +1,4 @@
-# 05 — Complex Wave Representation (c64)
+# 05 - Complex Wave Representation (c64)
 
 ## The c64 Type
 

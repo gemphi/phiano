@@ -13,7 +13,7 @@ use rustyline::Editor;
 use rustyline::history::DefaultHistory;
 use std::fs;
 
-/// Model — the recursive learning agent.
+/// Model - the recursive learning agent.
 ///
 /// Operates in a continuous cycle:
 ///
@@ -23,17 +23,17 @@ use std::fs;
 /// doesn't know, applies training, evaluates understanding, iterates
 /// on gaps, and scales by persisting knowledge.
 pub struct Model {
-    /// The facet — lexicon of words mapped to complex phasors.
+    /// The facet - lexicon of words mapped to complex phasors.
     pub facet: Facet,
-    /// The trainer — Kuramoto phase attraction learning engine.
+    /// The trainer - Kuramoto phase attraction learning engine.
     pub trainer: Trainer,
-    /// The memo — 16-layer memory log of all interactions.
+    /// The memo - 16-layer memory log of all interactions.
     pub memo: Memo,
-    /// The world — collection of personas for impersonation.
+    /// The world - collection of personas for impersonation.
     pub world: World,
     /// The running multi-turn context wave buffer.
     pub context_buffer: crate::generate::ContextWaveBuffer,
-    /// The cognitive core — 16 Searle-inspired agents.
+    /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: CognitiveCore,
 }
 
@@ -54,14 +54,18 @@ impl Model {
         };
 
         // Bootstrap bigrams from chunk data if empty (legacy model compat)
-        if facet.bigrams.is_empty() && !facet.lexicon.is_empty() {
-            Self::bootstrap_bigrams(&mut facet);
+        match facet.bigrams.is_empty() && !facet.lexicon.is_empty() {
+            true => Self::bootstrap_bigrams(&mut facet),
+            false => {}
         }
 
         // Definition-grounded phase re-seeding
         // Replaces word.len()*PHI with definition centroid phases
-        if !facet.lexicon.is_empty() {
-            definition_ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
+        match !facet.lexicon.is_empty() {
+            true => {
+                definition_ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
+            }
+            false => {}
         }
 
         let cognitive_core = CognitiveCore::new(ChunkStore::new("data/chunks"));
@@ -80,7 +84,7 @@ impl Model {
     }
 
     /// Bootstraps bigram co-occurrence counts from chunk dictionary data.
-    /// Only records word-pair adjacencies — does NOT retrain phases.
+    /// Only records word-pair adjacencies - does NOT retrain phases.
     /// This is fast (~2-5 seconds) and populates the transition model
     /// for generation and composition.
     fn bootstrap_bigrams(facet: &mut Facet) {
@@ -88,8 +92,9 @@ impl Model {
         let start = Instant::now();
         let chunk_store = crate::chunker::ChunkStore::new("data/chunks");
         let entries = chunk_store.load_all();
-        if entries.is_empty() {
-            return;
+        match entries.is_empty() {
+            true => return,
+            false => {}
         }
 
         println!("  [bigram] Bootstrapping from {} definitions...", entries.len());
@@ -98,9 +103,12 @@ impl Model {
             let tokens = Tokenizer::tokenize(def);
             for window in tokens.windows(2) {
                 // Only record if both words are already in the lexicon
-                if facet.lexicon.contains_key(&window[0]) && facet.lexicon.contains_key(&window[1]) {
-                    facet.record_bigram(&window[0], &window[1]);
-                    count += 1;
+                match facet.lexicon.contains_key(&window[0]) && facet.lexicon.contains_key(&window[1]) {
+                    true => {
+                        facet.record_bigram(&window[0], &window[1]);
+                        count += 1;
+                    }
+                    false => {}
                 }
             }
         }
@@ -112,7 +120,7 @@ impl Model {
         );
     }
 
-    /// Runs the REPL loop — each input is one iteration of the cycle.
+    /// Runs the REPL loop - each input is one iteration of the cycle.
     ///
     /// Reads lines from stdin until the user types `exit` or `quit`.
     /// Each line is processed through the `iterate` method.
@@ -124,13 +132,15 @@ impl Model {
             match rl.readline("phiano> ") {
                 Ok(raw) => {
                     let line = raw.trim().to_string();
-                    if line.is_empty() {
-                        continue;
+                    match line.is_empty() {
+                        true => continue,
+                        false => {}
                     }
                     let _ = rl.add_history_entry(&line);
                     self.iterate(&line);
-                    if line.eq_ignore_ascii_case("exit") || line.eq_ignore_ascii_case("quit") {
-                        break;
+                    match line.eq_ignore_ascii_case("exit") || line.eq_ignore_ascii_case("quit") {
+                        true => break,
+                        false => {}
                     }
                 }
                 Err(_) => break,
@@ -146,9 +156,12 @@ impl Model {
         let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
         let cmd = parts[0].to_lowercase();
 
-        if cmd == "exit" || cmd == "quit" {
-            self.scale();
-            return;
+        match cmd == "exit" || cmd == "quit" {
+            true => {
+                self.scale();
+                return;
+            }
+            false => {}
         }
 
         let arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
@@ -158,12 +171,14 @@ impl Model {
             memory: &mut self.memo,
             world: &mut self.world,
             context_buffer: &mut self.context_buffer,
+            cognitive_core: &self.cognitive_core,
             arg,
             line,
         };
 
-        if !Dispatcher::dispatch(line, &mut ctx) {
-            return;
+        match Dispatcher::dispatch(line, &mut ctx) {
+            true => {}
+            false => return,
         }
 
         let wave = crate::wave::Wave::text(&self.facet, line);
@@ -177,8 +192,9 @@ impl Model {
     /// After each command, checks for unknown words in the input and
     /// suggests related known words that might help define them.
     fn envision(&self, text: &str) {
-        if let Some(v) = Envision::new().detect_gaps(&self.facet, text) {
-            println!("{}", v);
+        match Envision::new().detect_gaps(&self.facet, text) {
+            Some(v) => println!("{}", v),
+            None => {}
         }
     }
 

@@ -6,7 +6,7 @@
 
 ## The Setup
 
-You are told that the Transformer — the architecture behind GPT, BERT, and every "AI" product since 2017 — is the pinnacle of machine intelligence. That attention is "all you need." That scaling parameters and data will inevitably produce general intelligence.
+You are told that the Transformer - the architecture behind GPT, BERT, and every "AI" product since 2017 - is the pinnacle of machine intelligence. That attention is "all you need." That scaling parameters and data will inevitably produce general intelligence.
 
 This is a joke. And the punchline is that nobody is laughing.
 
@@ -72,7 +72,7 @@ The Transformer crowd celebrates this as "scaling laws." But what it actually re
 
 **The architecture has no compression.**
 
-A human child learns language from ~100 million words of input and achieves fluency with ~100 billion neurons (most of which are not dedicated to language). GPT-3 consumed **570 GB of text** — roughly 150 billion words — and still:
+A human child learns language from ~100 million words of input and achieves fluency with ~100 billion neurons (most of which are not dedicated to language). GPT-3 consumed **570 GB of text** - roughly 150 billion words - and still:
 
 - Cannot reliably do arithmetic
 - Cannot reason about novel situations
@@ -104,7 +104,7 @@ A human child learns language from ~100 million words of input and achieves flue
   │  ├── 155,748 phasors × 16 bytes = 2.5 MB             │
   │  ├── ~102K definitions (one pass)                    │
   │  ├── Learns new words from ONE definition            │
-  │  ├── Online learning — no retraining                 │
+  │  ├── Online learning - no retraining                 │
   │  ├── <1W (single CPU, inference)                     │
   │  └── Maps meaning to phase geometry                  │
   └──────────────────────────────────────────────────────┘
@@ -138,7 +138,7 @@ A human child learns language from ~100 million words of input and achieves flue
 
 Transformers have **no memory**. Not in the way a biological system has memory. The "context window" is a finite buffer that is wiped clean at the start of each interaction. Every conversation starts from zero.
 
-The industry's "solution" is **Retrieval-Augmented Generation (RAG)** — which is admitting the architecture is broken and bolting on an external database. The model doesn't *remember* anything; it *looks things up* and then immediately forgets them again.
+The industry's "solution" is **Retrieval-Augmented Generation (RAG)** - which is admitting the architecture is broken and bolting on an external database. The model doesn't *remember* anything; it *looks things up* and then immediately forgets them again.
 
 ### What Real Memory Looks Like
 
@@ -319,7 +319,7 @@ Transformers don't hallucinate because of a bug. They hallucinate because **hall
   └──────────────────────────────────────────────────────┘
 ```
 
-The Transformer has no ground truth. No internal model to check against. No way to distinguish between "Paris is the capital of France" and "The moon is made of cheese" — both are just token sequences with statistical weights.
+The Transformer has no ground truth. No internal model to check against. No way to distinguish between "Paris is the capital of France" and "The moon is made of cheese" - both are just token sequences with statistical weights.
 
 ### Why Phiano Doesn't Hallucinate
 
@@ -397,10 +397,10 @@ The Transformer has no ground truth. No internal model to check against. No way 
   │                                                      │
   │  The Transformer is a huge joke because:             │
   │                                                      │
-  │  1. It has no model of meaning — only correlations   │
-  │  2. It cannot learn online — requires full retrain   │
-  │  3. It has no memory — only a sliding window         │
-  │  4. It hallucinates by design — no ground truth      │
+  │  1. It has no model of meaning - only correlations   │
+  │  2. It cannot learn online - requires full retrain   │
+  │  3. It has no memory - only a sliding window         │
+  │  4. It hallucinates by design - no ground truth      │
   │  5. It scales in parameters, not in intelligence     │
   │  6. It costs $100M to train, $0 to be wrong          │
   │  7. It is a lookup table disguised as a brain        │
@@ -447,7 +447,7 @@ The alternative is not "bigger Transformers." The alternative is **a fundamental
   (arbitrary weights)    (geometric structure)
 ```
 
-The Transformer is not the destination. It is the detour. The future of machine cognition will look more like a piano than a database — instruments that tune themselves, that resonate with meaning, that learn from a single example, and that know what they don't know.
+The Transformer is not the destination. It is the detour. The future of machine cognition will look more like a piano than a database - instruments that tune themselves, that resonate with meaning, that learn from a single example, and that know what they don't know.
 
 **Phiano is not a better Transformer. It is what comes after.**
 

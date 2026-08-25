@@ -1,8 +1,8 @@
 # How a Child Learns: Episodic Entrainment, Harmonic Self-Tuning, and Childhood Linguistic Emergence
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 
@@ -10,7 +10,7 @@
 
 A human child acquires fluent mastery of natural language from approximately 5 to 10 million heard words, without trillions of parameters, massive GPU clusters, or gradient backpropagation through billions of synthetic web pages. Developmental psychology and cognitive neuroscience demonstrate that early language acquisition relies on **auditory entrainment**, **rhythmic prosody**, **episodic imitation**, and **continuous self-tuning**.
 
-In this paper, we formalize the **Child Language Acquisition Engine** implemented within Phiano. We show that child-like learning is naturally modeled as a network of coupled limit-cycle oscillators that dynamically synchronize with parental speech rhythms. We explain the 5-stage developmental trajectory—from infantile phonemic babbling to multi-word episodic chords and full recursive grammar—and contrast Phiano's sample-efficient phase tuning with the brute-force token memorization of Large Language Models.
+In this paper, we formalize the **Child Language Acquisition Engine** implemented within Phiano. We show that child-like learning is naturally modeled as a network of coupled limit-cycle oscillators that dynamically synchronize with parental speech rhythms. We explain the 5-stage developmental trajectory-from infantile phonemic babbling to multi-word episodic chords and full recursive grammar-and contrast Phiano's sample-efficient phase tuning with the brute-force token memorization of Large Language Models.
 
 ---
 
@@ -73,7 +73,7 @@ Phiano formalizes language acquisition through 5 distinct developmental stages:
 - **Phiano Implementation**: Initialization of primary phase angles $\phi_i \sim \mathcal{U}[0, 2\pi)$ on the circle $\mathbb{S}^1$. Initial phonemic clusters self-organize based purely on acoustic fine-structure harmonics $\alpha$.
 
 ### Stage 2: Single-Word Anchoring & Fast Mapping (Months 12–18)
-- **Biological Correlate**: Carey & Bartlett's *Fast Mapping*—associating a novel word with an object in a single exposure.
+- **Biological Correlate**: Carey & Bartlett's *Fast Mapping*-associating a novel word with an object in a single exposure.
 - **Phiano Implementation**: When `envision.rs` encounters an out-of-vocabulary word, it computes the context centroid $\Phi_c$ and places the new phasor directly into the resonant sector:
   $$Z_{\text{new}} = A_{\text{init}} \cdot e^{i (\Phi_c + \delta)}$$
   No global retraining or weight corruption occurs.
@@ -94,7 +94,7 @@ Phiano formalizes language acquisition through 5 distinct developmental stages:
 
 ## 3. Fast Envisioning vs. Catastrophic Forgetting
 
-In standard deep learning models, fine-tuning on new data causes *catastrophic forgetting*—overwriting historical weights.
+In standard deep learning models, fine-tuning on new data causes *catastrophic forgetting*-overwriting historical weights.
 
 In Phiano, learning is **topological addition and local phase alignment**:
 - Adding a word modifies only that word's entry in the `Facet` lexicon.
@@ -126,4 +126,4 @@ phiano> synonym dog 3
 
 ## 5. Conclusion
 
-By grounding artificial language learning in the physical principles of child language acquisition—acoustic entrainment, fast mapping, harmonic resonance, and mass inertia—Phiano achieves sample-efficient, robust intelligence that learns continuously without forgetting.
+By grounding artificial language learning in the physical principles of child language acquisition-acoustic entrainment, fast mapping, harmonic resonance, and mass inertia-Phiano achieves sample-efficient, robust intelligence that learns continuously without forgetting.

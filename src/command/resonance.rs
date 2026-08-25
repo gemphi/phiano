@@ -2,7 +2,7 @@ use crate::command::Context;
 use crate::command::Parser;
 use crate::wave::Wave;
 
-/// Resonance — finds words that resonate with a sentence wave.
+/// Resonance - finds words that resonate with a sentence wave.
 ///
 /// Usage: `resonance "some text" [count]`
 ///

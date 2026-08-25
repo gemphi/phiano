@@ -92,7 +92,7 @@ pub async fn wiki_learn(
         novelty: eval_result.novelty,
         resonance: eval_result.resonance,
         verdict: format!("{}", eval_result.verdict),
-        message: format!("Learned from Wikipedia article \"{}\" — {} tokens trained", title, tokens),
+        message: format!("Learned from Wikipedia article \"{}\" - {} tokens trained", title, tokens),
     }))
 }
 

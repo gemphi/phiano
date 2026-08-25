@@ -4,10 +4,9 @@
 /// The source opens, tension provides contrast, resolution closes.
 
 use crate::facet::Facet;
-use crate::wave::Wave;
 
 /// Composes text from the river flow path and word banks into cohesive narrative prose.
-pub fn compose(path: &[u16], banks: &[Vec<String>], resonant: &[String]) -> String {
+pub fn compose(_path: &[u16], banks: &[Vec<String>], resonant: &[String]) -> String {
     let mut story = Vec::new();
 
     // 1. Opening Chapter

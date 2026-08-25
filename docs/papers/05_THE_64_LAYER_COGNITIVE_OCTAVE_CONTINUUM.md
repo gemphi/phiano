@@ -1,14 +1,14 @@
 # The 64-Layer Cognitive Octave Continuum: Multi-Scale Phase Manifolds in Phiano
 
 **Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 
 ## Abstract
 
-Human cognition operates across vastly different spatiotemporal scales—from millisecond phonemic discrimination and lexical retrieval to multi-second syntactic parsing, minute-long contextual discourse, and lifetime epistemic identity.
+Human cognition operates across vastly different spatiotemporal scales-from millisecond phonemic discrimination and lexical retrieval to multi-second syntactic parsing, minute-long contextual discourse, and lifetime epistemic identity.
 
 In this paper, we introduce the **64-Layer Cognitive Octave Continuum** implemented within Phiano. Extending the initial 4-layer / 16-band architecture, the 64-layer continuum maps the cognitive spectrum across four fundamental musical octaves, each containing 16 discrete harmonic sub-layers. We formulate the multi-resolution coarse-graining equations, describe the bottom-up centroid propagation and top-down phase modulation mechanisms, and demonstrate how this 64-layer continuum enables simultaneous low-level token fidelity and high-level abstract reasoning without exponential parameter inflation.
 

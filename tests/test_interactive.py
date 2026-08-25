@@ -51,7 +51,7 @@ section("TRAINING PHASE 1: Wikipedia articles")
 
 wiki_topics = [
     "Neural network",
-    "Consciousness",
+    "Awareness",
     "Water cycle",
     "Ownership",
     "Quantum decoherence",

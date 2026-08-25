@@ -1,4 +1,4 @@
-# 21 — Context & Command Handlers
+# 21 - Context & Command Handlers
 
 ## Context Struct
 
@@ -42,7 +42,7 @@
       }
   }
 
-  No trait needed — dispatch uses match on Command enum.
+  No trait needed - dispatch uses match on Command enum.
   Each handler is stateless (unit struct).
 ```
 

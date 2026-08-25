@@ -11,9 +11,6 @@ use std::f64::consts::PI;
 /// Each sector spans 2π/N radians, where N is the configured resolution.
 /// Configurable via `config::SECTOR_RESOLUTION` (64, 128, 256, 512, 1024).
 /// Every sector has an antipodal opposite (sector + N/2) mod N.
-pub fn sectors() -> u16 {
-    config::sector_resolution()
-}
 
 /// Type alias for a complex number with f64 real and imaginary parts.
 ///
@@ -22,7 +19,7 @@ pub fn sectors() -> u16 {
 #[allow(non_camel_case_types)]
 pub type c64 = Complex64;
 
-/// Wave — operations on complex wave representations of text.
+/// Wave - operations on complex wave representations of text.
 ///
 /// Provides methods for computing sentence waves, text waves, and
 /// ray casting searches across the facet's lexicon.
@@ -119,12 +116,17 @@ impl Wave {
         hits.into_iter().map(|(w, d)| (w.clone(), d)).collect()
     }
 
+    /// Returns the configured number of phase sectors.
+    pub fn sector_count() -> u16 {
+        config::sector_resolution()
+    }
+
     /// Maps a phase angle to a sector index (0-63).
     ///
     /// The phase circle is divided into 64 equal sectors.
     /// Sector 0 = [0, 2π/64), sector 1 = [2π/64, 4π/64), etc.
     pub fn sector_of(phase: f64) -> u16 {
-        let n = sectors();
+        let n = Self::sector_count();
         let normalized = phase.rem_euclid(2.0 * PI);
         let sector_size = 2.0 * PI / n as f64;
         (normalized / sector_size).floor() as u16 % n
@@ -135,7 +137,8 @@ impl Wave {
     /// Sector + 32 mod 64 gives the diametrically opposite sector.
     /// Words in opposite sectors represent semantic antonyms.
     pub fn opposite_sector(sector: u16) -> u16 {
-        (sector + sectors() / 2) % sectors()
+        let n = Self::sector_count();
+        (sector + n / 2) % n
     }
 
     /// Returns the sector of a word's effective phase.
@@ -159,6 +162,7 @@ impl Wave {
     /// Finds words in a specific sector of the phase circle.
     ///
     /// Returns up to `top_k` words sorted by amplitude (most familiar first).
+    #[allow(dead_code)]
     pub fn words_in_sector(facet: &Facet, sector: u16, top_k: usize) -> Vec<(String, f64)> {
         let mut hits: Vec<(String, f64)> = facet
             .lexicon

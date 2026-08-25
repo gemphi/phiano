@@ -10,7 +10,7 @@ use crate::facet::Facet;
 use crate::trainer::Trainer;
 use std::fmt;
 
-/// Persona — a learned style fingerprint in the phase manifold.
+/// Persona - a learned style fingerprint in the phase manifold.
 ///
 /// A persona is NOT a hardcoded character. It is a phase-space
 /// fingerprint extracted from text examples. The fingerprint captures
@@ -23,8 +23,8 @@ use std::fmt;
 /// 3. The fingerprint is extracted from the resulting phase distribution
 /// 4. The impersonator can then compose in that persona's style
 ///
-/// This is generic — it works for anyone whose text you can feed it.
-/// Elon Musk, Taylor Swift, Shakespeare — all are just text distributions
+/// This is generic - it works for anyone whose text you can feed it.
+/// Elon Musk, Taylor Swift, Shakespeare - all are just text distributions
 /// in the phase manifold. The system finds what makes each unique.
 pub struct Persona {
     /// The name of the persona (user-provided label).

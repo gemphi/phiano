@@ -3,7 +3,7 @@ use crate::wave::{c64, Wave};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Facet — the core lexicon mapping words to complex phasors.
+/// Facet - the core lexicon mapping words to complex phasors.
 ///
 /// Each word in the facet has a `SpectralPhasor` representing its position
 /// in a continuous 2*pi phase space. Semantic similarity between words is
@@ -20,6 +20,9 @@ pub struct Facet {
     /// Key is two words joined by a space for O(1) lookup.
     #[serde(default)]
     pub trigrams: HashMap<String, HashMap<String, u32>>,
+    /// Learned Kuramoto-Sakaguchi phase lags β_ij for word_a → word_b.
+    #[serde(default)]
+    pub phase_lags: HashMap<String, HashMap<String, f64>>,
 }
 
 impl Facet {
@@ -29,6 +32,7 @@ impl Facet {
             lexicon: HashMap::new(),
             bigrams: HashMap::new(),
             trigrams: HashMap::new(),
+            phase_lags: HashMap::new(),
         }
     }
 
@@ -59,8 +63,9 @@ impl Facet {
     ///
     /// Returns 0.0 if the lexicon is empty.
     pub fn average_amplitude(&self) -> f64 {
-        if self.lexicon.is_empty() {
-            return 0.0;
+        match self.lexicon.is_empty() {
+            true => return 0.0,
+            false => {}
         }
         let total: f64 = self.lexicon.values().map(|p| p.amplitude).sum();
         total / self.lexicon.len() as f64
@@ -82,21 +87,23 @@ impl Facet {
             .unwrap_or(1)
     }
 
-    /// Computes the centroid wave — the sum of all phasor complex representations.
+    /// Computes the centroid wave - the sum of all phasor complex representations.
     ///
     /// The centroid represents the "center of mass" of the facet's semantic space.
     /// Returns zero if the lexicon is empty.
     pub fn centroid(&self) -> c64 {
-        if self.lexicon.is_empty() {
-            return Wave::zero();
+        match self.lexicon.is_empty() {
+            true => return Wave::zero(),
+            false => {}
         }
         Wave::from_sum(self.lexicon.values().map(|p| p.to_complex()))
     }
 
     /// Records a bigram (word_a, word_b) co-occurrence, incrementing its count.
     pub fn record_bigram(&mut self, word_a: &str, word_b: &str) {
-        if word_a == word_b {
-            return;
+        match word_a == word_b {
+            true => return,
+            false => {}
         }
         *self.bigrams
             .entry(word_a.to_string())
@@ -120,8 +127,9 @@ impl Facet {
 
     /// Records a trigram (word_a, word_b, word_c) co-occurrence.
     pub fn record_trigram(&mut self, word_a: &str, word_b: &str, word_c: &str) {
-        if word_a == word_c || word_b == word_c {
-            return;
+        match word_a == word_c || word_b == word_c {
+            true => return,
+            false => {}
         }
         let key = format!("{} {}", word_a, word_b);
         *self.trigrams
@@ -145,13 +153,16 @@ impl Facet {
     }
 
     /// Returns the transition probability for a trigram.
+    #[allow(dead_code)]
     pub fn trigram_probability(&self, word_a: &str, word_b: &str, word_c: &str) -> f64 {
         let key = format!("{} {}", word_a, word_b);
         match self.trigrams.get(&key) {
             Some(followers) => {
                 let total: u32 = followers.values().sum();
-                if total == 0 { return 0.0; }
-                followers.get(word_c).map(|c| *c as f64 / total as f64).unwrap_or(0.0)
+                match total == 0 {
+                    true => 0.0,
+                    false => followers.get(word_c).map(|c| *c as f64 / total as f64).unwrap_or(0.0),
+                }
             }
             None => 0.0,
         }
@@ -163,16 +174,41 @@ impl Facet {
         match self.bigrams.get(word_a) {
             Some(followers) => {
                 let total: u32 = followers.values().sum();
-                if total == 0 {
-                    return 0.0;
+                match total == 0 {
+                    true => 0.0,
+                    false => followers
+                        .get(word_b)
+                        .map(|c| *c as f64 / total as f64)
+                        .unwrap_or(0.0),
                 }
-                followers
-                    .get(word_b)
-                    .map(|c| *c as f64 / total as f64)
-                    .unwrap_or(0.0)
             }
             None => 0.0,
         }
+    }
+
+    /// Records an observed word-order lag and blends it into β_ij.
+    pub fn record_phase_lag(&mut self, word_a: &str, word_b: &str, observed: f64) {
+        match word_a == word_b {
+            true => return,
+            false => {}
+        }
+        let entry = self
+            .phase_lags
+            .entry(word_a.to_string())
+            .or_default()
+            .entry(word_b.to_string())
+            .or_insert(crate::config::SYNTACTIC_LAG_BETA);
+        let rate = crate::config::SYNTAX_LAG_LEARN_RATE;
+        *entry = (*entry * (1.0 - rate) + observed * rate).rem_euclid(crate::config::TWO_PI);
+    }
+
+    /// Returns the learned syntactic lag β_ij, or the default subject→verb lag.
+    pub fn phase_lag(&self, word_a: &str, word_b: &str) -> f64 {
+        self.phase_lags
+            .get(word_a)
+            .and_then(|m| m.get(word_b))
+            .copied()
+            .unwrap_or(crate::config::SYNTACTIC_LAG_BETA)
     }
 }
 

@@ -1,4 +1,4 @@
-# 20 — Chunking & Parallel Training
+# 20 - Chunking & Parallel Training
 
 ## Chunk Split
 

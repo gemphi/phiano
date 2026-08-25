@@ -1,4 +1,4 @@
-# 19 — Dictionary Sources
+# 19 - Dictionary Sources
 
 ## Source Hierarchy
 

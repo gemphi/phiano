@@ -1,4 +1,4 @@
-# 38 — Persona: Fingerprint, World, Impersonation
+# 38 - Persona: Fingerprint, World, Impersonation
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -31,10 +31,10 @@
 A persona is NOT a hardcoded character. It is a phase-space fingerprint
 extracted from text examples. The fingerprint captures:
 
-1. **Sector histogram** — which sectors the persona's words cluster in
-2. **Amplitude profile** — how familiar the persona is with each sector
-3. **Dominant sectors** — where their words cluster most
-4. **Diversity (entropy)** — how spread out their style is
+1. **Sector histogram** - which sectors the persona's words cluster in
+2. **Amplitude profile** - how familiar the persona is with each sector
+3. **Dominant sectors** - where their words cluster most
+4. **Diversity (entropy)** - how spread out their style is
 
 ## Creating a persona
 
@@ -82,26 +82,26 @@ composition is pulled toward the persona's characteristic sectors.
 
 ```
 src/persona/
-├── mod.rs          — Persona struct, from_examples()
-├── fingerprint.rs  — Fingerprint: extract, similarity, difference_vector
-├── impersonate.rs  — Impersonator: biased composition + persona fit scoring
-└── world.rs        — PersonaWorld: collection, compare, PersonaComparison
+├── mod.rs          - Persona struct, from_examples()
+├── fingerprint.rs  - Fingerprint: extract, similarity, difference_vector
+├── impersonate.rs  - Impersonator: biased composition + persona fit scoring
+└── world.rs        - PersonaWorld: collection, compare, PersonaComparison
 ```
 
 ## REPL commands
 
 ```
-persona add <name> "ex1" "ex2" ...       — Create persona from examples
-persona list                             — List all personas
-persona show <name>                      — Show fingerprint
-persona compare <a> <b>                  — Compare two personas
-persona impersonate <name> "prompt"      — Compose as persona
+persona add <name> "ex1" "ex2" ...       - Create persona from examples
+persona list                             - List all personas
+persona show <name>                      - Show fingerprint
+persona compare <a> <b>                  - Compare two personas
+persona impersonate <name> "prompt"      - Compose as persona
 ```
 
 ## File references
 
-- `src/persona/mod.rs` — Persona struct
-- `src/persona/fingerprint.rs` — Fingerprint extraction and comparison
-- `src/persona/impersonate.rs` — Impersonator, ImpersonationResult
-- `src/persona/world.rs` — PersonaWorld, PersonaComparison
-- `src/command/persona.rs` — REPL command handler
+- `src/persona/mod.rs` - Persona struct
+- `src/persona/fingerprint.rs` - Fingerprint extraction and comparison
+- `src/persona/impersonate.rs` - Impersonator, ImpersonationResult
+- `src/persona/world.rs` - PersonaWorld, PersonaComparison
+- `src/command/persona.rs` - REPL command handler

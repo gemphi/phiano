@@ -15,6 +15,7 @@ mod layers;
 mod memory;
 mod model;
 mod oscillator;
+mod phase_flow;
 mod persona;
 mod phasor;
 mod reasoning;
@@ -31,9 +32,9 @@ use command::help::Help;
 use command::Context;
 use model::Model;
 
-/// Entry point — initializes the model, prints help, and runs the REPL.
+/// Entry point - initializes the model, prints help, and runs the REPL.
 ///
-/// "Phiano" — from *piano* (Italian: soft/loud), a phase instrument.
+/// "Phiano" - from *piano* (Italian: soft/loud), a phase instrument.
 /// Words are keys, phasors are notes, sentences are chords.
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -46,7 +47,7 @@ fn main() {
         .unwrap_or(3000);
 
     println!("╔════════════════════════════════════════════════════════╗");
-    println!("║  PHIANO — from *piano*: a phase instrument for language ║");
+    println!("║  PHIANO - from *piano*: a phase instrument for language ║");
     println!("║  Words are keys · phasors are notes · sentences chords  ║");
     println!("║  Recursive learning: envision → apply → eval            ║");
     println!("║                   → iterate → scale                    ║");
@@ -67,6 +68,7 @@ fn main() {
         memory: &mut model.memo,
         world: &mut model.world,
         context_buffer: &mut model.context_buffer,
+        cognitive_core: &model.cognitive_core,
         arg: "",
         line: "",
     });

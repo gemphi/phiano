@@ -405,3 +405,34 @@ prevail: To be superior in strength, dominance, influence or frequency; to have 
 prevail: To be current, widespread or predominant; to have currency or prevalence.
 prevail: To succeed in persuading or inducing.
 prevail: To avail.
+fish: A cold-blooded vertebrate animal that lives in water, moving with the help of fins and breathing with gills.
+fish: Any animal (or any vertebrate) that lives exclusively in water.
+fish: The flesh of the fish used as food.
+fish: A card game in which the object is to obtain cards in pairs or sets of four (depending on the variation), by asking the other players for cards of a particular rank.
+fish: A woman.
+fish: An easy victim for swindling.
+fish: A bad poker player. Compare shark (a good poker player).
+fish: A makeshift overlapping longitudinal brace, originally shaped roughly like a fish, used to temporarily repair or extend a spar or mast of a ship.
+fish: A purchase used to fish the anchor.
+fish: A torpedo.
+fish: A paraphyletic grouping of the following extant taxonomic groups:
+fish: The thirty-fourth Lenormand card.
+fish: A period of time spent fishing.
+fish: An instance of seeking something.
+fish: To hunt fish or other aquatic animals.
+fish: To search (a body of water) for something other than fish.
+fish: To use as bait when fishing.
+fish: To (attempt to) find or get hold of an object by searching among other objects.
+fish: (followed by "for" or "around for") To talk to people in an attempt to get them to say something, or seek to obtain something by artifice.
+fish: Of a batsman, to attempt to hit a ball outside off stump and miss it.
+fish: To repair (a spar or mast) by fastening a beam or other long object (often called a fish) over the damaged part (see Noun above).
+fish: To hoist the flukes of.
+fish: A counter, used in various games.
+money: A legally or socially binding conceptual contract of entitlement to wealth, void of intrinsic value, payable for all debts and taxes, and regulated in supply.
+money: A generally accepted means of exchange and measure of value.
+money: A currency maintained by a state or other entity which can guarantee its value (such as a monetary union).
+money: Hard cash in the form of banknotes and coins, as opposed to cheques/checks, credit cards, or credit more generally.
+money: The total value of liquid assets available for an individual or other economic unit, such as cash and bank deposits.
+money: Wealth; a person, family or class that possesses wealth
+money: An item of value between two or more parties used for the exchange of goods or services.
+money: A person who funds an operation.

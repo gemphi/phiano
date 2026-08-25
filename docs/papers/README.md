@@ -1,10 +1,10 @@
 # The Phiano Scientific Papers & Blog Monograph Series
 
-Welcome to the official scientific monograph and paper series for **The Oscillator Model** and **Phiano**—the *PyTorch of the Oscillator Method*.
+Welcome to the official scientific monograph and paper series for **The Oscillator Model** and **Phiano**-the *PyTorch of the Oscillator Method*.
 
 **Principal Investigators & Authors:**
-- **Phi** (Lead Architect & Principal Investigator, Phiano Project) — `phi@phiano.org`
-- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) — `zuzanna@phiano.org`
+- **Phi** (Lead Architect & Principal Investigator, Phiano Project) - `phi@phiano.org`
+- **Dr. Zuzanna Stamirowska** (Complex Systems Theory & Network Dynamics, École Polytechnique / Sciences Po) - `zuzanna@phiano.org`
 
 ---
 

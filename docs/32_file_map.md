@@ -1,4 +1,4 @@
-# 32 — Complete Phiano Repository File Map
+# 32 - Complete Phiano Repository File Map
 
 > _Comprehensive file, directory, and module index of the Phiano repository._
 

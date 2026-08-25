@@ -1,7 +1,7 @@
 use std::fmt;
 use std::time::Duration;
 
-/// Training metrics — tracks throughput and progress during ingestion.
+/// Training metrics - tracks throughput and progress during ingestion.
 #[derive(Debug, Clone, Default)]
 pub struct TrainingMetrics {
     pub epochs_completed: usize,

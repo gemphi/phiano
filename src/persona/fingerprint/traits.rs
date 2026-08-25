@@ -1,7 +1,7 @@
 /// Personality trait derivation from fingerprint sector distribution.
 ///
 /// Maps the phase-space color distribution to temperament descriptors.
-/// This is NOT hardcoded persona content — it's derived purely from
+/// This is NOT hardcoded persona content - it's derived purely from
 /// the geometry of the fingerprint in phase space.
 
 use super::Fingerprint;

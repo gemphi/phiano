@@ -9,7 +9,7 @@ use phiano::trainer::Trainer;
 
 fn main() {
     println!("════════════════════════════════════════════════════════════");
-    println!("   PHIANO — RUST BOOK ONLINE INGESTION & TRAINING BENCHMARK  ");
+    println!("   PHIANO - RUST BOOK ONLINE INGESTION & TRAINING BENCHMARK  ");
     println!("════════════════════════════════════════════════════════════\n");
 
     let mut facet = Facet::new();

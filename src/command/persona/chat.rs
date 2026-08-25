@@ -1,4 +1,4 @@
-/// Chat subcommand — interactive persona chat loop.
+/// Chat subcommand - interactive persona chat loop.
 
 use crate::command::Context;
 use crate::persona::Impersonator;
@@ -33,7 +33,7 @@ pub fn chat(ctx: &mut Context, rest: &str) -> bool {
 
     println!();
     println!("  ╔══════════════════════════════════════════════════════════════╗");
-    println!("  ║  Hello, I'm {:<12} — {:<44} ║", name, traits_str);
+    println!("  ║  Hello, I'm {:<12} - {:<44} ║", name, traits_str);
     println!("  ║                                                              ║");
     println!("  ║  Phase signature: {:<42} ║", top_colors.join(" · "));
     println!("  ║  Diversity: {:.3}  |  Avg length: {:.1} words  |  Samples: {:<5} ║",
@@ -41,7 +41,7 @@ pub fn chat(ctx: &mut Context, rest: &str) -> bool {
         persona.fingerprint.avg_length,
         persona.fingerprint.sample_count);
     println!("  ║                                                              ║");
-    println!("  ║  I respond in phase resonance — my word choices reflect      ║");
+    println!("  ║  I respond in phase resonance - my word choices reflect      ║");
     println!("  ║  how your prompt vibrates through my fingerprint.            ║");
     println!("  ║  Type 'bye' to end the chat.                                 ║");
     println!("  ╚══════════════════════════════════════════════════════════════╝");
@@ -82,15 +82,6 @@ pub fn chat(ctx: &mut Context, rest: &str) -> bool {
         for line in result.text.lines() {
             println!("  │ {}", line);
         }
-        println!();
-        println!(
-            "  └─ sector {} ({}) | quality {:.4} | fit {:.4} | diversity {:.3}",
-            result.winning_sector,
-            result.winning_color,
-            result.quality_score,
-            result.persona_fit,
-            persona.fingerprint.diversity,
-        );
         println!();
         turn += 1;
     }

@@ -1,12 +1,12 @@
-/// Mental causation agent — Searle's theory of how mental states cause action.
+/// Mental causation agent - Searle's theory of how mental states cause action.
 ///
 /// Searle's key insight: intentional states (beliefs, desires, intentions)
-/// have causal power — they drive behavior. This is NOT epiphenomenalism.
+/// have causal power - they drive behavior. This is NOT epiphenomenalism.
 ///
 /// The model:
-/// 1. Beliefs (mind→world) — represent how the world is
-/// 2. Desires (world→mind) — represent how the world should be
-/// 3. Intentions (world→mind) — commitments to making the world match
+/// 1. Beliefs (mind→world) - represent how the world is
+/// 2. Desires (world→mind) - represent how the world should be
+/// 3. Intentions (world→mind) - commitments to making the world match
 ///
 /// Practical reasoning (Searle's adaptation of Aristotle):
 ///   Belief: "X is the case" + Desire: "I want Y" → Intention: "I will do A to get Y"
@@ -20,7 +20,7 @@ use super::word_selection;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
-/// 16. MentalCausationAgent — drives output from intentional states.
+/// 16. MentalCausationAgent - drives output from intentional states.
 pub struct MentalCausationAgent;
 
 impl MentalCausationAgent {
@@ -51,7 +51,10 @@ impl MentalCausationAgent {
         let contrib = AgentContribution {
             agent_name: "MentalCausation",
             agent_role: "Intentional states cause output (belief→desire→intention)",
-            confidence: if synthesis_words.len() >= 3 { 0.75 } else { 0.3 },
+            confidence: match synthesis_words.len() >= 3 {
+                true => 0.75,
+                false => 0.3,
+            },
             output,
             phase_contribution: collective_phase,
         };
@@ -72,10 +75,9 @@ impl MentalCausationAgent {
             .filter(|t| facet.lexicon.contains_key(*t))
             .cloned()
             .collect();
-        let content = if known.is_empty() {
-            proposition.to_string()
-        } else {
-            known.iter().take(5).cloned().collect::<Vec<_>>().join(" ")
+        let content = match known.is_empty() {
+            true => proposition.to_string(),
+            false => known.iter().take(5).cloned().collect::<Vec<_>>().join(" "),
         };
 
         match act {

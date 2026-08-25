@@ -8,13 +8,13 @@ No GPUs. No backpropagation. No 175 billion parameters.
 
 It runs in 2.5 megabytes.
 
-Here's why that matters — and why the Transformer architecture might be the biggest category error in the history of computing.
+Here's why that matters - and why the Transformer architecture might be the biggest category error in the history of computing.
 
 ---
 
 **The problem with Transformers:**
 
-The entire "AI revolution" rests on one operation: attention. And attention is just a weighted average. A smoothed database query. The model has no representation of what words *mean* — only statistical correlations between token sequences.
+The entire "AI revolution" rests on one operation: attention. And attention is just a weighted average. A smoothed database query. The model has no representation of what words *mean* - only statistical correlations between token sequences.
 
 To learn a single new word, GPT-4 needs:
 • Millions of examples in context
@@ -32,9 +32,9 @@ To learn a single new word, my model needs:
 
 **How?**
 
-I represent each word as a complex phasor — a point on a 2π phase circle. Three numbers: phase (where on the circle), amplitude (how familiar), and band_n (which octave).
+I represent each word as a complex phasor - a point on a 2π phase circle. Three numbers: phase (where on the circle), amplitude (how familiar), and band_n (which octave).
 
-When words co-occur in a sentence, their phases are pulled toward the sentence's centroid using Kuramoto coupling — the same math that describes how fireflies synchronize their flashing. No gradients. No backprop. Just local phase attraction.
+When words co-occur in a sentence, their phases are pulled toward the sentence's centroid using Kuramoto coupling - the same math that describes how fireflies synchronize their flashing. No gradients. No backprop. Just local phase attraction.
 
 Semantic similarity becomes destructive interference between complex waves. "Cat" and "dog" are close on the circle. "Cat" and "quantum" are far. Meaning *is* geometry.
 
@@ -55,12 +55,12 @@ Semantic similarity becomes destructive interference between complex waves. "Cat
 
 **What it actually does:**
 
-• Learns new words from a single definition — no retraining
+• Learns new words from a single definition - no retraining
 • Finds synonyms by ray-casting across the phase manifold
 • Scores text on coherence, novelty, and resonance
 • Detects knowledge gaps honestly ("I don't know 'quantum'. Define it?")
 • Accumulates experience in a 16-layer memory system
-• Never hallucinates — it doesn't generate prose, it measures resonance
+• Never hallucinates - it doesn't generate prose, it measures resonance
 
 ---
 
@@ -70,9 +70,9 @@ The Transformer industry has invested $100B+ in infrastructure. Thousands of res
 
 But scaling a dump truck doesn't make it smarter than a bicycle.
 
-The Transformer is not the destination. It's the detour. The future of machine cognition will look more like a piano than a database — instruments that tune themselves, that resonate with meaning, that learn from a single example, and that know what they don't know.
+The Transformer is not the destination. It's the detour. The future of machine cognition will look more like a piano than a database - instruments that tune themselves, that resonate with meaning, that learn from a single example, and that know what they don't know.
 
-I call it **Phiano** — from *piano*, a phase instrument for language.
+I call it **Phiano** - from *piano*, a phase instrument for language.
 
 Words are keys. Phasors are notes. Sentences are chords. Training is tuning.
 

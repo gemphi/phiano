@@ -1,4 +1,4 @@
-/// Impersonator — composes text in a persona's style.
+/// Impersonator - composes text in a persona's style.
 ///
 /// Given a persona's fingerprint, the impersonator biases the river flow
 /// to start from and prefer the persona's dominant sectors.
@@ -50,7 +50,7 @@ impl Impersonator {
             let depth = 4 + round * 2;
 
             println!(
-                "  [impersonate] round {}/{} (depth {}) — biasing toward {}'s sectors",
+                "  [impersonate] round {}/{} (depth {}) - biasing toward {}'s sectors",
                 round + 1, self.max_rounds, depth, persona_name,
             );
 
@@ -82,7 +82,7 @@ impl Impersonator {
                         sectors_used.insert(s);
                     }
                 }
-                let n = crate::wave::sectors() as f64;
+                let n = crate::wave::Wave::sector_count() as f64;
                 let coverage = sectors_used.len() as f64 / n;
 
                 let length_factor = if tokens.len() < 10 {
@@ -134,7 +134,7 @@ impl Impersonator {
             prev_combined = combined;
 
             if round > 0 && improvement.abs() < config::IMPERSONATE_CONVERGENCE_DELTA {
-                println!("  [impersonate] converged — improvement below threshold");
+                println!("  [impersonate] converged - improvement below threshold");
                 break;
             }
         }
@@ -158,7 +158,7 @@ impl Impersonator {
                 return w * dominant.len() as f64;
             }
         }
-        let n = crate::wave::sectors();
+        let n = crate::wave::Wave::sector_count();
         for &(s, w) in dominant {
             let dist = ((*sector as i16 - s as i16).rem_euclid(n as i16)).unsigned_abs();
             if dist <= 2 {

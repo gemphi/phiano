@@ -1,4 +1,4 @@
-/// Config functions — derived values and utilities computed from constants.
+/// Config functions - derived values and utilities computed from constants.
 ///
 /// This module separates functions from the raw constant values in
 /// `constants.rs`. Functions here validate, compute, or look up values

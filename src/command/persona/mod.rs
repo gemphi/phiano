@@ -1,4 +1,4 @@
-/// PersonaCmd — manages personas and impersonation.
+/// PersonaCmd - manages personas and impersonation.
 ///
 /// Subcommands:
 ///   persona add <name> "example 1" "example 2" ...
@@ -47,14 +47,14 @@ impl PersonaCmd {
     }
 
     fn print_help(&self) {
-        println!("  persona add <name> \"ex1\" \"ex2\" ...  — Create persona from examples");
-        println!("  persona from <name> \"block of text\"  — Create persona from a text block");
-        println!("  persona list                         — List all personas");
-        println!("  persona show <name>                  — Show persona fingerprint");
-        println!("  persona compare <a> <b>              — Compare two personas");
-        println!("  persona impersonate <name> \"prompt\"  — Compose as persona");
-        println!("  persona match \"unknown text\"         — Attribute text to a persona");
-        println!("  persona chat <name>                  — Chat with a persona interactively");
+        println!("  persona add <name> \"ex1\" \"ex2\" ...  - Create persona from examples");
+        println!("  persona from <name> \"block of text\"  - Create persona from a text block");
+        println!("  persona list                         - List all personas");
+        println!("  persona show <name>                  - Show persona fingerprint");
+        println!("  persona compare <a> <b>              - Compare two personas");
+        println!("  persona impersonate <name> \"prompt\"  - Compose as persona");
+        println!("  persona match \"unknown text\"         - Attribute text to a persona");
+        println!("  persona chat <name>                  - Chat with a persona interactively");
     }
 
     fn add(&self, ctx: &mut Context, rest: &str) -> bool {
@@ -84,7 +84,7 @@ impl PersonaCmd {
             println!("  No sentences found in the text.");
             return true;
         }
-        println!("  [from] '{}' — {} sentences extracted from text", name, examples.len());
+        println!("  [from] '{}' - {} sentences extracted from text", name, examples.len());
         for (i, ex) in examples.iter().enumerate() {
             println!("    #{}: \"{}\"", i + 1, ex);
         }
@@ -102,7 +102,7 @@ impl PersonaCmd {
         }
         println!("  Personas ({}):", personas.len());
         for p in personas {
-            println!("    {} — {} samples, diversity {:.3}", p.name, p.fingerprint.sample_count, p.fingerprint.diversity);
+            println!("    {} - {} samples, diversity {:.3}", p.name, p.fingerprint.sample_count, p.fingerprint.diversity);
         }
         true
     }

@@ -1,4 +1,4 @@
-# 31 — Golden Ratio Initialization
+# 31 - Golden Ratio Initialization
 
 ## Seed Phase Formula
 

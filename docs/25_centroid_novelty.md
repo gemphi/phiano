@@ -1,4 +1,4 @@
-# 25 — Centroid & Novelty
+# 25 - Centroid & Novelty
 
 ## Facet Centroid
 

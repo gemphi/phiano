@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Cpu, Terminal, Network, GitBranch, Play, RefreshCw, Layers, CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import type { InstructResponse, ReasoningResponse, LayersResponse, Phi4LearnResponse, SyntheticResponse } from '../types';
+import { fetchLayers, instructText, reasonText, learnPhi4, runSyntheticCurriculum } from '../hooks/api/phi4';
 
 interface Phi4StudioPanelProps {
   onRefresh: () => Promise<void>;
@@ -29,14 +30,11 @@ export function Phi4StudioPanel({ onRefresh }: Phi4StudioPanelProps) {
   const [synthLoading, setSynthLoading] = useState(false);
   const [synthResult, setSynthResult] = useState<SyntheticResponse | null>(null);
 
-  const fetchLayers = async () => {
+  const loadLayers = async () => {
     setLayersLoading(true);
     try {
-      const res = await fetch('/api/layers');
-      if (res.ok) {
-        const data = await res.json();
-        setLayersData(data);
-      }
+      const data = await fetchLayers();
+      setLayersData(data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -46,7 +44,7 @@ export function Phi4StudioPanel({ onRefresh }: Phi4StudioPanelProps) {
 
   useEffect(() => {
     if (activeTab === 'layers') {
-      fetchLayers();
+      loadLayers();
     }
   }, [activeTab]);
 
@@ -54,16 +52,9 @@ export function Phi4StudioPanel({ onRefresh }: Phi4StudioPanelProps) {
     if (!instructPrompt.trim()) return;
     setInstructLoading(true);
     try {
-      const res = await fetch('/api/instruct', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: instructPrompt }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setInstructResult(data);
-        onRefresh();
-      }
+      const data = await instructText(instructPrompt);
+      setInstructResult(data);
+      onRefresh();
     } catch (e) {
       console.error(e);
     } finally {
@@ -75,15 +66,8 @@ export function Phi4StudioPanel({ onRefresh }: Phi4StudioPanelProps) {
     if (!reasonProblem.trim()) return;
     setReasonLoading(true);
     try {
-      const res = await fetch('/api/reason', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: reasonProblem }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setReasonResult(data);
-      }
+      const data = await reasonText(reasonProblem);
+      setReasonResult(data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -94,16 +78,9 @@ export function Phi4StudioPanel({ onRefresh }: Phi4StudioPanelProps) {
   const handleLearnPhi4 = async () => {
     setPhi4Loading(true);
     try {
-      const res = await fetch('/api/phi4/learn', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: '' }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPhi4Result(data);
-        onRefresh();
-      }
+      const data = await learnPhi4();
+      setPhi4Result(data);
+      onRefresh();
     } catch (e) {
       console.error(e);
     } finally {
@@ -114,16 +91,9 @@ export function Phi4StudioPanel({ onRefresh }: Phi4StudioPanelProps) {
   const handleRunSynthetic = async () => {
     setSynthLoading(true);
     try {
-      const res = await fetch('/api/synthetic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: '' }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSynthResult(data);
-        onRefresh();
-      }
+      const data = await runSyntheticCurriculum();
+      setSynthResult(data);
+      onRefresh();
     } catch (e) {
       console.error(e);
     } finally {

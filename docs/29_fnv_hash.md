@@ -1,4 +1,4 @@
-# 29 — FNV-1a Hash
+# 29 - FNV-1a Hash
 
 ## Algorithm
 
@@ -39,11 +39,11 @@
 ## Properties
 
 ```
-  ✓ Deterministic — same input always gives same hash
-  ✓ Fast — single pass, no allocations
-  ✓ Good distribution — minimal collisions for short strings
-  ✓ Fixed-size output — u64, 8 bytes
-  ✓ No dependencies — pure arithmetic
+  ✓ Deterministic - same input always gives same hash
+  ✓ Fast - single pass, no allocations
+  ✓ Good distribution - minimal collisions for short strings
+  ✓ Fixed-size output - u64, 8 bytes
+  ✓ No dependencies - pure arithmetic
 
   Used for: ContextWaveEntry.text_hash
   Purpose: deduplication and quick text identity comparison

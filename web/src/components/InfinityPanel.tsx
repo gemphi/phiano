@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Info, RefreshCw, ZoomIn, Award, Play } from 'lucide-react';
-import { visualizeInfinity, trainInfinity } from '../hooks/useApi';
+import { visualizeInfinity, trainInfinity } from '../hooks/api/infinity';
 import type { InfinityResponse, VariationDetail, WordPhasorDetail, WordShiftDetail } from '../types';
 
 interface InfinityPanelProps {

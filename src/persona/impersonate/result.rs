@@ -1,4 +1,4 @@
-/// ImpersonationResult — the output of an impersonation cycle.
+/// ImpersonationResult - the output of an impersonation cycle.
 
 use std::fmt;
 

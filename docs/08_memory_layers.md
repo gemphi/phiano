@@ -1,4 +1,4 @@
-# 08 — Memory: 16-Layer System
+# 08 - Memory: 16-Layer System
 
 ## Layer Classification
 

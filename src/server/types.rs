@@ -104,6 +104,26 @@ pub struct Phi4LearnResponse {
     pub message: String,
 }
 
+#[derive(Deserialize)]
+pub struct IngestRequest {
+    pub wiki_topics: Option<usize>,
+    pub phi4: Option<bool>,
+    pub dialogue: Option<bool>,
+    pub curriculum: Option<bool>,
+}
+
+#[derive(Serialize)]
+pub struct IngestResponse {
+    pub vocabulary_before: usize,
+    pub vocabulary_after: usize,
+    pub curriculum_sentences: usize,
+    pub dialogues_trained: usize,
+    pub phi4_merges: usize,
+    pub wiki_topics: usize,
+    pub wiki_tokens: usize,
+    pub message: String,
+}
+
 #[derive(Serialize)]
 pub struct StatsResponse {
     pub vocabulary: usize,

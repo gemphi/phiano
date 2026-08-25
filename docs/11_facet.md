@@ -1,4 +1,4 @@
-# 11 — Facet (Core Lexicon)
+# 11 - Facet (Core Lexicon)
 
 ## Structure
 

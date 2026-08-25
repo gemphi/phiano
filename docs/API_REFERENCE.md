@@ -37,7 +37,7 @@ pub struct SpectralPhasor {
 ```
 
 #### Constants
-- `pub const ALPHA: f64 = 1.0 / 137.035999084;` — The fine-structure coupling constant governing sub-band dispersion.
+- `pub const ALPHA: f64 = 1.0 / 137.035999084;` - The fine-structure coupling constant governing sub-band dispersion.
 
 #### Methods
 
@@ -235,6 +235,35 @@ Provides zero-copy binary serialization using Bincode.
 - `fn save_facet(facet: &Facet, path: &Path) -> Result<(), IoError>`
 - `fn load_facet(path: &Path) -> Result<Facet, IoError>`
   - Loads 100,000+ phasors in $< 5\text{ ms}$.
+
+---
+
+## 10. Module `phiano::server::chat_intent`
+
+### `enum ChatIntent`
+
+Classifies incoming conversational user messages into semantic intent modes and synthesizes continuous phase attractor responses.
+
+```rust
+pub enum ChatIntent {
+    Greeting,
+    SelfCorrection { statement: String, correction: String },
+    Explanation { topic: String },
+    PersonalMemory { statement: String },
+    InstitutionalDeclaration { declaration: String },
+    Recommendation { query: String },
+    GeneralQuery { prompt: String },
+}
+```
+
+#### Intent Variants
+- **`Greeting`**: Dynamic salutation synthesized via continuous phase manifold resonance.
+- **`SelfCorrection`**: Instantly triggers $\pi$-anti-phase pulse ($180^\circ$) to cancel misconceptions and retrain correct associations with zero catastrophic forgetting.
+- **`Explanation`**: Grounds concepts in memory chunk definitions or multi-step attractor pathfinding.
+- **`PersonalMemory`**: Registers facts, preferences, and names into the 16-layer memory hierarchy.
+- **`InstitutionalDeclaration`**: Evaluates Searle declarative speech acts with World $\leftrightarrow$ Mind double direction of fit, verifies felicity conditions, and registers institutional state alterations.
+- **`Recommendation`**: Pathfinds adjacent resonant topics across active memory context.
+- **`GeneralQuery`**: Executes multi-step phase reasoning chains across the continuous manifold.
 
 ---
 

@@ -3,7 +3,7 @@ use crate::command::Parser;
 use crate::envision::Envision;
 use crate::eval::Evaluator;
 
-/// Eval — evaluates text against the facet's semantic space.
+/// Eval - evaluates text against the facet's semantic space.
 ///
 /// Usage: `eval "some text to evaluate"`
 ///

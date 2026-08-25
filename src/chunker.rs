@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 use std::time::Instant;
 
-/// Chunked dictionary store — splits large dictionaries into letter-based
+/// Chunked dictionary store - splits large dictionaries into letter-based
 /// subfolders for parallel ingestion. Designed for CPU-utilization on Linux
 /// where file I/O is fast and rayon can parallelize across chunks.
 ///
@@ -53,8 +53,9 @@ impl ChunkStore {
             let dir = format!("{}/{}", self.root, letter);
             let _ = fs::create_dir_all(&dir);
             let path = format!("{}/{}.json", dir, letter);
-            if let Ok(json) = serde_json::to_string(words) {
-                let _ = fs::write(&path, json);
+            match serde_json::to_string(words) {
+                Ok(json) => { let _ = fs::write(&path, json); }
+                Err(_) => {}
             }
         });
 
@@ -64,7 +65,10 @@ impl ChunkStore {
     /// Load all chunks in parallel using rayon and return (word, definition) pairs.
     pub fn load_all(&self) -> Vec<(String, String)> {
         let root = &self.root;
-        if !Path::new(root).exists() { return vec![]; }
+        match Path::new(root).exists() {
+            false => return vec![],
+            true => {}
+        }
 
         let letter_dirs: Vec<String> = fs::read_dir(root)
             .map(|entries| entries.filter_map(|e| e.ok())
@@ -114,9 +118,12 @@ impl ChunkStore {
     ) -> crate::trainer::TrainingMetrics {
         let start = Instant::now();
         let entries = self.load_all();
-        if entries.is_empty() {
-            eprintln!("  [error] No chunks found in {}", self.root);
-            return crate::trainer::TrainingMetrics::empty();
+        match entries.is_empty() {
+            true => {
+                eprintln!("  [error] No chunks found in {}", self.root);
+                return crate::trainer::TrainingMetrics::empty();
+            }
+            false => {}
         }
 
         println!("  [ingest] {} entries, {} epochs", entries.len(), epochs);

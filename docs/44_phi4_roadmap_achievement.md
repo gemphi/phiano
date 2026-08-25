@@ -2,7 +2,7 @@
 
 ## Executive Overview
 
-**Phiano** has reached a milestone: bridging the gap between flat phasor lexicon retrieval and full **Phi-4-class reasoning, sequence generation, hierarchical abstraction, instruction following, synthetic data self-curriculum, and multi-turn context retention**—all operating on sub-millisecond phase oscillator mathematics without matrix multiplication or transformer attention matrices.
+**Phiano** has reached a milestone: bridging the gap between flat phasor lexicon retrieval and full **Phi-4-class reasoning, sequence generation, hierarchical abstraction, instruction following, synthetic data self-curriculum, and multi-turn context retention**-all operating on sub-millisecond phase oscillator mathematics without matrix multiplication or transformer attention matrices.
 
 ---
 

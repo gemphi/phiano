@@ -6,9 +6,9 @@ Interactive web visualization dashboard for inspecting the Phiano continuous pha
 
 ## Tech Stack
 
-- **Vite** — Fast frontend build tool and dev server
-- **React + TypeScript** — UI components and state management
-- **Canvas / WebGL** — Real-time continuous phase circle & phasor visualization
+- **Vite** - Fast frontend build tool and dev server
+- **React + TypeScript** - UI components and state management
+- **Canvas / WebGL** - Real-time continuous phase circle & phasor visualization
 
 ---
 

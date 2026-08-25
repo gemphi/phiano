@@ -1,4 +1,4 @@
-/// Tokenizer — text normalization and tokenization utility.
+/// Tokenizer - text normalization and tokenization utility.
 ///
 /// All text is lowercased and stripped of non-alphanumeric characters
 /// before being split into tokens. This provides a consistent input
@@ -19,6 +19,29 @@ impl Tokenizer {
                     .collect::<String>()
             })
             .filter(|w| !w.is_empty())
+            .collect()
+    }
+
+    /// Closed-class function words - linguistic filter, not a learned tensor.
+    pub fn is_function_word(word: &str) -> bool {
+        matches!(
+            word,
+            "a" | "an" | "the" | "is" | "are" | "was" | "were" | "be" | "been"
+                | "am" | "do" | "does" | "did" | "to" | "of" | "in" | "on" | "at"
+                | "for" | "and" | "or" | "but" | "if" | "it" | "its" | "this" | "that"
+                | "what" | "which" | "who" | "how" | "why" | "when" | "where"
+                | "i" | "you" | "he" | "she" | "we" | "they" | "me" | "my" | "your"
+                | "with" | "from" | "as" | "by" | "not" | "no" | "so" | "than"
+                | "about" | "into" | "can" | "could" | "would" | "should" | "will"
+                | "has" | "have" | "had" | "just" | "also"
+        )
+    }
+
+    /// Content words from text - skips function words and single-character tokens.
+    pub fn content_words(text: &str) -> Vec<String> {
+        Self::tokenize(text)
+            .into_iter()
+            .filter(|w| !Self::is_function_word(w) && w.len() > 1)
             .collect()
     }
 

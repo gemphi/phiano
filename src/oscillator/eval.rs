@@ -1,11 +1,11 @@
-/// OscillatorEval and ComparisonResult — evaluation results.
+/// OscillatorEval and ComparisonResult - evaluation results.
 
 use super::OscillatorField;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::fmt;
 
-/// OscillatorEval — the result of evaluating text in oscillator mode.
+/// OscillatorEval - the result of evaluating text in oscillator mode.
 pub struct OscillatorEval {
     pub text: String,
     pub coherence: f64,
@@ -51,7 +51,7 @@ impl fmt::Display for OscillatorEval {
     }
 }
 
-/// ComparisonResult — compares the transform model vs oscillator model.
+/// ComparisonResult - compares the transform model vs oscillator model.
 pub struct ComparisonResult {
     pub text: String,
     pub transform_coherence: f64,
@@ -95,20 +95,20 @@ impl fmt::Display for ComparisonResult {
         writeln!(f, "  │ metric              │ transform│oscillator│")?;
         writeln!(f, "  ├─────────────────────┼──────────┼──────────┤")?;
         writeln!(f, "  │ coherence           │  {:.4}  │  {:.4}  │", self.transform_coherence, self.osc_coherence)?;
-        writeln!(f, "  │ novelty             │  {:.4}  │    —     │", self.transform_novelty)?;
-        writeln!(f, "  │ resonance           │  {:.4}  │    —     │", self.transform_resonance)?;
-        writeln!(f, "  │ overall             │  {:.4}  │    —     │", self.transform_overall)?;
-        writeln!(f, "  │ sync (pairwise)     │    —     │  {:.4}  │", self.osc_sync)?;
-        writeln!(f, "  │ spectral entropy    │    —     │  {:.4}  │", self.osc_entropy)?;
+        writeln!(f, "  │ novelty             │  {:.4}  │    -     │", self.transform_novelty)?;
+        writeln!(f, "  │ resonance           │  {:.4}  │    -     │", self.transform_resonance)?;
+        writeln!(f, "  │ overall             │  {:.4}  │    -     │", self.transform_overall)?;
+        writeln!(f, "  │ sync (pairwise)     │    -     │  {:.4}  │", self.osc_sync)?;
+        writeln!(f, "  │ spectral entropy    │    -     │  {:.4}  │", self.osc_entropy)?;
         writeln!(f, "  └─────────────────────┴──────────┴──────────┘")?;
         writeln!(f)?;
         writeln!(f, "  agreement: {:.1}%", self.agreement * 100.0)?;
         if self.agreement > 0.8 {
-            writeln!(f, "  → models agree — high confidence assessment")?;
+            writeln!(f, "  → models agree - high confidence assessment")?;
         } else if self.agreement > 0.5 {
-            writeln!(f, "  → models partially agree — moderate confidence")?;
+            writeln!(f, "  → models partially agree - moderate confidence")?;
         } else {
-            writeln!(f, "  → models disagree — text sits at a model boundary")?;
+            writeln!(f, "  → models disagree - text sits at a model boundary")?;
         }
         Ok(())
     }

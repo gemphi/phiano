@@ -1,4 +1,4 @@
-# 17 — Envision: Knowledge Gap Detection
+# 17 - Envision: Knowledge Gap Detection
 
 ## Gap Detection Flow
 

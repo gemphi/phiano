@@ -1,4 +1,4 @@
-# 39 — Drivers: Source/Device Separation (Unix Philosophy)
+# 39 - Drivers: Source/Device Separation (Unix Philosophy)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -58,16 +58,16 @@ Dispatcher::dispatch(line, ctx)
 
 ```
 src/drivers/
-├── mod.rs     — Driver enum, from_str(), try_dispatch()
-├── ingest.rs  — Ingest: local, json, wiktionary handlers
-├── chunk.rs   — Chunk: splits large JSON dictionaries
-└── train.rs   — Train: parallel training from chunks
+├── mod.rs     - Driver enum, from_str(), try_dispatch()
+├── ingest.rs  - Ingest: local, json, wiktionary handlers
+├── chunk.rs   - Chunk: splits large JSON dictionaries
+└── train.rs   - Train: parallel training from chunks
 ```
 
 ## File references
 
-- `src/drivers/mod.rs` — Driver enum, dispatch logic
-- `src/drivers/ingest.rs` — Ingest handlers (moved from command/)
-- `src/drivers/chunk.rs` — Chunk handler (moved from command/)
-- `src/drivers/train.rs` — Train handler (moved from command/)
-- `src/command/mod.rs:86-90` — Driver dispatch in Dispatcher
+- `src/drivers/mod.rs` - Driver enum, dispatch logic
+- `src/drivers/ingest.rs` - Ingest handlers (moved from command/)
+- `src/drivers/chunk.rs` - Chunk handler (moved from command/)
+- `src/drivers/train.rs` - Train handler (moved from command/)
+- `src/command/mod.rs:86-90` - Driver dispatch in Dispatcher

@@ -6,13 +6,13 @@ use crate::sources::phi4::Phi4Source;
 use crate::sources::wiktionary::WiktionarySource;
 use crate::sources::DictionarySource;
 
-/// Ingest — bulk ingestion of definitions and models from various sources.
+/// Ingest - bulk ingestion of definitions and models from various sources.
 ///
 /// Subcommands:
-/// - `ingest <file.txt>`          — local text file
-/// - `ingest-json <file.json>`    — JSON dictionary
-/// - `ingest-wiktionary <file>`   — Wiktionary JSON/JSONL dump
-/// - `ingest-phi4 [dir]`          — Learn from Phi-4 model in refs
+/// - `ingest <file.txt>`          - local text file
+/// - `ingest-json <file.json>`    - JSON dictionary
+/// - `ingest-wiktionary <file>`   - Wiktionary JSON/JSONL dump
+/// - `ingest-phi4 [dir]`          - Learn from Phi-4 model in refs
 pub struct Ingest;
 
 impl Ingest {
@@ -67,6 +67,27 @@ impl Ingest {
         println!("    • BPE token merges trained: {}", summary.merges_trained);
         println!("    • Doc & prompt sentences trained: {}", summary.doc_sentences_trained);
         println!("    • Total Facet Vocabulary: {} words\n", summary.final_vocabulary_size);
+
+        true
+    }
+
+    /// Ingests multi-turn conversational dialogue pairs.
+    pub fn dialogue(&self, ctx: &mut Context) -> bool {
+        let source = if ctx.arg.is_empty() {
+            println!("  ── INGESTING BUILT-IN CONVERSATIONAL CURRICULUM ──");
+            crate::sources::dialogue::DialogueSource::default_curriculum()
+        } else {
+            let path = Parser::strip_quotes(ctx.arg);
+            println!("  ── INGESTING CONVERSATIONAL DIALOGUES FROM: {} ──", path);
+            crate::sources::dialogue::DialogueSource::new(&path)
+        };
+
+        let learned_turns = source.learn_into_facet(ctx.manifold, ctx.memory, ctx.trainer);
+
+        println!("  [Dialogue Ingestion Summary]");
+        println!("    • Conversational turns trained: {}", learned_turns);
+        println!("    • Active Lexicon: {} words", ctx.manifold.vocabulary_size());
+        println!("    • Memory layers updated: 16 layers (Pattern Band L4-L7 active)\n");
 
         true
     }

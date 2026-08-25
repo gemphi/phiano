@@ -36,6 +36,9 @@ pub struct SerializedFacet {
     /// Trigram transition counts: "word_a word_b" -> {word_c -> count}.
     #[serde(default)]
     pub trigrams: HashMap<String, HashMap<String, u32>>,
+    /// Learned Kuramoto-Sakaguchi phase lags β_ij.
+    #[serde(default)]
+    pub phase_lags: HashMap<String, HashMap<String, f64>>,
 }
 
 impl SerializedFacet {
@@ -50,6 +53,7 @@ impl SerializedFacet {
             lexicon: facet.lexicon.clone(),
             bigrams: facet.bigrams.clone(),
             trigrams: facet.trigrams.clone(),
+            phase_lags: facet.phase_lags.clone(),
         }
     }
 
@@ -59,6 +63,7 @@ impl SerializedFacet {
             lexicon: self.lexicon,
             bigrams: self.bigrams,
             trigrams: self.trigrams,
+            phase_lags: self.phase_lags,
         }
     }
 
@@ -79,7 +84,7 @@ impl SerializedFacet {
     }
 }
 
-/// Storage — facade for persisting and loading facets to/from disk.
+/// Storage - facade for persisting and loading facets to/from disk.
 pub struct Storage;
 
 /// Legacy serialized facet (v1 format, no bigrams).
@@ -112,6 +117,7 @@ impl Storage {
                     lexicon: legacy.lexicon,
                     bigrams: HashMap::new(),
                     trigrams: HashMap::new(),
+                    phase_lags: HashMap::new(),
                 })
             }
         }

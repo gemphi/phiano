@@ -1,4 +1,6 @@
-/// Child-Like Learning Curriculum — progressive knowledge acquisition.
+#![allow(dead_code)]
+
+/// Child-Like Learning Curriculum - progressive knowledge acquisition.
 /// Loads stage definitions from data/curriculum.json (no hardcoded words).
 
 use crate::chunker::ChunkStore;
@@ -113,7 +115,7 @@ impl ChildCurriculum {
             sentences_trained += stage_sentences;
 
             println!(
-                "  [curriculum] {} — {} words, {} sentences ({:?})",
+                "  [curriculum] {} - {} words, {} sentences ({:?})",
                 stage.name, stage_words, stage_sentences, stage_start.elapsed()
             );
 

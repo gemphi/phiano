@@ -4,7 +4,7 @@ use crate::trainer::Trainer;
 use std::collections::HashMap;
 use std::fmt;
 
-/// World — a collection of personas that can interact, compare,
+/// World - a collection of personas that can interact, compare,
 /// and be impersonated.
 ///
 /// The world is the context personas live in. It stores multiple
@@ -16,10 +16,10 @@ use std::fmt;
 ///   2. Add personas from examples (feed text samples)
 ///   3. Compare personas to find style differences
 ///   4. Impersonate any persona on any prompt
-///   5. Chat as a persona — the world routes input through the
+///   5. Chat as a persona - the world routes input through the
 ///      impersonator with the active persona
 ///
-/// The world is generic — it works with any text examples.
+/// The world is generic - it works with any text examples.
 /// No hardcoded names. Feed it anyone's writing and it learns.
 pub struct World {
     /// All personas in this world, keyed by name.
@@ -65,7 +65,7 @@ impl World {
 
     /// Compares two personas and returns their similarity and differences.
     ///
-    /// This is how the system finds what makes each persona unique —
+    /// This is how the system finds what makes each persona unique -
     /// the sectors where they differ most are their signature styles.
     pub fn compare(&self, name_a: &str, name_b: &str) -> Option<PersonaComparison> {
         let a = self.personas.get(name_a)?;
@@ -89,7 +89,7 @@ impl World {
     /// extracts a fingerprint from the unknown text and computes
     /// cosine similarity against every persona.
     ///
-    /// This is style attribution — "who wrote this?"
+    /// This is style attribution - "who wrote this?"
     pub fn match_text(&self, facet: &Facet, text: &str) -> Option<MatchResult> {
         if self.personas.is_empty() {
             return None;
@@ -149,7 +149,7 @@ impl Default for World {
     }
 }
 
-/// PersonaComparison — the result of comparing two personas.
+/// PersonaComparison - the result of comparing two personas.
 pub struct PersonaComparison {
     /// Name of the first persona.
     pub name_a: String,
@@ -161,7 +161,7 @@ pub struct PersonaComparison {
     pub differences: Vec<(u16, f64)>,
 }
 
-/// MatchResult — the result of matching unknown text to personas.
+/// MatchResult - the result of matching unknown text to personas.
 pub struct MatchResult {
     /// The text that was matched.
     pub text: String,

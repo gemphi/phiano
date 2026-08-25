@@ -1,7 +1,7 @@
 use crate::command::Context;
 use crate::memory::{MemoryBand, MEMORY_LAYERS};
 
-/// Stats — displays facet and memory statistics.
+/// Stats - displays facet and memory statistics.
 ///
 /// Shows vocabulary size, average amplitude, dominant band, centroid wave,
 /// and memory layer counts organized by band.

@@ -1,11 +1,11 @@
-/// Social ontology agents — Searle's theory of social reality.
+/// Social ontology agents - Searle's theory of social reality.
 /// All markers loaded from data/searle_markers.json (no hardcoded arrays).
 
 use super::types::*;
 use super::markers::SearleMarkers;
 use crate::facet::Facet;
 
-/// 13. SocialOntologyAgent — classifies brute vs institutional facts.
+/// 13. SocialOntologyAgent - classifies brute vs institutional facts.
 pub struct SocialOntologyAgent;
 
 impl SocialOntologyAgent {
@@ -30,10 +30,9 @@ impl SocialOntologyAgent {
         };
 
         let rules = Self::counts_as_rules(prompt, &markers);
-        let rules_str = if rules.is_empty() {
-            "No constitutive rules triggered".to_string()
-        } else {
-            format!("Constitutive rules: {}", rules.join("; "))
+        let rules_str = match rules.is_empty() {
+            true => "No constitutive rules triggered".to_string(),
+            false => format!("Constitutive rules: {}", rules.join("; ")),
         };
 
         AgentContribution {
@@ -46,7 +45,7 @@ impl SocialOntologyAgent {
     }
 }
 
-/// 14. ObserverRelativityAgent — detects perspective-dependent meaning.
+/// 14. ObserverRelativityAgent - detects perspective-dependent meaning.
 pub struct ObserverRelativityAgent;
 
 impl ObserverRelativityAgent {
@@ -65,30 +64,35 @@ impl ObserverRelativityAgent {
         let mut best_count = 0;
         for (name, marker_list) in &perspectives {
             let count = marker_list.iter().filter(|m| tokens.contains(*m)).count();
-            if count > best_count {
-                best_count = count;
-                best = name;
+            match count > best_count {
+                true => {
+                    best_count = count;
+                    best = name;
+                }
+                false => {}
             }
         }
 
         let observer_relative = SearleMarkers::contains_any(prompt, &markers.observer_relative_markers);
-        let observer_note = if observer_relative {
-            " — contains observer-relative features (good/bad/useful depend on perspective)"
-        } else {
-            ""
+        let observer_note = match observer_relative {
+            true => " - contains observer-relative features (good/bad/useful depend on perspective)",
+            false => "",
         };
 
         AgentContribution {
             agent_name: "ObserverRelativity",
             agent_role: "Perspective detection + observer-relative features",
-            confidence: if best_count > 0 { 0.75 } else { 0.4 },
+            confidence: match best_count > 0 {
+                true => 0.75,
+                false => 0.4,
+            },
             output: format!("Perspective: {} (markers={}){}", best, best_count, observer_note),
             phase_contribution: 0.0,
         }
     }
 }
 
-/// 15. CollectiveIntentionAgent — aggregates agent perspectives.
+/// 15. CollectiveIntentionAgent - aggregates agent perspectives.
 pub struct CollectiveIntentionAgent;
 
 impl CollectiveIntentionAgent {

@@ -1,6 +1,6 @@
 # Phiano
 
-> _From **piano** (Italian: soft/loud) — A continuous phase manifold and cognitive oscillator engine for language._
+> _From **piano** (Italian: soft/loud) - A continuous phase manifold and cognitive oscillator engine for language._
 
 [![Rust](https://img.shields.io/badge/Language-Rust%202021-orange.svg)](Cargo.toml)
 [![Architecture](https://img.shields.io/badge/Architecture-28%20Core%20Modules-blue.svg)](docs/MASTER_CONNECTIONS.md)
@@ -11,7 +11,7 @@
 
 ## 1. How It Works
 
-Phiano maps words onto a continuous phase manifold where semantic similarity is measured by destructive wave interference. Words are keys, phasors are notes, sentences are chords, and training is tuning — the model self-organizes like an acoustic instrument that tunes itself.
+Phiano maps words onto a continuous phase manifold where semantic similarity is measured by destructive wave interference. Words are keys, phasors are notes, sentences are chords, and training is tuning - the model self-organizes like an acoustic instrument that tunes itself.
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'background': 'transparent', 'mainBkg': 'transparent', 'nodeBorder': '#3b82f6', 'clusterBkg': 'transparent', 'clusterBorder': '#475569', 'lineColor': '#60a5fa', 'textColor': '#ffffff', 'primaryTextColor': '#ffffff', 'nodeTextColor': '#ffffff', 'edgeLabelBackground': '#0f172a'}}}%%
@@ -52,12 +52,12 @@ Every interaction triggers the self-tuning feedback loop:
 
 $$\text{envision} \longrightarrow \text{apply} \longrightarrow \text{eval} \longrightarrow \text{iterate} \longrightarrow \text{scale}$$
 
-1. **Envision** ([`src/envision.rs`](src/envision.rs)) — Detects unknown words and constructs initial semantic hypotheses.
-2. **Apply** ([`src/trainer/mod.rs`](src/trainer/mod.rs)) — Updates phasor angles using Kuramoto non-linear phase attraction:
+1. **Envision** ([`src/envision.rs`](src/envision.rs)) - Detects unknown words and constructs initial semantic hypotheses.
+2. **Apply** ([`src/trainer/mod.rs`](src/trainer/mod.rs)) - Updates phasor angles using Kuramoto non-linear phase attraction:
    $$\phi_i \leftarrow \phi_i + K \sin(\psi_{\text{centroid}} - \phi_i)$$
-3. **Eval** ([`src/eval.rs`](src/eval.rs)) — Measures coherence order parameter $r \in [0, 1]$, novelty delta $\Delta$, and harmonic resonance.
-4. **Iterate** ([`src/memory/mod.rs`](src/memory/mod.rs)) — Logs insights across the 16-layer memory hierarchy.
-5. **Scale** ([`src/storage.rs`](src/storage.rs)) — Persists the tuned manifold state to disk using high-speed binary serialization.
+3. **Eval** ([`src/eval.rs`](src/eval.rs)) - Measures coherence order parameter $r \in [0, 1]$, novelty delta $\Delta$, and harmonic resonance.
+4. **Iterate** ([`src/memory/mod.rs`](src/memory/mod.rs)) - Logs insights across the 16-layer memory hierarchy.
+5. **Scale** ([`src/storage.rs`](src/storage.rs)) - Persists the tuned manifold state to disk using high-speed binary serialization.
 
 ---
 
@@ -132,6 +132,15 @@ phiano/
 
 ## 7. Quick Start
 
+Full walkthrough: **[Getting Started (5 min)](docs/62_getting_started.md)** · tunables: **[Configuration](docs/63_configuration.md)**
+
+```bash
+cargo build --release
+cargo run --release --bin bootstrap_facet   # trains + saves data/manifold.chroma
+cargo run --release --bin bench             # coherence / novelty / resonance
+cargo run --release -- --web                # API + PUI on :3000
+```
+
 ### Running the Rust CLI & REPL
 
 ```bash
@@ -172,10 +181,10 @@ Open `http://localhost:5173` to inspect the live 3D oscillator sphere, phase cir
 
 ## 8. Master Documentation
 
-- **[Master Connections Map](docs/MASTER_CONNECTIONS.md)** — Complete mathematical dataflows and module connection matrix.
-- **[Architecture Overview](docs/02_architecture_overview.md)** — System topology and recursive learning cycle.
-- **[Complete File Map](docs/32_file_map.md)** — Detailed file index across all subdirectories.
-- **[Documentation Index](docs/README.md)** — Catalog of all 44 technical whitepapers.
+- **[Master Connections Map](docs/MASTER_CONNECTIONS.md)** - Complete mathematical dataflows and module connection matrix.
+- **[Architecture Overview](docs/02_architecture_overview.md)** - System topology and recursive learning cycle.
+- **[Complete File Map](docs/32_file_map.md)** - Detailed file index across all subdirectories.
+- **[Documentation Index](docs/README.md)** - Catalog of all 44 technical whitepapers.
 
 ---
 

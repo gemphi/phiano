@@ -1,4 +1,4 @@
-/// Speech act agent — Searle's theory of illocutionary force.
+/// Speech act agent - Searle's theory of illocutionary force.
 /// Classification is data-driven via data/searle_markers.json.
 /// Uses match-based dispatch, not if-else chains.
 
@@ -6,7 +6,7 @@ use super::types::*;
 use super::markers::SearleMarkers;
 use crate::tokenizer::Tokenizer;
 
-/// 4. SpeechActAgent — classifies illocutionary force with felicity conditions.
+/// 4. SpeechActAgent - classifies illocutionary force with felicity conditions.
 pub struct SpeechActAgent;
 
 impl SpeechActAgent {
@@ -20,8 +20,9 @@ impl SpeechActAgent {
     fn classify_with_markers(prompt: &str, m: &SearleMarkers) -> SpeechActType {
         // Indirect speech acts: "Can you X?" is literally a question,
         // but functions as a request (Searle 1975).
-        if SearleMarkers::starts_with_any(prompt, &m.indirect_patterns) {
-            return SpeechActType::Directive;
+        match SearleMarkers::starts_with_any(prompt, &m.indirect_patterns) {
+            true => return SpeechActType::Directive,
+            false => {}
         }
 
         // Match on first matching category in Searle's priority order.
@@ -55,18 +56,23 @@ impl SpeechActAgent {
         let mut content = p.clone();
         for marker_list in &all_markers {
             for marker in marker_list.iter() {
-                if content.starts_with(marker.as_str()) {
-                    content = content[marker.len()..].trim().to_string();
-                    break;
+                match content.starts_with(marker.as_str()) {
+                    true => {
+                        content = content[marker.len()..].trim().to_string();
+                        break;
+                    }
+                    false => {}
                 }
             }
-            if content != p { break; }
+            match content != p {
+                true => break,
+                false => {}
+            }
         }
 
-        if content.is_empty() {
-            tokens.iter().take(5).cloned().collect::<Vec<_>>().join(" ")
-        } else {
-            content
+        match content.is_empty() {
+            true => tokens.iter().take(5).cloned().collect::<Vec<_>>().join(" "),
+            false => content,
         }
     }
 
@@ -111,31 +117,36 @@ impl SpeechActAgent {
         }
     }
 
-    /// Perlocutionary effect — the effect on the hearer.
+    /// Perlocutionary effect - the effect on the hearer.
     pub fn perlocutionary_effect(act: SpeechActType) -> &'static str {
         match act {
-            SpeechActType::Assertive => "convince/persuade — hearer comes to believe P",
-            SpeechActType::Directive => "compliance — hearer performs the requested act",
-            SpeechActType::Commissive => "trust — hearer relies on speaker's commitment",
-            SpeechActType::Expressive => "rapport — hearer feels acknowledged",
-            SpeechActType::Declarative => "institutional change — the world is altered by the declaration",
+            SpeechActType::Assertive => "convince/persuade - hearer comes to believe P",
+            SpeechActType::Directive => "compliance - hearer performs the requested act",
+            SpeechActType::Commissive => "trust - hearer relies on speaker's commitment",
+            SpeechActType::Expressive => "rapport - hearer feels acknowledged",
+            SpeechActType::Declarative => "institutional change - the world is altered by the declaration",
         }
     }
 
     /// Detects literal vs speaker meaning divergence.
     pub fn speaker_vs_literal_meaning(prompt: &str) -> (String, String) {
         let markers = SearleMarkers::load();
-        let p = prompt.to_lowercase();
         let literal = prompt.to_string();
 
-        if SearleMarkers::starts_with_any(prompt, &markers.indirect_patterns) {
-            let speaker = format!("Do the requested action (indirect request): {}", prompt);
-            return (literal, speaker);
+        match SearleMarkers::starts_with_any(prompt, &markers.indirect_patterns) {
+            true => {
+                let speaker = format!("Do the requested action (indirect request): {}", prompt);
+                return (literal, speaker);
+            }
+            false => {}
         }
 
-        if SearleMarkers::contains_any(prompt, &markers.rhetorical_markers) {
-            let speaker = format!("Nobody knows/cares — rhetorical (not a real question): {}", prompt);
-            return (literal, speaker);
+        match SearleMarkers::contains_any(prompt, &markers.rhetorical_markers) {
+            true => {
+                let speaker = format!("Nobody knows/cares - rhetorical (not a real question): {}", prompt);
+                return (literal, speaker);
+            }
+            false => {}
         }
 
         (literal.clone(), literal)
@@ -154,7 +165,10 @@ impl SpeechActAgent {
             confidence: 0.9,
             output: format!(
                 "Act: {} | Content: \"{}\" | Felicity: {} | Perlocutionary: {} | Literal: \"{}\" | Speaker: \"{}\"",
-                act.as_str(), prop, if felicity.satisfied { "met" } else { "unmet" },
+                act.as_str(), prop, match felicity.satisfied {
+                    true => "met",
+                    false => "unmet",
+                },
                 perloc, literal, speaker
             ),
             phase_contribution: 0.0,

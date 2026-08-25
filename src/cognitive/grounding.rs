@@ -11,35 +11,59 @@ use std::f64::consts::PI;
 /// of its definition's token phases.
 pub fn definition_ground_phases(facet: &mut Facet, chunk_store: &ChunkStore) -> usize {
     let entries = chunk_store.load_all();
-    if entries.is_empty() { return 0; }
+    match entries.is_empty() {
+        true => return 0,
+        false => {}
+    }
 
     println!("  [ground] Re-seeding phases from {} definitions...", entries.len());
     let mut grounded = 0usize;
 
     for (word, def) in &entries {
-        if !facet.lexicon.contains_key(word) { continue; }
+        match facet.lexicon.contains_key(word) {
+            false => continue,
+            true => {}
+        }
         let def_tokens = Tokenizer::tokenize(def);
-        if def_tokens.is_empty() { continue; }
+        match def_tokens.is_empty() {
+            true => continue,
+            false => {}
+        }
 
         let (mut sum_x, mut sum_y, mut count) = (0.0f64, 0.0f64, 0u32);
         for token in &def_tokens {
-            if let Some(phasor) = facet.lexicon.get(token) {
-                sum_x += phasor.phase.cos() * phasor.amplitude;
-                sum_y += phasor.phase.sin() * phasor.amplitude;
-                count += 1;
+            match facet.lexicon.get(token) {
+                Some(phasor) => {
+                    sum_x += phasor.phase.cos() * phasor.amplitude;
+                    sum_y += phasor.phase.sin() * phasor.amplitude;
+                    count += 1;
+                }
+                None => {}
             }
         }
 
-        if count > 0 {
-            let centroid = sum_y.atan2(sum_x).rem_euclid(2.0 * PI);
-            if let Some(phasor) = facet.lexicon.get_mut(word) {
-                let current = phasor.phase;
-                let mut diff = centroid - current;
-                if diff > PI { diff -= 2.0 * PI; }
-                if diff < -PI { diff += 2.0 * PI; }
-                phasor.phase = (current + 0.5 * diff).rem_euclid(2.0 * PI);
-                grounded += 1;
+        match count > 0 {
+            true => {
+                let centroid = sum_y.atan2(sum_x).rem_euclid(2.0 * PI);
+                match facet.lexicon.get_mut(word) {
+                    Some(phasor) => {
+                        let current = phasor.phase;
+                        let mut diff = centroid - current;
+                        match diff > PI {
+                            true => diff -= 2.0 * PI,
+                            false => {}
+                        }
+                        match diff < -PI {
+                            true => diff += 2.0 * PI,
+                            false => {}
+                        }
+                        phasor.phase = (current + 0.5 * diff).rem_euclid(2.0 * PI);
+                        grounded += 1;
+                    }
+                    None => {}
+                }
             }
+            false => {}
         }
     }
 

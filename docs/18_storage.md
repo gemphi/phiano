@@ -1,4 +1,4 @@
-# 18 — Storage & Persistence
+# 18 - Storage & Persistence
 
 ## Binary Format (.chroma)
 
