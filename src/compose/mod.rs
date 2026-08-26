@@ -8,30 +8,29 @@ use crate::trainer::Trainer;
 use std::fmt;
 
 /// Color mapping palette for phase-space sectors.
+///
+/// Uses the phiton/gemgum physics-derived spectral mapping instead of
+/// hard-coded color names. Each sector maps to a wavelength on the
+/// visible spectrum, producing a natural color from the fine-structure
+/// constant and golden ratio.
 pub struct SectorPalette;
 
 impl SectorPalette {
-    /// Maps sector indices to color names.
+    /// Maps sector indices to physics-derived color names.
     ///
-    /// Works with any sector resolution by mapping proportionally
-    /// to the color wheel. The 16 base colors are distributed evenly
-    /// across whatever sector count is configured (64, 128, 256, ...).
+    /// Delegates to [`crate::gemgum::Gemgum::sector_color_name`], which
+    /// maps the sector through the phiton spectral domain.
     pub fn color(sector: u16) -> String {
         let n = crate::wave::Wave::sector_count();
-        let colors = [
-            "crimson", "red", "scarlet", "orange", "amber", "gold",
-            "yellow", "lime", "green", "emerald", "teal", "blue",
-            "indigo", "violet", "magenta", "rose",
-        ];
-        let color_count = colors.len() as u16;
-        let bucket = (sector * color_count) / n;
-        colors[(bucket as usize) % colors.len()].to_string()
+        crate::gemgum::Gemgum::sector_color_name(sector, n)
     }
-}
 
-/// Module-level function for mapping sector indices to color names.
-pub fn sector_color(sector: u16) -> String {
-    SectorPalette::color(sector)
+    /// Maps sector indices to full [`crate::phiton::PhitonColor`] with RGB.
+    #[allow(dead_code)]
+    pub fn phiton_color(sector: u16) -> crate::phiton::PhitonColor {
+        let n = crate::wave::Wave::sector_count();
+        crate::gemgum::Gemgum::sector_color(sector, n)
+    }
 }
 
 /// Composition - the result of a full recursive compose cycle.

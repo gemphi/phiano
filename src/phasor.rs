@@ -1,4 +1,6 @@
 use crate::config::{ALPHA, PHI, TWO_PI, TORUS_HARMONICS_COUNT};
+use crate::phical::Phical;
+use crate::phiton::{LightQuantum, PhitonColor, PhitonSpectrum};
 use crate::wave::c64;
 use serde::{Deserialize, Serialize};
 
@@ -48,6 +50,32 @@ impl SpectralPhasor {
             let harmonic_amp = self.amplitude / (1.0 + 0.1 * k as f64);
             c64::from_polar(harmonic_amp, harmonic_phase)
         }).collect()
+    }
+
+    /// Returns the effective phase including the fine-structure sub-band correction.
+    ///
+    /// φ_eff = φ + n·α
+    #[allow(dead_code)]
+    pub fn effective_phase(&self) -> f64 {
+        Phical::effective_phase(self.phase, self.band_n)
+    }
+
+    /// Resolves this phasor to a physics-derived [`PhitonColor`].
+    ///
+    /// Maps the effective phase through the phiton spectral domain to
+    /// produce a color from the visible spectrum.
+    #[allow(dead_code)]
+    pub fn to_color(&self) -> PhitonColor {
+        PhitonSpectrum::phase_to_color(self.effective_phase(), 0)
+    }
+
+    /// Converts this phasor into a [`LightQuantum`] (phiton particle).
+    ///
+    /// The light quantum carries wavelength, frequency, and energy
+    /// information derived from the phasor's phase and band level.
+    #[allow(dead_code)]
+    pub fn to_light_quantum(&self) -> LightQuantum {
+        LightQuantum::from_phase(self.phase, self.amplitude, self.band_n)
     }
 }
 

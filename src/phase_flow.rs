@@ -1,5 +1,6 @@
 use crate::config::{LEARNING_RATE, SYNTACTIC_MOMENTUM_DEFAULT, TWO_PI};
 use crate::facet::Facet;
+use crate::phical::PhicalOps;
 use crate::phasor::{SpectralPhasor, TorusPhasor};
 use crate::tokenizer::Tokenizer;
 use crate::wave::c64;
@@ -174,6 +175,28 @@ impl PhaseFlow {
                 Some(phasor) => {
                     let diff = (self.collective_phase - phasor.phase).sin();
                     phasor.phase = (phasor.phase + LEARNING_RATE * diff).rem_euclid(TWO_PI);
+                }
+                None => {}
+            }
+        }
+    }
+
+    /// Physics-aware Hebbian update using the color-space-time manifold gradient.
+    ///
+    /// Instead of raw sin(Δφ), this uses [`PhicalOps::relax_phase`] which
+    /// computes the geodesic gradient on the T² manifold — accounting for
+    /// the fine-structure sub-band spacing and golden-ratio weighting.
+    /// This produces more natural phase convergence than the raw Kuramoto rule.
+    pub fn hebbian_update_phical(&self, facet: &mut Facet) {
+        for node in &self.nodes {
+            match facet.lexicon.get_mut(&node.word) {
+                Some(phasor) => {
+                    phasor.phase = PhicalOps::relax_phase(
+                        phasor.phase,
+                        phasor.band_n,
+                        self.collective_phase,
+                        0,
+                    );
                 }
                 None => {}
             }

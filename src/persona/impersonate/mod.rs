@@ -8,7 +8,7 @@ mod result;
 pub use result::ImpersonationResult;
 
 use crate::compose::flow::RiverFlow;
-use crate::compose::sector_color;
+use crate::compose::SectorPalette;
 use crate::config;
 use crate::facet::Facet;
 use crate::persona::Fingerprint;
@@ -115,7 +115,7 @@ impl Impersonator {
             println!(
                 "  [impersonate] best: quality {:.4} fit {:.4} combined {:.4} (Δ {:+.4}) sector {} ({})",
                 quality, fit, combined, improvement,
-                best_flow.source_sector, sector_color(best_flow.source_sector),
+                best_flow.source_sector, SectorPalette::color(best_flow.source_sector),
             );
 
             for (idx, _, _, _) in scored.iter().take(8) {
@@ -144,7 +144,7 @@ impl Impersonator {
             prompt: prompt.to_string(),
             text: best_text,
             winning_sector: best_sector,
-            winning_color: sector_color(best_sector),
+            winning_color: SectorPalette::color(best_sector),
             quality_score: best_quality,
             persona_fit: best_fit,
             rounds: rounds_done,

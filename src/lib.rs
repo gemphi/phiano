@@ -10,6 +10,8 @@ pub mod drivers;
 pub mod envision;
 pub mod eval;
 pub mod facet;
+#[allow(dead_code)]
+pub mod gemgum;
 pub mod generate;
 pub mod instruction;
 pub mod layers;
@@ -21,6 +23,10 @@ pub mod oscillator;
 pub mod phase_flow;
 pub mod persona;
 pub mod phasor;
+#[allow(dead_code)]
+pub mod phical;
+#[allow(dead_code)]
+pub mod phiton;
 pub mod reasoning;
 pub mod server;
 pub mod sources;

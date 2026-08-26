@@ -3,6 +3,7 @@
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;
+use crate::phical::PhicalOps;
 use crate::reasoning::program_analogy::ProgramAnalogy;
 use serde::Serialize;
 use std::f64::consts::PI;
@@ -72,6 +73,25 @@ impl Analogy {
     /// Weighted combination of value-centric and program-centric analogy scores.
     pub fn combine(value: f64, program: f64) -> f64 {
         0.5 * value + 0.5 * program
+    }
+
+    /// Light-centric analogy: compares words by phical interference.
+    ///
+    /// Uses the 2-in-1 phiton/chiton architecture to compute analogy
+    /// through physical light interference. Words that constructively
+    /// interfere in the color-space-time manifold are analogous.
+    pub fn light_centric(facet: &Facet, source: &str, target: &str) -> f64 {
+        match (facet.lexicon.get(source), facet.lexicon.get(target)) {
+            (Some(p1), Some(p2)) => {
+                let interference = PhicalOps::interference(
+                    p1.phase, p1.band_n,
+                    p2.phase, p2.band_n,
+                );
+                let coupling = facet.word_coupling(source, target);
+                (interference * coupling).max(0.0).min(1.0)
+            }
+            _ => 0.0,
+        }
     }
 }
 

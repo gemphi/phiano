@@ -10,6 +10,8 @@ mod drivers;
 mod envision;
 mod eval;
 mod facet;
+#[allow(dead_code)]
+mod gemgum;
 mod generate;
 mod instruction;
 mod layers;
@@ -21,6 +23,10 @@ mod oscillator;
 mod phase_flow;
 mod persona;
 mod phasor;
+#[allow(dead_code)]
+mod phical;
+#[allow(dead_code)]
+mod phiton;
 mod reasoning;
 mod server;
 mod sources;

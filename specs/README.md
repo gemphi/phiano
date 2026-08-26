@@ -10,6 +10,7 @@ This directory contains the formal architectural specifications applying the pri
 | **SPEC-002** | [`002_kuramoto_order_parameter.md`](./002_kuramoto_order_parameter.md) | **14.2 Extreme Generalization & Collective Phase Lock** | `src/kuramoto.rs`, `src/coherence.rs` | Order parameter $R(t) \in [0, 1]$, non-linear phase transition detection |
 | **SPEC-003** | [`003_dual_cognition_language.md`](./003_dual_cognition_language.md) | **14.4 Dual-Cognition (Resonance Intuition + Grammar Verification)** | `src/language.rs`, `src/parser.rs` | Harmonic semantic overlap coupled with discrete Rust AST validation |
 | **SPEC-004** | [`004_streaming_sse_telemetry.md`](./004_streaming_sse_telemetry.md) | **14.6 Continuous Telemetry & Cognitive Spaces Bridge** | `src/server/routes_core.rs` | Real-time SSE event bus streaming with sub-10ms UI update latency |
+| **SPEC-005** | [`005_program_synthesis_lifelong_learning.md`](./005_program_synthesis_lifelong_learning.md) | **14.4 & 14.5 Program Synthesis, Hybrid Reasoning & Lifelong Learning** | `src/synthesis/`, `src/lifelong/`, `src/reasoning/` | Dual System 1 (continuous manifold) + System 2 (discrete program search & component library) |
 
 ---
 
