@@ -1,26 +1,27 @@
-# Phiano
+# Phiano & Phinum
 
-> _From **piano** (Italian: soft/loud) - A continuous phase manifold and cognitive oscillator engine for language._
+> _From **piano** (Italian: soft/loud) & **phinum** (numerical phase harmonic) — A continuous phase manifold, cognitive oscillator engine, and 32-core topological language instrument._
 
 [![Rust](https://img.shields.io/badge/Language-Rust%202021-orange.svg)](Cargo.toml)
-[![Architecture](https://img.shields.io/badge/Architecture-28%20Core%20Modules-blue.svg)](docs/MASTER_CONNECTIONS.md)
-[![Docs](https://img.shields.io/badge/Documentation-44%20Technical%20Whitepapers-green.svg)](docs/README.md)
-[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+[![Architecture](https://img.shields.io/badge/Architecture-32%20Core%20Modules-blue.svg)](PLAN.md)
+[![Phinum Engine](https://img.shields.io/badge/Engine-Phinum16%20%7C%2032%20%7C%2064-purple.svg)](src/phinum/mod.rs)
+[![I Ching Topology](https://img.shields.io/badge/Topology-64%20Hexagrams%20%26%20Spider--Net-teal.svg)](src/phinum/iching/mod.rs)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 ## 1. How It Works
 
-Phiano maps words onto a continuous phase manifold where semantic similarity is measured by destructive wave interference. Words are keys, phasors are notes, sentences are chords, and training is tuning - the model self-organizes like an acoustic instrument that tunes itself.
+Phiano maps words and language structures onto a continuous phase manifold $\mathbb{C}^N$ where semantic similarity and syntactic relationships are measured by geometric phase resonance. Words are keys, phasors are notes, sentences are chords, and training is self-tuning Kuramoto oscillator synchronization.
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'background': 'transparent', 'mainBkg': 'transparent', 'nodeBorder': '#3b82f6', 'clusterBkg': 'transparent', 'clusterBorder': '#475569', 'lineColor': '#60a5fa', 'textColor': '#ffffff', 'primaryTextColor': '#ffffff', 'nodeTextColor': '#ffffff', 'edgeLabelBackground': '#0f172a'}}}%%
 graph LR
-    subgraph "Continuous Phase Manifold"
-        Token["Word Token"] --> Phasor["SpectralPhasor<br/>Z = A · exp(i(φ + nα))"]
-        Phasor --> Superposition["Wave Superposition<br/>(Sentence Chords)"]
-        Superposition --> Kuramoto["Kuramoto Coupling<br/>(Centroid Phase Pull)"]
-        Kuramoto --> Convergence["Harmonic Equilibrium<br/>(Semantic Clustering)"]
+    subgraph "Phinum Topological Spider-Net"
+        Token["Word / Sentence"] --> Key["SyntaxKey<br/>PRON+V+PREP+V+N"]
+        Key --> Hex["I Ching 64-Hexagram<br/>Phase Manifold (2^6 = 64)"]
+        Hex --> Spider["Keyed Spider-Net<br/>(Zero Raw Storage)"]
+        Spider --> Res["Harmonic Spin &<br/>Instance Reconstruction"]
     end
 ```
 
@@ -31,160 +32,88 @@ Each vocabulary token is represented as a complex coordinate on a continuous $2\
 $$\mathbf{Z} = A \cdot e^{i(\phi + n\alpha)}$$
 
 Where:
-- **$A$** is the amplitude (familiarity and usage weight).
-- **$\phi$** is the primary phase angle $\in [0, 2\pi)$.
+- **$A$** is amplitude (familiarity and usage weight).
+- **$\phi$** is primary phase angle $\in [0, 2\pi)$.
 - **$n$** is the quantized energy sub-band level $\in \{0, 1, 2, \dots, 15\}$.
 - **$\alpha$** is the Sommerfeld fine-structure constant ($\approx 1/137.036$).
 
-### Destructive Interference Distance Metric
+---
 
-Semantic distance between two concepts is calculated through destructive wave interference:
+## 2. Phinum Multi-Resolution Engines (16 | 32 | 64 Cores)
 
-$$\Delta(\mathbf{Z}_1, \mathbf{Z}_2) = \alpha \cdot \|\mathbf{Z}_1 - \mathbf{Z}_2\|^2$$
-
-Lower energy delta indicates stronger semantic alignment and constructive resonance.
+| Engine | Active Resolution | Angular Width | Harmonic Perspectives | Target Deployment |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phinum16** | 16 Cores | $\Delta\theta = 22.5^\circ$ ($2\pi/16$) | 16 Perspectives | Ultra-lightweight edge & microcontroller inference (~2 MB) |
+| **Phinum32** | 32 Cores | $\Delta\theta = 11.25^\circ$ ($2\pi/32$) | 32 Perspectives | Balanced conversational dialogue & semantic routing (~5 MB) |
+| **Phinum64** | 64 Cores | $\Delta\theta = 5.625^\circ$ ($2\pi/64$) | 64 Perspectives ("64 ways to look at anything") | High-fidelity cognitive reasoning & I Ching spider-net (~12 MB) |
 
 ---
 
-## 2. Recursive 5-Stage Learning Cycle
+## 3. The 32 Core Modules (Unified System Architecture)
 
-Every interaction triggers the self-tuning feedback loop:
-
-$$\text{envision} \longrightarrow \text{apply} \longrightarrow \text{eval} \longrightarrow \text{iterate} \longrightarrow \text{scale}$$
-
-1. **Envision** ([`src/envision.rs`](src/envision.rs)) - Detects unknown words and constructs initial semantic hypotheses.
-2. **Apply** ([`src/trainer/mod.rs`](src/trainer/mod.rs)) - Updates phasor angles using Kuramoto non-linear phase attraction:
-   $$\phi_i \leftarrow \phi_i + K \sin(\psi_{\text{centroid}} - \phi_i)$$
-3. **Eval** ([`src/eval.rs`](src/eval.rs)) - Measures coherence order parameter $r \in [0, 1]$, novelty delta $\Delta$, and harmonic resonance.
-4. **Iterate** ([`src/memory/mod.rs`](src/memory/mod.rs)) - Logs insights across the 16-layer memory hierarchy.
-5. **Scale** ([`src/storage.rs`](src/storage.rs)) - Persists the tuned manifold state to disk using high-speed binary serialization.
+```
+Phinum 32-Core Topological Architecture
+├── Tier 1: Lexical & Physical Foundations (Modules 1–8)
+│   ├── 01. lexicon        ── Lexicon Manifold & Complex Phasor Table
+│   ├── 02. phasor         ── Complex Spectral Phasor Arithmetic (C^N)
+│   ├── 03. wave           ── Superposition Wave Mechanics & Context Buffer
+│   ├── 04. phiton         ── Light Quanta & Electromagnetic Visible Spectrum
+│   ├── 05. gemgum         ── Chromatic Sector Field & Unitary Energy Invariants
+│   ├── 06. phical         ── Color-Space-Time Topology & Geometric Manifolds
+│   ├── 07. oscillator     ── Coupled Kuramoto Oscillators & Bloch Sphere
+│   └── 08. tokenizer      ── Multilingual Tokenizer & Boundary Segmenter
+│
+├── Tier 2: Syntactic & Structural Spider-Net (Modules 9–16)
+│   ├── 09. pos_tagger     ── Part-of-Speech & Grammatical Class Analyzer
+│   ├── 10. syntax_net     ── Sentence Structural Key Extractor & Chain Matcher
+│   ├── 11. clause_graph   ── Clause Hierarchy & Dependency Tree Lattice
+│   ├── 12. sentence_type  ── Sentence Mood & Modal Typology Classifier
+│   ├── 13. paragraph_type ── Discourse & Paragraph Form Classifier
+│   ├── 14. structural_keys── Zero-Storage Invariant Hasher & Key Indexer
+│   ├── 15. iching         ── I Ching 64-Hexagram & Trigram Spin Engine
+│   └── 16. spider_net     ── Global Topological Language Spider-Net Graph
+│
+├── Tier 3: Searle Intentionality & Cognitive Processing (Modules 17–24)
+│   ├── 17. searle_acts    ── Searle Speech Act Taxonomy
+│   ├── 18. direction_of_fit── Direction-of-Fit Engine (Words-to-World / World-to-Words)
+│   ├── 19. intentionality ── BDI (Belief / Desire / Intention) State Vectors
+│   ├── 20. satisfaction   ── Conditions of Satisfaction Evaluator
+│   ├── 21. attention      ── Multi-Head Phase Sector Self-Attention
+│   ├── 22. attention_cross── Spectral Phase Cross-Attention Projector
+│   ├── 23. reasoning_hybrid── Value-Centric Geometric + Program-Centric Analogy
+│   └── 24. cognitive_core ── 16-Agent Dual-Cognitive Synthesis Pipeline
+│
+└── Tier 4: Phinum Resolution Engines & Lifelong Learning (Modules 25–32)
+    ├── 25. phinum16       ── Phinum-16 Core Engine (16-Sector Coarse Resolution)
+    ├── 26. phinum32       ── Phinum-32 Core Engine (32-Sector Intermediate Resolution)
+    ├── 27. phinum64       ── Phinum-64 Core Engine (64-Sector High-Fidelity 64-Perspective)
+    ├── 28. composer       ── Recursive Flower-Hayes Planning/Translating/Reviewing
+    ├── 29. instruction    ── Instruction Parsing, Template Engine & Execution
+    ├── 30. synthesis      ── Discrete Program AST Synthesis & Beam Search
+    ├── 31. lifelong       ── LifelongLearner & Persistent ComponentLibrary
+    └── 32. server         ── Axum REST API, SSE Telemetry & Web Gateway
+```
 
 ---
 
-## 3. Generative Engine & Narrative Composition
-
-Phiano provides two generative mechanisms:
-
-1. **Phase-Guided Sequence Generator** ([`src/generate.rs`](src/generate.rs)):
-   Maintains a `ContextWaveBuffer` running superposition and uses harmonic attention ([`src/attention.rs`](src/attention.rs)) with ray-casting to emit coherent next-token sequences.
-
-2. **Recursive Narrative Composer (`RiverFlow`)** ([`src/compose/flow/mod.rs`](src/compose/flow/mod.rs)):
-   Wove narratives along chromatic phase sectors across three harmonic movements:
-   - **Opening** (Source Oscillator Frequency)
-   - **Tension** (Orthogonal Wave Offset & Contrast)
-   - **Resolution** (Kuramoto Synchronization & Harmonic Equilibrium)
-
----
-
-## 4. 16-Layer Cognitive Memory Hierarchy
-
-Interactions are classified into 16 discrete memory layers across 4 octave bands:
-
-| Band | Layers | Cognitive Level & Description |
-|:---|:---|:---|
-| **Deep Band** | 12–15 | Universal archetypes, cross-domain morphisms, and high-level discourse strategy |
-| **Semantic Band** | 8–11 | Formal dictionary definitions, thematic roles, synonym clustering, and etymology |
-| **Pattern Band** | 4–7 | Bigram/trigram transition probabilities, idiomatic expressions, and cadence |
-| **Surface Band** | 0–3 | Raw orthographic token phasors, phonetic frequencies, and byte streams |
-
----
-
-## 5. Persona Fingerprinting & Impersonation
-
-Phiano extracts an author's unique voice into a 16-sector chromatic fingerprint:
+## 4. Quick Start
 
 ```bash
-# Extract persona from raw text
-phiano> persona from hemingway "The old man fished alone in the skiff. He had gone eighty-four days without taking a fish."
-
-# Interactive chat in Hemingway's style
-phiano> persona chat hemingway
-```
-
----
-
-## 6. Project Architecture
-
-```
-phiano/
-├── src/                  # Core Rust Engine (28 specialized modules)
-│   ├── lib.rs            # Library entrypoint
-│   ├── main.rs           # Binary entrypoint (CLI / REPL / Server)
-│   ├── generate.rs       # Phase-guided sequence generator
-│   ├── compose/          # RiverFlow narrative composer
-│   ├── reasoning.rs      # Phase-space deductive pathfinding
-│   ├── oscillator/       # 3D spinning sphere oscillator field
-│   ├── persona/          # Persona fingerprinting & voice synthesis
-│   ├── trainer/          # Kuramoto phase attraction trainer
-│   ├── facet.rs          # Facet lexicon & phasor store
-│   ├── wave.rs           # Wave superposition & ray-casting
-│   └── server/           # Axum REST API endpoints
-├── web/                  # React + Vite Interactive Visualization Dashboard
-├── tests/                # Comprehensive Python & integration test suite (16 tests)
-├── scripts/              # Command-line utilities, downloaders & demos (7 scripts)
-├── data/                 # Webster's dictionary & Rust Book training corpora
-├── docs/                 # 44 Technical architecture whitepapers & specifications
-├── tasks/                # Recipe scripts & demo scenarios
-└── specs/                # Formal mathematical specifications
-```
-
----
-
-## 7. Quick Start
-
-Full walkthrough: **[Getting Started (5 min)](docs/62_getting_started.md)** · tunables: **[Configuration](docs/63_configuration.md)**
-
-```bash
+# Build release binaries
 cargo build --release
-cargo run --release --bin bootstrap_facet   # trains + saves data/manifold.chroma
-cargo run --release --bin bench             # coherence / novelty / resonance
-cargo run --release -- --web                # API + PUI on :3000
-```
 
-### Running the Rust CLI & REPL
+# Run full test suite (68 tests)
+cargo test
 
-```bash
-# Start interactive REPL
+# Bootstrap facet manifold
+cargo run --release --bin bootstrap_facet
+
+# Start the interactive REPL
 cargo run
 
-# Run full showcase demo
-cargo run < tasks/showcase.txt
+# Launch the Web Dashboard & API server on :3000 / :5173
+cargo run -- --web
 ```
-
-### REPL Commands
-
-```
-phiano> learn "the cat sat on the mat"
-phiano> learn "the dog sat on the rug"
-phiano> synonym cat 5
-phiano> eval "the cat sat on the mat"
-phiano> reason "why does the cat sit on the mat"
-phiano> stats
-phiano> exit
-```
-
-### Running the Web Dashboard & API Server
-
-```bash
-# 1. Start the API server
-cargo run -- --server
-
-# 2. Launch the Web Dashboard
-cd web
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173` to inspect the live 3D oscillator sphere, phase circle, and Kuramoto order parameter.
-
----
-
-## 8. Master Documentation
-
-- **[Master Connections Map](docs/MASTER_CONNECTIONS.md)** - Complete mathematical dataflows and module connection matrix.
-- **[Architecture Overview](docs/02_architecture_overview.md)** - System topology and recursive learning cycle.
-- **[Complete File Map](docs/32_file_map.md)** - Detailed file index across all subdirectories.
-- **[Documentation Index](docs/README.md)** - Catalog of all 44 technical whitepapers.
 
 ---
 
