@@ -30,7 +30,7 @@ pub use iching::{Hexagram, Trigram};
 #[allow(unused_imports)]
 pub use variants::{Phinum16, Phinum32, Phinum64, PhinumLevel, Variation};
 #[allow(unused_imports)]
-pub use syntax::{SyntaxKey, SyntaxParser, PartOfSpeech};
+pub use syntax::{PosDictionary, SyntaxKey, SyntaxParser, PartOfSpeech};
 #[allow(unused_imports)]
 pub use searle::{SpeechAct, SearleClassifier};
 #[allow(unused_imports)]
