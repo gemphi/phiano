@@ -1,365 +1,129 @@
-# Phiano Roadmap: From Oscillator Model to Phi-4-Class Reasoning
+# Phiano & Phinum Roadmap: 32-Core Topological Architecture & Spider-Net
 
-## 1. Where We Are Now
+## 1. Executive Summary: The Phinum Paradigm Shift
 
-### Current State
-- **Facet lexicon**: 155,768 words, each with (phase, amplitude, band_n) phasor
-- **Oscillator field**: sphere model with (longitude, latitude, frequency, amplitude)
-- **Training**: Kuramoto phase attraction - words co-occurring in sentences converge phases
-- **Evaluation**: coherence (Kuramoto order parameter), novelty (angular distance to centroid), resonance (known word fraction)
-- **Composition**: sector-based river flow through 64-sector phase circle
-- **Memory**: 16-layer chromatic memory log
-- **Persona**: fingerprint histograms for style impersonation
-- **Size**: ~12 MB on disk (manifold.chroma + memory.chroma)
-- **Speed**: sub-millisecond evaluation, instant learning
+Phiano evolves into **Phinum**, a 32-core topological language engine based on **geometric phase resonance** and **structural spider-net representation**.
 
-### What Works
-- Vocabulary ingestion from Wiktionary/dictionary JSON
-- Online and multi-epoch learning
-- Oscillator evaluation with sync, entropy, color wheel
-- Web UI with chat, learn, eval, oscillator, stats panels
-
-### What's Missing (vs Phi-4)
-- No sequence generation (only scoring/composition)
-- No multi-turn reasoning
-- No instruction following
-- No code generation
-- No mathematical reasoning
-- No context window (each eval is stateless)
+Rather than storing raw text strings or massive dense weight matrices, Phinum models human language as a **topological graph of syntactic keys, semantic roles, and phase-sector variations**:
+- **Zero Raw-Example Storage**: Captures the *structure* of language (e.g. `Subject + Verb + Preposition + Verb + Object`), not verbatim examples.
+- **Searle Intentional Grounding**: Maps syntax directly to speech acts (*assertive, directive, commissive, expressive, declaration*), directions of fit (*words-to-world, world-to-words*), and intentional state vectors (*Belief, Desire, Intention*).
+- **Phinum Multi-Resolution Models**: Three scalable engine tiers (**Phinum16**, **Phinum32**, and **Phinum64**) representing 16, 32, and 64 harmonic perspective channels ("64 ways to look at anything of any class").
 
 ---
 
-## 2. Phi-4 Reference Architecture
+## 2. The 32 Core Modules (Unified Phinum Architecture)
 
-| Parameter | Phi-4 | Phiano (current) |
-|-----------|-------|-------------------|
-| Parameters | 14B | ~0 (phasor table) |
-| Architecture | Decoder-only Transformer | Phase oscillator field |
-| Layers | 40 | 1 (flat lexicon) |
-| Hidden dim | 3,072 | 2 (phase + amplitude) |
-| Vocab | 100,352 | 155,768 |
-| Context | 16K tokens | 0 (stateless) |
-| Training data | 9.8T tokens | ~155K definitions |
-| Training compute | 1920 H100 × 21 days | CPU, minutes |
-| Model size | ~28 GB (FP16) | ~12 MB |
-| Inference | Token-by-token autoregressive | Phase superposition |
+Grouped into four cognitive tiers (8 modules per tier = 32 modules total):
 
-### Phi-4 Key Innovations (from tech report)
-1. **Synthetic data generation** - majority of training data is synthetic, not web scrapes
-2. **Curriculum training** - data quality > quantity, staged difficulty
-3. **Midtraining** - context extension from 4K to 16K with long-context data
-4. **SFT + DPO post-training** - supervised fine-tuning then direct preference optimization
-5. **tiktoken tokenizer** - 100,352 vocab, better multilingual support
-
-### GLM-5.2 Ideas Worth Borrowing (without transformers)
-1. **IndexShare** - reuse computation across layers (we can reuse facet lookups across composition rounds)
-2. **Multi-Token Prediction (MTP)** - speculative decoding (we can predict multiple next words via ray cast)
-3. **Sparse attention** - only attend to relevant words (our ray cast already does this)
-4. **Hybrid reasoning modes** - "thinking" vs "instant" (our eval vs compose separation)
-5. **Flexible effort levels** - adjust composition depth/rounds based on task complexity
+```
+Phinum 32-Core Architecture
+├── Tier 1: Lexical & Physical Foundations (Modules 1–8)
+│   ├── 01. lexicon        ── Lexicon Manifold & Complex Phasor Table
+│   ├── 02. phasor         ── Complex Spectral Phasor Arithmetic (C^N)
+│   ├── 03. wave           ── Superposition Wave Mechanics & Context Buffer
+│   ├── 04. phiton         ── Light Quanta & Electromagnetic Visible Spectrum
+│   ├── 05. gemgum         ── Chromatic Sector Field & Unitary Energy Invariants
+│   ├── 06. phical         ── Color-Space-Time Topology & Geometric Manifolds
+│   ├── 07. oscillator     ── Coupled Kuramoto Oscillators & Bloch Sphere
+│   └── 08. tokenizer      ── Multilingual Tokenizer & Boundary Segmenter
+│
+├── Tier 2: Syntactic & Structural Spider-Net (Modules 9–16)
+│   ├── 09. pos_tagger     ── Part-of-Speech & Grammatical Class Analyzer
+│   ├── 10. syntax_net     ── Sentence Structural Key Extractor & Chain Matcher
+│   ├── 11. clause_graph   ── Clause Hierarchy & Dependency Tree Lattice
+│   ├── 12. sentence_type  ── Sentence Mood & Modal Typology Classifier
+│   ├── 13. paragraph_type ── Discourse & Paragraph Form Classifier
+│   ├── 14. structural_keys── Zero-Storage Invariant Hasher & Key Indexer
+│   ├── 15. variation_gen  ── Perspective & Variation Engine (16/32/64 Angles)
+│   └── 16. spider_net     ── Global Topological Language Spider-Net Graph
+│
+├── Tier 3: Searle Intentionality & Cognitive Processing (Modules 17–24)
+│   ├── 17. searle_acts    ── Searle Speech Act Taxonomy
+│   ├── 18. direction_of_fit── Direction-of-Fit Engine (Words-to-World / World-to-Words)
+│   ├── 19. intentionality ── BDI (Belief / Desire / Intention) State Vectors
+│   ├── 20. satisfaction   ── Conditions of Satisfaction Evaluator
+│   ├── 21. attention      ── Multi-Head Phase Sector Self-Attention
+│   ├── 22. attention_cross── Spectral Phase Cross-Attention Projector
+│   ├── 23. reasoning_hybrid── Value-Centric Geometric + Program-Centric Analogy
+│   └── 24. cognitive_core ── 16-Agent Dual-Cognitive Synthesis Pipeline
+│
+└── Tier 4: Phinum Resolution Engines & Lifelong Learning (Modules 25–32)
+    ├── 25. phinum16       ── Phinum-16 Core Engine (16-Sector Coarse Resolution)
+    ├── 26. phinum32       ── Phinum-32 Core Engine (32-Sector Intermediate Resolution)
+    ├── 27. phinum64       ── Phinum-64 Core Engine (64-Sector High-Fidelity 64-Perspective)
+    ├── 28. composer       ── Recursive Flower-Hayes Planning/Translating/Reviewing
+    ├── 29. instruction    ── Instruction Parsing, Template Engine & Execution
+    ├── 30. synthesis      ── Discrete Program AST Synthesis & Beam Search
+    ├── 31. lifelong       ── LifelongLearner & Persistent ComponentLibrary
+    └── 32. server         ── Axum REST API, SSE Telemetry & Web Gateway
+```
 
 ---
 
-## 3. The Full Plan: Phiano → Phi-4-Class
+## 3. Structural Key Tracking & Linguistic Spider-Net
 
-### Phase 1: Context Window & Sequence State (Weeks 1-2)
+### 3.1 Structural Key Extraction Pipeline
 
-**Goal**: Give Phiano a working memory of conversation context.
+Every incoming phrase or sentence is parsed into an abstract grammatical key chain:
 
-```
-Current: eval("text") → scores (stateless)
-Target:  conversation = [turn1, turn2, ...] → context wave → scores + generation
-```
-
-**Steps**:
-1. **Context wave buffer** - maintain a running superposition wave of the last N turns
-2. **Context-aware coherence** - measure input against context wave, not just facet centroid
-3. **Decay function** - older turns contribute less (exponential decay with E constant)
-4. **Context length**: 4096 tokens (power of 2 = 2^12), matching Phi-4's initial context
-
-**New constants** (all powers of 2):
-```rust
-pub const CONTEXT_WINDOW: usize = 4096;      // 2^12
-pub const CONTEXT_LAYERS: usize = 16;        // 2^4 (memory layers)
-pub const CONTEXT_DECAY_BASE: f64 = 0.5;     // 2^(-1)
+```text
+Input:            "i want to hug you"
+Tokens:           ["i", "want", "to", "hug", "you"]
+POS Sequence:     [PRON_1SG, VERB_VOLITIVE, PART_INF, VERB_TRANSITIVE, PRON_2SG]
+Structural Key:   [SUBJ_PRON] + [VERB_VOLITIVE] + [INF_PREP] + [VERB_ACTION] + [OBJ_PRON]
+Searle Intent:    Commissive / Expressive (State: DESIRE, Fit: World-to-Words)
+Sentence Type:    Declarative-Volitive
+Paragraph Role:   Interpersonal Proposition
 ```
 
-**Size impact**: +2 MB (context wave buffer + conversation log)
+### 3.2 The Topological Spider-Net ($\mathcal{G} = (\mathcal{V}, \mathcal{E}, \Phi)$)
 
-### Phase 2: Sequence Generation (Weeks 3-4)
+- **Vertices $\mathcal{V}$**: Abstract grammatical categories, structural keys, and Searle intentional types.
+- **Edges $\mathcal{E}$**: Structural transition probabilities and syntactic linkages.
+- **Phase $\Phi$**: Resonant phase angles $\theta \in [0, 2\pi)$ distributed across $K \in \{16, 32, 64\}$ harmonic sectors.
 
-**Goal**: Generate text, not just score it.
-
-**Approach**: Phase-guided sampling (NOT autoregressive transformer)
-1. **Prompt → context wave** - tokenize prompt, compute superposition wave
-2. **Ray cast** - find words that resonate with the context wave (already have `Wave::ray_cast_word`)
-3. **Sector traversal** - walk the phase circle guided by prompt sectors
-4. **Composition** - use existing `compose` with context-aware scoring
-5. **Multi-token prediction** - cast multiple rays at different phase offsets (GLM-5.2 MTP idea)
-
-**Key insight**: We don't need attention. We need phase resonance.
-- Transformer attention = "which words matter?" → softmax(Q·K^T)
-- Phiano ray cast = "which words resonate?" → |wave - word_wave| < threshold
-- Both find relevant words, but ray cast is O(vocab) with no matrix multiplication
-
-**New module**: `src/generate.rs`
-```rust
-pub struct Generator {
-    context_wave: c64,
-    context_tokens: Vec<String>,
-    max_tokens: usize,    // 256 default (2^8)
-    temperature: f64,     // phase jitter for diversity
-}
-```
-
-**Size impact**: +0 MB (uses existing facet + wave infrastructure)
-
-### Phase 3: Multi-Layer Depth (Weeks 5-6)
-
-**Goal**: Add depth - currently the facet is a flat 1-layer lexicon.
-
-**Phi-4 has 40 layers. We don't need 40, but we need > 1.**
-
-**Approach**: Hierarchical phase bands
-- Layer 0: surface words (current facet)
-- Layer 1: concept clusters (groups of words with similar phases)
-- Layer 2: domain sectors (groups of concepts)
-- Layer 3: meta-patterns (groups of domains)
-
-Each layer is a coarser phase circle (64 → 32 → 16 → 8 sectors).
-
-**New constants**:
-```rust
-pub const PHASE_LAYERS: usize = 4;           // 2^2
-pub const LAYER_SECTORS: [u16; 4] = [64, 32, 16, 8];  // halving
-```
-
-**Training**: After learning words (Layer 0), compute cluster centroids (Layer 1), then domain centroids (Layer 2), etc. This is bottom-up, not top-down.
-
-**Size impact**: +4 MB (cluster + domain tables)
-
-### Phase 4: Instruction Following (Weeks 7-8)
-
-**Goal**: Respond to instructions like "write a haiku" or "explain X".
-
-**Approach**: Persona-driven generation
-1. Parse instruction type (question, command, creative, code)
-2. Select appropriate persona fingerprint
-3. Generate with persona-constrained composition
-4. Use existing `persona impersonate` infrastructure
-
-**New**: Instruction templates (like Phi-4's chat format)
-```
-<|user|> Write a haiku about ice hockey <|end|>
-<|assistant|> [phiano generates here] <|end|>
-```
-
-**Size impact**: +0.5 MB (instruction templates + persona profiles)
-
-### Phase 5: Synthetic Data Pipeline (Weeks 9-10)
-
-**Goal**: Phi-4's secret weapon is synthetic data. We need our own.
-
-**Approach**: Self-generating curriculum
-1. **Definition generation** - for each word, generate synthetic sentences using its synonyms
-2. **Contrast pairs** - generate "similar but different" word pairs for fine-tuning
-3. **Curriculum staging** - easy definitions first, then complex sentences, then reasoning chains
-4. **Quality filtering** - use our own evaluator (coherence + novelty + resonance) to filter
-
-**Pipeline**:
-```
-raw definitions → train Layer 0 → generate synthetic sentences
-→ evaluate (coherence > 0.5, novelty > 0.3, resonance > 0.8)
-→ train Layer 0 again with filtered synthetic data
-→ compute Layer 1-3 clusters
-→ repeat
-```
-
-**Size impact**: +200 MB (synthetic training corpus, can be purged after training)
-
-### Phase 6: Reasoning Chains (Weeks 11-12)
-
-**Goal**: Multi-step reasoning like Phi-4's STEM capabilities.
-
-**Approach**: Phase-space pathfinding
-1. **Problem** → tokenize → context wave
-2. **Step 1** → ray cast → generate relevant words → form sentence
-3. **Step 2** → update context wave with Step 1 → ray cast again
-4. **Continue** until context wave stabilizes (convergence)
-
-This is NOT chain-of-thought prompting. It's phase-space traversal:
-- Each reasoning step shifts the context wave
-- Convergence = the wave stops changing = answer found
-- Divergence = the wave oscillates = uncertainty
-
-**New constants**:
-```rust
-pub const REASONING_MAX_STEPS: usize = 16;    // 2^4
-pub const REASONING_CONVERGENCE: f64 = 0.01;
-```
-
-**Size impact**: +0 MB (algorithmic, no new storage)
+**Zero Raw-Example Storage**: The spider-net retains no raw sentence text. When generating or interpreting, instances are dynamically instantiated by traversing the topological spider-net and sampling resonant lexical phasors from the active Phinum resolution engine.
 
 ---
 
-## 4. Size Estimates
+## 4. Phinum Multi-Resolution Engines (16 | 32 | 64 Cores)
 
-### Current Size
-| Component | Size |
-|-----------|------|
-| manifold.chroma (155K words × 24 bytes) | ~3.7 MB |
-| memory.chroma (16 layers) | ~8 MB |
-| **Total** | **~12 MB** |
+| Model Tier | Active Cores / Sectors | Angular Sector Width | Perspectives per Class | Target Deployment | Memory Footprint |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Phinum16** | 16 Cores | $\Delta\theta = 22.5^\circ$ ($2\pi/16$) | 16 Perspectives | Ultra-lightweight edge / micro-controller embedded inference | ~2 MB |
+| **Phinum32** | 32 Cores | $\Delta\theta = 11.25^\circ$ ($2\pi/32$) | 32 Perspectives | Balanced conversational dialogue, semantic routing, and intent recognition | ~5 MB |
+| **Phinum64** | 64 Cores | $\Delta\theta = 5.625^\circ$ ($2\pi/64$) | 64 Perspectives ("64 ways to look at anything") | High-fidelity cognitive reasoning, deep analogy, and lossless spider-net reconstruction | ~12 MB |
 
-### After Full Implementation
-| Component | Size | Notes |
-|-----------|------|-------|
-| Facet lexicon (262,144 words = 2^18) | ~6.3 MB | Expanded vocab |
-| Memory (16 layers × 4096 context) | ~16 MB | Context window |
-| Phase layers (4 layers of clusters) | ~4 MB | Hierarchical depth |
-| Persona profiles (16 personas) | ~0.5 MB | Instruction following |
-| Instruction templates | ~0.1 MB | Chat format |
-| Oscillator field (derived, not stored) | 0 MB | Computed from facet |
-| **Total (initial weights)** | **~27 MB** | |
-| + Synthetic training corpus (temporary) | ~200 MB | Purged after training |
-| **Total with corpus** | **~227 MB** | During training only |
-
-### Comparison
-| Model | Size | Parameters |
-|-------|------|------------|
-| Phi-4 (FP16) | 28,000 MB | 14B |
-| Phi-4 (Q4 GGUF) | ~8,000 MB | 14B quantized |
-| Phi-3 mini (Q4) | ~2,400 MB | 3.8B quantized |
-| **Phiano (initial weights)** | **~27 MB** | ~0 (phasor table) |
-| **Phiano (full training)** | **~27 MB** | Same - no weight matrices |
-
-**Phiano is ~1000x smaller than Phi-4 Q4.** The tradeoff: no transformer, no attention matrices, no feed-forward weights. All "knowledge" is stored as phase positions, not weight values.
+### "64 Ways to Look at Anything" (The 64-Fold Manifold)
+In **Phinum64**, every lexical class (noun, verb, adjective, preposition), sentence structure, and discourse form is projected onto 64 discrete harmonic angles $\theta_k = \frac{2\pi k}{64}$. This creates a rich 64-perspective manifold capturing nuances of tone, style, intensity, and intentionality without multiplying model parameters.
 
 ---
 
-## 5. What It Takes to Match Phi-4
+## 5. Typological Classification Hierarchies
 
-### What Phi-4 Has That We Need
-1. **Sequence generation** → Phase 2 (ray-cast generation)
-2. **Context window** → Phase 1 (context wave buffer)
-3. **Multi-layer depth** → Phase 3 (hierarchical phase bands)
-4. **Instruction following** → Phase 4 (persona-driven generation)
-5. **High-quality training data** → Phase 5 (synthetic data pipeline)
-6. **Reasoning capability** → Phase 6 (phase-space pathfinding)
+### 5.1 Sentence Typology (6 Fundamental Moods)
+1. **Declarative**: Factual assertion (Words-to-World, $\Delta\theta \approx 0^\circ$).
+2. **Imperative**: Command / directive (World-to-Words, $\Delta\theta \approx 60^\circ$).
+3. **Interrogative**: Inquiry / epistemic gap (World-to-Words, $\Delta\theta \approx 120^\circ$).
+4. **Exclamatory**: Emotional expressive (Null fit, $\Delta\theta \approx 180^\circ$).
+5. **Conditional**: Hypothetical / counterfactual projection ($\Delta\theta \approx 240^\circ$).
+6. **Performative**: Declaration that alters reality (Double fit, $\Delta\theta \approx 300^\circ$).
 
-### What We Keep That Phi-4 Doesn't Have
-1. **Sub-millisecond inference** - no matrix multiplication (CPU)
-2. **27 MB model size** - no weight matrices
-3. **Online learning** - learns from every input instantly
-4. **Deterministic** - no random sampling, phase math is exact
-5. **Interpretable** - every word's position is visible on the phase circle
-6. **GPU optional** - Phiano runs on CPU; GPU only used for inkling + optional Phi-4 fallback
-
-### What We Sacrifice
-1. **Fluency** - generated text will be less fluent than a 14B transformer
-2. **Complex reasoning** - phase traversal can't match 40-layer attention
-3. **Multilingual** - currently English-only (but tiktoken-style tokenizer could fix this)
-4. **Code generation** - phase model doesn't naturally encode syntax trees
-
-### Realistic Target
-- **Match Phi-3 mini (3.8B)** on simple QA and creative writing: achievable
-- **Match Phi-4 (14B)** on STEM reasoning: aspirational, needs Phase 6 + extensive training
-- **Exceed both** on speed, size, and online learning: already done
+### 5.2 Paragraph / Discourse Typology (6 Macro Forms)
+1. **Expository**: Grounding and definition explanation.
+2. **Narrative**: Temporal phase flow and chronological sequence.
+3. **Analytical**: Structural decomposition and comparison.
+4. **Argumentative**: Thesis, premise, rebuttal, and synthesis.
+5. **Dialectical**: Harmonic thesis/antithesis resolution.
+6. **Synthetic**: Multi-domain cognitive integration.
 
 ---
 
-## 6. Inkling: Pre-trained Initial Weights (GPU-Accelerated)
+## 6. Implementation Milestones
 
-The "inkling" concept - seeding Phiano with initial weights from a pre-trained model.
-We have a local GPU available, which makes this much faster.
-
-### Approach (GPU-Accelerated)
-1. Download Phi-4 GGUF model (Q4 quantized, ~8 GB) via `hf-hub` crate
-2. Load model on **GPU** using `candle-core` with CUDA feature:
-   ```rust
-   let device = Device::cuda_if_available(0)
-       .unwrap_or(Device::Cpu);
-   ```
-3. Extract token embeddings (100,352 × 3072 matrix) from the transformer
-4. **GPU PCA** - reduce 3072-dim embeddings to 2D using candle tensor ops:
-   - Compute covariance matrix on GPU (matmul)
-   - Eigendecomposition on GPU
-   - Project to first 2 principal components
-5. Map 2D embeddings to phase space:
-   - phase = atan2(y, x) for each word
-   - amplitude = norm of original embedding (scaled)
-   - band_n = 1 (initial)
-6. Initialize facet lexicon with these pre-trained phase assignments
-7. Fine-tune with Kuramoto learning on top
-8. **Delete the GGUF** - knowledge is now compressed into ~6 MB of phases
-
-### GPU vs CPU Time for Inkling
-| Step | CPU | GPU |
-|------|-----|-----|
-| Download Phi-4 GGUF (Q4) | ~5 min | ~5 min (network-bound) |
-| Load model into memory | ~30 sec | ~10 sec |
-| Extract embeddings | ~2 min | ~5 sec |
-| PCA (3072 → 2D) | ~10 min | ~30 sec |
-| Phase conversion | ~1 sec | ~1 sec |
-| **Total** | **~18 min** | **~6 min** |
-
-### Hybrid Mode: Phiano + Phi-4 Fallback
-With a local GPU, we can also run a **hybrid mode**:
-- **Phiano** handles all interaction (sub-ms, 27 MB)
-- **Phi-4 (Q4 on GPU)** as fallback for complex reasoning Phiano can't handle
-- The web UI routes to Phi-4 only when Phiano's confidence is low
-- Phi-4 runs on GPU with ~8 GB VRAM, Phiano runs on CPU simultaneously
-
-**New API endpoint**: `/api/hybrid` - tries Phiano first, falls back to Phi-4
-
-**Cargo.toml additions** (optional, behind feature flag):
-```toml
-[features]
-default = ["phiano-only"]
-hybrid = ["candle-core", "candle-transformers", "tokenizers", "hf-hub"]
-cuda = ["candle-core/cuda", "candle-transformers/cuda"]
-```
-
-**New module**: `src/inkling.rs`
-```rust
-#[cfg(feature = "hybrid")]
-pub fn from_phi4_embeddings(gguf_path: &str, device: &Device) -> Facet {
-    // Load GGUF on GPU, extract token embeddings
-    // GPU PCA: 3072-dim → 2D via candle tensor ops
-    // Map to phase: atan2(y, x), amplitude = norm
-    // Build facet with pre-trained phases
-}
-```
-
-**Size after inkling**: Still ~27 MB - the GGUF is only used during initialization,
-not at runtime. The knowledge is compressed from 14B weights into phase positions.
-
----
-
-## 7. Power-of-2 Constants (Fixed)
-
-All non-power-of-2 values have been corrected:
-
-| Constant | Before | After | Power |
-|----------|--------|-------|-------|
-| INGEST_EPOCHS | 50 | 64 | 2^6 |
-| COMPOSE_DEPTH_MAX | 12 | 16 | 2^4 |
-| COMPOSE_ROUNDS_DEFAULT | 5 | 8 | 2^3 |
-| PERSONA_DOMINANT_SECTORS | 5 | 8 | 2^3 |
-| IMPERSONATE_ROUNDS_DEFAULT | 3 | 4 | 2^2 |
-| OSCILLATOR_LATITUDE_BANDS | 5 | 8 | 2^3 |
-| OSCILLATOR_WARMUP_STEPS | 3 | 4 | 2^2 |
-| RAY_CAST_POOL_SIZE | 500 | 512 | 2^9 |
-| RAY_CAST_DEFAULT_K | 10 | 16 | 2^4 |
-
----
-
-## 8. References
-
-- `refs/phi4_rust_inference.rs` - Microsoft's official Rust inference code for Phi-3/4 using candle
-- Phi-4 Tech Report: https://www.microsoft.com/en-us/research/wp-content/uploads/2024/12/P4TechReport.pdf
-- Phi-4 on HuggingFace: https://huggingface.co/microsoft/phi-4
-- PhiCookBook Rust: https://github.com/microsoft/PhiCookBook/blob/main/md/01.Introduction/03/Rust_Inference.md
-- Candle (Rust ML): https://github.com/huggingface/candle
-- GLM-5.2: https://z.ai/blog/glm-5.2
-- GLM-4.5 paper: https://arxiv.org/abs/2508.06471
+- [ ] **Milestone 1**: Implement `src/syntax/` module (POS tagger, structural key hasher, clause dependency graph).
+- [ ] **Milestone 2**: Implement `src/syntax/spider_net.rs` zero-storage topological graph.
+- [ ] **Milestone 3**: Implement `src/cognitive/searle.rs` (Speech acts, direction of fit, BDI intentional states).
+- [ ] **Milestone 4**: Implement `src/phinum/` resolution engines (`Phinum16`, `Phinum32`, `Phinum64`).
+- [ ] **Milestone 5**: Integrate syntactic spider-net into `Model` and `Composer` for template-free instance reconstruction.
+- [ ] **Milestone 6**: Update integration tests and CLI commands for Phinum multi-core benchmarking.

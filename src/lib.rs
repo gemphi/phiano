@@ -26,6 +26,8 @@ pub mod phasor;
 #[allow(dead_code)]
 pub mod phical;
 #[allow(dead_code)]
+pub mod phinum;
+#[allow(dead_code)]
 pub mod phiton;
 pub mod reasoning;
 pub mod server;

@@ -26,6 +26,8 @@ mod phasor;
 #[allow(dead_code)]
 mod phical;
 #[allow(dead_code)]
+mod phinum;
+#[allow(dead_code)]
 mod phiton;
 mod reasoning;
 mod server;
