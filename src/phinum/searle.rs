@@ -17,8 +17,9 @@
 /// - **Phinum32**: 32 sub-categories (16 × 2 further refinements)
 /// - **Phinum64**: 64 sub-categories (32 × 2, full granularity)
 
+use super::config::PhinumConfig;
 use super::syntax::SyntaxKey;
-use super::variants::{Phinum16, Phinum32, Phinum64, PhinumEngine, Variation};
+use super::variants::{Phinum16, Phinum32, Phinum64, PhinumEngine, PhinumLevel, Variation};
 use serde::{Deserialize, Serialize};
 
 /// The 5 base Searle speech act categories.
@@ -73,7 +74,8 @@ impl SpeechAct {
         let base = self as u8;
         let sub = (key.len() as u8) % 3;
         let idx = base * 3 + sub;
-        Phinum16::classify_hash(idx as u64 * 7)
+        let cfg = PhinumConfig::global();
+        Phinum16::classify_hash(cfg.hash_base(idx as u64, PhinumLevel::N16))
     }
 
     /// Returns the 32-level sub-category index for this speech act.
@@ -81,7 +83,8 @@ impl SpeechAct {
         let base = self as u8;
         let sub = (key.len() as u8) % 6;
         let idx = base * 6 + sub;
-        Phinum32::classify_hash(idx as u64 * 13)
+        let cfg = PhinumConfig::global();
+        Phinum32::classify_hash(cfg.hash_base(idx as u64, PhinumLevel::N32))
     }
 
     /// Returns the 64-level sub-category index for this speech act.
@@ -89,7 +92,8 @@ impl SpeechAct {
         let base = self as u8;
         let sub = (key.len() as u8) % 12;
         let idx = base * 12 + sub;
-        Phinum64::classify_hash(idx as u64 * 31)
+        let cfg = PhinumConfig::global();
+        Phinum64::classify_hash(cfg.hash_base(idx as u64, PhinumLevel::N64))
     }
 }
 

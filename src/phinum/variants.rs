@@ -100,11 +100,9 @@ pub trait PhinumEngine: Sized {
         Variation::new(Self::LEVEL, ((hash & mask) % Self::SLOTS as u64) as u8)
     }
 
-    /// Classifies a string into a variation slot.
+    /// Classifies a string into a variation slot using the global config.
     fn classify_str(s: &str) -> Variation {
-        let hash = s.bytes().fold(0u64, |acc, b| {
-            acc.wrapping_mul(31).wrapping_add(b as u64)
-        });
+        let hash = super::config::PhinumConfig::global().hash_str(s);
         Self::classify_hash(hash)
     }
 }

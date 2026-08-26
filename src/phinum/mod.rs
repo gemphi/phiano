@@ -18,6 +18,7 @@
 //!
 //! Powered by phidoc ◂ puijs.
 
+pub mod config;
 pub mod iching;
 pub mod lexicon;
 pub mod searle;
@@ -26,14 +27,16 @@ pub mod topology;
 pub mod variants;
 
 #[allow(unused_imports)]
+pub use config::PhinumConfig;
+#[allow(unused_imports)]
 pub use iching::{Hexagram, Trigram};
-#[allow(unused_imports)]
-pub use variants::{Phinum16, Phinum32, Phinum64, PhinumLevel, Variation};
-#[allow(unused_imports)]
-pub use syntax::{PosDictionary, SyntaxKey, SyntaxParser, PartOfSpeech};
-#[allow(unused_imports)]
-pub use searle::{SpeechAct, SearleClassifier};
 #[allow(unused_imports)]
 pub use lexicon::{PhinumLexicon, WordClass};
 #[allow(unused_imports)]
-pub use topology::{SentenceType, ParagraphType, LanguageSpiderNet};
+pub use searle::{SearleClassifier, SpeechAct};
+#[allow(unused_imports)]
+pub use syntax::{PartOfSpeech, PosDictionary, SyntaxKey, SyntaxParser};
+#[allow(unused_imports)]
+pub use topology::{SentenceType, ParagraphType, SpiderNet};
+#[allow(unused_imports)]
+pub use variants::{Phinum16, Phinum32, Phinum64, PhinumLevel, Variation};

@@ -8,4 +8,4 @@ mod tests;
 
 pub use paragraph::ParagraphType;
 pub use sentence::SentenceType;
-pub use spider_net::LanguageSpiderNet;
+pub use spider_net::SpiderNet;

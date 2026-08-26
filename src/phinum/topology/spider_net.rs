@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 
 /// The language spider net — captures language structure without storing examples.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct LanguageSpiderNet {
+pub struct SpiderNet {
     /// Sentence type variation counts at each level.
     pub sentence_counts: HashMap<u64, u32>,
     /// Paragraph type variation counts at each level.
@@ -30,7 +30,7 @@ pub struct LanguageSpiderNet {
     pub total_paragraphs: u32,
 }
 
-impl LanguageSpiderNet {
+impl SpiderNet {
     pub fn new() -> Self {
         Self::default()
     }

@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn test_spider_net_keyed_relations() {
-    let mut net = LanguageSpiderNet::new();
+    let mut net = SpiderNet::new();
     let _ptype = net.process_text("I want to hug you. Can you hear me? Yes indeed!");
 
     assert_eq!(net.total_sentences, 3);
@@ -22,7 +22,7 @@ fn test_spider_net_keyed_relations() {
 
 #[test]
 fn test_spider_net_spin_structure() {
-    let mut net = LanguageSpiderNet::new();
+    let mut net = SpiderNet::new();
     net.process_text("I want to hug you. We need to love them.");
 
     let syntax_keys: Vec<_> = net.key_to_hexagrams.keys().cloned().collect();

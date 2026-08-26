@@ -1,8 +1,9 @@
 //! Sentence type classification for Phinum language topology.
 
+use super::super::config::PhinumConfig;
 use super::super::searle::SpeechAct;
 use super::super::syntax::{PartOfSpeech, SyntaxKey, SyntaxParser};
-use super::super::variants::{Phinum16, Phinum32, Phinum64, PhinumEngine, Variation};
+use super::super::variants::{Phinum16, Phinum32, Phinum64, PhinumEngine, PhinumLevel, Variation};
 use serde::{Deserialize, Serialize};
 
 /// Sentence type — 16 base types expandable to 32 and 64.
@@ -22,9 +23,10 @@ impl SentenceType {
         let act = SpeechAct::classify(&key);
 
         let base = Self::base_type(trimmed, &key, act);
-        let v16 = Phinum16::classify_hash(base as u64 * 17);
-        let v32 = Phinum32::classify_hash(base as u64 * 31);
-        let v64 = Phinum64::classify_hash(base as u64 * 67);
+        let cfg = PhinumConfig::global();
+        let v16 = Phinum16::classify_hash(cfg.hash_base(base as u64, PhinumLevel::N16));
+        let v32 = Phinum32::classify_hash(cfg.hash_base(base as u64, PhinumLevel::N32));
+        let v64 = Phinum64::classify_hash(cfg.hash_base(base as u64, PhinumLevel::N64));
 
         Self { base, v16, v32, v64 }
     }
