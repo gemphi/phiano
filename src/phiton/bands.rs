@@ -69,4 +69,22 @@ impl SpectralBand {
     pub fn center_nm(&self) -> f64 {
         (self.min_nm + self.max_nm) / 2.0
     }
+
+    /// Returns true if this band is in the warm / long-wavelength spectrum
+    /// (gold, amber, orange, scarlet, red, crimson: >= 636.2 nm).
+    pub fn is_warm(&self) -> bool {
+        self.min_nm >= 636.0
+    }
+
+    /// Returns true if this band is in the cool / short-wavelength spectrum
+    /// (violet, indigo, blue, azure, cyan: <= 508.1 nm).
+    pub fn is_cool(&self) -> bool {
+        self.max_nm <= 508.5
+    }
+
+    /// Returns true if this band is in the green / balanced mid-wavelength spectrum
+    /// (teal, emerald, green, lime, yellow: 508.1 - 636.2 nm).
+    pub fn is_green(&self) -> bool {
+        self.min_nm >= 508.0 && self.max_nm <= 636.5
+    }
 }

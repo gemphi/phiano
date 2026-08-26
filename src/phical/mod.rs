@@ -25,14 +25,17 @@
 ///   chiton (wave)  ──┘
 /// ```
 
+pub mod evaluate;
 pub mod manifold;
 pub mod operators;
 pub mod topology;
 
+#[allow(unused_imports)]
+pub use evaluate::Topology;
 pub use manifold::ColorSpaceTimeManifold;
 pub use operators::PhicalOps;
 #[allow(unused_imports)]
-pub use topology::{Edge, Path, Region, Surface, Topology, Vertex};
+pub use topology::{Edge, Path, Region, Surface, Vertex};
 
 use crate::config::{ALPHA, PHI, TWO_PI};
 use serde::{Deserialize, Serialize};

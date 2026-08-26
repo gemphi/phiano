@@ -53,14 +53,10 @@ impl Oscillator {
 
     /// Returns the color name at time t.
     pub fn color(&self, t: f64) -> String {
-        let hue = self.hue(t);
-        let colors = [
-            "crimson", "red", "scarlet", "orange", "amber", "gold",
-            "yellow", "lime", "green", "emerald", "teal", "blue",
-            "indigo", "violet", "magenta", "rose",
-        ];
-        let idx = ((hue / 360.0) * colors.len() as f64).floor() as usize % colors.len();
-        colors[idx].to_string()
+        let phase = self.visible_longitude(t);
+        let n = crate::phiton::SpectralBand::BANDS.len();
+        let idx = ((phase / (2.0 * PI)) * n as f64).floor() as usize;
+        crate::phiton::SpectralBand::at_index(idx).name.to_string()
     }
 
     /// Computes the spherical visibility weight from a viewing angle.

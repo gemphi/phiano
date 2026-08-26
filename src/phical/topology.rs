@@ -22,7 +22,7 @@
 
 use super::ColorSpaceTimePoint;
 use super::ColorSpaceTimeManifold;
-use crate::config::{ALPHA, PHI, TWO_PI};
+use crate::config::{PHI, TWO_PI};
 use crate::phiton::chiton::Chiton;
 use crate::phiton::types::LightQuantum;
 use serde::Serialize;
@@ -212,57 +212,5 @@ impl Region {
     /// Returns true if the region has no vertices.
     pub fn is_empty(&self) -> bool {
         self.vertices.is_empty()
-    }
-}
-
-/// Topology evaluator — assesses the geometric properties of linguistic shapes.
-///
-/// This is how we "evaluate what we've about these layers and their
-/// relates" — by measuring the topological invariants of the shapes
-/// that words, phrases, sentences, stories, and concepts form on the
-/// color-space-time manifold.
-pub struct Topology;
-
-impl Topology {
-    /// Evaluates a word as a vertex on the manifold.
-    pub fn evaluate_word(point: ColorSpaceTimePoint, word_hash: u64) -> Vertex {
-        Vertex::new(point, word_hash)
-    }
-
-    /// Evaluates a phrase (two-word relation) as an edge.
-    pub fn evaluate_phrase(a: Vertex, b: Vertex) -> Edge {
-        Edge::new(a, b)
-    }
-
-    /// Evaluates a sentence as a path through the manifold.
-    pub fn evaluate_sentence(vertices: Vec<Vertex>) -> Path {
-        let edges: Vec<Edge> = vertices.windows(2)
-            .map(|w| Edge::new(w[0], w[1]))
-            .collect();
-        Path::from_edges(edges)
-    }
-
-    /// Evaluates a story as a surface (2-complex of connected sentences).
-    pub fn evaluate_story(sentences: Vec<Path>) -> Surface {
-        Surface::from_paths(sentences)
-    }
-
-    /// Evaluates a concept as a region (attractor basin of related words).
-    pub fn evaluate_concept(vertices: Vec<Vertex>) -> Region {
-        Region::from_vertices(vertices)
-    }
-
-    /// Computes the layer relationship between two topological shapes.
-    ///
-    /// Returns a score [0, 1] indicating how strongly two shapes
-    /// are related on the manifold, regardless of their specific content.
-    pub fn layer_relation(a: &Path, b: &Path) -> f64 {
-        if a.is_empty() || b.is_empty() {
-            return 0.0;
-        }
-        let coherence_product = a.coherence * b.coherence;
-        let winding_diff = (a.winding - b.winding).abs();
-        let length_ratio = a.total_length.min(b.total_length) / a.total_length.max(b.total_length).max(1e-10);
-        coherence_product * length_ratio / (1.0 + winding_diff * ALPHA)
     }
 }

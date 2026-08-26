@@ -23,21 +23,17 @@ impl PersonalityMapper {
         let mut total = 0.0f64;
 
         for &(sector, weight) in &dominant {
-            let color = crate::compose::SectorPalette::color(sector);
-            match color.as_str() {
-                "crimson" | "red" | "scarlet" | "orange" | "amber" | "gold" | "rose" => {
-                    warm += weight;
-                }
-                "yellow" | "lime" => {
-                    green += weight;
-                }
-                "green" | "emerald" | "teal" => {
-                    green += weight * 0.7;
-                }
-                "blue" | "indigo" | "violet" | "magenta" => {
-                    cool += weight;
-                }
-                _ => {}
+            let phiton_color = crate::compose::SectorPalette::phiton_color(sector);
+            let band = phiton_color.band;
+
+            if band.is_warm() {
+                warm += weight;
+            } else if band.is_cool() {
+                cool += weight;
+            } else if band.is_green() {
+                green += weight;
+            } else {
+                green += weight * 0.7;
             }
             total += weight;
         }

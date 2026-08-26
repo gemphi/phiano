@@ -12,20 +12,15 @@ impl SphereView {
         let mut output = String::new();
         output.push_str("  ── oscillator sphere: equatorial wheel ──\n\n");
 
-        let colors = [
-            "crimson", "red", "scarlet", "orange", "amber", "gold",
-            "yellow", "lime", "green", "emerald", "teal", "blue",
-            "indigo", "violet", "magenta", "rose",
-        ];
-
-        let n = colors.len();
+        let bands = crate::phiton::SpectralBand::BANDS;
+        let n = bands.len();
         let sector_size = 2.0 * PI / n as f64;
 
-        for (i, color) in colors.iter().enumerate() {
+        for (i, band) in bands.iter().enumerate() {
             let view_lon = i as f64 * sector_size;
             let visible = field.project(0.0, view_lon, t, 3);
 
-            output.push_str(&format!("  {:>10} │", color));
+            output.push_str(&format!("  {:>10} │", band.name));
             if visible.is_empty() {
                 output.push_str("  (empty)\n");
             } else {
