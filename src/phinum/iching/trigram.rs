@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 /// The 8 fundamental Trigrams (Bagua / 八卦).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Trigram {
-    /// 乾 (Qián) — Heaven / Creative (111)
-    Heaven,
+    /// 乾 (Qián) — Unity / Creative (111)
+    Unity,
     /// 兌 (Duì) — Lake / Joyous (110)
     Lake,
     /// 離 (Lí) — Fire / Clinging / Clarity (101)
@@ -34,7 +34,7 @@ impl Trigram {
             Self::Thunder => 0b100,
             Self::Fire => 0b101,
             Self::Lake => 0b110,
-            Self::Heaven => 0b111,
+            Self::Unity => 0b111,
         }
     }
 
@@ -48,14 +48,14 @@ impl Trigram {
             0b100 => Self::Thunder,
             0b101 => Self::Fire,
             0b110 => Self::Lake,
-            _ => Self::Heaven,
+            _ => Self::Unity,
         }
     }
 
     /// Returns the Unicode symbol for the trigram.
     pub fn symbol(self) -> &'static str {
         match self {
-            Self::Heaven => "☰",
+            Self::Unity => "☰",
             Self::Lake => "☱",
             Self::Fire => "☲",
             Self::Thunder => "☳",
@@ -69,7 +69,7 @@ impl Trigram {
     /// Returns the pinyin name of the trigram.
     pub fn name_pinyin(self) -> &'static str {
         match self {
-            Self::Heaven => "Qián",
+            Self::Unity => "Qián",
             Self::Lake => "Duì",
             Self::Fire => "Lí",
             Self::Thunder => "Zhèn",

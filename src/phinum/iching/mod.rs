@@ -72,7 +72,7 @@ impl Hexagram {
     /// Maps this hexagram to a default Searle speech act category.
     pub fn speech_act(self) -> SpeechAct {
         match self.upper {
-            Trigram::Heaven | Trigram::Thunder => SpeechAct::Declaration,
+            Trigram::Unity | Trigram::Thunder => SpeechAct::Declaration,
             Trigram::Lake | Trigram::Fire => SpeechAct::Expressive,
             Trigram::Wind => SpeechAct::Directive,
             Trigram::Water => SpeechAct::Commissive,

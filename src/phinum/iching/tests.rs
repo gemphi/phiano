@@ -4,10 +4,10 @@ use super::*;
 
 #[test]
 fn test_trigram_bits_and_symbols() {
-    let heaven = Trigram::Heaven;
+    let heaven = Trigram::Unity;
     assert_eq!(heaven.bits(), 0b111);
     assert_eq!(heaven.symbol(), "☰");
-    assert_eq!(Trigram::from_bits(0b111), Trigram::Heaven);
+    assert_eq!(Trigram::from_bits(0b111), Trigram::Unity);
 
     let earth = Trigram::Earth;
     assert_eq!(earth.bits(), 0b000);
@@ -22,8 +22,8 @@ fn test_hexagram_creation_and_spin() {
     assert_eq!(hex_0.upper, Trigram::Earth);
 
     let hex_63 = Hexagram::from_id(63);
-    assert_eq!(hex_63.lower, Trigram::Heaven);
-    assert_eq!(hex_63.upper, Trigram::Heaven);
+    assert_eq!(hex_63.lower, Trigram::Unity);
+    assert_eq!(hex_63.upper, Trigram::Unity);
 
     let spun = hex_0.spin(std::f64::consts::PI);
     assert_eq!(spun.id, 32);
