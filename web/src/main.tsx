@@ -1,22 +1,33 @@
 import { StrictMode, useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { PuiProvider } from '@phiace/puijs';
+import { PuiProvider, usePuiTheme } from '@phiace/puijs';
 import './styles/globals.css';
 import { App } from './App';
 import type { Stats } from './types';
 import { fetchStats } from './hooks/api/stats';
 
+type ThemedAppProps = {
+  stats: Stats;
+  loading: boolean;
+  refreshStats: () => void;
+};
+
+function ThemedApp({ stats, loading, refreshStats }: ThemedAppProps) {
+  const { isDark, setTheme } = usePuiTheme();
+  return (
+    <App
+      dark={isDark}
+      toggleDark={() => setTheme(isDark ? 'light' : 'dark')}
+      stats={stats}
+      loading={loading}
+      refreshStats={refreshStats}
+    />
+  );
+}
+
 function Root() {
-  const [dark, setDark] = useState(() => {
-    try { return localStorage.getItem('theme') === 'dark'; } catch { return false; }
-  });
   const [stats, setStats] = useState<Stats>({ vocabulary: 0, memory_entries: 0 });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch {}
-  }, [dark]);
 
   const refreshStats = useCallback(async () => {
     setLoading(true);
@@ -28,14 +39,8 @@ function Root() {
 
   return (
     <StrictMode>
-      <PuiProvider defaultTheme={dark ? 'dark' : 'light'} defaultBrand="phiano">
-        <App
-          dark={dark}
-          toggleDark={() => setDark(d => !d)}
-          stats={stats}
-          loading={loading}
-          refreshStats={refreshStats}
-        />
+      <PuiProvider defaultTheme="system" defaultThemeStyle="apple" defaultBrand="phiano">
+        <ThemedApp stats={stats} loading={loading} refreshStats={refreshStats} />
       </PuiProvider>
     </StrictMode>
   );
