@@ -196,6 +196,7 @@ fn nearest(facet: &Facet, q: &SpectralPhasor, exclude: &[&str], k: usize) -> Vec
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let chunks = args.get(1).cloned().unwrap_or_else(|| "data/chunks".to_string());
+    let chunks_for_senses = chunks.clone();
     let corpus_path = args
         .get(2)
         .cloned()
@@ -358,6 +359,9 @@ fn main() {
 
     // The unblocking attempt: let the language name the relations.
     lexical_experiment(&facet, &glosses);
+
+    // And the gap that explains why it stays faint.
+    polysemy_experiment(&facet, &chunks_for_senses);
 
     // Hierarchy, as a demonstration rather than a metric.
     println!("\n--- genus chains ---");
@@ -738,4 +742,219 @@ fn lexical_experiment(facet: &Facet, glosses: &[(String, String)]) {
         );
     }
     println!("  chance purity {:.1}%.", chance * 100.0);
+}
+
+
+/// How much does one-phasor-per-word cost?
+///
+/// `Facet::lexicon` is `HashMap<String, SpectralPhasor>`: exactly one point per
+/// word. Webster's gives *cat* eight numbered senses — the animal, a strong
+/// sailing vessel, a double tripod, the constellation — and `definition_core`
+/// concatenates three of them into one gloss which composes to one centroid.
+/// Every measurement in this project has been taken on a representation that
+/// cannot hold polysemy.
+///
+/// That is a candidate explanation for why prepositional relations sit at 1.7x
+/// noise rather than 10x: `of(brim, hat)` and `of(pneumonia, lungs)` are already
+/// different relations sharing a preposition, and on top of that *brim* and
+/// *lungs* are each an average over senses. Two sources of blur, and only the
+/// first has been named.
+///
+/// The test needs no retraining and no sense-tagged corpus. If sense collapse is
+/// a noise source, then relations whose **head is monosemous** must show more
+/// coherence over its own null than relations whose head has many senses. The
+/// senses are counted from the dictionary; the phasors are the ones already
+/// trained. Nothing here is fitted, so nothing here can be fitting.
+fn polysemy_experiment(facet: &Facet, chunks_path: &str) {
+    use phiano::roles::{Coherence, LexicalRules};
+    use phiano::sources::definition_senses;
+
+    // Sense counts straight from the dictionary's own numbering.
+    let entries = ChunkStore::new(chunks_path).load_all();
+    let mut senses: HashMap<String, usize> = HashMap::new();
+    let mut sense_glosses: HashMap<String, Vec<String>> = HashMap::new();
+    for (w, raw) in &entries {
+        let g = definition_senses(raw);
+        if !g.is_empty() {
+            senses.insert(w.clone(), g.len());
+            sense_glosses.insert(w.clone(), g);
+        }
+    }
+
+    let polysemous = senses.values().filter(|n| **n > 1).count();
+    let mean: f64 = senses.values().sum::<usize>() as f64 / senses.len().max(1) as f64;
+    let max = senses.values().copied().max().unwrap_or(0);
+    println!("\n=== what one phasor per word costs ===");
+    println!(
+        "  {} entries, {:.2} senses each on average, {} with more than one, max {}",
+        senses.len(),
+        mean,
+        polysemous,
+        max
+    );
+
+    // Relations, grouped by how polysemous their head is.
+    let known: std::collections::HashSet<&str> = facet.lexicon.keys().map(|s| s.as_str()).collect();
+    let is_content = |w: &str| w.len() > 2 && !is_function_word(w) && !is_modifier(w) && known.contains(w);
+
+    let mut lex = LexicalRules::new();
+    for (w, gs) in &sense_glosses {
+        if facet.lexicon.contains_key(w) {
+            for g in gs {
+                lex.extract(w, g, &is_content);
+            }
+        }
+    }
+
+    let vocab: Vec<&String> = facet.lexicon.keys().collect();
+    let null_for = |n: usize, salt: u64| -> f64 {
+        let mut r = 0x2545F4914F6CDD1Du64 ^ salt;
+        let mut pairs = Vec::with_capacity(n);
+        for _ in 0..n {
+            r ^= r << 13; r ^= r >> 7; r ^= r << 17;
+            let a = vocab[(r % vocab.len() as u64) as usize].clone();
+            r ^= r << 13; r ^= r >> 7; r ^= r << 17;
+            let b = vocab[(r % vocab.len() as u64) as usize].clone();
+            if a != b { pairs.push((a, b)); }
+        }
+        Coherence::measure(facet, &pairs)
+    };
+
+    println!(
+        "\n  {:<22} {:>8} {:>11} {:>10} {:>8}",
+        "head sense count", "pairs", "coherence", "shuffled", "ratio"
+    );
+
+    // The four largest prepositions only: the null-control run showed smaller
+    // groups are indistinguishable from noise, so splitting them further by
+    // sense count would only compare noise with noise.
+    let mut bands: Vec<(&str, Vec<(String, String)>)> = vec![
+        ("1 sense (monosemous)", Vec::new()),
+        ("2-3 senses", Vec::new()),
+        ("4-7 senses", Vec::new()),
+        ("8+ senses", Vec::new()),
+    ];
+    for role in ["of", "to", "in", "with"] {
+        for (h, f) in lex.pairs_for_role(role) {
+            let n = senses.get(&h).copied().unwrap_or(1);
+            let band = match n {
+                0 | 1 => 0,
+                2..=3 => 1,
+                4..=7 => 2,
+                _ => 3,
+            };
+            bands[band].1.push((h, f));
+        }
+    }
+
+    let mut ratios: Vec<(usize, f64)> = Vec::new();
+    for (i, (label, pairs)) in bands.iter().enumerate() {
+        if pairs.len() < 50 {
+            println!("  {:<22} {:>8} {:>11} {:>10} {:>8}", label, pairs.len(), "-", "-", "too few");
+            continue;
+        }
+        let sample: Vec<(String, String)> = pairs.iter().take(8000).cloned().collect();
+        let coh = Coherence::measure(facet, &sample);
+        let null = null_for(sample.len(), i as u64);
+        let ratio = coh / null.max(1e-9);
+        ratios.push((i, ratio));
+        println!(
+            "  {:<22} {:>8} {:>11.4} {:>10.4} {:>7.2}x",
+            label,
+            pairs.len(),
+            coh,
+            null,
+            ratio
+        );
+    }
+
+    // ---- the disambiguation ----
+    //
+    // Polysemous words in a dictionary are also the COMMON words: cat, set,
+    // run, head. Common words are trained on far more often, so their phases
+    // are shaped by the objective while a hapax's phases are still essentially
+    // its hash seed. Binning by frequency instead of by sense count separates
+    // the two explanations, and only one of them is actionable.
+    println!(
+        "\n  {:<22} {:>8} {:>11} {:>10} {:>8}",
+        "head frequency band", "pairs", "coherence", "shuffled", "ratio"
+    );
+    let count_of = |w: &str| facet.lexicon.get(w).map(|p| p.count).unwrap_or(0);
+    let mut fbands: Vec<(&str, Vec<(String, String)>)> = vec![
+        ("count 1-4", Vec::new()),
+        ("count 5-24", Vec::new()),
+        ("count 25-199", Vec::new()),
+        ("count 200+", Vec::new()),
+    ];
+    for role in ["of", "to", "in", "with"] {
+        for (h, f) in lex.pairs_for_role(role) {
+            let c = count_of(&h);
+            let band = match c {
+                0..=4 => 0,
+                5..=24 => 1,
+                25..=199 => 2,
+                _ => 3,
+            };
+            fbands[band].1.push((h, f));
+        }
+    }
+    let mut fratios: Vec<f64> = Vec::new();
+    for (i, (label, pairs)) in fbands.iter().enumerate() {
+        if pairs.len() < 50 {
+            println!("  {:<22} {:>8} {:>11} {:>10} {:>8}", label, pairs.len(), "-", "-", "too few");
+            fratios.push(f64::NAN);
+            continue;
+        }
+        let sample: Vec<(String, String)> = pairs.iter().take(8000).cloned().collect();
+        let coh = Coherence::measure(facet, &sample);
+        let null = null_for(sample.len(), 100 + i as u64);
+        let ratio = coh / null.max(1e-9);
+        fratios.push(ratio);
+        println!(
+            "  {:<22} {:>8} {:>11.4} {:>10.4} {:>7.2}x",
+            label, pairs.len(), coh, null, ratio
+        );
+    }
+
+    let mono = ratios.iter().find(|(i, _)| *i == 0).map(|(_, r)| *r);
+    let poly = ratios.iter().filter(|(i, _)| *i >= 2).map(|(_, r)| *r).fold(f64::NAN, f64::min);
+
+    println!("\n  VERDICT:");
+    let sense_span = match (mono, poly.is_nan()) {
+        (Some(m), false) => Some(poly / m.max(1e-9)),
+        _ => None,
+    };
+    let freq_span = match (fratios.first(), fratios.last()) {
+        (Some(lo), Some(hi)) if lo.is_finite() && hi.is_finite() => Some(hi / lo.max(1e-9)),
+        _ => None,
+    };
+
+    match (sense_span, freq_span) {
+        (Some(sp), Some(fp)) => {
+            println!(
+                "    Coherence rises {:.1}x from monosemous to polysemous heads, and\n\
+                 \x20   {:.1}x from rare to frequent ones.",
+                sp, fp
+            );
+            match fp >= sp {
+                true => println!(
+                    "    Frequency explains at least as much as polysemy, and polysemous\n\
+                     \x20   words in a dictionary ARE the frequent ones — so this is a result\n\
+                     \x20   about training exposure, not about senses. Splitting senses would\n\
+                     \x20   not have fixed it. What the long tail needs is training, not types:\n\
+                     \x20   a rare word's phases are still close to its hash seed."
+                ),
+                false => println!(
+                    "    Polysemy separates the bands more than frequency does, so sense\n\
+                     \x20   structure is carrying something frequency alone does not."
+                ),
+            }
+        }
+        _ => println!("    Not enough pairs in one band to compare."),
+    }
+    println!(
+        "    Nothing above is fitted: sense counts come from the dictionary's own\n\
+         \x20   numbering and the phasors are the ones already trained, so this cannot\n\
+         \x20   be a result about the measurement adapting to the question."
+    );
 }

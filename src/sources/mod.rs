@@ -62,6 +62,19 @@ pub fn clean_definition(raw: &str) -> String {
 /// and drops the tail.
 const MAX_SENSES: usize = 3;
 
+/// The most senses a word is allowed to have.
+///
+/// The architecture is 64 phase channels, and the claim this bound expresses is
+/// that every level of language has a *bounded* inventory of forms — a word has
+/// so many uses, a sentence so many shapes — so each level's identity is a type
+/// index rather than an open set. That is CLU's position applied to language:
+/// the type is finite and known, and instances are values of it.
+///
+/// Whether 64 is the right bound is an empirical question this does not settle.
+/// What it settles is that the number is *finite and declared*, which is what
+/// lets a sense be an index instead of a string.
+pub const MAX_WORD_SENSES: usize = 64;
+
 /// The definitional core of a dictionary entry.
 ///
 /// [`clean_definition`] removes *apparatus* — brackets, parentheses, part-of-
@@ -111,6 +124,38 @@ pub fn definition_core(raw: &str) -> String {
         true => clean_definition(raw),
         false => kept.join(" "),
     }
+}
+
+/// The gloss of each numbered sense, separately.
+///
+/// [`definition_core`] concatenates the first [`MAX_SENSES`] senses into one
+/// string, which is how every measurement in this project came to be taken on a
+/// representation that cannot hold polysemy: *cat* has eight numbered senses in
+/// Webster's — the animal, a strong sailing vessel, a double tripod, the
+/// constellation — and they were merged into a single gloss, composed to a
+/// single centroid, and stored at a single point.
+///
+/// A word is not one thing. This returns the senses so each can have its own
+/// phasor, which is the bounded per-word type inventory the architecture was
+/// always described as having and never had.
+///
+/// Capped at [`MAX_WORD_SENSES`]: the claim is that a word's uses are *bounded*,
+/// not that they are unlimited, and a cap is what makes the sense index a type
+/// rather than an ever-growing list.
+pub fn definition_senses(raw: &str) -> Vec<String> {
+    split_senses(raw)
+        .into_iter()
+        .take(MAX_WORD_SENSES)
+        .filter_map(|sense| {
+            let body = strip_sense_head(&sense);
+            let gloss = first_sentence(cut_at_illustration(body));
+            let cleaned = clean_definition(gloss);
+            match cleaned.split_whitespace().count() >= 2 {
+                true => Some(cleaned),
+                false => None,
+            }
+        })
+        .collect()
 }
 
 /// Splits an entry on its sense numbers (`1.`, `2.`, ...).

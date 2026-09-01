@@ -1094,3 +1094,101 @@ plausible 3.6 pp gap (§8), and once here, where the raw ranking of roles is
 exactly inverted. **Every metric in this harness needs a shuffled control
 beside it**, and the ones already reported need one retrofitted before they are
 quoted again.
+
+---
+
+## §12 — The bounded-types claim, and what the measurement actually found
+
+The proposal: language has a **bounded** inventory of forms at every level — so
+many uses of a word, so many sentence shapes, so many story shapes — so each
+level's identity is a *type index* rather than an open set. CLU's position,
+applied to language.
+
+There is a real gap of exactly that shape in this codebase, and it is worth
+naming precisely:
+
+> `Facet::lexicon` is `HashMap<String, SpectralPhasor>` — **one point per
+> word.** Webster's gives *cat* eight numbered senses (the animal, a strong
+> sailing vessel, a double tripod, the constellation) and `definition_core`
+> concatenates three of them into a single gloss which composes to a single
+> centroid. Every measurement in this project has been taken on a representation
+> that structurally cannot hold polysemy.
+
+63,795 entries, 1.51 senses each on average, 12,394 with more than one, **45 at
+the maximum**. So the dictionary already numbers the types; the representation
+throws the numbering away.
+
+`definition_senses` now returns them separately, capped at `MAX_WORD_SENSES = 64`
+— finite and declared, which is what makes a sense an index rather than a string.
+
+### The prediction, and its refutation
+
+If sense collapse is a noise source, relations whose head is **monosemous**
+should show more coherence over their own null than relations whose head has
+many senses. Sense counts come from Webster's own numbering, phasors are the
+ones already trained, nulls are shuffled pairs at matched size — nothing fitted,
+so nothing that can fit the question.
+
+| head sense count | pairs | coherence | shuffled | ratio |
+|---|---|---|---|---|
+| 1 (monosemous) | 32,511 | 0.0130 | 0.0099 | 1.31× |
+| 2–3 | 20,028 | 0.0203 | 0.0100 | 2.03× |
+| 4–7 | 15,149 | 0.0363 | 0.0104 | 3.48× |
+| 8+ | 14,916 | 0.0824 | 0.0096 | **8.57×** |
+
+**Exactly backwards, monotonically.** Polysemous heads carry 6.5× *more*
+relational signal than monosemous ones.
+
+### The disambiguation, and the finding that matters
+
+Polysemous words in a dictionary are also the **common** words — *cat*, *set*,
+*run*, *head*. Common words are trained on far more often. Binning by frequency
+instead separates the two explanations:
+
+| head frequency | pairs | coherence | shuffled | ratio |
+|---|---|---|---|---|
+| count 1–4 | 35,702 | 0.0122 | 0.0096 | 1.27× |
+| count 5–24 | 25,999 | 0.0166 | 0.0094 | 1.77× |
+| count 25–199 | 16,930 | 0.0614 | 0.0093 | 6.63× |
+| **count 200+** | 3,973 | **0.1912** | 0.0135 | **14.14×** |
+
+Frequency spans **11.1×**; polysemy spans 2.8×. This is a result about
+**training exposure**, not about senses.
+
+### What this reframes
+
+**On well-trained words, prepositional relations sit at 14× noise.** That is
+strong relational structure — an order of magnitude beyond the 1.69× reported in
+§11 for `of` across the whole vocabulary.
+
+The 1.69× was an average dominated by the tail. 35,702 of 82,000 relation pairs
+have a head seen four times or fewer, and a word seen four times has phases still
+essentially equal to its hash seed. Every headline number in §5, §9, §10 and §11
+was computed over 70k words of which most are untrained, so every one of them is
+an average of real structure and hash noise.
+
+**This does not overturn the γ\* = 0 results** — those are perplexity on held-out
+text, where rare words genuinely are rare and the model genuinely does not
+predict them. It overturns the *relational* conclusions: "the manifold barely
+holds relations" was measured on a vocabulary most of which was never trained.
+
+### What to do, in order
+
+1. **Re-run the relation benchmark restricted to words seen ≥ 25 times**, and
+   report both. Not done here, and it is the first thing to check — the analogy
+   MRR of 0.0270 ± 0.0031 from §5b may be several times higher on the trained
+   vocabulary, or may not, and until it is run neither is known.
+2. **Train the tail, or stop claiming it.** 63,795 dictionary entries and a
+   corpus that gives most of them fewer than five occurrences is not a
+   vocabulary of 63,795 words; it is ~4,000 trained words and a large index.
+3. **Sense splitting is not the fix it looked like** — but the code is in place,
+   and it becomes worth testing once the frequency confound is removed, since
+   the two are entangled in exactly the words where both matter.
+
+### On determinism
+
+Every comparison in this section is deterministic by construction: sense counts
+from the dictionary's own numbering, phasors from an already-trained facet, nulls
+from a fixed-seed xorshift at matched sample size. Two runs give identical
+tables. That is what makes a 1.31× and an 8.57× comparable at all — and it is
+why the reproducibility fix in §5e was the precondition for everything after it.
