@@ -28,20 +28,51 @@ use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::f64::consts::PI;
 
-/// Grounding engine for aligning lexical phases with dictionary semantics.
+/// Any source that can describe a symbol in terms of other symbols.
+///
+/// Grounding is not dictionary-specific: the mechanism takes a mapping from a
+/// symbol to a bag of symbols and places the symbol at the bag's centre of
+/// mass. A function body, a lead paragraph, a docstring or a window of
+/// mentions all have that shape, so any of them can ground a manifold.
+pub trait Groundable {
+    /// `(symbol, description)` pairs.
+    fn entries(&self) -> Vec<(String, String)>;
+    /// A label for logging.
+    fn source_name(&self) -> &str {
+        "source"
+    }
+}
+
+impl Groundable for ChunkStore {
+    fn entries(&self) -> Vec<(String, String)> {
+        self.load_all()
+    }
+    fn source_name(&self) -> &str {
+        "dictionary"
+    }
+}
+
+/// Grounding engine for aligning lexical phases with source semantics.
 pub struct DefinitionGrounder;
 
 impl DefinitionGrounder {
     /// Relaxes every known word toward the centroid of its definition.
-    ///
-    /// Returns the number of word phases moved on the final round.
     pub fn ground_phases(facet: &mut Facet, chunk_store: &ChunkStore) -> usize {
-        let entries = chunk_store.load_all();
+        Self::ground_from(facet, chunk_store)
+    }
+
+    /// Grounds a facet from any [`Groundable`] source.
+    pub fn ground_from<G: Groundable>(facet: &mut Facet, source: &G) -> usize {
+        let entries = source.entries();
         if entries.is_empty() {
             return 0;
         }
 
-        println!("  [ground] Re-seeding phases from {} definitions...", entries.len());
+        println!(
+            "  [ground] Re-seeding phases from {} {} entries...",
+            entries.len(),
+            source.source_name()
+        );
         let mut grounded = 0usize;
 
         for round in 0..GROUNDING_ROUNDS {

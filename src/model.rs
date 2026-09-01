@@ -236,7 +236,7 @@ impl Model {
         // Record the interaction under its order-sensitive wave, so that recall
         // can tell "dog bites man" from "man bites dog".
         let wave = crate::wave::Wave::text_bound(&self.facet, line);
-        self.memo.record((wave.re, wave.im), line);
+        self.memo.record_grounded(&self.facet, (wave.re, wave.im), line);
 
         self.envision(line);
 

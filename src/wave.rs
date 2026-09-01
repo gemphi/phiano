@@ -319,6 +319,71 @@ impl Wave {
     }
 }
 
+/// Coarse spatial index over the phase circle.
+///
+/// Retrieval was O(V) per query, and generation issues one per token. On a
+/// circle, nearest-neighbour search does not need a full scan: bucket words by
+/// sector, then scan the query's own sector and its neighbours outward. The
+/// expected cost is V/`sector_count` rather than V.
+///
+/// This is the one place a one-dimensional representation is an advantage, and
+/// it was going unused.
+pub struct SectorIndex {
+    buckets: Vec<Vec<String>>,
+}
+
+impl SectorIndex {
+    /// Builds the index from a facet's current phases.
+    pub fn build(facet: &Facet) -> Self {
+        let n = Wave::sector_count() as usize;
+        let mut buckets = vec![Vec::new(); n];
+        for (word, p) in &facet.lexicon {
+            buckets[Wave::sector_of(p.effective_phase()) as usize].push(word.clone());
+        }
+        Self { buckets }
+    }
+
+    /// Number of sectors in the index.
+    pub fn sectors(&self) -> usize {
+        self.buckets.len()
+    }
+
+    /// The `k` words nearest a phase, scanning outward from its sector.
+    ///
+    /// Returns `(word, delta)` ascending, matching [`Wave::ray_cast`], so it is
+    /// a drop-in for callers that only need local neighbours.
+    pub fn near(&self, facet: &Facet, phase: f64, k: usize) -> Vec<(String, f64)> {
+        let n = self.buckets.len();
+        if n == 0 || k == 0 {
+            return Vec::new();
+        }
+        let home = Wave::sector_of(phase) as usize;
+        let mut hits: Vec<(String, f64)> = Vec::new();
+
+        // Widen the ring until enough candidates are in hand, then rank.
+        let mut radius = 0usize;
+        while hits.len() < k * 4 && radius <= n / 2 {
+            for s in [(home + radius) % n, (home + n - radius % n) % n] {
+                for w in &self.buckets[s] {
+                    if let Some(p) = facet.lexicon.get(w) {
+                        let d = (phase - p.effective_phase()).cos().max(0.0);
+                        let fam = p.amplitude / config::AMPLITUDE_MAX;
+                        hits.push((w.clone(), 1.0 - d * (0.8 + 0.2 * fam)));
+                    }
+                }
+                if radius == 0 {
+                    break;
+                }
+            }
+            radius += 1;
+        }
+
+        hits.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(Ordering::Equal));
+        hits.truncate(k);
+        hits
+    }
+}
+
 #[cfg(test)]
 mod wave_tests {
     use super::*;
@@ -389,6 +454,20 @@ mod wave_tests {
 
         let hits = Wave::ray_cast_word(&f, "query", 2);
         assert_eq!(hits[0].0, "twin", "an exact phase match must beat a familiar distant word");
+    }
+
+    #[test]
+    fn test_sector_index_matches_a_full_scan_locally() {
+        let mut f = Facet::new();
+        for w in ["alpha","beta","gamma","delta","epsilon","zeta","eta","theta","iota","kappa"] {
+            f.get_or_init(w);
+        }
+        let probe = f.lexicon["alpha"].effective_phase();
+        let idx = SectorIndex::build(&f);
+        let fast = idx.near(&f, probe, 3);
+        let exact = Wave::ray_cast(&f, crate::wave::c64::from_polar(1.0, probe), 3);
+        assert!(!fast.is_empty());
+        assert_eq!(fast[0].0, exact[0].0, "the index must agree with the scan on the nearest word");
     }
 
     #[test]

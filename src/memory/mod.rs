@@ -61,6 +61,9 @@ pub struct ContextWaveEntry {
     #[serde(default)]
     pub text: String,
     pub layer: usize,
+    /// Times this interaction has been seen. Raised by consolidation.
+    #[serde(default)]
+    pub count: u32,
 }
 
 /// 16-layer memory log - records every interaction and organizes it by depth.
@@ -96,6 +99,7 @@ impl Memo {
             text_hash,
             text: text.to_string(),
             layer,
+            count: 1,
         };
 
         self.layers[layer].push(self.entries.len());
@@ -183,7 +187,111 @@ impl Memo {
         }
     }
 
-    /// Classifies input text into one of 16 memory layers.
+    /// Records an interaction, classifying it by *meaning* rather than shape.
+    ///
+    /// See [`Memo::classify_layer_semantic`].
+    pub fn record_grounded(&mut self, facet: &crate::facet::Facet, wave: (f64, f64), text: &str) {
+        let layer = Self::classify_layer_semantic(facet, text);
+        self.record_at(wave, text, layer);
+    }
+
+    /// Records at an explicit layer.
+    pub fn record_at(&mut self, wave: (f64, f64), text: &str, layer: usize) {
+        let timestamp_ms = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_millis() as u64)
+            .unwrap_or(0);
+        let layer = layer.min(MEMORY_LAYERS - 1);
+        let entry = ContextWaveEntry {
+            timestamp_ms,
+            superposition_wave: wave,
+            text_hash: Self::fnv1a_hash(text),
+            text: text.to_string(),
+            layer,
+            count: 1,
+        };
+        self.layers[layer].push(self.entries.len());
+        self.entries.push(entry);
+    }
+
+    /// Classifies text by conceptual breadth and coherence.
+    ///
+    /// The band names — Surface, Pattern, Semantic, Deep — promised meaning
+    /// that word count and average word length could not deliver: "Deep" meant
+    /// *long sentence with long words*, so a profound three-word statement
+    /// filed as Surface while a rambling list of polysyllables filed as Deep.
+    ///
+    /// Band is now how many distinct phase sectors the content words span
+    /// (conceptual breadth) and sub-layer is how tightly they cohere.
+    pub fn classify_layer_semantic(facet: &crate::facet::Facet, text: &str) -> usize {
+        let toks = crate::tokenizer::Tokenizer::content_words(text);
+        if toks.is_empty() {
+            return 0;
+        }
+
+        let mut sectors = std::collections::HashSet::new();
+        for t in &toks {
+            if let Some(s) = crate::wave::Wave::word_sector(facet, t) {
+                sectors.insert(s);
+            }
+        }
+
+        let known = toks.iter().filter(|t| facet.contains_word(t)).count();
+        let z = crate::wave::Wave::sentence(facet, &toks);
+        let coherence = match known {
+            0 => 0.0,
+            n => (z.norm() / n as f64).clamp(0.0, 1.0),
+        };
+
+        let band = match sectors.len() {
+            0..=1 => 0,  // single-topic
+            2..=3 => 4,  // linked topics
+            4..=6 => 8,  // multi-domain
+            _ => 12,     // broadly integrative
+        };
+        let sub = ((coherence * 3.99) as usize).min(3);
+        (band + sub).min(MEMORY_LAYERS - 1)
+    }
+
+    /// Merges near-duplicate interactions, keeping a count.
+    ///
+    /// Real memory consolidates. Without this the log grows without bound and
+    /// repeats the same experience as many separate ones, which distorts both
+    /// recall and the novelty measure. Returns the number of entries merged.
+    pub fn consolidate(&mut self, wave_eps: f64) -> usize {
+        if self.entries.len() < 2 {
+            return 0;
+        }
+        let mut kept: Vec<ContextWaveEntry> = Vec::with_capacity(self.entries.len());
+        let mut merged = 0usize;
+
+        for e in std::mem::take(&mut self.entries) {
+            let dup = kept.iter_mut().find(|k| {
+                k.text_hash == e.text_hash || {
+                    let dx = k.superposition_wave.0 - e.superposition_wave.0;
+                    let dy = k.superposition_wave.1 - e.superposition_wave.1;
+                    dx.hypot(dy) < wave_eps
+                }
+            });
+            match dup {
+                Some(k) => {
+                    k.count = k.count.saturating_add(e.count.max(1));
+                    k.timestamp_ms = k.timestamp_ms.max(e.timestamp_ms);
+                    merged += 1;
+                }
+                None => kept.push(e),
+            }
+        }
+
+        self.entries = kept;
+        self.reindex();
+        merged
+    }
+
+    /// Classifies input text into one of 16 memory layers by surface shape.
+    ///
+    /// Retained for callers without a facet; prefer
+    /// [`Memo::classify_layer_semantic`].
     fn classify_layer(text: &str) -> usize {
         let words: Vec<&str> = text.split_whitespace().collect();
         let word_count = words.len();
