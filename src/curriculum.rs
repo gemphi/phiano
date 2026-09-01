@@ -106,10 +106,7 @@ impl ChildCurriculum {
                 }
             }
 
-            let bigrams_after = facet.bigrams.values()
-                .map(|m| m.values().sum::<u32>())
-                .sum::<u32>();
-            bigrams_recorded = bigrams_after as usize;
+            bigrams_recorded = facet.ngram_entries();
 
             words_learned += stage_words;
             sentences_trained += stage_sentences;

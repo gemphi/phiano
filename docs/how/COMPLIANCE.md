@@ -3,7 +3,7 @@
 > _Audited against the source, not against memory. Verified by grep on
 > `src/` at the current commit, not by what the commit messages claim._
 
-**71 of 88 proposed fixes are in.** Every document now has at least one fix applied.
+**72 of 88 proposed fixes are in.** Every document now has at least one fix applied.
 
 Legend: **A** applied · **P** partial · **—** not applied
 
@@ -26,7 +26,7 @@ Legend: **A** applied · **P** partial · **—** not applied
 | | Anchor β outside the geometry | **—** | β is still measured from the phases β itself moves |
 | **04** | Long-range structure for the re-ranker | **A** | recurrent `ContextWaveBuffer` |
 | | Phase-layer ablation reported | **A** | `bin/experiment` |
-| | Intern vocabulary to u32 IDs | **—** | still `HashMap<String, …>`; model still 92 MB |
+| | Intern vocabulary to u32 IDs | **A** | `Vocab` + sorted `Vec<(id,count)>`; measured 62% smaller; format v3 with v2/v1 migration |
 | | Smoothing on Facet's own tables | **A** | `bigram_discounted` / `trigram_discounted` return `(p, backoff)` |
 | | Prune singleton n-grams | **A** | implemented and **measured**: −80.7% size, +81% perplexity. A trade, not a win — see RESULTS §3b |
 | **05** | Two-phase (Jacobi) grounding | **A** | order-independent now |
@@ -77,7 +77,7 @@ Legend: **A** applied · **P** partial · **—** not applied
 | | Loud load failures | **A** | |
 | | Version check | **A** | |
 | | Serialise by reference | **A** | |
-| | Intern vocabulary | **—** | the 92 MB is unfixed |
+| | Intern vocabulary | **A** | see HOW 04; RESULTS §3d |
 | | f32 phasors | **—** | |
 | **14** | Order-invariant, chance-corrected matching | **A** | L2-normalised phase histogram, cosine |
 | | Reuse warm-starts from the component | **A** | component positions pulled in before training |
@@ -114,10 +114,11 @@ Legend: **A** applied · **P** partial · **—** not applied
 
 The 23 outstanding items fall into four groups.
 
-1. **Footprint (HOW 04, 13 — 2 items).** Interning the vocabulary to u32 ids and
-   f32 phasors: the lossless route from a 92 MB artifact to the documented
-   2–12 MB. Pruning turned out to be the lossy route (RESULTS §3b), so interning
-   is now the whole of this group.
+1. **Footprint (HOW 13 — 1 item).** f32 phasors. Interning is done and measured
+   at 62% (RESULTS §3d), but the remaining size is n-gram payload, not encoding:
+   2.7M entries cost 21.6 MB at 8 bytes each however they are stored. The
+   2–12 MB target needs fewer n-grams, and §3b measured what dropping them
+   costs.
 2. **Depth (HOW 12, 16, A1 — 6 items).** Semantic memory layers, hierarchical
    retrieval, consolidation, a non-linear readout, sequential credit assignment,
    Alpha/Beta weight competition. Research items rather than defects.

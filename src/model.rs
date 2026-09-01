@@ -77,7 +77,7 @@ impl Model {
         }
 
         // Bootstrap bigrams from chunk data if empty (legacy model compat)
-        match facet.bigrams.is_empty() && !facet.lexicon.is_empty() {
+        match !facet.has_ngrams() && !facet.lexicon.is_empty() {
             true => Self::bootstrap_bigrams(&mut facet),
             false => {}
         }

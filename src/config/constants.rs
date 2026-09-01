@@ -419,7 +419,7 @@ pub const WEIGHT_LENGTH: f64 = 0.15;
 // ── PERSISTENCE ────────────────────────────────────────────────────────────
 
 /// On-disk format version. Bumped when the serialized layout changes.
-pub const FORMAT_VERSION: u32 = 2;
+pub const FORMAT_VERSION: u32 = 3;
 
 /// Grounding pass version. A facet whose stored version matches is not
 /// re-grounded at startup.

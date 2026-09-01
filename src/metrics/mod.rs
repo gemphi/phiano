@@ -5,6 +5,7 @@
 pub mod baseline;
 pub mod kn_baseline;
 pub mod harness;
+pub mod relation;
 pub mod eval_split;
 pub mod capacity;
 pub mod regularization;

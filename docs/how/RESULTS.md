@@ -136,6 +136,84 @@ in its doc comment rather than the assumption that motivated it.
 This is the harness doing the job it was built for: the claim was plausible,
 widely true elsewhere, and wrong here.
 
+## 3c. Relation accuracy — does the manifold know that `woman` goes with `man`?
+
+Perplexity says whether the model predicts text. It says nothing about whether
+related words sit in related places. `bin/relations` trains on the full
+Webster's dictionary (71,809 definitions, 124,504-word vocabulary) and asks
+three questions of increasing difficulty, each against its own chance baseline.
+
+| family | pairs | pair > random | near@10 | near@50 | analogy@1 | analogy@5 |
+|:---|---:|---:|---:|---:|---:|---:|
+| gender (`man:woman`, `grandfather:grandmother`, …) | 10 | 80% | 0% | 0% | 0.0% | 0.0% |
+| number (`man:men`, `woman:women`, …) | 7 | 100% | 0% | 0% | 0.0% | 0.0% |
+| antonym (`hot:cold`, `big:small`, …) | 6 | 83% | 0% | 0% | 0.0% | 0.0% |
+| **chance** | | **50%** | **0.01%** | **0.04%** | **0.0008%** | |
+
+Three findings, and they are not the same finding.
+
+**Grouping: weakly real.** `resonance(man, woman)` beats `resonance(man, random)`
+87% of the time against a 50% baseline. There is signal. It is above chance and
+it improved as the vocabulary grew from 56k to 124k.
+
+**Localisation: absent.** `woman` is not among the **50 nearest words to `man`**,
+out of 124,504. Nor is `grandmother` near `grandfather`, nor `cold` near `hot`.
+An 87% pairwise win rate and a 0% top-50 rate are consistent: the signal is real
+and far too weak to survive competition with 124,502 other words.
+
+**Relations: absent.** Analogy asks whether the step from `man` to `woman` is the
+*same step* as from `grandfather` to `grandmother` — computed as a per-channel
+phase offset, which is exactly unbind-then-bind in the phase domain. Zero of the
+tested analogies ranked first. Not "low"; zero.
+
+### This agrees with the perplexity result
+
+Two independent measurements now say the same thing. The mixing sweep put the
+manifold at 24.3% of the predictive signal that raw word frequency provides.
+Relation accuracy puts it above chance on grouping and at chance on structure.
+Both describe a representation with weak global organisation and no local
+organisation — which is what contrastive co-occurrence training produces, because
+co-occurrence is what it is given.
+
+### Definition grounding does not help
+
+Grounding is the idea [HOW 05](05_definition_grounding.md) calls the best in the
+codebase. Measured here it:
+
+- drops phase dispersion from **0.94 to 0.50** — it concentrates the manifold,
+- and changes **none** of the relation metrics.
+
+Placing a word at the centre of mass of its definition is a plausible way to get
+semantic positions, and on this evidence it tidies the manifold without adding
+relational structure. That does not make it worthless — it is still the reason
+positions are non-arbitrary — but the claim that it grounds *meaning* is not yet
+supported by anything measured.
+
+## 3d. Footprint after interning
+
+The n-gram tables keyed on owned `String`s: each bigram follower stored a full
+copy of the word, each trigram key stored two, and `phase_lags` duplicated the
+bigram key set a third time. Interning to `u32` ids, with sorted
+`Vec<(id, count)>` follower lists instead of nested hash maps:
+
+| | dictionary-scale model |
+|:---|---:|
+| vocabulary | 124,504 |
+| n-gram entries | 2,698,355 |
+| **on disk, interned (measured)** | **59.2 MB** |
+| string-keyed equivalent (estimated) | 154.2 MB |
+| reduction | **62%** |
+
+The 59.2 MB is measured; the 154.2 MB is an estimate from mean word length and
+entry count, so treat the ratio as approximate.
+
+**And the README's 2–12 MB target is still out of reach — for a reason that is
+not encoding.** 2.7 million n-gram entries cost 8 bytes each in the best possible
+layout, so the payload alone is 21.6 MB before any overhead. Hitting 12 MB
+requires *fewer n-grams*, not a better encoding of them. Pruning is the obvious
+lever and §3b measured what it costs. That trade is a decision, not an
+optimisation.
+
 ## 4. Collapse is fixed
 
 | epoch | valid ppl | coherence | **dispersion** | gini |

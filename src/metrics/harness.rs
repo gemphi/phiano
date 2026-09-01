@@ -455,27 +455,26 @@ impl<'a> PhianoLM<'a> {
     /// `P(c|a,b) = const + coef · P_base(c|ctx)` — being affine means a whole
     /// grid of mixing weights can be evaluated from one pass over the data.
     fn affine(&self, a: &str, b: &str, c: &str) -> (f64, f64) {
-        // bigram level
-        let (bi_const, bi_coef) = match self.facet.bigrams.get(b) {
-            Some(f) if f.values().sum::<u32>() > 0 => {
-                let total: u32 = f.values().sum();
-                let n = *f.get(c).unwrap_or(&0) as f64;
-                let types = f.len() as f64;
-                let lambda = DISCOUNT * types / total as f64;
-                ((n - DISCOUNT).max(0.0) / total as f64, lambda)
+        // Absolute discounting from the facet's own interned tables. The
+        // context key is a (u32, u32) tuple, so scoring a position no longer
+        // allocates a joined String per lookup.
+        let (bi_const, bi_coef) = match self.facet.bigram_stats(b, c) {
+            Some(st) if st.total > 0 => {
+                let lambda = DISCOUNT * st.types as f64 / st.total as f64;
+                (
+                    (st.count as f64 - DISCOUNT).max(0.0) / st.total as f64,
+                    lambda,
+                )
             }
             _ => (0.0, 1.0),
         };
 
-        let key = format!("{} {}", a, b);
-        match self.facet.trigrams.get(&key) {
-            Some(f) if f.values().sum::<u32>() > 0 => {
-                let total: u32 = f.values().sum();
-                let n = *f.get(c).unwrap_or(&0) as f64;
-                let types = f.len() as f64;
-                let lambda = DISCOUNT * types / total as f64;
+        match self.facet.trigram_stats(a, b, c) {
+            Some(st) if st.total > 0 => {
+                let lambda = DISCOUNT * st.types as f64 / st.total as f64;
                 (
-                    (n - DISCOUNT).max(0.0) / total as f64 + lambda * bi_const,
+                    (st.count as f64 - DISCOUNT).max(0.0) / st.total as f64
+                        + lambda * bi_const,
                     lambda * bi_coef,
                 )
             }

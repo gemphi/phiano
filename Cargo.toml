@@ -45,6 +45,10 @@ name = "experiment"
 path = "src/bin/experiment.rs"
 
 [[bin]]
+name = "relations"
+path = "src/bin/relations.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 
