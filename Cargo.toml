@@ -65,6 +65,14 @@ name = "order"
 path = "src/bin/order.rs"
 
 [[bin]]
+name = "defstats"
+path = "src/bin/defstats.rs"
+
+[[bin]]
+name = "latency"
+path = "src/bin/latency.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

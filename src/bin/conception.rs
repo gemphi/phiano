@@ -37,6 +37,7 @@ use phiano::config::LEARNING_RATE;
 use phiano::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::RelationBenchmark;
+use phiano::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;
 
@@ -70,6 +71,25 @@ fn measure(name: &str, facet: &Facet, valid: &[String]) -> Row {
         dispersion: facet.phase_dispersion(),
         valid_ppl: Harness::perplexity_no_phase(facet, valid),
     }
+}
+
+/// Measures a condition, keeps the facet if it is the best seen.
+///
+/// Only the best facet is retained — holding all fifteen would be about a
+/// gigabyte at this vocabulary size — and it is what the per-family breakdown
+/// is computed from.
+fn record(
+    rows: &mut Vec<Row>,
+    best: &mut (f64, Facet),
+    name: &str,
+    f: Facet,
+    valid: &[String],
+) {
+    let r = measure(name, &f, valid);
+    if r.analogy_mrr > best.0 {
+        *best = (r.analogy_mrr, f);
+    }
+    rows.push(r);
 }
 
 fn main() {
@@ -112,9 +132,16 @@ fn main() {
     // Only entries whose headword the corpus actually contains can move
     // anything, and only those are counted, so "entries" is not inflated by the
     // dictionary's size.
+    // A1: entries reduced to their definitional core. Webster's stacks the
+    // gloss together with elaboration, editorial notes, usage examples and
+    // quoted lines; composing all of it put ~32 words into every definer set,
+    // against ~10 that actually define. The kernel share this produces (9.9%)
+    // lands on the literature's ~10%, which the 30.5% it replaced did not.
     let entries: Vec<(String, String)> = all
         .into_iter()
         .filter(|(w, _)| base.lexicon.contains_key(w))
+        .map(|(w, d)| (w, definition_core(&d)))
+        .filter(|(_, d)| d.split_whitespace().count() >= 2)
         .collect();
     println!("definitions covering the vocabulary: {}", entries.len());
     if entries.is_empty() {
@@ -122,7 +149,9 @@ fn main() {
         std::process::exit(1);
     }
 
-    let mut rows = vec![measure("baseline", &base, &split.valid)];
+    let mut best: (f64, Facet) = (f64::NEG_INFINITY, base.clone());
+    let mut rows: Vec<Row> = Vec::new();
+    record(&mut rows, &mut best, "baseline", base.clone(), &split.valid);
     if rows[0].usable_pairs == 0 {
         eprintln!(
             "WARNING: the relation benchmark has 0 usable pairs on this vocabulary. \
@@ -134,7 +163,7 @@ fn main() {
     {
         let mut f = base.clone();
         DefinitionGrounder::ground_from(&mut f, &store);
-        rows.push(measure("grounder (1 channel, centroid)", &f, &split.valid));
+        record(&mut rows, &mut best, "grounder (1 channel, centroid)", f, &split.valid);
     }
 
     // The 2x2 that separates two things the first run conflated: whether the
@@ -162,7 +191,7 @@ fn main() {
     ] {
         let mut f = base.clone();
         Conception::compose_all_bound(&mut f, src, rounds, HEAD_STEP, 0.0, bind);
-        rows.push(measure(label, &f, &split.valid));
+        record(&mut rows, &mut best, label, f, &split.valid);
     }
 
     // Reinforcement, added to each composition rule, so its contribution is
@@ -179,15 +208,26 @@ fn main() {
             r.heads_moved,
             r.definers_reinforced
         );
-        rows.push(measure(label, &f, &split.valid));
+        record(&mut rows, &mut best, label, f, &split.valid);
     }
 
     // Dict2vec's split: a definitional pair is *strong* when each word occurs
     // in the other's definition and *weak* when the membership is one-way. The
     // flat rule above pulls both at the same rate, which gives a passing
     // mention the same weight as a reciprocal definition.
-    let graph = DefinitionGraph::build(&entries);
+    let mut graph = DefinitionGraph::build(&entries);
+    let (raw_strong, raw_weak) = graph.counts();
+    // Dict2vec SS3.1: promote a weak pair to strong when the two words are among
+    // each other's K nearest. Raw reciprocity alone gives 505:1 on a cleaned
+    // single dictionary; their 9:1 came from four concatenated modern
+    // dictionaries plus this promotion, not from reciprocity by itself.
+    let promoted = graph.promote_neighbours(&base, 5);
     let (n_strong, n_weak) = graph.counts();
+    println!(
+        "definition graph: {} strong before promotion, {} promoted (K=5)",
+        raw_strong, promoted
+    );
+    let _ = raw_weak;
     println!(
         "definition graph: {} strong pairs, {} weak ({:.1}:1)",
         n_strong,
@@ -206,7 +246,7 @@ fn main() {
             false,
             Some(&graph),
         );
-        rows.push(measure("  + strong/weak (dict2vec)", &f, &split.valid));
+        record(&mut rows, &mut best, "  + strong/weak (dict2vec)", f, &split.valid);
     }
     {
         // Control: the same two rates applied without the reciprocity test, so
@@ -222,7 +262,7 @@ fn main() {
             false,
             None,
         );
-        rows.push(measure("  control: flat at BETA_STRONG", &f, &split.valid));
+        record(&mut rows, &mut best, "  control: flat at BETA_STRONG", f, &split.valid);
     }
 
     // The retrofitting anchor. The best-scoring row above drops dispersion from
@@ -241,7 +281,7 @@ fn main() {
         Conception::compose_anchored(
             &mut f, &entries, rounds, HEAD_STEP, BETA_STRONG, BETA_STRONG, false, None, a, None,
         );
-        rows.push(measure(&format!("  anchor α={:.2}", a), &f, &split.valid));
+        record(&mut rows, &mut best, &format!("  anchor α={:.2}", a), f, &split.valid);
     }
     {
         // Kernel scheduling: hold the definitional core at a tenth of the rate
@@ -252,7 +292,7 @@ fn main() {
             &mut f, &entries, rounds, HEAD_STEP, BETA_STRONG, BETA_STRONG, false, None, ANCHOR,
             Some(&kernel),
         );
-        rows.push(measure("  anchor + held kernel", &f, &split.valid));
+        record(&mut rows, &mut best, "  anchor + held kernel", f, &split.valid);
     }
 
     // Controlled negative sampling, measured on the training path rather than
@@ -262,7 +302,7 @@ fn main() {
         let g = std::sync::Arc::new(DefinitionGraph::build(&entries));
         let filtered = Trainer::new(LEARNING_RATE).with_definitions(g);
         let f = Harness::train_ranking_only(&split, &filtered, 4);
-        rows.push(measure("controlled negatives (retrained)", &f, &split.valid));
+        record(&mut rows, &mut best, "controlled negatives (retrained)", f, &split.valid);
     }
 
     println!("\n=== definitions as compositions ===");
@@ -281,6 +321,38 @@ fn main() {
             r.analogy_mrr,
             r.dispersion,
             r.valid_ppl
+        );
+    }
+
+    // A2: per-family, not just the aggregate. A total can be carried by one
+    // family, and morphological families (plural, comparative, past tense) can
+    // be learned from spelling alone while the semantic ones learn nothing —
+    // which the aggregate would hide.
+    {
+        let families = RelationBenchmark::default_families();
+        let report = RelationBenchmark::evaluate(&best.1, &families);
+        println!("\n--- per family, best condition ---");
+        println!(
+            "{:<14} {:>7} {:>10} {:>10} {:>10}",
+            "family", "usable", "pair/rnd", "nbr@10", "anlg MRR"
+        );
+        for f in &report.families {
+            println!(
+                "{:<14} {:>7} {:>9.1}% {:>9.1}% {:>10.4}",
+                f.name,
+                f.usable_pairs,
+                f.pair_vs_random * 100.0,
+                f.neighbour_top10 * 100.0,
+                f.analogy_mrr
+            );
+        }
+        let usable: usize = report.families.iter().map(|f| f.usable_pairs).sum();
+        let covered = report.families.iter().filter(|f| f.usable_pairs > 0).count();
+        println!(
+            "  {} usable pairs across {} of {} families covered by this vocabulary",
+            usable,
+            covered,
+            report.families.len()
         );
     }
 

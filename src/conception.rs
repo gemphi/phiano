@@ -478,6 +478,82 @@ impl DefinitionGraph {
         self.edges.get(of).is_some_and(|s| s.contains(word))
     }
 
+    /// Promotes weak pairs to strong when the two words are among each other's
+    /// nearest neighbours.
+    ///
+    /// Raw reciprocity is a weak signal in a single dictionary, and the
+    /// measurement says how weak: once entries are reduced to their
+    /// definitional core (~10 definers each), only 784 of 397,072 pairs are
+    /// two-way — a ratio of 505∶1 against dict2vec's ~9∶1. Longer definitions
+    /// buy reciprocity back but destroy the kernel structure (30.5% of entries
+    /// instead of the literature's ~10%). Neither end of that trade gives the
+    /// graph the split needs.
+    ///
+    /// Dict2vec §3.1 resolves it the same way: "some weak pairs can be promoted
+    /// as strong pairs if the two words are among the K closest neighbours of
+    /// each other", with K = 5. Their neighbours come from a pretrained
+    /// embedding over the whole vocabulary. This uses the facet's own phase
+    /// resonance, and restricts the candidate set to the words each already
+    /// defines — a cheaper variant, stated as one, since scanning a 70k
+    /// vocabulary per word is quadratic and the promotion can only ever apply to
+    /// a pair that is already an edge.
+    pub fn promote_neighbours(&mut self, facet: &Facet, k: usize) -> usize {
+        // The candidate set has to be *undirected*, and getting this wrong makes
+        // the whole method a no-op: ranking each word only among the words it
+        // defines means `a` can be in `b`'s top-k only when `b` already defines
+        // `a`, which is the definition of a strong pair. The first version did
+        // exactly that and promoted 0 of 271,300 weak pairs — logically
+        // incapable of promoting any. A word's neighbourhood is the words it
+        // defines *and* the words that define it.
+        let mut neighbourhood: HashMap<&str, std::collections::HashSet<&str>> = HashMap::new();
+        for (word, defs) in &self.edges {
+            let e = neighbourhood.entry(word.as_str()).or_default();
+            for d in defs {
+                e.insert(d.as_str());
+            }
+            for d in defs {
+                neighbourhood.entry(d.as_str()).or_default().insert(word.as_str());
+            }
+        }
+
+        // Top-k by phase resonance, against frozen phases and with ties broken
+        // by word, so the cut at k does not depend on iteration order.
+        let mut top: HashMap<&str, Vec<&str>> = HashMap::new();
+        for (word, cands) in &neighbourhood {
+            let mut scored: Vec<(f64, &str)> = cands
+                .iter()
+                .filter(|c| facet.lexicon.contains_key(**c))
+                .map(|c| (facet.resonance(word, c), *c))
+                .collect();
+            scored.sort_by(|a, b| {
+                b.0.partial_cmp(&a.0)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then_with(|| a.1.cmp(b.1))
+            });
+            top.insert(word, scored.into_iter().take(k).map(|(_, w)| w).collect());
+        }
+
+        // Mutual nearness only. One-way nearness is what a weak pair already is.
+        let mut pairs: Vec<(String, String)> = Vec::new();
+        for (a, near) in &top {
+            for b in near {
+                if top.get(b).is_some_and(|n| n.contains(a)) && !self.is_strong(a, b) {
+                    pairs.push(((*a).to_string(), (*b).to_string()));
+                }
+            }
+        }
+
+        // Promotion is recorded by adding the missing reverse edge, so
+        // `is_strong` and `counts` see it without a second code path.
+        let mut promoted = 0usize;
+        for (a, b) in pairs {
+            if self.edges.entry(b).or_default().insert(a) {
+                promoted += 1;
+            }
+        }
+        promoted
+    }
+
     /// The **grounding kernel**: the words that survive recursively removing
     /// every word that is defined but defines nothing further.
     ///
@@ -723,6 +799,59 @@ mod tests {
         Conception::compose_all_bound(&mut b, &entries, 3, HEAD_STEP, REINFORCE, false);
         for k in 0..PHASE_CHANNELS {
             assert_eq!(a.lexicon["cat"].theta(k), b.lexicon["cat"].theta(k));
+        }
+    }
+
+    /// Promotion must be able to create strong pairs, and must never invent a
+    /// relation between words the dictionary never connected.
+    ///
+    /// The assertions are structural rather than "word X is promoted", because
+    /// which words are nearest depends on hash-seeded initial phases and a test
+    /// that depends on that is a test of the seed.
+    #[test]
+    fn test_knn_promotion_is_creative_symmetric_and_bounded() {
+        let entries = vec![
+            ("car".to_string(), "road vehicle engine".to_string()),
+            ("vehicle".to_string(), "car transport".to_string()),
+            ("road".to_string(), "a wide way".to_string()),
+            ("engine".to_string(), "a machine".to_string()),
+        ];
+        let mut g = DefinitionGraph::build(&entries);
+        let before = g.counts().0;
+
+        let f = facet_with(&[
+            "car", "vehicle", "road", "engine", "transport", "wide", "way", "machine", "orange",
+        ]);
+        let promoted = g.promote_neighbours(&f, 5);
+
+        // Creative: the whole point is turning one-way edges into strong pairs.
+        // The first implementation ranked each word only among the words it
+        // defines, which made `a` reachable in `b`'s top-k only when the pair
+        // was *already* strong. It promoted 0 of 271,300 pairs on the real
+        // dictionary and passed its test.
+        assert!(promoted > 0, "promotion must be able to create a strong pair");
+        assert!(g.counts().0 > before, "strong count must rise");
+
+        // Symmetric: strength is a property of the pair, not of the direction.
+        for (a, b) in [("car", "vehicle"), ("car", "road"), ("road", "wide")] {
+            assert_eq!(
+                g.is_strong(a, b),
+                g.is_strong(b, a),
+                "strength must be symmetric for {}/{}",
+                a,
+                b
+            );
+        }
+
+        // Bounded: "orange" appears in no definition and defines nothing, so no
+        // amount of nearness may connect it to anything.
+        for other in ["car", "road", "vehicle", "engine"] {
+            assert!(
+                !g.is_related("orange", other),
+                "a word the dictionary never connected must stay unconnected: \
+                 orange/{}",
+                other
+            );
         }
     }
 
