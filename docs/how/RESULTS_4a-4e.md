@@ -1,0 +1,257 @@
+# Results — non-linear readout, score saturation, order, and definition composition
+
+Sections to append to `docs/how/RESULTS.md`. Every number here is held-out, on a
+deterministic 80/10/10 split, and reproducible from a named binary.
+
+---
+
+## §4a — A measurement bug that invalidated every earlier γ sweep
+
+**Found while wiring the non-linear readout. It changes how §3's headline should
+be read.**
+
+`PhianoLM` scored a candidate by summing the per-channel cosine against the
+context across all 16 language-model channels. A sum over 16 terms each in
+[-1, 1] spans 32 units. Exponentiating a spread that wide saturates the softmax:
+the top candidate takes essentially all the mass and every other candidate
+underflows the probability floor (`1 / (V·100)`).
+
+Measured on the toy corpus: the score spread was ~20 units at a typical
+position, and the phase probability was **pinned at the floor at essentially
+every position**. A back-off distribution that returns the same constant
+everywhere cannot beat a unigram at any mixing weight — so γ\* = 0 was partly a
+statement about the score *scale*, not only about the manifold.
+
+The fix is one line: score with the **mean** cosine across channels rather than
+the sum, which puts scores in [-1, 1] and gives β back its role as a
+temperature. `PHASE_BETA` moves 1.0 → 8.0 to compensate.
+
+What it changed, on `rust_book_corpus.txt`, 1 epoch:
+
+| quantity | before fix | after fix |
+|---|---|---|
+| phase recovers, of unigram's signal (co-occurrence) | 0.9% | **4.7%** |
+| phase recovers, of unigram's signal (ranking-only) | 24.3% | **25.3%** |
+| best γ | 0 | 0 |
+| best perplexity | 124.66 | 124.66 |
+
+So the manifold carries about **five times more signal** than §3 reported under
+the co-occurrence objective, and the ranking result was largely unaffected. The
+conclusion does not flip — γ\* is still 0, phase still loses to word frequency —
+but the size of the gap was overstated.
+
+Guarded by `test_phase_distribution_is_not_saturated`, which asserts the score
+spread stays within [-1, 1].
+
+**This is the fourth claim this harness has falsified, and the second one that
+was the harness's own.**
+
+---
+
+## §4b — The non-linear readout: HOW 16's open question, closed
+
+HOW 16 argued that every scoring path in the engine is linear — a weighted sum
+of unit vectors, then argmax — and that a non-linear readout is the fourth
+missing requirement. `SectorReadout` implements one: a table keyed on the
+discretised context cell holding **a bias per target sector**. The conditioning
+on both sides is what matters; a bias depending on the context alone adds the
+same constant to every candidate and cannot reorder anything. (The first
+implementation had exactly that bug; `test_bias_is_conditional_not_constant`
+now documents it.)
+
+Fitted on the training split only, scored on validation. `cargo run --release
+--bin readout`:
+
+| training regime | context | cells | held-out coverage | phase alone | best γ off → on |
+|---|---|---|---|---|---|
+| co-occurrence + ranking | 2-word | 3981 | 99.8% | 192.55 → 191.99 (−0.29%) | 0 → 0 |
+| co-occurrence + ranking | recurrent | 3593 | 99.4% | 189.10 → 185.64 (−1.83%) | 0 → 0 |
+| ranking only | 2-word | 3735 | 99.7% | 184.70 → 183.10 (−0.86%) | 0 → 0 |
+| ranking only | recurrent | 2033 | 99.4% | 180.40 → **174.22 (−3.42%)** | 0 → 0 |
+
+**Answer: no.** The readout improves the phase distribution measured on its own
+— up to 3.4% — but never enough to move γ\* off zero. Linearity was not the
+binding constraint on this corpus.
+
+Two things make that a real answer rather than a null result:
+
+* **Coverage is ~99.5%.** The table is consulted at essentially every held-out
+  position, so "no effect on γ\*" is not a table that never fires. Getting there
+  required a design change: the key grid is deliberately coarser (8 buckets per
+  channel) than the 64-sector target grid, because 64⁴ is 16.7M cells and a table
+  that fine is a cache miss on every unseen context. `test_finer_keys_cover_less`
+  pins that trade-off.
+* **The γ = 0 column is unchanged to 1e-6** in every row. γ = 0 removes the phase
+  term, so the readout cannot legally touch it; a move there would mean the
+  comparison was leaking. It is asserted in the run and in
+  `test_readout_changes_phase_scoring_only`.
+
+---
+
+## §4c — Where word order belongs
+
+Two experiments, opposite answers, and the difference is the point.
+
+### In the sequence: order is real, but the golden-angle rotation is the wrong carrier
+
+`cargo run --release --bin order`. Three context constructions, same facet,
+same split. "swap cos" is the cosine between `ctx(a,b)` and `ctx(b,a)`: **1.0
+means order is not represented at all.**
+
+| regime | context | swap cos | phase alone | best γ |
+|---|---|---|---|---|
+| co-occurrence | 2-word | 0.509 | 192.57 | 0 |
+| co-occurrence | bound | −0.428 | 193.56 | 0 |
+| co-occurrence | recurrent | n/a | **188.63** | 0 |
+| ranking only | 2-word | 0.617 | 182.69 | 0 |
+| ranking only | bound | −0.249 | 194.30 | 0 |
+| ranking only | recurrent | n/a | **173.08** | 0 |
+
+* The existing 2-word context **barely encodes order at all** (swap cos 0.51 and
+  0.62 — the swapped context is still more similar to the original than not).
+  The 0.4/1.0 recency weighting is a magnitude weight, not an encoding.
+* Positional binding genuinely fixes that (swap cos goes *negative*: the swapped
+  context is now anti-correlated). **And it makes prediction worse** — 194.30 vs
+  182.69 under the ranking objective.
+* The recurrent state, which carries order through its per-channel rotation
+  kernel, is the best of the three in both regimes, by a wide margin under
+  ranking (173.08 vs 182.69).
+
+So order matters, and a learned/tuned rotation carries it; a fixed golden-angle
+rotation encodes order faithfully and predicts worse. Faithful ≠ useful.
+
+### In a definition: order actively hurts
+
+See §4d. Binding a dictionary entry by word position was the **worst** condition
+tested, 34 points below baseline.
+
+The reconciliation: a sentence *is* a sequence and its order is signal. A
+definition is a set of constraints that happens to have been written down in a
+line — the rank of *animal* in "a small domestic feline animal" is a fact about
+the lexicographer, not about *cat*. Rotating by that rank scatters the same
+concept word to a different angle in every entry it appears in.
+
+---
+
+## §4d — Definitions as compositions, and mutual reinforcement
+
+The existing `DefinitionGrounder` was measured earlier: it halves phase
+dispersion and improves no relation metric. Three properties explain why — it
+writes **one channel** of 64, it uses a **symmetric centroid**, and the pull is
+**one-way** (the headword moves toward its definers; the definers never move
+toward the headword, so a family of mutually-defining words never converges).
+
+`Conception` changes all three, each switchable, so each is measurable.
+
+`cargo run --release --bin conception`, on a corpus built from the Webster's
+entries themselves (the Rust-book corpus contains no kinship vocabulary, which
+made the first run vacuous — 0 usable relation pairs). Ranking-only training,
+3 composition rounds, 23 usable relation pairs:
+
+| condition | pair/random | nbr@10 | analogy@1 | analogy MRR | dispersion |
+|---|---|---|---|---|---|
+| baseline | 71.7% | 4.8% | 0.00% | 0.0045 | 0.985 |
+| grounder (1 channel, centroid) | 71.9% | 4.8% | 0.00% | 0.0047 | 0.452 |
+| compose: bag, no rotation | 82.6% | 0.0% | 1.85% | 0.0296 | 0.504 |
+| compose: bound, as written | 37.4% | 0.0% | 0.00% | 0.0044 | 0.964 |
+| compose: bound, canonical | 57.1% | 14.3% | 0.00% | 0.0063 | 0.981 |
+| **+ reinforce (bag)** | **85.0%** | 0.0% | **4.32%** | **0.0644** | 0.446 |
+| + reinforce (canonical) | 59.6% | 14.3% | 0.00% | 0.0025 | 0.964 |
+
+Three findings, in order of size:
+
+1. **Multi-channel composition works where single-channel grounding did not.**
+   The grounder moves the relation metrics by +0.2pp and +0.0002 MRR — noise.
+   Bag composition across all 64 channels moves pair/random +10.9pp and MRR ×6.6.
+   The limitation was never the idea; it was writing one channel of sixty-four.
+
+2. **Mutual reinforcement is the largest single effect measured on this
+   benchmark to date.** Adding the back-pull on top of bag composition takes MRR
+   from 0.0296 to 0.0644 — it more than doubles what composition alone
+   achieves, and lifts analogy@1 from 1.85% to 4.32%. Letting the definers move
+   toward the headword is what turns a definition graph into concept regions
+   instead of independent placements.
+
+3. **Positional binding inside a definition is destructive.** −34.3pp on
+   pair/random, the worst condition in the table. Canonicalising position by
+   sorting the definer set recovers about half of it and is the only condition
+   that improves neighbour@10 (+9.5pp), which is worth noting but does not
+   recover the loss.
+
+The no-phase perplexity is 437.68 in every row, as it must be: composition
+touches phases only, and the n-gram path cannot see it. A row where that number
+moved would mean the experiment was contaminated.
+
+**Caveat, stated up front: 23 usable relation pairs.** These effects are large
+and consistent in direction across metrics, but the sample is small, and the
+analogy figures rest on few analogies. Before any of this is quoted as a
+headline it needs a vocabulary with more relation coverage.
+
+---
+
+## §4e — What the prior literature already settled, and what it implies next
+
+Three of these results have direct precedent, and the precedent is useful
+because it says which of them is likely to generalise.
+
+* **Dict2vec** (Tissier, Gravier & Habrard, EMNLP 2017) learns embeddings by
+  pulling together words that co-occur in dictionary definitions — "strong
+  pairs" when two words appear in each other's definitions, "weak pairs" when the
+  relation is one-way — with negative sampling for the rest. That is
+  §4d's reinforcement, and its strong/weak asymmetry is a sharper version of
+  Phiano's flat `REINFORCE = 0.15`. **Suggested next change:** make the back-pull
+  reciprocal-aware — a full step when *A* defines *B* and *B* defines *A*, a
+  fraction otherwise.
+* **Retrofitting** (Faruqui et al., NAACL 2015) and **counter-fitting** (Mrkšić
+  et al., NAACL 2016) post-process trained vectors toward a lexicon by
+  alternating "stay near where you were" with "move toward your neighbours".
+  `Conception::compose_all` is structurally the same algorithm on a torus, and
+  it is missing retrofitting's first term: there is currently **no anchor to the
+  pre-composition position**, which is why dispersion falls from 0.985 to 0.446.
+  **Suggested next change:** add a β-weighted pull back toward the trained phase,
+  and sweep β. Retrofitting's whole point is that the balance is tunable.
+* **The grounding kernel** (Vincent-Lamarre et al., *Topics in Cognitive
+  Science*, 2016) is the most directly actionable. A dictionary's definitional
+  graph has a **Kernel** (~10% of entries — what remains after recursively
+  removing words that are defined but define nothing), a **Core** (6–9%, the
+  largest strongly connected component), and **MinSets** (~1%, the smallest sets
+  from which everything else is definable). Words nearer the MinSets are more
+  concrete, more frequent, and acquired earlier.
+
+  `compose_all` currently treats all 39,925 entries as equal and iterates
+  Jacobi rounds over the lot. The literature says that is the wrong schedule:
+  meaning propagates *outward from the kernel*. **Suggested next experiment,
+  and the one I would run first:** compute the Core by SCC on the definition
+  graph, hold those words fixed (or move them at a much smaller step), and
+  compose the periphery against them. It is a few hours of work, it is testable
+  on exactly the benchmark above, and it is the difference between "definitions
+  average out" and "definitions ground".
+
+* **Searle and Harnad on why this has a ceiling.** The Chinese Room and the
+  symbol grounding problem both say the same thing about this architecture: a
+  dictionary is symbols defined by symbols, so composing definitions can arrange
+  meaning but cannot originate it — the "dictionary go-round". The MinSet result
+  is the empirical form of that argument: ~1% of the vocabulary has to be
+  grounded some other way (sensorimotor, in the original framing; in a text-only
+  system, by corpus statistics or by an external signal). This is a real ceiling
+  on §4d, and it predicts where the returns stop: composition should keep helping
+  until the kernel is saturated, then plateau. **That prediction is testable** —
+  measure relation accuracy as a function of how much of the Core is covered.
+
+* **Φ-ML framing.** Physics-informed machine learning is the family Phiano
+  belongs to: a physical model (Kuramoto–Sakaguchi coupling) used as a structural
+  prior instead of a learned one. The honest lesson from that literature is that
+  a physics prior pays when the physics is the true generative process and costs
+  when it is not — and §3 and §4b are the local version of that. Phase coupling
+  is not how text is generated, and every measurement so far says the *objective*
+  (ranking, 27× better than co-occurrence) matters more than the representation.
+  The prior earns its place on latency, editability and forgetting resistance —
+  the 98.1% retention figure — not on perplexity.
+
+### Sources
+
+- [Dict2vec: Learning Word Embeddings using Lexical Dictionaries — ACL Anthology](https://aclanthology.org/D17-1024/)
+- [Retrofitting Word Vectors to Semantic Lexicons — ACL Anthology](https://aclanthology.org/N15-1184/)
+- [Counter-fitting Word Vectors to Linguistic Constraints](https://ar5iv.labs.arxiv.org/html/1603.00892)
+- [The Latent Structure of Dictionaries — Topics in Cognitive Science](https://onlinelibrary.wiley.com/doi/10.1111/tops.12211) ([open PDF](https://eprints.soton.ac.uk/366805/1/PhilV-L.dict.webscimind.pdf))
+- [Physics-informed machine learning meets engineering — Alan Turing Institute](https://www.turing.ac.uk/events/phi-ml-meets-engineering)
