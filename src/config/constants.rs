@@ -263,3 +263,83 @@ pub const API_CACHE_FILE: &str = "data/api_cache.txt";
 /// Path to the stop words file (one word per line, space-separated).
 pub const STOP_WORDS_FILE: &str = "data/stop_words.txt";
 
+// ── ROTOR MULTI-DIMENSIONAL PHASES (CAPACITY UPGRADE) ──────────────────────
+
+/// Number of auxiliary phase dimensions per word in the rotor manifold.
+///
+/// The primary phasor stays 1-D for fast paths; rotor dims add independent
+/// circular coordinates so lexical capacity scales beyond single-circle
+/// collision limits. Empty rotor map = legacy d=1 model (backward compatible).
+pub const ROTOR_DIMS: usize = 16;
+
+/// Blend weight of rotor-dim divergence in ray-cast energy deltas.
+pub const ROTOR_DIM_WEIGHT: f64 = 0.03;
+
+// ── CONTRASTIVE NEGATIVE SAMPLING ───────────────────────────────────────────
+
+/// Number of negative samples drawn per training sentence.
+pub const NEGATIVE_SAMPLES_K: usize = 3;
+
+/// Repulsion magnitude (fraction of π) applied to negative samples.
+pub const NEGATIVE_REPULSION: f64 = 0.1;
+
+// ── META-PLASTICITY (HOMEOSTATIC SELF-TUNING) ───────────────────────────────
+
+/// Lower bound for the adaptive learning-rate multiplier.
+pub const META_LR_MULT_MIN: f64 = 0.4;
+
+/// Upper bound for the adaptive learning-rate multiplier.
+pub const META_LR_MULT_MAX: f64 = 1.6;
+
+/// Lower bound for the semantic/syntax mixing parameter.
+pub const META_MIX_MIN: f64 = 0.5;
+
+/// Upper bound for the semantic/syntax mixing parameter.
+pub const META_MIX_MAX: f64 = 0.9;
+
+// ── EPISODIC RECALL (MEMORY READ PATH) ─────────────────────────────────────
+
+/// Number of memo episodes recalled into generation context.
+pub const RECALL_TOP_K: usize = 4;
+
+/// Score boost multiplier for words present in recalled episodes.
+pub const RECALL_BOOST: f64 = 1.3;
+
+/// Phase bias strength toward recalled episode waves.
+pub const RECALL_PHASE_BIAS: f64 = 0.15;
+
+// ── CORRECTION JOURNAL (UNDOABLE NEGATIVE FEEDBACK) ─────────────────────────
+
+/// Maximum retained correction records for undo.
+pub const CORRECTION_JOURNAL_MAX: usize = 64;
+
+// ── AUTONOMOUS STUDY LOOP ───────────────────────────────────────────────────
+
+/// Default number of gap words self-studied per `study` invocation.
+pub const STUDY_BUDGET_DEFAULT: usize = 8;
+
+// ── PASSAGE GENERATION (SPIDER-NET DISCOURSE PLANNER) ───────────────────────
+
+/// Default number of sentences in a planned passage.
+pub const PASSAGE_SENTENCES_DEFAULT: usize = 4;
+
+/// Token cap per planned sentence.
+pub const PASSAGE_TOKENS_PER_SENTENCE: usize = 14;
+
+/// Max memo episodes used to build the discourse spider-net.
+pub const PASSAGE_MEMO_WINDOW: usize = 40;
+
+// ── EXECUTION VERIFIER ──────────────────────────────────────────────────────
+
+/// Bigram probability above which a word pair counts as supported.
+pub const VERIFY_SUPPORT_BIGRAM_P: f64 = 0.05;
+
+/// Rotor-dim resonance above which a word pair counts as supported.
+pub const VERIFY_SUPPORT_RESONANCE: f64 = 0.8;
+
+/// Tiny phase pull applied to supported pairs (reinforcement).
+pub const VERIFY_REINFORCE_PULL: f64 = 0.01;
+
+/// Tiny phase push applied to unsupported pairs (punishment).
+pub const VERIFY_REPULSE: f64 = 0.02;
+
