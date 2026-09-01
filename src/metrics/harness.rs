@@ -309,6 +309,37 @@ pub struct SweepRow {
     pub ppl: f64,
 }
 
+/// How the context vector is built from the prefix.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ContextKind {
+    /// Recency-weighted sum of the two preceding words. Order enters only as a
+    /// magnitude weight, so a swap barely moves the vector.
+    TwoWord,
+    /// The same two words, each rotated by its offset from the prediction point.
+    /// Position is carried in the phase, so a swap is a different context.
+    Bound,
+    /// Diagonal complex recurrence over the whole prefix, with a per-channel
+    /// timescale. Order enters through the rotation kernel.
+    Recurrent,
+}
+
+impl ContextKind {
+    pub fn label(self) -> &'static str {
+        match self {
+            ContextKind::TwoWord => "2-word",
+            ContextKind::Bound => "bound",
+            ContextKind::Recurrent => "recurrent",
+        }
+    }
+
+    pub fn is_recurrent(self) -> bool {
+        matches!(self, ContextKind::Recurrent)
+    }
+
+    pub const ALL: [ContextKind; 3] =
+        [ContextKind::TwoWord, ContextKind::Bound, ContextKind::Recurrent];
+}
+
 /// Channels used by the language model's phase back-off.
 ///
 /// The full torus is 64 channels; scoring every position against all of them is
@@ -317,7 +348,13 @@ pub struct SweepRow {
 const LM_CHANNELS: usize = 16;
 
 /// Inverse temperature of the phase back-off distribution.
-const PHASE_BETA: f64 = 1.0;
+///
+/// Scores are the *mean* cosine across channels, so they live in [-1, 1] and
+/// beta is a real temperature. With a per-channel sum the scale was ~16× wider,
+/// the softmax saturated, and every non-top candidate underflowed the
+/// probability floor — which made the phase back-off a constant and guaranteed
+/// it lost to a unigram at every mixing weight.
+const PHASE_BETA: f64 = 8.0;
 
 /// Absolute discount for Phiano's own n-gram tables.
 const DISCOUNT: f64 = 0.75;
@@ -354,7 +391,19 @@ pub struct PhianoLM<'a> {
     vecs: Vec<f64>,
     unigram: Vec<f64>,
     gamma: f64,
+    /// Target sector of every vocabulary item, on channel 0. Precomputed so the
+    /// readout lookup inside the scoring loop is one indexed read.
+    sectors: Vec<usize>,
+    /// The conditional non-linear correction, once one has been fitted.
+    readout: Option<crate::nonlinear::SectorReadout>,
 }
+
+/// Weight of the readout's bias against the raw coherence score.
+///
+/// Coherence dots live in [-1, 1] and the bias is clamped to [-2, 2]. Weight 1
+/// would let the table dominate the manifold outright, which would measure the
+/// table rather than the combination.
+const READOUT_WEIGHT: f64 = 0.25;
 
 impl<'a> PhianoLM<'a> {
     pub fn new(facet: &'a Facet, use_phase: bool) -> Self {
@@ -366,6 +415,7 @@ impl<'a> PhianoLM<'a> {
         let mut index = std::collections::HashMap::with_capacity(n);
         let mut vecs = Vec::with_capacity(n * 2 * LM_CHANNELS);
         let mut counts = Vec::with_capacity(n);
+        let mut sectors = Vec::with_capacity(n);
 
         for (w, p) in &facet.lexicon {
             index.insert(w.clone(), counts.len());
@@ -374,6 +424,7 @@ impl<'a> PhianoLM<'a> {
                 vecs.push(t.cos());
                 vecs.push(t.sin());
             }
+            sectors.push(crate::nonlinear::SectorReadout::target_sector(p.theta(0)));
             counts.push(p.count.max(1) as f64);
         }
 
@@ -383,7 +434,125 @@ impl<'a> PhianoLM<'a> {
             .map(|c| if total > 0.0 { c / total } else { 0.0 })
             .collect();
 
-        Self { facet, index, vecs, unigram, gamma }
+        Self { facet, index, vecs, unigram, gamma, sectors, readout: None }
+    }
+
+    /// Angles of a context vector, for keying the readout table.
+    fn ctx_angles(ctx: &[f64]) -> Vec<f64> {
+        (0..LM_CHANNELS)
+            .map(|k| ctx[2 * k + 1].atan2(ctx[2 * k]))
+            .collect()
+    }
+
+    /// Fits the conditional readout on training text.
+    ///
+    /// For every trigram position the context cell is rewarded for the sector
+    /// the true next word occupies and penalised for the sector of a frequency
+    /// sampled negative — the same contrastive shape the trainer uses, applied
+    /// to the discretised readout instead of to the phases.
+    ///
+    /// Deliberately fitted on `train` only. Fitting a lookup table on the same
+    /// text it is scored against would measure memorisation.
+    pub fn fit_readout(&mut self, sentences: &[String], lr: f64, recurrent: bool) {
+        self.fit_readout_shaped(
+            sentences,
+            lr,
+            recurrent,
+            crate::nonlinear::KEY_CHANNELS,
+            crate::nonlinear::KEY_SECTORS,
+        );
+    }
+
+    /// As [`PhianoLM::fit_readout`], at an explicit key resolution.
+    ///
+    /// The resolution is the whole trade-off. A fine key distinguishes more
+    /// contexts but misses on almost every held-out one, and a table that never
+    /// hits cannot change a held-out score however well it fits the training
+    /// split. Sweeping it is how that gets measured rather than assumed.
+    pub fn fit_readout_shaped(
+        &mut self,
+        sentences: &[String],
+        lr: f64,
+        recurrent: bool,
+        key_channels: usize,
+        key_sectors: usize,
+    ) {
+        let mut table = crate::nonlinear::SectorReadout::with_shape(key_channels, key_sectors);
+        let mut rng: u64 = 0x9E3779B97F4A7C15;
+        let v = self.unigram.len();
+        if v == 0 {
+            return;
+        }
+
+        for sentence in sentences {
+            let toks = Tokenizer::tokenize(sentence);
+            if toks.len() < 3 {
+                continue;
+            }
+            let mut h = vec![crate::wave::c64::new(0.0, 0.0); LM_CHANNELS];
+            if recurrent {
+                self.advance(&mut h, &toks[0]);
+                self.advance(&mut h, &toks[1]);
+            }
+            for i in 2..toks.len() {
+                let (a, b, c) = (&toks[i - 2], &toks[i - 1], &toks[i]);
+                let idx = match self.index.get(c) {
+                    Some(x) => *x,
+                    None => {
+                        if recurrent {
+                            self.advance(&mut h, c);
+                        }
+                        continue;
+                    }
+                };
+                let ctx = match recurrent {
+                    true => Self::state_to_ctx(&h),
+                    false => match self.context_vec(a, b) {
+                        Some(x) => x,
+                        None => {
+                            if recurrent {
+                                self.advance(&mut h, c);
+                            }
+                            continue;
+                        }
+                    },
+                };
+                // xorshift64*, so the negative sample is deterministic per run.
+                rng ^= rng << 13;
+                rng ^= rng >> 7;
+                rng ^= rng << 17;
+                let neg = (rng % v as u64) as usize;
+
+                let key = table.key(&Self::ctx_angles(&ctx));
+                table.learn(key, self.sectors[idx], self.sectors[neg], lr);
+
+                if recurrent {
+                    self.advance(&mut h, c);
+                }
+            }
+        }
+        self.readout = Some(table);
+    }
+
+    /// Number of context cells the fitted readout holds; 0 when there is none.
+    pub fn readout_cells(&self) -> usize {
+        self.readout.as_ref().map(|r| r.cells()).unwrap_or(0)
+    }
+
+    /// Fraction of readout lookups since the last reset that hit a fitted cell.
+    pub fn readout_coverage(&self) -> f64 {
+        self.readout.as_ref().map(|r| r.coverage()).unwrap_or(0.0)
+    }
+
+    pub fn reset_readout_coverage(&self) {
+        if let Some(r) = &self.readout {
+            r.reset_coverage();
+        }
+    }
+
+    /// Discards the fitted readout, so the same model can be scored both ways.
+    pub fn clear_readout(&mut self) {
+        self.readout = None;
     }
 
     /// Per-channel context direction from the two preceding words.
@@ -419,6 +588,87 @@ impl<'a> PhianoLM<'a> {
         Some(acc)
     }
 
+    /// Order-bound context vector.
+    ///
+    /// [`PhianoLM::context_vec`] weights the two context words 0.4 and 1.0 and
+    /// sums them. That is a recency weighting, not an encoding of order: the
+    /// two words land in the same superposition, and swapping them changes only
+    /// their magnitudes. "dog bites man" and "man bites dog" are near-identical
+    /// contexts under it.
+    ///
+    /// Here each word is *rotated* by its offset from the prediction point
+    /// before it is summed — position −2 by −2·φ, position −1 by −1·φ, where φ
+    /// is the golden angle. Rotation by an irrational multiple never collides
+    /// across positions, so the sum is a binding rather than a blur, and it is
+    /// relative to the target, so the encoding does not drift with sentence
+    /// length.
+    ///
+    /// This is the same construction [`crate::wave::Wave::sentence_channels`]
+    /// uses with `bound = true`. It was in the codebase and not in the scoring
+    /// path.
+    fn context_vec_bound(&self, a: &str, b: &str) -> Option<Vec<f64>> {
+        let mut acc = vec![0.0f64; 2 * LM_CHANNELS];
+        let mut any = false;
+        for (w, offset) in [(a, -2.0f64), (b, -1.0f64)] {
+            if let Some(p) = self.facet.lexicon.get(w) {
+                any = true;
+                let roll = offset * crate::config::GOLDEN_ANGLE;
+                for k in 0..LM_CHANNELS {
+                    let t = p.theta(k) + roll;
+                    acc[2 * k] += p.amplitude * t.cos();
+                    acc[2 * k + 1] += p.amplitude * t.sin();
+                }
+            }
+        }
+        if !any {
+            return None;
+        }
+        for k in 0..LM_CHANNELS {
+            let (x, y) = (acc[2 * k], acc[2 * k + 1]);
+            let n = x.hypot(y);
+            if n > 1e-12 {
+                acc[2 * k] = x / n;
+                acc[2 * k + 1] = y / n;
+            } else {
+                acc[2 * k] = 1.0;
+                acc[2 * k + 1] = 0.0;
+            }
+        }
+        Some(acc)
+    }
+
+    /// How much a context construction changes when the two words are swapped.
+    ///
+    /// Returns mean cosine similarity between `ctx(a, b)` and `ctx(b, a)` over
+    /// the given pairs, averaged across channels. 1.0 means order is not
+    /// represented at all; lower means a swap produces a different context.
+    ///
+    /// This is the diagnostic that separates "order is encoded" from "order is
+    /// weighted": a recency weight leaves the two words in the same
+    /// superposition and scores near 1.0 however the weights are set.
+    pub fn order_sensitivity(&self, pairs: &[(String, String)], kind: ContextKind) -> f64 {
+        let build = |a: &str, b: &str| match kind {
+            ContextKind::Bound => self.context_vec_bound(a, b),
+            _ => self.context_vec(a, b),
+        };
+        let mut sum = 0.0;
+        let mut n = 0usize;
+        for (a, b) in pairs {
+            if let (Some(x), Some(y)) = (build(a, b), build(b, a)) {
+                let mut c = 0.0;
+                for k in 0..LM_CHANNELS {
+                    c += x[2 * k] * y[2 * k] + x[2 * k + 1] * y[2 * k + 1];
+                }
+                sum += c / LM_CHANNELS as f64;
+                n += 1;
+            }
+        }
+        match n {
+            0 => 1.0,
+            _ => sum / n as f64,
+        }
+    }
+
     /// Softmax over the vocabulary of mean phase coherence with the context.
     /// Returns the probability assigned to `target_idx`.
     fn p_phase(&self, ctx: &[f64], target_idx: usize) -> f64 {
@@ -426,12 +676,21 @@ impl<'a> PhianoLM<'a> {
         let mut scores = Vec::with_capacity(v);
         let mut max = f64::NEG_INFINITY;
 
+        let rk = self
+            .readout
+            .as_ref()
+            .map(|r| r.key(&Self::ctx_angles(ctx)));
+
         for i in 0..v {
             let base = i * 2 * LM_CHANNELS;
             let mut dot = 0.0;
             for k in 0..LM_CHANNELS {
                 dot += self.vecs[base + 2 * k] * ctx[2 * k]
                     + self.vecs[base + 2 * k + 1] * ctx[2 * k + 1];
+            }
+            let mut dot = dot / LM_CHANNELS as f64;
+            if let (Some(r), Some(key)) = (&self.readout, rk) {
+                dot += READOUT_WEIGHT * r.bias_for(key, self.sectors[i]);
             }
             let s = PHASE_BETA * dot;
             if s > max {
@@ -570,7 +829,26 @@ impl<'a> PhianoLM<'a> {
                 dot += self.vecs[base + 2 * k] * ctx[2 * k]
                     + self.vecs[base + 2 * k + 1] * ctx[2 * k + 1];
             }
-            buf.push(dot);
+            // Mean cosine across channels, not the sum. A sum over 16 channels
+            // spans [-16, 16]; exponentiating a spread that wide saturates the
+            // softmax, every non-top candidate underflows the probability
+            // floor, and the phase distribution degenerates into a constant.
+            // A constant back-off can only ever lose to a unigram, which is how
+            // a saturated scale masquerades as "the manifold contributes
+            // nothing". Dividing by the channel count puts the score in
+            // [-1, 1] and hands the temperature back to beta, where it belongs.
+            buf.push(dot / LM_CHANNELS as f64);
+        }
+
+        // The non-linear correction, when fitted. It is added *after* the linear
+        // dot, and it depends on both the context cell and the candidate's
+        // sector — a bias depending on only one of the two could not reorder
+        // anything.
+        if let Some(r) = &self.readout {
+            let key = r.key(&Self::ctx_angles(ctx));
+            for (i, s) in buf.iter_mut().enumerate() {
+                *s += READOUT_WEIGHT * r.bias_for(key, self.sectors[i]);
+            }
         }
     }
 
@@ -582,6 +860,17 @@ impl<'a> PhianoLM<'a> {
     /// the same pass.
     pub fn sweep(&self, sentences: &[String], betas: &[f64], recurrent: bool) -> Vec<SweepRow> {
         self.sweep_against(sentences, betas, recurrent, false)
+    }
+
+    /// [`PhianoLM::sweep`] over an explicit context construction.
+    pub fn sweep_kind(
+        &self,
+        sentences: &[String],
+        betas: &[f64],
+        kind: ContextKind,
+        against_uniform: bool,
+    ) -> Vec<SweepRow> {
+        self.sweep_kinded(sentences, betas, kind, against_uniform)
     }
 
     /// As [`PhianoLM::sweep`], but the thing the phase distribution is mixed
@@ -598,6 +887,21 @@ impl<'a> PhianoLM<'a> {
         recurrent: bool,
         against_uniform: bool,
     ) -> Vec<SweepRow> {
+        let kind = match recurrent {
+            true => ContextKind::Recurrent,
+            false => ContextKind::TwoWord,
+        };
+        self.sweep_kinded(sentences, betas, kind, against_uniform)
+    }
+
+    fn sweep_kinded(
+        &self,
+        sentences: &[String],
+        betas: &[f64],
+        kind: ContextKind,
+        against_uniform: bool,
+    ) -> Vec<SweepRow> {
+        let recurrent = kind.is_recurrent();
         let floor = 1.0 / (self.unigram.len().max(1) as f64 * 100.0);
         let nb = betas.len();
         let ng = GAMMA_GRID.len();
@@ -632,9 +936,13 @@ impl<'a> PhianoLM<'a> {
                         }
                     };
 
-                    let ctx = match recurrent {
-                        true => Self::state_to_ctx(&h),
-                        false => match self.context_vec(a, b) {
+                    let ctx = match kind {
+                        ContextKind::Recurrent => Self::state_to_ctx(&h),
+                        ContextKind::Bound => match self.context_vec_bound(a, b) {
+                            Some(v) => v,
+                            None => vec![1.0, 0.0].repeat(LM_CHANNELS),
+                        },
+                        ContextKind::TwoWord => match self.context_vec(a, b) {
                             Some(v) => v,
                             None => vec![1.0, 0.0].repeat(LM_CHANNELS),
                         },
@@ -683,17 +991,15 @@ impl<'a> PhianoLM<'a> {
                 },
             );
 
-        let label = match (recurrent, against_uniform) {
-            (true, false) => "recurrent",
-            (false, false) => "2-word",
-            (true, true) => "recurrent/unif",
-            (false, true) => "2-word/unif",
+        let label = match against_uniform {
+            false => kind.label().to_string(),
+            true => format!("{}/unif", kind.label()),
         };
         let mut rows = Vec::with_capacity(nb * ng);
         for (bi, beta) in betas.iter().enumerate() {
             for (gi, g) in GAMMA_GRID.iter().enumerate() {
                 rows.push(SweepRow {
-                    context: label.to_string(),
+                    context: label.clone(),
                     beta: *beta,
                     gamma: *g,
                     ppl: match n {
@@ -800,6 +1106,78 @@ mod tests {
         let kn = KneserNey::train(&split.train);
         let ppl = kn.perplexity(&split.valid);
         assert!(ppl.is_finite() && ppl > 1.0);
+    }
+
+    /// The phase distribution must be a distribution, not a constant.
+    ///
+    /// This guards a bug that invalidated every γ sweep before it was found:
+    /// the per-candidate score was a *sum* over 16 channels, spanning ~32 units,
+    /// so exponentiating it underflowed the probability floor for every
+    /// candidate but the top one. `p_phase` then returned the same floor value
+    /// at nearly every position — a constant back-off, which loses to a unigram
+    /// by construction at every γ. The measured conclusion "γ* = 0, the manifold
+    /// contributes nothing" was partly a statement about the score scale.
+    #[test]
+    fn test_phase_distribution_is_not_saturated() {
+        let split = Harness::split(toy_corpus(), 42);
+        let (facet, _) = Harness::train_and_measure(&split, &Trainer::new(0.05), 3, true);
+        let lm = PhianoLM::with_gamma(&facet, 1.0);
+
+        let mut ctx_buf = Vec::new();
+        let mut spread: f64 = 0.0;
+        for sentence in &split.valid {
+            let toks = Tokenizer::tokenize(sentence);
+            for w in toks.windows(3) {
+                if let Some(ctx) = lm.context_vec(&w[0], &w[1]) {
+                    lm.scores(&ctx, &mut ctx_buf);
+                    let hi = ctx_buf.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+                    let lo = ctx_buf.iter().cloned().fold(f64::INFINITY, f64::min);
+                    spread = spread.max(hi - lo);
+                }
+            }
+        }
+        assert!(spread > 0.0, "scores are identical for every candidate");
+        assert!(
+            spread <= 2.0 + 1e-9,
+            "scores must be a mean cosine in [-1, 1]; spread {} means the \
+             softmax will saturate and the phase back-off will degenerate \
+             into a constant",
+            spread
+        );
+    }
+
+    /// The readout must change scoring, and must change it only where the
+    /// phase term is actually used.
+    ///
+    /// γ = 0 removes the phase back-off entirely, so a readout that moved the
+    /// γ = 0 perplexity would be leaking into the n-gram path and every
+    /// on-versus-off comparison built on it would be void.
+    #[test]
+    fn test_readout_changes_phase_scoring_only() {
+        let split = Harness::split(toy_corpus(), 42);
+        let (facet, _) = Harness::train_and_measure(&split, &Trainer::new(0.05), 3, true);
+
+        let mut lm = PhianoLM::with_gamma(&facet, 1.0);
+        let before = lm.sweep(&split.valid, &[1.0], false);
+        lm.fit_readout(&split.train, 0.5, false);
+        assert!(lm.readout_cells() > 0, "readout fitted no cells");
+        let after = lm.sweep(&split.valid, &[1.0], false);
+
+        let at = |rows: &[SweepRow], g: f64| {
+            rows.iter().find(|r| (r.gamma - g).abs() < 1e-9).map(|r| r.ppl).unwrap()
+        };
+
+        assert!(
+            (at(&before, 0.0) - at(&after, 0.0)).abs() < 1e-9,
+            "readout leaked into the γ=0 path: {} vs {}",
+            at(&before, 0.0),
+            at(&after, 0.0)
+        );
+        assert!(
+            (at(&before, 1.0) - at(&after, 1.0)).abs() > 1e-9,
+            "readout was fitted but changed nothing at γ=1 — a bias that cannot \
+             reorder candidates is the bug this table was rewritten to fix"
+        );
     }
 
     /// Contrastive training must preserve more phase dispersion than

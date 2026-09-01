@@ -3,6 +3,7 @@ mod chunker;
 mod cognitive;
 mod command;
 mod compose;
+mod conception;
 mod config;
 mod correction;
 mod curriculum;

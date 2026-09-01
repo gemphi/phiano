@@ -1,0 +1,261 @@
+//! Do definitions build concepts? Measured, one change at a time.
+//!
+//! `cargo run --release --bin conception -- [corpus] [chunks] [rounds]`
+//!
+//! Definition grounding is already in the codebase and already measured: it
+//! halves phase dispersion and improves no relation metric. `Conception`
+//! changes three things about how a definition reaches the manifold — every
+//! channel instead of one, order carried in the phase instead of a centroid,
+//! and a mutual pull instead of a one-way one. Three changes need three
+//! controls, so this runs five conditions on the same trained facet:
+//!
+//! | condition           | channels | order | mutual |
+//! |---------------------|----------|-------|--------|
+//! | baseline            | –        | –     | –      |
+//! | grounder (existing) | 1        | no    | no     |
+//! | compose, unbound    | 64       | no    | no     |
+//! | compose             | 64       | yes   | no     |
+//! | compose + reinforce | 64       | yes   | yes    |
+//!
+//! Each row differs from the one above it in exactly one property, so a gain
+//! is attributable. The relation benchmark is the target metric — whether
+//! *grandmother* sits near *grandfather* the way *woman* sits near *man* — with
+//! phase dispersion and held-out perplexity logged beside it, because a change
+//! that improves relations while collapsing the manifold or wrecking prediction
+//! has not improved the model.
+//!
+//! The definition source is any [`Groundable`]. Here it is the local Webster's
+//! chunk store; `ApiSource` supplies the same shape from an online dictionary
+//! where the network allows it, and nothing below changes.
+
+use phiano::chunker::ChunkStore;
+use phiano::cognitive::grounding::DefinitionGrounder;
+use phiano::conception::{Conception, DefinitionGraph, BETA_STRONG, BETA_WEAK, HEAD_STEP, REINFORCE};
+use phiano::config::LEARNING_RATE;
+use phiano::facet::Facet;
+use phiano::metrics::harness::Harness;
+use phiano::metrics::relation::RelationBenchmark;
+use phiano::tokenizer::Tokenizer;
+use phiano::trainer::Trainer;
+
+struct Row {
+    name: String,
+    pair_vs_random: f64,
+    neighbour_top10: f64,
+    analogy_top1: f64,
+    analogy_mrr: f64,
+    dispersion: f64,
+    valid_ppl: f64,
+    usable_pairs: usize,
+}
+
+fn measure(name: &str, facet: &Facet, valid: &[String]) -> Row {
+    let families = RelationBenchmark::default_families();
+    let r = RelationBenchmark::evaluate(facet, &families);
+    Row {
+        name: name.to_string(),
+        usable_pairs: r.families.iter().map(|f| f.usable_pairs).sum(),
+        pair_vs_random: r.overall_pair_vs_random,
+        neighbour_top10: r
+            .families
+            .iter()
+            .map(|f| f.neighbour_top10)
+            .sum::<f64>()
+            / r.families.len().max(1) as f64,
+        analogy_top1: r.overall_analogy_top1,
+        analogy_mrr: r.families.iter().map(|f| f.analogy_mrr).sum::<f64>()
+            / r.families.len().max(1) as f64,
+        dispersion: facet.phase_dispersion(),
+        valid_ppl: Harness::perplexity_no_phase(facet, valid),
+    }
+}
+
+fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let corpus_path = args
+        .get(1)
+        .cloned()
+        .unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+    let chunks_path = args.get(2).cloned().unwrap_or_else(|| "data/chunks".to_string());
+    let rounds: usize = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(3);
+
+    let raw = match std::fs::read_to_string(&corpus_path) {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("could not read {}: {}", corpus_path, e);
+            std::process::exit(1);
+        }
+    };
+    let corpus: Vec<String> = Tokenizer::split_sentences(&raw)
+        .into_iter()
+        .map(|s| s.split_whitespace().collect::<Vec<_>>().join(" "))
+        .filter(|s| Tokenizer::tokenize(s).len() >= 4)
+        .collect();
+    let split = Harness::split(corpus, 42);
+
+    // Ranking-only training, because it is the regime the objective experiment
+    // measured as 27x better at putting relational structure in the manifold.
+    // Testing a composition rule on top of the weaker objective would confound
+    // the two.
+    let trainer = Trainer::new(LEARNING_RATE);
+    let base = Harness::train_ranking_only(&split, &trainer, 4);
+    println!(
+        "trained: {} sentences, vocabulary {}",
+        split.train.len(),
+        base.vocabulary_size()
+    );
+
+    let store = ChunkStore::new(&chunks_path);
+    let all = store.load_all();
+    // Only entries whose headword the corpus actually contains can move
+    // anything, and only those are counted, so "entries" is not inflated by the
+    // dictionary's size.
+    let entries: Vec<(String, String)> = all
+        .into_iter()
+        .filter(|(w, _)| base.lexicon.contains_key(w))
+        .collect();
+    println!("definitions covering the vocabulary: {}", entries.len());
+    if entries.is_empty() {
+        eprintln!("no definitions overlap the trained vocabulary — nothing to compose");
+        std::process::exit(1);
+    }
+
+    let mut rows = vec![measure("baseline", &base, &split.valid)];
+    if rows[0].usable_pairs == 0 {
+        eprintln!(
+            "WARNING: the relation benchmark has 0 usable pairs on this vocabulary. \
+             Every relation number below is vacuous — train on a corpus that \
+             contains the relation words."
+        );
+    }
+
+    {
+        let mut f = base.clone();
+        DefinitionGrounder::ground_from(&mut f, &store);
+        rows.push(measure("grounder (1 channel, centroid)", &f, &split.valid));
+    }
+
+    // The 2x2 that separates two things the first run conflated: whether the
+    // composition is *bound* by position at all, and whether the position a word
+    // gets is *canonical* (its rank in the sorted definer set) or an artefact of
+    // how the lexicographer phrased the entry.
+    //
+    // Sorting is not "order removed". Sorting makes position a deterministic
+    // function of the definer set, so the same set composes to the same target
+    // however it was written down. Genuinely removing order means not rotating.
+    let sorted: Vec<(String, String)> = entries
+        .iter()
+        .map(|(w, d)| {
+            let mut t: Vec<String> = Tokenizer::tokenize(d);
+            t.sort();
+            t.dedup();
+            (w.clone(), t.join(" "))
+        })
+        .collect();
+
+    for (label, src, bind) in [
+        ("compose: bag, no rotation", &entries, false),
+        ("compose: bound, as written", &entries, true),
+        ("compose: bound, canonical", &sorted, true),
+    ] {
+        let mut f = base.clone();
+        Conception::compose_all_bound(&mut f, src, rounds, HEAD_STEP, 0.0, bind);
+        rows.push(measure(label, &f, &split.valid));
+    }
+
+    // Reinforcement, added to each composition rule, so its contribution is
+    // read against that rule rather than against the baseline.
+    for (label, src, bind) in [
+        ("  + reinforce (bag)", &entries, false),
+        ("  + reinforce (canonical)", &sorted, true),
+    ] {
+        let mut f = base.clone();
+        let r = Conception::compose_all_bound(&mut f, src, rounds, HEAD_STEP, REINFORCE, bind);
+        println!(
+            "  [{}] {} heads, {} definers reinforced",
+            label.trim(),
+            r.heads_moved,
+            r.definers_reinforced
+        );
+        rows.push(measure(label, &f, &split.valid));
+    }
+
+    // Dict2vec's split: a definitional pair is *strong* when each word occurs
+    // in the other's definition and *weak* when the membership is one-way. The
+    // flat rule above pulls both at the same rate, which gives a passing
+    // mention the same weight as a reciprocal definition.
+    let graph = DefinitionGraph::build(&entries);
+    let (n_strong, n_weak) = graph.counts();
+    println!(
+        "definition graph: {} strong pairs, {} weak ({:.1}:1)",
+        n_strong,
+        n_weak,
+        n_weak as f64 / n_strong.max(1) as f64
+    );
+    {
+        let mut f = base.clone();
+        Conception::compose_graded(
+            &mut f,
+            &entries,
+            rounds,
+            HEAD_STEP,
+            BETA_STRONG,
+            BETA_WEAK,
+            false,
+            Some(&graph),
+        );
+        rows.push(measure("  + strong/weak (dict2vec)", &f, &split.valid));
+    }
+    {
+        // Control: the same two rates applied without the reciprocity test, so
+        // any gain above this row is the *split* rather than the rates.
+        let mut f = base.clone();
+        Conception::compose_graded(
+            &mut f,
+            &entries,
+            rounds,
+            HEAD_STEP,
+            BETA_STRONG,
+            BETA_STRONG,
+            false,
+            None,
+        );
+        rows.push(measure("  control: flat at BETA_STRONG", &f, &split.valid));
+    }
+
+    println!("\n=== definitions as compositions ===");
+    println!("usable relation pairs: {}", rows[0].usable_pairs);
+    println!(
+        "{:<32} {:>9} {:>9} {:>9} {:>9} {:>7} {:>9}",
+        "condition", "pair/rnd", "nbr@10", "anlg@1", "anlg MRR", "disp", "valid ppl"
+    );
+    for r in &rows {
+        println!(
+            "{:<32} {:>8.1}% {:>8.1}% {:>8.2}% {:>9.4} {:>7.3} {:>9.2}",
+            r.name,
+            r.pair_vs_random * 100.0,
+            r.neighbour_top10 * 100.0,
+            r.analogy_top1 * 100.0,
+            r.analogy_mrr,
+            r.dispersion,
+            r.valid_ppl
+        );
+    }
+
+    println!("\n--- reading ---");
+    let b = &rows[0];
+    for r in rows.iter().skip(1) {
+        println!(
+            "{:<32} pair {:+.1}pp, nbr@10 {:+.1}pp, MRR {:+.4}, dispersion {:+.3}",
+            r.name,
+            (r.pair_vs_random - b.pair_vs_random) * 100.0,
+            (r.neighbour_top10 - b.neighbour_top10) * 100.0,
+            r.analogy_mrr - b.analogy_mrr,
+            r.dispersion - b.dispersion
+        );
+    }
+    println!(
+        "\nvalid perplexity is the no-phase path and must not move: {:.2} throughout.",
+        b.valid_ppl
+    );
+}

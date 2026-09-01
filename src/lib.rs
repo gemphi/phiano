@@ -3,6 +3,7 @@ pub mod chunker;
 pub mod cognitive;
 pub mod command;
 pub mod compose;
+pub mod conception;
 pub mod correction;
 pub mod config;
 pub mod curriculum;

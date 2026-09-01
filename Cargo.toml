@@ -53,6 +53,18 @@ name = "forgetting"
 path = "src/bin/forgetting.rs"
 
 [[bin]]
+name = "readout"
+path = "src/bin/readout.rs"
+
+[[bin]]
+name = "conception"
+path = "src/bin/conception.rs"
+
+[[bin]]
+name = "order"
+path = "src/bin/order.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

@@ -229,6 +229,38 @@ impl Facet {
         self.sample_pool.get((r % self.sample_pool.len() as u64) as usize)
     }
 
+    /// A negative sample that is not definitionally related to `target`.
+    ///
+    /// Uniform negative sampling will sometimes draw a word from the target's
+    /// own definition, and the contrastive update then pushes apart exactly the
+    /// pair the dictionary says belongs together — the training signal working
+    /// against itself. Dict2vec (Tissier et al., EMNLP 2017) calls filtering
+    /// these out *controlled negative sampling* and measures it discarding
+    /// around 2% of drawn negatives; the count is small, and every one of them
+    /// was an update in the wrong direction.
+    ///
+    /// Falls back to the unfiltered draw after `tries` attempts, so a word whose
+    /// definition covers much of the pool cannot stall training.
+    pub fn sample_negative_controlled(
+        &self,
+        r: u64,
+        target: &str,
+        graph: &crate::conception::DefinitionGraph,
+        tries: u32,
+    ) -> Option<&String> {
+        let mut x = r | 1;
+        for _ in 0..tries {
+            let cand = self.sample_negative(x)?;
+            if !graph.is_related(target, cand) {
+                return Some(cand);
+            }
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+        }
+        self.sample_negative(r)
+    }
+
     /// Mean phase coherence between two words across all channels.
     pub fn resonance(&self, word_a: &str, word_b: &str) -> f64 {
         match (self.lexicon.get(word_a), self.lexicon.get(word_b)) {
