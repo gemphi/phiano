@@ -19,6 +19,7 @@ pub mod layers;
 pub mod lifelong;
 pub mod memory;
 pub mod metrics;
+pub mod nonlinear;
 pub mod model;
 pub mod oscillator;
 pub mod phase_flow;

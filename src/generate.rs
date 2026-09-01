@@ -120,6 +120,17 @@ impl ContextWaveBuffer {
     }
 }
 
+/// One partial sequence in a beam.
+#[derive(Clone)]
+struct Hypothesis {
+    tokens: Vec<String>,
+    prev: Option<String>,
+    last: Option<String>,
+    phase: f64,
+    score: f64,
+    recent: std::collections::HashSet<String>,
+}
+
 /// Generator - phase-guided sequence sampler.
 pub struct Generator {
     pub max_tokens: usize,
@@ -213,6 +224,106 @@ impl Generator {
         let formatted = Self::format_output(&tokens);
         context_buffer.push_turn(facet, &formatted);
         (formatted, flow)
+    }
+
+    /// Beam-search decode.
+    ///
+    /// Greedy decoding commits to the highest-scoring token at every step and
+    /// cannot recover from a choice that looked good locally and stranded the
+    /// sequence. A beam keeps `width` hypotheses alive and lets a later token
+    /// justify an earlier one. `src/synthesis/search.rs` already implemented
+    /// beam search for programs; the decoder never used the idea.
+    ///
+    /// Returns the highest-scoring completed hypothesis.
+    pub fn decode_beam(
+        &self,
+        facet: &Facet,
+        context_buffer: &mut ContextWaveBuffer,
+        prompt: &str,
+        width: usize,
+    ) -> Vec<String> {
+        context_buffer.push_turn(facet, prompt);
+        let flow = PhaseFlow::build(facet, prompt);
+
+        let prompt_tokens = Tokenizer::tokenize(prompt);
+        let seed = Hypothesis {
+            tokens: Vec::new(),
+            prev: match prompt_tokens.len() >= 2 {
+                true => Some(prompt_tokens[prompt_tokens.len() - 2].clone()),
+                false => None,
+            },
+            last: prompt_tokens.last().cloned(),
+            phase: context_buffer.context_phase(),
+            score: 0.0,
+            recent: std::collections::HashSet::new(),
+        };
+
+        let mut beam = vec![seed];
+        let width = width.max(1);
+
+        for _ in 0..self.max_tokens.min(20) {
+            let mut next: Vec<Hypothesis> = Vec::new();
+
+            for h in &beam {
+                let target = (h.phase + SYNTACTIC_MOMENTUM_DEFAULT).rem_euclid(TWO_PI);
+
+                let mut cands: Vec<(String, u32)> = Vec::new();
+                if let (Some(a), Some(b)) = (&h.prev, &h.last) {
+                    cands = facet.trigram_candidates(a, b);
+                }
+                if cands.is_empty() {
+                    if let Some(b) = &h.last {
+                        cands = facet.next_word_candidates(b);
+                    }
+                }
+                if cands.is_empty() {
+                    continue;
+                }
+                cands.sort_by(|x, y| y.1.cmp(&x.1));
+                cands.truncate(16);
+
+                let scored = self.score_candidates(facet, &flow, &cands, &h.recent, target);
+                let mut ranked = scored;
+                ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+                for (word, sc) in ranked.into_iter().take(width) {
+                    if sc <= 0.0 {
+                        continue;
+                    }
+                    let mut t = h.tokens.clone();
+                    t.push(word.clone());
+                    let mut r = h.recent.clone();
+                    r.insert(word.clone());
+                    let phase = facet
+                        .lexicon
+                        .get(&word)
+                        .map(|p| p.theta(0))
+                        .unwrap_or(h.phase);
+                    next.push(Hypothesis {
+                        tokens: t,
+                        prev: h.last.clone(),
+                        last: Some(word),
+                        phase,
+                        // Length-normalised, so long hypotheses are not
+                        // penalised purely for being long.
+                        score: h.score + sc.ln_1p(),
+                        recent: r,
+                    });
+                }
+            }
+
+            if next.is_empty() {
+                break;
+            }
+            next.sort_by(|a, b| {
+                let (an, bn) = (a.score / a.tokens.len() as f64, b.score / b.tokens.len() as f64);
+                bn.partial_cmp(&an).unwrap_or(std::cmp::Ordering::Equal)
+            });
+            next.truncate(width);
+            beam = next;
+        }
+
+        beam.into_iter().next().map(|h| h.tokens).unwrap_or_default()
     }
 
     /// Token-level decode used by generate and SSE streaming.
@@ -364,6 +475,20 @@ impl Generator {
         recent: &std::collections::HashSet<String>,
         target_phase: f64,
     ) -> Option<String> {
+        let scored = self.score_candidates(facet, flow, candidates, recent, target_phase);
+        let values: Vec<f64> = scored.iter().map(|(_, s)| *s).collect();
+        self.sample_index(&values).map(|i| scored[i].0.clone())
+    }
+
+    /// Scores every admissible candidate without choosing one.
+    fn score_candidates(
+        &self,
+        facet: &Facet,
+        flow: &PhaseFlow,
+        candidates: &[(String, u32)],
+        recent: &std::collections::HashSet<String>,
+        target_phase: f64,
+    ) -> Vec<(String, f64)> {
         let mut scored: Vec<(String, f64)> = Vec::with_capacity(candidates.len());
         for (word, count) in candidates {
             if !Self::speakable(word) {
@@ -385,9 +510,7 @@ impl Generator {
                 capped * (0.35 + 0.25 * phase_align + 0.40 * resonance) * content * repeat_penalty;
             scored.push((word.clone(), score));
         }
-
-        let values: Vec<f64> = scored.iter().map(|(_, s)| *s).collect();
-        self.sample_index(&values).map(|i| scored[i].0.clone())
+        scored
     }
 
     /// Attention-reranked candidate selection.

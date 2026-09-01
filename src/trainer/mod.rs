@@ -370,6 +370,23 @@ impl Trainer {
         tokens.len()
     }
 
+    /// Rotates one token toward a target phase, scaled by `weight`.
+    ///
+    /// The primitive credit assignment needs: reinforce a word in proportion to
+    /// how much it contributed, rather than reinforcing every word in a winning
+    /// output equally.
+    pub fn nudge_token(&self, facet: &mut Facet, word: &str, target: f64, weight: f64) -> bool {
+        match facet.lexicon.get_mut(word) {
+            Some(p) => {
+                let d = (target - p.theta(0)).sin();
+                p.nudge(0, self.learning_rate * weight * d);
+                p.sync_phase();
+                true
+            }
+            None => false,
+        }
+    }
+
     /// Weight of a token when computing a sentence centroid.
     #[inline]
     fn token_weight(token: &str) -> f64 {

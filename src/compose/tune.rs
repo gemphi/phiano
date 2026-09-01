@@ -38,6 +38,9 @@ pub struct CompositionTuner {
     pub discarder: Discarder,
     /// Cross-round memory of words from winning sectors (Huberman's killer heuristic).
     pub killers: KillerWords,
+    /// Reject a round whose winner does not beat the previous round's under a
+    /// frozen referee (Samuel's Alpha/Beta). Rounds rejected so far.
+    pub rejected_rounds: usize,
 }
 
 impl CompositionTuner {
@@ -51,6 +54,7 @@ impl CompositionTuner {
             evaluator: ComposerEvaluator::new(),
             discarder: Discarder::new(),
             killers: KillerWords::new(),
+            rejected_rounds: 0,
         }
     }
 
@@ -105,13 +109,42 @@ impl CompositionTuner {
                 );
             }
 
+            // Alpha/Beta: freeze the manifold before the round trains on it, so
+            // the round can be judged by something it has not altered.
+            let beta = facet.clone();
+            let beta_best = all_scores
+                .first()
+                .map(|s| ComposerEvaluator::referee_score(&beta, prompt, &s.text))
+                .unwrap_or(0.0);
+
             // Phase 3: GUARD + SELECT + REINFORCE + PENALISE
             let result = self.discarder.discard_and_train(facet, trainer, &all_scores);
             self.discarder.print_summary(&result);
 
-            // Remember what won, for next round's candidate ordering.
-            for text in &result.trained_texts {
-                self.killers.record_winner(text);
+            // Judge the round against the frozen manifold. If training on this
+            // round's winners did not produce a better composition by a referee
+            // it cannot influence, reject the round and restore Beta - which is
+            // exactly how Samuel decided whether Alpha's changes were kept.
+            let alpha_flows = RiverFlow::generate_variations(facet, prompt, self.depth);
+            let alpha_scores =
+                self.evaluator.evaluate_variations(facet, &alpha_flows, &self.killers);
+            let alpha_best = alpha_scores
+                .first()
+                .map(|s| ComposerEvaluator::referee_score(&beta, prompt, &s.text))
+                .unwrap_or(0.0);
+
+            if alpha_best < beta_best {
+                *facet = beta;
+                self.rejected_rounds += 1;
+                println!(
+                    "  [reject] round {} rolled back: referee {:.4} < {:.4}",
+                    round + 1, alpha_best, beta_best
+                );
+            } else {
+                // Remember what won, for next round's candidate ordering.
+                for text in &result.trained_texts {
+                    self.killers.record_winner(text);
+                }
             }
 
             // Phase 4: CONVERGE - check if we're done. Degeneracy is reported

@@ -19,6 +19,7 @@ mod layers;
 mod lifelong;
 mod memory;
 mod metrics;
+mod nonlinear;
 mod model;
 mod oscillator;
 mod phase_flow;

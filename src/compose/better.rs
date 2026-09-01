@@ -127,6 +127,25 @@ impl Evaluator {
         }
     }
 
+    /// Scores a composition using a **fixed** facet as the referee.
+    ///
+    /// Samuel's Alpha never promoted itself: "better" meant winning games
+    /// against a frozen Beta, so the evaluator being trained was never allowed
+    /// to referee its own promotion. Scoring a round's output against the
+    /// phases as they stood *before* that round is the same discipline — the
+    /// prompt and the frozen manifold are both outside the thing being judged.
+    pub fn referee_score(frozen: &Facet, prompt: &str, text: &str) -> f64 {
+        let tokens = Tokenizer::tokenize(text);
+        if Tokenizer::content_words(text).len() < 3 {
+            return 0.0;
+        }
+        let stage = Self::stage(frozen, prompt, text) as f64;
+        let align = Self::alignment(frozen, prompt, &tokens);
+        // Stage dominates, alignment breaks ties — the same lexicographic order
+        // the tournament itself uses.
+        stage + align
+    }
+
     /// Cosine alignment between the prompt wave and a composition's wave,
     /// mapped from [-1, 1] to [0, 1].
     fn alignment(facet: &Facet, prompt: &str, tokens: &[String]) -> f64 {

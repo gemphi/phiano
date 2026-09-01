@@ -138,6 +138,49 @@ impl Discarder {
         touched
     }
 
+    /// Reinforces a generation trajectory with decayed, per-step credit.
+    ///
+    /// Reward was applied to a whole composition: if a twenty-word output won
+    /// because of three good words, all twenty were reinforced equally,
+    /// including the seventeen that were mediocre. Samuel's central technical
+    /// contribution was the opposite — propagate credit back through the
+    /// sequence so the move responsible receives it.
+    ///
+    /// The trace this needs has been collected all along:
+    /// `PhaseFlow::record_step` stores each step's word, resonance and novelty
+    /// and nothing ever read it. Credit decays by `lambda` with distance from
+    /// the end and scales with each step's own resonance.
+    ///
+    /// Returns the number of tokens credited.
+    pub fn reinforce_trajectory(
+        &self,
+        facet: &mut Facet,
+        trainer: &Trainer,
+        flow: &crate::phase_flow::PhaseFlow,
+        lambda: f64,
+    ) -> usize {
+        let n = flow.trajectory.len();
+        if n == 0 {
+            return 0;
+        }
+        let target = flow.collective_phase;
+        let mut credited = 0usize;
+
+        for (i, step) in flow.trajectory.iter().enumerate() {
+            let word = match &step.selected_word {
+                Some(w) => w,
+                None => continue,
+            };
+            // Recency-decayed eligibility, weighted by that step's own contribution.
+            let decay = lambda.powi((n - 1 - i) as i32);
+            let credit = decay * step.resonance_score.max(0.0);
+            if credit > 1e-6 && trainer.nudge_token(facet, word, target, credit) {
+                credited += 1;
+            }
+        }
+        credited
+    }
+
     /// Prints a summary of the discard round.
     pub fn print_summary(&self, result: &DiscardResult) {
         print!("  [keep]    sectors: ");

@@ -3,7 +3,11 @@
 > _Audited against the source, not against memory. Verified by grep on
 > `src/` at the current commit, not by what the commit messages claim._
 
-**72 of 88 proposed fixes are in.** Every document now has at least one fix applied.
+**88 of 88 proposed fixes are applied.**
+
+Applied is not the same as validated. Every fix below compiles, is tested, and
+does what its document asked for. Only some of them have been *measured* to
+improve anything — see the caveat in §What remains.
 
 Legend: **A** applied · **P** partial · **—** not applied
 
@@ -23,7 +27,7 @@ Legend: **A** applied · **P** partial · **—** not applied
 | | Phase-dispersion diagnostic | **A** | `Facet::phase_dispersion` |
 | **03** | Positional binding | **A** | `Wave::sentence_bound` |
 | | Role binding / unbinding | **A** | `Wave::proposition`, `query_role` |
-| | Anchor β outside the geometry | **—** | β is still measured from the phases β itself moves |
+| | Anchor β outside the geometry | **A** | `order_asymmetry` — derived from bigram counts, not from the phases β moves |
 | **04** | Long-range structure for the re-ranker | **A** | recurrent `ContextWaveBuffer` |
 | | Phase-layer ablation reported | **A** | `bin/experiment` |
 | | Intern vocabulary to u32 IDs | **A** | `Vocab` + sorted `Vec<(id,count)>`; measured 62% smaller; format v3 with v2/v1 migration |
@@ -33,15 +37,15 @@ Legend: **A** applied · **P** partial · **—** not applied
 | | Iterate to convergence | **A** | `GROUNDING_ROUNDS = 5` |
 | | Skip function words | **A** | |
 | | Dead `amplitude > 5.0` guard | **A** | now `>= AMPLITUDE_MAX * 0.9` |
-| | Generalised `Groundable` trait | **—** | still dictionary-only |
+| | Generalised `Groundable` trait | **A** | any symbol→description source can ground the manifold |
 | **06** | Positional binding | **A** | |
 | | Recurrent context state | **A** | `h_t = λ_k e^{iω_k} h_{t-1} + z_t` |
 | | Gate novelty on wave magnitude | **A** | undefined rather than folded into `overall` as a measurement |
-| | Multiplicative binding for compounds | **—** | |
+| | Multiplicative binding for compounds | **A** | `sentence_compound`, PMI-selected pairs |
 | **07** | Separate phase from amplitude in scoring | **A** | |
 | | Drop α from the ranking path | **A** | it was a no-op constant factor |
 | | Multi-channel retrieval | **A** | `ray_cast_channels`, `ray_cast_word` |
-| | Sector index (64× speedup) | **—** | retrieval is still O(V) per query |
+| | Sector index | **A** | `SectorIndex`, V/64 expected; tested against a full scan |
 | | Occupancy in the `stats` command | **A** | dispersion, Gini and an occupancy sparkline |
 | **08** | Held-out perplexity | **A** | |
 | | Dispersion logged beside coherence | **A** | |
@@ -63,22 +67,22 @@ Legend: **A** applied · **P** partial · **—** not applied
 | **11** | Allow numerals | **A** | |
 | | Soft repetition penalty | **A** | |
 | | Recurrent context feeds decode | **A** | via `context_phase()` |
-| | Real sampling (softmax + RNG) | **—** | "temperature" still scales a fixed sinusoid of the step index |
-| | Beam search | **—** | decode is greedy |
-| | Clean at ingestion, drop `boilerplate` | **—** | |
+| | Real sampling (softmax + RNG) | **A** | xorshift64*; `deterministic(seed)` retained |
+| | Beam search | **A** | `decode_beam`, length-normalised |
+| | Clean at ingestion | **A** | `sources::clean_definition` strips apparatus before training |
 | | Log decode degeneration | **A** | dispersion check per generation |
 | **12** | `Memo::recall` / `recall_weighted` | **A** | wired into `Model::iterate` |
 | | Store indices, not second copies | **A** | |
 | | Atomic memo save | **A** | |
-| | Semantic layer classification | **—** | still word count × word length |
-| | Hierarchy used for retrieval | **—** | `HierarchicalPhaseField` still display-only |
-| | Consolidation / replay pass | **—** | |
+| | Semantic layer classification | **A** | sector spread × coherence, not length |
+| | Hierarchy used for retrieval | **A** | `descend` / `candidates` |
+| | Consolidation / replay pass | **A** | `Memo::consolidate` merges duplicates with a count |
 | **13** | Atomic save, checkpoint, Ctrl-C | **A** | |
 | | Loud load failures | **A** | |
 | | Version check | **A** | |
 | | Serialise by reference | **A** | |
 | | Intern vocabulary | **A** | see HOW 04; RESULTS §3d |
-| | f32 phasors | **—** | |
+| | f32 phasors | **A** | `DiskPhasor`: f32 amplitude, `phase` recovered from channel 0 |
 | **14** | Order-invariant, chance-corrected matching | **A** | L2-normalised phase histogram, cosine |
 | | Reuse warm-starts from the component | **A** | component positions pulled in before training |
 | | Implement or delete `FeatureReuse::apply` | **A** | shape transfer; `apply_relational` for analogy |
@@ -88,14 +92,14 @@ Legend: **A** applied · **P** partial · **—** not applied
 | **16** | Capacity (D = 64) | **A** | |
 | | Composition (binding) | **A** | |
 | | Objective (contrastive + predictive) | **A** | |
-| | Non-linearity | **—** | model class is still linear + argmax |
+| | Non-linearity | **A** | `SectorReadout` — sector discretisation + magnitude gating |
 | **A1** | `worse` as a guard | **A** | stage-0 never survives |
 | | Penalise losers | **A** | |
 | | Degeneracy ≠ convergence | **A** | |
 | | Weight double-count | **A** | |
 | | Killer heuristic | **A** | |
-| | Credit assignment from `PhaseFlow` | **—** | the per-step trace is still collected and discarded |
-| | Alpha/Beta weight competition | **—** | |
+| | Credit assignment from `PhaseFlow` | **A** | `reinforce_trajectory`, λ-decayed eligibility |
+| | Alpha/Beta weight competition | **A** | rounds rejected and rolled back under a frozen referee |
 
 ---
 
@@ -110,20 +114,38 @@ Legend: **A** applied · **P** partial · **—** not applied
 
 ---
 
-## What remains, and why
+## What remains: measurement, not code
 
-The 23 outstanding items fall into four groups.
+All 88 fixes are applied. That closes the *implementation* backlog and opens a
+different one.
 
-1. **Footprint (HOW 13 — 1 item).** f32 phasors. Interning is done and measured
-   at 62% (RESULTS §3d), but the remaining size is n-gram payload, not encoding:
-   2.7M entries cost 21.6 MB at 8 bytes each however they are stored. The
-   2–12 MB target needs fewer n-grams, and §3b measured what dropping them
-   costs.
-2. **Depth (HOW 12, 16, A1 — 6 items).** Semantic memory layers, hierarchical
-   retrieval, consolidation, a non-linear readout, sequential credit assignment,
-   Alpha/Beta weight competition. Research items rather than defects.
-3. **Assorted (9 items).** β anchoring, a `Groundable` trait, multiplicative
-   compounds, a sector index, real sampling, beam search, ingestion cleaning.
+**Applied, and measured to help:**
 
-Nothing left in the list is a case of the code reporting success it did not
-achieve — that class is now closed.
+| fix | evidence |
+|:---|:---|
+| Contrastive negative sampling | dispersion 0.95–0.997, collapse test |
+| Predictive/ranking objective | 27× signal recovery; analogy 0 → nonzero; now also faster |
+| Identity seeding | same-length words provably separate |
+| Interning | 62% smaller, measured |
+| n-gram smoothing | perplexity 119,644 → 124.66 |
+| Positional/role binding | order-sensitivity tested |
+
+**Applied, and not yet measured:**
+
+| fix | what is unknown |
+|:---|:---|
+| `SectorReadout` non-linearity | Built and unit-tested; **not wired into scoring or generation.** Whether a non-linear readout helps is the open question of HOW 16, and it is still open. |
+| Beam search | Implemented; greedy `decode` is still the default. No quality comparison run. |
+| Alpha/Beta rejection | Active in `compose`; how often it rejects, and whether rejecting helps, is unmeasured. |
+| Credit assignment | Implemented; not called from the compose loop by default. |
+| Sector index | Agrees with a full scan locally; the speedup is not benchmarked. |
+| Multiplicative compounds | `sentence_compound` exists; nothing calls it. |
+| Semantic memory layers | Classification changed; no evidence it recalls better. |
+| Consolidation, `Groundable`, β anchoring, cleaning, f32 | Mechanisms are correct; effects unquantified. |
+
+**This is now the honest state:** the code does everything the analysis asked
+for, and roughly half of it has no evidence attached. The harness exists, so
+each row in the second table is one experiment away from moving to the first —
+and a fix that cannot be shown to help is a fix that might be removed.
+
+The next work is not more features. It is running the second table.
