@@ -210,8 +210,24 @@ impl Facet {
         if !self.sample_pool.is_empty() && self.sample_pool.len() >= target {
             return;
         }
+        // Sorted, not HashMap-iteration order.
+        //
+        // `lexicon` is a HashMap, and Rust seeds HashMap hashing randomly per
+        // process. Building the pool by iterating it made the negative-sample
+        // sequence differ on every run of the same binary on the same data, so
+        // training was not reproducible and neither was anything measured on
+        // top of it. Two runs of the identical composition experiment returned
+        // analogy MRR 0.1066 and 0.0521 — the same ranking, magnitudes a factor
+        // of two apart. An experiment whose effect size moves that much between
+        // runs cannot support a claim about an effect of that size.
+        //
+        // Sorting costs one O(V log V) pass per rebuild and makes every
+        // downstream measurement checkable.
+        let mut words: Vec<(&String, &SpectralPhasor)> = self.lexicon.iter().collect();
+        words.sort_unstable_by(|a, b| a.0.cmp(b.0));
+
         let mut pool = Vec::with_capacity(target * 2);
-        for (word, phasor) in &self.lexicon {
+        for (word, phasor) in words {
             let reps = ((phasor.count as f64).sqrt().round() as usize).clamp(1, 8);
             for _ in 0..reps {
                 pool.push(word.clone());

@@ -51,18 +51,35 @@ pub struct Trainer {
     pub learning_rate: f64,
     /// Negative samples drawn per token. Zero disables repulsion.
     pub neg_samples: usize,
+    /// When present, negative samples are filtered against it so a word from
+    /// the anchor's own definition is never used as a negative. `None` keeps
+    /// uniform sampling, which is the control the filter has to beat.
+    pub definitions: Option<std::sync::Arc<crate::conception::DefinitionGraph>>,
 }
 
 impl Trainer {
     /// Creates a new trainer with the given learning rate.
     pub fn new(learning_rate: f64) -> Self {
-        Self { learning_rate, neg_samples: NEG_SAMPLES }
+        Self { learning_rate, neg_samples: NEG_SAMPLES, definitions: None }
+    }
+
+    /// Attaches a definition graph, enabling controlled negative sampling.
+    ///
+    /// Without this the filter in [`Trainer::apply_negatives`] is unreachable —
+    /// the field stays `None` at every construction site — so calling it is
+    /// what makes the mechanism live rather than merely present.
+    pub fn with_definitions(
+        mut self,
+        graph: std::sync::Arc<crate::conception::DefinitionGraph>,
+    ) -> Self {
+        self.definitions = Some(graph);
+        self
     }
 
     /// Creates a trainer with repulsion disabled — attraction only.
     /// Retained for ablation studies; not a good default.
     pub fn attraction_only(learning_rate: f64) -> Self {
-        Self { learning_rate, neg_samples: 0 }
+        Self { learning_rate, neg_samples: 0, definitions: None }
     }
 
     /// Trains on a single sentence.
@@ -196,7 +213,18 @@ impl Trainer {
             };
             for j in 0..self.neg_samples {
                 let r = splitmix(step_seed ^ ((i as u64) << 32) ^ (j as u64).wrapping_mul(0x2545F491));
-                let neg = match facet.sample_negative(r) {
+                // Controlled negative sampling: when a definition graph is
+                // attached, never draw a word that is definitionally related to
+                // the anchor. A uniform draw will occasionally pick a word from
+                // the anchor's own definition, and this update then pushes apart
+                // exactly the pair the dictionary says belongs together — the
+                // training signal working against itself. Dict2vec (Tissier et
+                // al., EMNLP 2017) measures the filter firing on ~2% of draws.
+                let sampled = match &self.definitions {
+                    Some(g) => facet.sample_negative_controlled(r, token, g, 8),
+                    None => facet.sample_negative(r),
+                };
+                let neg = match sampled {
                     Some(w) if !tokens.iter().any(|t| t == w) => w.clone(),
                     _ => continue,
                 };
@@ -604,7 +632,7 @@ impl Trainer {
                 }
             }
 
-            let epoch_trainer = Self { learning_rate: effective_lr, neg_samples: self.neg_samples };
+            let epoch_trainer = Self { learning_rate: effective_lr, neg_samples: self.neg_samples, definitions: self.definitions.clone() };
             let ch: Vec<usize> = (0..CHANNELS_PER_UPDATE.min(PHASE_CHANNELS)).collect();
             epoch_trainer.apply_negatives(facet, &tokens, &ch, fnv1a(text) ^ epoch as u64);
 

@@ -98,7 +98,7 @@ impl MetaModel {
         let effective_lr = (0.05 + avg_rate.abs() * 0.1).min(0.15);
         let effective_epochs = (16.0 + avg_rate * 100.0).max(8.0) as usize;
 
-        let adapted = Trainer { learning_rate: effective_lr, neg_samples: trainer.neg_samples };
+        let adapted = Trainer { learning_rate: effective_lr, neg_samples: trainer.neg_samples, definitions: trainer.definitions.clone() };
         for _ in 0..effective_epochs {
             adapted.train_sentence(facet, new_task);
         }

@@ -62,6 +62,21 @@ pub const BETA_STRONG: f64 = 0.8;
 /// Reinforcement for a **weak** pair: one-way definitional membership.
 pub const BETA_WEAK: f64 = 0.45;
 
+/// Weight of the pull back toward a word's pre-composition phase.
+///
+/// Retrofitting (Faruqui et al., NAACL 2015) minimises a sum of two terms: stay
+/// near where training put you, and move toward your lexical neighbours. This
+/// module had only the second, and the measurement showed the cost — phase
+/// dispersion fell from 0.986 to 0.327 in the best-scoring condition, which is
+/// a third of the way to the collapse the whole harness exists to detect.
+///
+/// The anchor is that missing first term. `0.0` reproduces the unanchored
+/// behaviour exactly, so the sweep over it is a controlled comparison.
+pub const ANCHOR: f64 = 1.0;
+
+/// Rate multiplier for words held in the grounding kernel.
+pub const KERNEL_STEP: f64 = 0.1;
+
 /// Words too common to carry the meaning of an entry.
 ///
 /// Not a stopword list for retrieval: these are the words that appear in a
@@ -233,10 +248,55 @@ impl Conception {
         bind: bool,
         graph: Option<&DefinitionGraph>,
     ) -> CompositionReport {
+        Self::compose_anchored(
+            facet, entries, rounds, head_step, strong, weak, bind, graph, 0.0, None,
+        )
+    }
+
+    /// The full rule: composition, graded reinforcement, and a retrofitting
+    /// anchor back toward the trained phase.
+    ///
+    /// `anchor` weighs "stay where training put you" against "move to your
+    /// definers", exactly as in retrofitting. The anchor is taken against the
+    /// phases as they were *before* the first round, not against the previous
+    /// round, so iterating cannot walk the manifold away one step at a time.
+    ///
+    /// `hold` names words to move at a reduced rate — the grounding kernel. A
+    /// dictionary's definitional graph has a small core that defines everything
+    /// else (Vincent-Lamarre et al., 2016: the Kernel is ~10% of entries,
+    /// MinSets ~1%), and meaning propagates outward from it. Letting the core
+    /// drift as freely as the periphery composes each against a moving target.
+    #[allow(clippy::too_many_arguments)]
+    pub fn compose_anchored(
+        facet: &mut Facet,
+        entries: &[(String, String)],
+        rounds: usize,
+        head_step: f64,
+        strong: f64,
+        weak: f64,
+        bind: bool,
+        graph: Option<&DefinitionGraph>,
+        anchor: f64,
+        hold: Option<&std::collections::HashSet<String>>,
+    ) -> CompositionReport {
         let mut report = CompositionReport { rounds, ..Default::default() };
         if entries.is_empty() {
             return report;
         }
+
+        // The anchor is against the pre-composition phases, captured once.
+        // Anchoring to the previous round instead would only slow the drift,
+        // not bound it.
+        let origin: HashMap<String, Vec<f64>> = match anchor > 0.0 {
+            false => HashMap::new(),
+            true => facet
+                .lexicon
+                .iter()
+                .map(|(w, p)| {
+                    (w.clone(), (0..PHASE_CHANNELS).map(|k| p.theta(k)).collect())
+                })
+                .collect(),
+        };
 
         for _ in 0..rounds {
             // ---- READ: every target computed against frozen phases ----
@@ -300,13 +360,26 @@ impl Conception {
             let mut shift_n = 0usize;
 
             for (word, target) in &head_targets {
+                // A kernel word is composed too, but at a fraction of the rate:
+                // it is what the periphery is being composed *against*.
+                let rate = match hold {
+                    Some(h) if h.contains(word) => head_step * KERNEL_STEP,
+                    _ => head_step,
+                };
+                let anchor_at = origin.get(word);
                 if let Some(p) = facet.lexicon.get_mut(word) {
                     for k in 0..PHASE_CHANNELS {
                         if !target[k].is_finite() {
                             continue;
                         }
                         let cur = p.theta(k);
-                        let step = head_step * Self::delta(cur, target[k]);
+                        let mut step = rate * Self::delta(cur, target[k]);
+                        // Retrofitting's first term: a pull back toward where
+                        // training put this word, competing with the pull toward
+                        // its definers.
+                        if let Some(o) = anchor_at {
+                            step += rate * anchor * Self::delta(cur, o[k]);
+                        }
                         p.set_theta(k, cur + step);
                         shift_sum += step.abs();
                         shift_n += 1;
@@ -403,6 +476,53 @@ impl DefinitionGraph {
 
     fn contains(&self, of: &str, word: &str) -> bool {
         self.edges.get(of).is_some_and(|s| s.contains(word))
+    }
+
+    /// The **grounding kernel**: the words that survive recursively removing
+    /// every word that is defined but defines nothing further.
+    ///
+    /// From Vincent-Lamarre et al., *The Latent Structure of Dictionaries*
+    /// (2016). A dictionary's definitional graph is not flat. Peel away the
+    /// words that appear in no other word's definition, then peel again — what
+    /// is left (~10% of a full dictionary) is the set from which everything else
+    /// is definable. Words nearer that core are more concrete, more frequent,
+    /// and acquired earlier.
+    ///
+    /// The relevance here is scheduling. `compose_all` treats all 39,938 entries
+    /// as peers and relaxes them simultaneously, which composes each word
+    /// against neighbours that are themselves still moving. The structure says
+    /// meaning propagates *outward from the kernel*, so the kernel is what
+    /// should be held while the periphery is composed against it.
+    ///
+    /// It also marks this architecture's ceiling honestly: the kernel is defined
+    /// circularly, so no amount of composition can originate its meaning — the
+    /// symbol grounding problem, in the form the dictionary's own structure
+    /// takes. Whatever grounds those words has to come from outside the
+    /// definitions: corpus statistics here, sensorimotor experience in Harnad's
+    /// original framing.
+    pub fn kernel(&self) -> std::collections::HashSet<String> {
+        let mut alive: std::collections::HashSet<String> = self.edges.keys().cloned().collect();
+
+        loop {
+            // A word is *used* if it appears in the definition of some word
+            // still in the graph.
+            let mut used: std::collections::HashSet<&str> = std::collections::HashSet::new();
+            for a in &alive {
+                if let Some(defs) = self.edges.get(a) {
+                    for b in defs {
+                        if alive.contains(b) {
+                            used.insert(b.as_str());
+                        }
+                    }
+                }
+            }
+
+            let before = alive.len();
+            alive.retain(|w| used.contains(w.as_str()));
+            if alive.len() == before || alive.is_empty() {
+                return alive;
+            }
+        }
     }
 
     /// `(strong, weak)` edge counts. Reported so the ratio can be sanity-checked
@@ -558,6 +678,82 @@ mod tests {
         assert!(
             shift(&start, &graded, "vehicle") > shift(&start, &graded, "road"),
             "the strong definer must be pulled further than the weak one"
+        );
+    }
+
+    /// The anchor must bound how far composition can move a word, and must be
+    /// exactly inert at 0 so the sweep over it is a controlled comparison.
+    #[test]
+    fn test_anchor_bounds_drift_and_is_inert_at_zero() {
+        let entries = vec![
+            ("cat".to_string(), "small domestic feline animal".to_string()),
+            ("feline".to_string(), "of the cat animal".to_string()),
+        ];
+        let words = ["cat", "animal", "small", "domestic", "feline"];
+        let start = facet_with(&words);
+
+        let drift = |anchor: f64| {
+            let mut f = start.clone();
+            Conception::compose_anchored(
+                &mut f, &entries, 6, HEAD_STEP, REINFORCE, REINFORCE, false, None, anchor, None,
+            );
+            (0..PHASE_CHANNELS)
+                .map(|k| {
+                    Conception::delta(start.lexicon["cat"].theta(k), f.lexicon["cat"].theta(k))
+                        .abs()
+                })
+                .sum::<f64>()
+        };
+
+        let free = drift(0.0);
+        let anchored = drift(ANCHOR);
+        assert!(
+            anchored < free,
+            "the anchor must reduce drift: {} anchored vs {} free",
+            anchored,
+            free
+        );
+
+        // anchor = 0 must reproduce the unanchored path bit for bit.
+        let mut a = start.clone();
+        let mut b = start.clone();
+        Conception::compose_anchored(
+            &mut a, &entries, 3, HEAD_STEP, REINFORCE, REINFORCE, false, None, 0.0, None,
+        );
+        Conception::compose_all_bound(&mut b, &entries, 3, HEAD_STEP, REINFORCE, false);
+        for k in 0..PHASE_CHANNELS {
+            assert_eq!(a.lexicon["cat"].theta(k), b.lexicon["cat"].theta(k));
+        }
+    }
+
+    /// The kernel must keep the words that define others and drop the leaves.
+    #[test]
+    fn test_grounding_kernel_keeps_the_defining_core() {
+        // cat and feline define each other, so both survive. "aardvark" has an
+        // entry but appears in nobody else's definition — it is reachable by
+        // definition and defines nothing further, so it peels. "burrower" only
+        // ever defines aardvark, so once aardvark is gone it peels too: that
+        // second removal is what makes the rule recursive rather than a single
+        // degree filter.
+        let entries = vec![
+            ("cat".to_string(), "feline animal".to_string()),
+            ("feline".to_string(), "cat animal".to_string()),
+            ("animal".to_string(), "a living cat or feline".to_string()),
+            ("aardvark".to_string(), "burrower animal".to_string()),
+            ("burrower".to_string(), "one that digs".to_string()),
+        ];
+        let g = DefinitionGraph::build(&entries);
+        let k = g.kernel();
+        assert!(
+            k.contains("cat") && k.contains("feline") && k.contains("animal"),
+            "the mutually-defining core survives: {:?}",
+            k
+        );
+        assert!(!k.contains("aardvark"), "a word nothing defines must peel: {:?}", k);
+        assert!(
+            !k.contains("burrower"),
+            "and so must one that only defined the peeled word: {:?}",
+            k
         );
     }
 

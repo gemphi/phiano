@@ -158,7 +158,7 @@ impl Harness {
     pub fn train_ranking_only(split: &Split, trainer: &Trainer, passes: usize) -> Facet {
         let mut facet = Facet::new();
         // One structural pass to populate n-grams and initialise the lexicon.
-        let seed = Trainer { learning_rate: 0.0, neg_samples: 0 };
+        let seed = Trainer { learning_rate: 0.0, neg_samples: 0, definitions: None };
         for s in &split.train {
             seed.train_sentence(&mut facet, s);
         }
@@ -417,7 +417,15 @@ impl<'a> PhianoLM<'a> {
         let mut counts = Vec::with_capacity(n);
         let mut sectors = Vec::with_capacity(n);
 
-        for (w, p) in &facet.lexicon {
+        // Sorted, so the index a word receives does not depend on HashMap
+        // iteration order. The readout's negative sampling draws by index, so a
+        // shifting index made readout fitting differ between runs on identical
+        // data.
+        let mut words: Vec<(&String, &crate::phasor::SpectralPhasor)> =
+            facet.lexicon.iter().collect();
+        words.sort_unstable_by(|a, b| a.0.cmp(b.0));
+
+        for (w, p) in words {
             index.insert(w.clone(), counts.len());
             for k in 0..LM_CHANNELS {
                 let t = p.theta(k);
@@ -1106,6 +1114,35 @@ mod tests {
         let kn = KneserNey::train(&split.train);
         let ppl = kn.perplexity(&split.valid);
         assert!(ppl.is_finite() && ppl > 1.0);
+    }
+
+    /// Training the same data twice must give the same model.
+    ///
+    /// It did not. `rebuild_sample_pool` built the negative-sample pool by
+    /// iterating `lexicon`, a HashMap that Rust seeds randomly per process, so
+    /// every run drew a different negative sequence. Two runs of one
+    /// composition experiment returned analogy MRR 0.1066 and 0.0521 — same
+    /// ranking, magnitudes a factor of two apart. Every measured effect smaller
+    /// than that gap was unfalsifiable.
+    #[test]
+    fn test_training_is_reproducible() {
+        let split = Harness::split(toy_corpus(), 42);
+        let a = Harness::train_ranking_only(&split, &Trainer::new(0.05), 3);
+        let b = Harness::train_ranking_only(&split, &Trainer::new(0.05), 3);
+
+        assert_eq!(a.lexicon.len(), b.lexicon.len());
+        for (w, pa) in &a.lexicon {
+            let pb = b.lexicon.get(w).expect("same vocabulary");
+            for k in 0..crate::config::PHASE_CHANNELS {
+                assert_eq!(
+                    pa.theta(k),
+                    pb.theta(k),
+                    "word {} channel {} differs between two identical runs",
+                    w,
+                    k
+                );
+            }
+        }
     }
 
     /// The phase distribution must be a distribution, not a constant.

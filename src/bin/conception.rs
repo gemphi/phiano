@@ -30,7 +30,9 @@
 
 use phiano::chunker::ChunkStore;
 use phiano::cognitive::grounding::DefinitionGrounder;
-use phiano::conception::{Conception, DefinitionGraph, BETA_STRONG, BETA_WEAK, HEAD_STEP, REINFORCE};
+use phiano::conception::{
+    Conception, DefinitionGraph, ANCHOR, BETA_STRONG, BETA_WEAK, HEAD_STEP, REINFORCE,
+};
 use phiano::config::LEARNING_RATE;
 use phiano::facet::Facet;
 use phiano::metrics::harness::Harness;
@@ -221,6 +223,46 @@ fn main() {
             None,
         );
         rows.push(measure("  control: flat at BETA_STRONG", &f, &split.valid));
+    }
+
+    // The retrofitting anchor. The best-scoring row above drops dispersion from
+    // 0.986 to 0.327, which is a third of the way to collapse — the anchor is
+    // the term that competes with the neighbour pull, and the sweep is what
+    // says whether the relation gains survive keeping the manifold spread.
+    let kernel = graph.kernel();
+    println!(
+        "grounding kernel: {} of {} entries ({:.1}%)",
+        kernel.len(),
+        entries.len(),
+        100.0 * kernel.len() as f64 / entries.len().max(1) as f64
+    );
+    for a in [0.25f64, 0.5, ANCHOR, 2.0] {
+        let mut f = base.clone();
+        Conception::compose_anchored(
+            &mut f, &entries, rounds, HEAD_STEP, BETA_STRONG, BETA_STRONG, false, None, a, None,
+        );
+        rows.push(measure(&format!("  anchor α={:.2}", a), &f, &split.valid));
+    }
+    {
+        // Kernel scheduling: hold the definitional core at a tenth of the rate
+        // and compose the periphery against it, instead of relaxing all
+        // entries simultaneously against neighbours that are themselves moving.
+        let mut f = base.clone();
+        Conception::compose_anchored(
+            &mut f, &entries, rounds, HEAD_STEP, BETA_STRONG, BETA_STRONG, false, None, ANCHOR,
+            Some(&kernel),
+        );
+        rows.push(measure("  anchor + held kernel", &f, &split.valid));
+    }
+
+    // Controlled negative sampling, measured on the training path rather than
+    // asserted. This retrains from scratch with the filter attached, so the
+    // comparison against `baseline` is the filter's whole effect.
+    {
+        let g = std::sync::Arc::new(DefinitionGraph::build(&entries));
+        let filtered = Trainer::new(LEARNING_RATE).with_definitions(g);
+        let f = Harness::train_ranking_only(&split, &filtered, 4);
+        rows.push(measure("controlled negatives (retrained)", &f, &split.valid));
     }
 
     println!("\n=== definitions as compositions ===");
