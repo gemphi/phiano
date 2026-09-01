@@ -17,6 +17,36 @@ pub struct ChromaHeader {
     pub fine_structure_alpha: f64,
 }
 
+/// On-disk phasor.
+///
+/// `phase` is omitted: it is by construction the angle of channel 0, so storing
+/// it duplicates eight bytes per word for a value that is recovered exactly.
+/// `amplitude` narrows to f32 — its useful range is [0.3, 2.0] and it is
+/// compared, never accumulated, so 24 bits of mantissa is far more than the
+/// quantity carries.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+struct DiskPhasor {
+    packed: [u64; 8],
+    amplitude: f32,
+    band_n: u32,
+    count: u32,
+}
+
+impl DiskPhasor {
+    fn from(p: &SpectralPhasor) -> Self {
+        Self {
+            packed: p.packed(),
+            amplitude: p.amplitude as f32,
+            band_n: p.band_n,
+            count: p.count,
+        }
+    }
+
+    fn into_phasor(self) -> SpectralPhasor {
+        SpectralPhasor::from_packed(self.packed, self.amplitude as f64, self.band_n, self.count)
+    }
+}
+
 // ── v3: interned ───────────────────────────────────────────────────────────
 
 /// Borrowed body for writing. Serializing by reference avoids cloning the whole
@@ -25,7 +55,7 @@ pub struct ChromaHeader {
 struct BodyV3Ref<'a> {
     words: &'a [String],
     /// `(word id, phasor)` — the word itself lives once, in `words`.
-    lexicon: Vec<(WordId, &'a SpectralPhasor)>,
+    lexicon: Vec<(WordId, DiskPhasor)>,
     bigrams: Vec<(WordId, &'a Vec<(WordId, u32)>)>,
     trigrams: Vec<((WordId, WordId), &'a Vec<(WordId, u32)>)>,
     phase_lags: Vec<((WordId, WordId), f32)>,
@@ -35,7 +65,7 @@ struct BodyV3Ref<'a> {
 #[derive(Deserialize)]
 struct BodyV3 {
     words: Vec<String>,
-    lexicon: Vec<(WordId, SpectralPhasor)>,
+    lexicon: Vec<(WordId, DiskPhasor)>,
     bigrams: Vec<(WordId, Vec<(WordId, u32)>)>,
     trigrams: Vec<((WordId, WordId), Vec<(WordId, u32)>)>,
     phase_lags: Vec<((WordId, WordId), f32)>,
@@ -93,7 +123,7 @@ impl Storage {
 
         let body = BodyV3Ref {
             words: &words,
-            lexicon: facet.lexicon.iter().map(|(w, p)| (id_of(w), p)).collect(),
+            lexicon: facet.lexicon.iter().map(|(w, p)| (id_of(w), DiskPhasor::from(p))).collect(),
             bigrams: facet.bigrams.iter().map(|(k, v)| (*k, v)).collect(),
             trigrams: facet.trigrams.iter().map(|(k, v)| (*k, v)).collect(),
             phase_lags: facet.phase_lags.iter().map(|(k, v)| (*k, *v)).collect(),
@@ -149,7 +179,7 @@ impl Storage {
                 let lexicon = b
                     .lexicon
                     .into_iter()
-                    .filter_map(|(id, p)| vocab.word(id).map(|w| (w.to_string(), p)))
+                    .filter_map(|(id, p)| vocab.word(id).map(|w| (w.to_string(), p.into_phasor())))
                     .collect();
                 Ok(Facet {
                     lexicon,

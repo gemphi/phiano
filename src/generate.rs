@@ -120,18 +120,76 @@ impl ContextWaveBuffer {
     }
 }
 
-/// Generator - phase-guided sequence sampler (Phase 2).
+/// Generator - phase-guided sequence sampler.
 pub struct Generator {
     pub max_tokens: usize,
     pub temperature: f64,
+    /// Sampling state. `Cell` because decoding takes `&self`.
+    rng: std::cell::Cell<u64>,
 }
 
 impl Generator {
+    /// Creates a generator seeded from the clock, so repeated calls differ.
     pub fn new(max_tokens: usize, temperature: f64) -> Self {
-        Self {
-            max_tokens,
-            temperature,
+        let seed = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos() as u64)
+            .unwrap_or(0x9E3779B97F4A7C15);
+        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1) }
+    }
+
+    /// Creates a generator with a fixed seed, for reproducible output.
+    pub fn deterministic(max_tokens: usize, temperature: f64, seed: u64) -> Self {
+        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1) }
+    }
+
+    /// xorshift64* — a uniform draw in [0, 1).
+    fn next_uniform(&self) -> f64 {
+        let mut x = self.rng.get();
+        x ^= x >> 12;
+        x ^= x << 25;
+        x ^= x >> 27;
+        self.rng.set(x);
+        ((x.wrapping_mul(0x2545F4914F6CDD1D) >> 11) as f64) / ((1u64 << 53) as f64)
+    }
+
+    /// Samples an index from `scores` under a softmax at `temperature`.
+    ///
+    /// Temperature previously scaled a **fixed sinusoid of the step index**, so
+    /// the same prompt always produced the same output and "temperature"
+    /// controlled the amplitude of a deterministic wobble rather than the
+    /// entropy of a distribution. This is real sampling; `deterministic()`
+    /// remains available when reproducibility is what is wanted.
+    fn sample_index(&self, scores: &[f64]) -> Option<usize> {
+        if scores.is_empty() {
+            return None;
         }
+        if self.temperature <= 0.0 {
+            return scores
+                .iter()
+                .enumerate()
+                .max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal))
+                .map(|(i, _)| i);
+        }
+
+        let max = scores.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let exp: Vec<f64> = scores
+            .iter()
+            .map(|s| ((s - max) / self.temperature).exp())
+            .collect();
+        let total: f64 = exp.iter().sum();
+        if !(total > 0.0) {
+            return Some(0);
+        }
+
+        let mut r = self.next_uniform() * total;
+        for (i, w) in exp.iter().enumerate() {
+            r -= w;
+            if r <= 0.0 {
+                return Some(i);
+            }
+        }
+        Some(exp.len() - 1)
     }
 
     /// Generates a response sequence using torus attractor decoding.
@@ -195,10 +253,10 @@ impl Generator {
         let mut function_streak = 0usize;
 
         for step in 0..self.max_tokens {
-            let jitter = match self.temperature > 0.0 {
-                true => (step as f64 * PHI_CONJUGATE).sin() * self.temperature * 0.08,
-                false => 0.0,
-            };
+            // Exploration now comes from sampling the candidate distribution
+            // (see `sample_index`); this term only keeps the phase walk from
+            // sitting exactly on a sector boundary.
+            let jitter = (step as f64 * PHI_CONJUGATE).sin() * 0.01;
             let flow_bias = 0.45 * (flow.collective_phase - current_phase).sin();
             let target_phase = (current_phase + phase_momentum + jitter + flow_bias).rem_euclid(TWO_PI);
 
@@ -306,7 +364,7 @@ impl Generator {
         recent: &std::collections::HashSet<String>,
         target_phase: f64,
     ) -> Option<String> {
-        let mut best: Option<(String, f64)> = None;
+        let mut scored: Vec<(String, f64)> = Vec::with_capacity(candidates.len());
         for (word, count) in candidates {
             if !Self::speakable(word) {
                 continue;
@@ -325,12 +383,11 @@ impl Generator {
             let content = if Tokenizer::is_function_word(word) { 0.55 } else { 1.35 };
             let score =
                 capped * (0.35 + 0.25 * phase_align + 0.40 * resonance) * content * repeat_penalty;
-            match &best {
-                Some((_, best_score)) if score <= *best_score => {}
-                _ => best = Some((word.clone(), score)),
-            }
+            scored.push((word.clone(), score));
         }
-        best.map(|(w, _)| w)
+
+        let values: Vec<f64> = scored.iter().map(|(_, s)| *s).collect();
+        self.sample_index(&values).map(|i| scored[i].0.clone())
     }
 
     /// Attention-reranked candidate selection.
@@ -491,5 +548,46 @@ mod tests {
         assert!(flow.order_parameter >= 0.0);
         assert!(flow.collective_phase >= 0.0);
         let _ = text;
+    }
+}
+
+#[cfg(test)]
+mod sampling_tests {
+    use super::*;
+
+    #[test]
+    fn test_temperature_zero_is_argmax() {
+        let g = Generator::deterministic(8, 0.0, 42);
+        let scores = [0.1, 0.9, 0.3];
+        for _ in 0..8 {
+            assert_eq!(g.sample_index(&scores), Some(1));
+        }
+    }
+
+    #[test]
+    fn test_sampling_actually_varies() {
+        // The old "temperature" scaled a fixed sinusoid of the step index, so
+        // the same input always produced the same output.
+        let g = Generator::deterministic(8, 1.0, 7);
+        let scores = [1.0, 1.0, 1.0, 1.0];
+        let picks: std::collections::HashSet<usize> =
+            (0..64).filter_map(|_| g.sample_index(&scores)).collect();
+        assert!(picks.len() > 1, "a positive temperature must produce variation");
+    }
+
+    #[test]
+    fn test_sampling_respects_the_distribution() {
+        let g = Generator::deterministic(8, 0.5, 11);
+        let scores = [0.0, 5.0];
+        let hits = (0..400).filter(|_| g.sample_index(&scores) == Some(1)).count();
+        assert!(hits > 340, "the high-scoring option should dominate: {}/400", hits);
+    }
+
+    #[test]
+    fn test_deterministic_seed_reproduces() {
+        let scores = [1.0, 2.0, 3.0, 4.0];
+        let a: Vec<_> = { let g = Generator::deterministic(8, 1.0, 99); (0..20).map(|_| g.sample_index(&scores)).collect() };
+        let b: Vec<_> = { let g = Generator::deterministic(8, 1.0, 99); (0..20).map(|_| g.sample_index(&scores)).collect() };
+        assert_eq!(a, b, "a fixed seed must reproduce");
     }
 }

@@ -112,6 +112,22 @@ impl SpectralPhasor {
         p
     }
 
+    /// The raw packed channel words, for compact serialization.
+    #[inline]
+    pub fn packed(&self) -> [u64; PACKED_WORDS] {
+        self.packed
+    }
+
+    /// Rebuilds a phasor from its packed channels.
+    ///
+    /// `phase` is not stored on disk: it is by construction the angle of
+    /// channel 0, so it is recovered rather than duplicated.
+    pub fn from_packed(packed: [u64; PACKED_WORDS], amplitude: f64, band_n: u32, count: u32) -> Self {
+        let mut p = Self { phase: 0.0, amplitude, band_n, count, packed };
+        p.sync_phase();
+        p
+    }
+
     /// Number of independent phase channels.
     #[inline]
     pub const fn channels() -> usize {

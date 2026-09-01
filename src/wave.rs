@@ -74,6 +74,51 @@ impl Wave {
         out
     }
 
+    /// Order-sensitive superposition that **binds tightly-bound pairs
+    /// multiplicatively** instead of adding them.
+    ///
+    /// A sum is linear, so the representation of `hot dog` is fully determined
+    /// by `hot` and `dog` independently and idioms, compounds and metaphors have
+    /// no home in it. Multiplying two phasors adds their phases, producing a
+    /// point determined by both words *jointly* and distinct from either.
+    ///
+    /// Pairs are selected by pointwise mutual information from the bigram table
+    /// already collected, so nothing new has to be annotated.
+    pub fn sentence_compound(facet: &Facet, words: &[String], pmi_threshold: f64) -> c64 {
+        let mut out = Self::zero();
+        let mut i = 0usize;
+        let mut slot = 0usize;
+
+        while i < words.len() {
+            let bound = i + 1 < words.len()
+                && facet.pmi(&words[i], &words[i + 1]) >= pmi_threshold;
+
+            let roll = slot as f64 * GOLDEN_ANGLE;
+            match bound {
+                true => {
+                    // z_a · z_b — amplitudes multiply, phases add.
+                    if let (Some(a), Some(b)) =
+                        (facet.lexicon.get(&words[i]), facet.lexicon.get(&words[i + 1]))
+                    {
+                        out += c64::from_polar(
+                            a.amplitude * b.amplitude,
+                            a.effective_phase() + b.effective_phase() + roll,
+                        );
+                    }
+                    i += 2;
+                }
+                false => {
+                    if let Some(p) = facet.lexicon.get(&words[i]) {
+                        out += c64::from_polar(p.amplitude, p.effective_phase() + roll);
+                    }
+                    i += 1;
+                }
+            }
+            slot += 1;
+        }
+        out
+    }
+
     /// Computes the wave for a raw text string (unordered).
     pub fn text(facet: &Facet, text: &str) -> c64 {
         let tokens = Tokenizer::tokenize(text);

@@ -380,12 +380,11 @@ impl Trainer {
     fn record_ngrams(&self, facet: &mut Facet, tokens: &[String]) {
         for window in tokens.windows(2) {
             facet.record_bigram(&window[0], &window[1]);
-            if let (Some(p0), Some(p1)) =
-                (facet.lexicon.get(&window[0]), facet.lexicon.get(&window[1]))
-            {
-                let observed_lag = (p1.theta(0) - p0.theta(0)).rem_euclid(TWO_PI);
-                facet.record_phase_lag(&window[0], &window[1], observed_lag);
-            }
+            // Anchor the lag to corpus order statistics rather than to the
+            // phases the lag itself is moving, so the loop has a fixed point
+            // outside its own geometry.
+            let target = facet.target_phase_lag(&window[0], &window[1]);
+            facet.record_phase_lag(&window[0], &window[1], target);
         }
         for window in tokens.windows(3) {
             facet.record_trigram(&window[0], &window[1], &window[2]);
