@@ -459,14 +459,14 @@ pub struct RoleDiscovery;
 
 impl RoleDiscovery {
     /// The offset that takes `head` to `filler`, per channel.
-    fn offset(facet: &Facet, head: &str, filler: &str) -> Option<Vec<f64>> {
+    pub(crate) fn offset(facet: &Facet, head: &str, filler: &str) -> Option<Vec<f64>> {
         let (h, f) = (facet.lexicon.get(head)?, facet.lexicon.get(filler)?);
         Some((0..PHASE_CHANNELS).map(|k| f.theta(k) - h.theta(k)).collect())
     }
 
     /// Mean cosine between two offset vectors — 1.0 when the two pairs stand in
     /// the same relation, 0 when they are unrelated.
-    fn agreement(a: &[f64], b: &[f64]) -> f64 {
+    pub(crate) fn agreement(a: &[f64], b: &[f64]) -> f64 {
         let mut s = 0.0;
         for (x, y) in a.iter().zip(b.iter()) {
             s += (x - y).cos();
@@ -475,7 +475,7 @@ impl RoleDiscovery {
     }
 
     /// Circular mean of a set of offset vectors.
-    fn centroid(offsets: &[&Vec<f64>]) -> Vec<f64> {
+    pub(crate) fn centroid(offsets: &[&Vec<f64>]) -> Vec<f64> {
         (0..PHASE_CHANNELS)
             .map(|k| {
                 let (mut x, mut y) = (0.0f64, 0.0f64);
@@ -700,5 +700,243 @@ mod discovery_tests {
         for (x, y) in a.iter().zip(b.iter()) {
             assert_eq!(x.members, y.members, "clustering must not move between runs");
         }
+    }
+}
+
+/// Training the manifold to hold relations consistently.
+///
+/// Coherence — how well pairs in one relation agree on a shared offset — sits at
+/// **0.27** on the trained manifold, against >0.9 on relations planted by
+/// construction. Nothing in the training objective optimises it or anything like
+/// it: ranking optimises next-word retrieval and gets 0.27 as a by-product.
+///
+/// That is the same fact the analogy score reports indirectly. `a:b::c:d`
+/// assumes `b − a ≈ d − c`, so analogy accuracy *is* offset consistency, seen
+/// through a probe set. Optimising coherence directly needs no probe set, no
+/// labels, and no held-out families.
+pub struct Coherence;
+
+impl Coherence {
+    /// Mean agreement between each pair's offset and the group's circular mean.
+    ///
+    /// This is the metric, and it is cheap enough to run every epoch: one pass
+    /// for the mean, one for the agreement.
+    pub fn measure(facet: &Facet, pairs: &[(String, String)]) -> f64 {
+        let offsets: Vec<Vec<f64>> = pairs
+            .iter()
+            .filter_map(|(h, f)| RoleDiscovery::offset(facet, h, f))
+            .collect();
+        if offsets.len() < 2 {
+            return 0.0;
+        }
+        let refs: Vec<&Vec<f64>> = offsets.iter().collect();
+        let mean = RoleDiscovery::centroid(&refs);
+        offsets
+            .iter()
+            .map(|o| RoleDiscovery::agreement(o, &mean))
+            .sum::<f64>()
+            / offsets.len() as f64
+    }
+
+    /// Pulls every pair in a group toward the group's shared offset.
+    ///
+    /// For each `(head, filler)`, the filler moves toward `head + mean_offset`.
+    /// The head is deliberately left alone: a word is the head of few relations
+    /// and the filler of many, so moving both ends lets a common filler be
+    /// dragged by every group it appears in, which is how the composition work
+    /// collapsed the manifold before the anchor was added.
+    ///
+    /// Jacobi, not Gauss-Seidel — every target is computed against frozen phases
+    /// and applied afterwards — so the result does not depend on the order the
+    /// pairs happen to be listed in.
+    ///
+    /// Returns the coherence after the update.
+    pub fn align(facet: &mut Facet, pairs: &[(String, String)], rate: f64) -> f64 {
+        let offsets: Vec<(usize, Vec<f64>)> = pairs
+            .iter()
+            .enumerate()
+            .filter_map(|(i, (h, f))| RoleDiscovery::offset(facet, h, f).map(|o| (i, o)))
+            .collect();
+        if offsets.len() < 2 {
+            return 0.0;
+        }
+
+        let refs: Vec<&Vec<f64>> = offsets.iter().map(|(_, o)| o).collect();
+        let mean = RoleDiscovery::centroid(&refs);
+
+        // READ: every target against frozen phases.
+        let mut targets: Vec<(String, Vec<f64>)> = Vec::with_capacity(offsets.len());
+        for (i, _) in &offsets {
+            let (head, filler) = &pairs[*i];
+            let h = match facet.lexicon.get(head) {
+                Some(h) => *h,
+                None => continue,
+            };
+            targets.push((
+                filler.clone(),
+                (0..PHASE_CHANNELS).map(|k| h.theta(k) + mean[k]).collect(),
+            ));
+        }
+
+        // WRITE.
+        for (filler, target) in &targets {
+            if let Some(p) = facet.lexicon.get_mut(filler) {
+                for k in 0..PHASE_CHANNELS {
+                    let cur = p.theta(k);
+                    let mut d = target[k] - cur;
+                    while d > std::f64::consts::PI {
+                        d -= TWO_PI;
+                    }
+                    while d < -std::f64::consts::PI {
+                        d += TWO_PI;
+                    }
+                    p.set_theta(k, cur + rate * d);
+                }
+                p.sync_phase();
+            }
+        }
+
+        Self::measure(facet, pairs)
+    }
+
+    /// Aligns several relation groups, rejecting the result if the manifold
+    /// concentrates past `dispersion_floor`.
+    ///
+    /// The guard is not optional. Pulling offsets together is the same class of
+    /// update as definition composition, which drove phase dispersion from 0.986
+    /// to 0.305 before a floor was added — and a manifold that has collapsed has
+    /// perfect coherence, because every offset is zero. Without the guard this
+    /// objective's optimum is the degenerate solution.
+    pub fn align_groups(
+        facet: &mut Facet,
+        groups: &[Vec<(String, String)>],
+        rate: f64,
+        rounds: usize,
+        dispersion_floor: f64,
+    ) -> (f64, bool) {
+        let before = facet.clone();
+        let mut last = 0.0;
+
+        for _ in 0..rounds {
+            let mut sum = 0.0;
+            let mut n = 0usize;
+            for g in groups {
+                if g.len() >= 2 {
+                    sum += Self::align(facet, g, rate);
+                    n += 1;
+                }
+            }
+            last = match n {
+                0 => 0.0,
+                _ => sum / n as f64,
+            };
+        }
+
+        if facet.phase_dispersion() < dispersion_floor {
+            *facet = before;
+            return (last, false);
+        }
+        (last, true)
+    }
+}
+
+#[cfg(test)]
+mod coherence_tests {
+    use super::*;
+
+    fn facet_of(words: &[String]) -> Facet {
+        let mut f = Facet::new();
+        for w in words {
+            f.lexicon
+                .insert(w.clone(), SpectralPhasor::seeded(w, 1.0, 1));
+        }
+        f
+    }
+
+    /// Alignment must raise coherence on a group that has none.
+    #[test]
+    fn test_align_raises_coherence() {
+        let words: Vec<String> = (0..40)
+            .flat_map(|i| [format!("h{}", i), format!("f{}", i)])
+            .collect();
+        let mut f = facet_of(&words);
+        let pairs: Vec<(String, String)> =
+            (0..40).map(|i| (format!("h{}", i), format!("f{}", i))).collect();
+
+        let before = Coherence::measure(&f, &pairs);
+        let after = Coherence::align(&mut f, &pairs, 0.5);
+        assert!(
+            after > before + 0.2,
+            "alignment must raise coherence: {} → {}",
+            before,
+            after
+        );
+    }
+
+    /// **The degenerate optimum.** A collapsed manifold has perfect coherence,
+    /// because every offset is zero. The guard must catch that, and must restore
+    /// the manifold rather than leave it half-aligned.
+    #[test]
+    fn test_guard_rejects_collapse_and_restores() {
+        // One head, many fillers. Alignment moves fillers toward
+        // `head + mean_offset`, so a single shared head drags every filler onto
+        // the same point — the degenerate solution this objective has, and the
+        // reason the guard is not optional.
+        //
+        // The first version of this test used one shared *filler* instead, which
+        // moves exactly one word and cannot collapse anything. It passed the
+        // guard legitimately and proved nothing.
+        let mut words: Vec<String> = (0..30).map(|i| format!("f{}", i)).collect();
+        words.push("hub".to_string());
+        let mut f = facet_of(&words);
+
+        let pairs: Vec<(String, String)> =
+            (0..30).map(|i| ("hub".to_string(), format!("f{}", i))).collect();
+        let groups = vec![pairs];
+
+        let before: Vec<f64> = (0..PHASE_CHANNELS).map(|k| f.lexicon["f0"].theta(k)).collect();
+
+        let (coh, kept) = Coherence::align_groups(&mut f, &groups, 0.9, 20, 0.40);
+        assert!(!kept, "a collapsing alignment must be rejected (coherence {})", coh);
+        for k in 0..PHASE_CHANNELS {
+            assert_eq!(
+                f.lexicon["f0"].theta(k),
+                before[k],
+                "rejection must restore channel {}",
+                k
+            );
+        }
+    }
+
+    /// A healthy alignment across distinct groups must be kept.
+    #[test]
+    fn test_healthy_alignment_is_kept() {
+        let real = [
+            "cat", "dog", "oak", "pine", "rose", "iron", "gold", "wine", "bread", "stone",
+            "animal", "tree", "flower", "metal", "drink", "food", "rock", "plant", "beast",
+            "timber", "bloom", "ore", "liquor", "loaf", "boulder", "creature", "wood",
+        ];
+        let words: Vec<String> = real.iter().map(|s| s.to_string()).collect();
+        let mut f = facet_of(&words);
+
+        let groups = vec![
+            vec![
+                ("cat".to_string(), "animal".to_string()),
+                ("dog".to_string(), "beast".to_string()),
+            ],
+            vec![
+                ("oak".to_string(), "tree".to_string()),
+                ("pine".to_string(), "timber".to_string()),
+            ],
+            vec![
+                ("iron".to_string(), "metal".to_string()),
+                ("gold".to_string(), "ore".to_string()),
+            ],
+        ];
+
+        let (coh, kept) = Coherence::align_groups(&mut f, &groups, 0.3, 3, 0.40);
+        assert!(kept, "a spread-preserving alignment must be kept");
+        assert!(coh > 0.0);
+        assert!(f.phase_dispersion() >= 0.40);
     }
 }

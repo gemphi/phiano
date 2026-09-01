@@ -903,3 +903,99 @@ current objective optimises it, or anything like it.
 3. **Multi-relation extraction** (§8) still matters, but it is downstream of
    this: better inputs to a representation that cannot hold relations
    consistently will not produce types either.
+
+---
+
+## §10 — Primes, and an objective that fits its own groups
+
+### §10a — Prime channel frequencies: the largest single gain so far
+
+The golden angle solves one problem — a single irrational rotation never repeats
+— and does nothing about a second. Every channel derived its frequency from the
+same linear ramp, `ω_k = ω·(1 + 4k/K)`, and linearly spaced frequencies are
+**commensurate**: channel *k* and channel *2k* share periods and carry
+overlapping information. Sixty-four channels that alias are fewer than
+sixty-four channels.
+
+Prime-proportional frequencies are pairwise coprime, so no two channels share a
+period until their product. `ω_k = 2π·p_k / M`, first 64 primes.
+
+**The modulus is the whole design, and the first one chosen was wrong.**
+
+| M | reasoning | ranking, phase alone |
+|---|---|---|
+| linear ramp | baseline | 175.10 |
+| 313 | next prime above the largest channel prime, so every ω < 2π | 180.92 (−3% worse) |
+| **4099** | keep every ω slow and well separated | **155.66 (−11.1% better)** |
+
+At M = 313 the frequencies span 0.04 to 6.24 rad/step, so the fastest channels
+rotate almost a full turn per step and are indistinguishable from very slow ones
+running backwards. Coprimality was satisfied and the property the recurrence
+actually needs — a **range of timescales**, slow channels remembering far back,
+fast ones tracking recent tokens, ordered between them — was destroyed. A large
+prime modulus keeps every frequency slow and separated while leaving them
+pairwise incommensurate, which is what the primes were for.
+
+Measured on `rust_book_corpus.txt`, phase-alone perplexity:
+
+| regime | linear ramp | primes @ 4099 |
+|---|---|---|
+| co-occurrence + ranking | 188.60 | **176.44** (−6.4%) |
+| ranking only | 175.10 | **155.66** (−11.1%) |
+
+**This is the largest single improvement to the phase representation in the
+project.** It is also a change to *one constant* in a formula that had three
+copies scattered across the language model, the sentence benchmark and the
+generation buffer — now `config::channel_kernel`, so they cannot drift apart.
+
+γ\* is still 0. The manifold is 11% better at its own job and still loses to word
+frequency at next-word prediction. Eight attempts.
+
+### §10b — Training coherence: it works, and generalises to nothing
+
+§9 identified offset coherence as the blocker — 0.27 measured against >0.9
+achievable — and noted nothing optimises it. `Coherence::align` does: every pair
+in a relation group is pulled toward the group's circular-mean offset, Jacobi,
+fillers only.
+
+Supervision comes from the extractor's relation groups; the benchmark families
+are held out and score only.
+
+| condition | train coherence | cluster coherence | purity | dispersion |
+|---|---|---|---|---|
+| baseline | 0.026 | 0.271 | 20.3% | 0.988 |
+| rate 0.1, 3 rounds | 0.269 | 0.262 | 18.6% | 0.989 |
+| rate 0.3, 3 rounds | 0.511 | 0.264 | 20.3% | 0.991 |
+| rate 0.3, 10 rounds | 0.576 | 0.263 | 19.3% | 0.992 |
+| rate 0.6, 10 rounds | **0.603** | 0.261 | 20.9% | 0.992 |
+
+**The objective works — 23× on its own metric — and moves nothing held out.**
+Cluster coherence is flat at 0.26 and purity is flat at 20%. This is exactly the
+failure the held-out columns were put there to detect, and the reason to report
+three numbers rather than one.
+
+The cause is upstream, and it is §8's finding arriving from a second direction:
+94% of extracted relations are `genus`, and "genus" as extracted lumps
+`dog→quadruped` with `cow→chimney`. Forcing 6,833 heterogeneous pairs to share
+one offset fits a constant to noise. **One group of 6,833 mixed pairs is not a
+relation**, and an objective cannot learn a relational structure the input does
+not contain.
+
+A prediction that failed, worth recording: the dispersion guard was expected to
+be load-bearing here, because coherence is perfect on a collapsed manifold and
+that is this objective's degenerate optimum. It never fired — dispersion *rose*,
+0.988 → 0.992. Moving only fillers, across 6,833 distinct fillers, does not
+concentrate. The guard is still correct (`test_guard_rejects_collapse_and_restores`
+drives it with one head and thirty fillers, which does collapse) and it was not
+the risk on this data.
+
+### What these two say together
+
+Primes fixed a **representation** problem and gave 11%. Coherence training
+attacked a **structure** problem and gave nothing, because the structure is not
+in the input. The bottleneck named in §8 has now been confirmed twice from
+independent directions:
+
+> Extraction is the blocker. Until a gloss yields several genuinely distinct
+> typed relations instead of one over-broad bucket, both role binding and
+> coherence training are machinery with nothing to work on.

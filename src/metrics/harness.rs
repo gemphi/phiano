@@ -881,10 +881,7 @@ impl<'a> PhianoLM<'a> {
     /// trigram table structurally cannot have.
     #[inline]
     fn kernel(k: usize) -> crate::wave::c64 {
-        let frac = k as f64 / LM_CHANNELS as f64;
-        let lambda = crate::config::CONTEXT_LAMBDA.powf(1.0 + 3.0 * frac);
-        let omega = crate::config::CONTEXT_OMEGA * (1.0 + 4.0 * frac);
-        crate::wave::c64::from_polar(lambda, omega)
+        crate::config::channel_kernel(k, LM_CHANNELS)
     }
 
     fn advance(&self, h: &mut [crate::wave::c64], token: &str) {

@@ -166,10 +166,7 @@ impl SentenceBenchmark {
     /// Per-channel recurrence kernel, matching the language model's.
     #[inline]
     fn kernel(k: usize) -> c64 {
-        let frac = k as f64 / crate::config::PHASE_CHANNELS as f64;
-        let lambda = crate::config::CONTEXT_LAMBDA.powf(1.0 + 3.0 * frac);
-        let omega = crate::config::CONTEXT_OMEGA * (1.0 + 4.0 * frac);
-        c64::from_polar(lambda, omega)
+        crate::config::channel_kernel(k, crate::config::PHASE_CHANNELS)
     }
 
     /// Phase state of a sentence under a given encoding.
