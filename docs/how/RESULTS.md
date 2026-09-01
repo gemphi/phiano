@@ -245,6 +245,67 @@ with no centroid attraction — should replace `train_sentence` as the default
 learning path. The method exists and is documented; flipping the ~20 call sites
 is a separate change so the perplexity effect can be measured on its own.
 
+## 3f. Catastrophic forgetting — measured at last
+
+`docs/45` asserts **"Catastrophic Forgetting: Zero"** in a comparison matrix
+against Phi-4, GLM and GPT-4. Nothing tested it. It is also the claim this
+architecture is most likely to win, which made leaving it unmeasured the biggest
+missed opportunity in the project.
+
+Domain A is the Rust Book (3,000 sentences, 750 held out); domain B is Webster's
+(3,000 entries). They share function words and little else. Three models, two of
+them bounds:
+
+| trained on | co-occurrence | ranking |
+|:---|---:|---:|
+| A only | 5,246 | 4,970 |
+| A and B **interleaved** (ceiling) | 5,533 | 5,482 |
+| A then B (the measurement) | 7,192 | 5,899 |
+| B only (floor) | 311,784 | 275,607 |
+| **retention** | **93.5%** | **98.1%** |
+| degradation on A | +37.1% | +18.7% |
+
+`retention = (ln floor − ln sequential) / (ln floor − ln ceiling)`.
+
+**The claim substantially holds.** Against a floor 50× worse, a model that
+learned an entirely new domain kept 93–98% of what it knew. That is a genuinely
+strong result and it is now measured rather than asserted.
+
+**But "zero" is wrong, and the honest number is better anyway.** Held-out
+perplexity on A still worsens by **18.7%** after learning B. "Zero catastrophic
+forgetting" invites a reviewer to find the 18.7% and dismiss the whole matrix.
+"93–98% retention against a measured floor, with 19% degradation" is a claim
+that survives scrutiny and is more informative.
+
+**The ranking objective forgets less** — 98.1% against 93.5%, degradation halved.
+That is the fourth independent measurement favouring it, after the mixing sweep,
+the relation benchmark and the dispersion trace.
+
+### Two caveats worth stating before quoting this
+
+**The n-gram tables cannot forget by construction.** Scored from counts alone the
+sequential model reads 384.70, and it would read that whatever it learned next:
+tallies are never overwritten. So a large part of the system is trivially immune,
+and the measurement above is deliberately taken at γ = 1 to put the *manifold*
+under test instead.
+
+**Retention is measured on the weak component.** Those γ = 1 perplexities are in
+the thousands because the phase back-off is a poor language model on its own — 
+§3 established that. Retention is a valid measurement of what the manifold keeps;
+it is not a claim that the manifold is good.
+
+### The bug this benchmark shipped with
+
+The first run reported retention of exactly 100.0%, with the ceiling and the
+sequential model identical to two decimal places. They were the same model:
+training all of A and then all of B *is* the sequential condition, so using it as
+the joint ceiling made retention 1.0 by construction. The ceiling now interleaves
+the domains round-robin, and a regression test asserts the two conditions produce
+different models.
+
+A benchmark that reports a perfect score is to be distrusted before it is
+believed.
+
 ## 3d. Footprint after interning
 
 The n-gram tables keyed on owned `String`s: each bigram follower stored a full

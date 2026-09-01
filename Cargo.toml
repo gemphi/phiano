@@ -49,6 +49,10 @@ name = "relations"
 path = "src/bin/relations.rs"
 
 [[bin]]
+name = "forgetting"
+path = "src/bin/forgetting.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

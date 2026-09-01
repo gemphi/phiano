@@ -39,6 +39,17 @@ Where:
 
 ---
 
+> **Measured results.** Figures in this README are design targets. For what the
+> system actually scores on held-out data — perplexity against a Kneser-Ney
+> baseline, relation accuracy, catastrophic-forgetting retention, and real model
+> sizes — see [`docs/how/RESULTS.md`](docs/how/RESULTS.md). Where a measurement
+> contradicts a target, the measurement is correct. Notably: a dictionary-scale
+> model is **59.2 MB**, not the 2-12 MB targeted below; the phase manifold does
+> not currently improve next-word prediction over word frequency; and forgetting
+> retention is 93-98%, not zero.
+
+---
+
 ## 2. Phinum Multi-Resolution Engines (16 | 32 | 64 Cores)
 
 | Engine | Active Resolution | Angular Width | Harmonic Perspectives | Target Deployment |

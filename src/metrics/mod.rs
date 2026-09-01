@@ -4,6 +4,7 @@
 
 pub mod baseline;
 pub mod kn_baseline;
+pub mod forgetting;
 pub mod harness;
 pub mod relation;
 pub mod eval_split;
