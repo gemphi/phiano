@@ -189,6 +189,62 @@ relational structure. That does not make it worthless — it is still the reason
 positions are non-arbitrary — but the claim that it grounds *meaning* is not yet
 supported by anything measured.
 
+## 3e. The objective is what creates relational structure
+
+§3c measured relation accuracy under co-occurrence training and found zero
+analogy signal. That was an incomplete experiment: §3 had already shown the
+ranking objective recovers 27x more predictive signal, and the relations run had
+not used it. Re-run across all three regimes, on 12,000 dictionary definitions
+(41,489-word vocabulary):
+
+| objective | pair > random | near@10 | near@50 | analogy@1 | analogy@5 | MRR |
+|:---|---:|---:|---:|---:|---:|---:|
+| co-occurrence | **69%** | 5% | 5% | 0.00% | 0.00% | 0.0005 |
+| **ranking** | 53% | 5% | **10%** | **0.62%** | **1.59%** | **0.0120** |
+| both | 55% | 5% | 5% | 0.00% | 0.00% | 0.0006 |
+| *chance* | *50%* | *0.02%* | *0.12%* | *0.0024%* | *0.0121%* |
+
+A clean dissociation, and the third measurement to point the same way.
+
+**Co-occurrence groups; ranking structures.** Centroid attraction is markedly
+better at the crude question — is `woman` closer to `man` than a random word is —
+at 69% against 50% chance. It produces **exactly zero** relational structure.
+The ranking objective is barely above chance at grouping (53%) and is the only
+regime where an analogy is ever solved: 0.62% at rank 1 against 0.0024% chance,
+and a mean reciprocal rank 24x the co-occurrence figure.
+
+**Read the analogy number carefully.** 0.62% of ~162 analogies is *one correct
+answer*. At chance you would expect 0.004, so a single hit is unlikely — but it
+is one hit, and n = 1 deserves no more weight than that. The trustworthy number
+is **MRR: 0.0120 against 0.0005**, because it averages over all 162 trials rather
+than counting a single success.
+
+**Running both is worse than running the better one.** On every relational
+metric, `both` matches co-occurrence rather than ranking. The two objectives
+interfere — the third independent observation of this, after the perplexity
+sweep and the dispersion trace.
+
+**Ranking also collapses least**, holding dispersion at 0.9968 against 0.9544.
+
+### And it is now the cheap option
+
+`train_predictive` recomputed the prefix centroid at every position, making it
+O(L²·D) per sentence — which is why it cost 157 seconds against co-occurrence's
+10. Carrying the per-channel accumulators forward makes it O(L·D) for the same
+result:
+
+| | before | after |
+|:---|---:|---:|
+| 12,000 definitions | 157.2s | **5.4s** (29x) |
+
+The better objective is now also the faster one, which removes the only argument
+for the current default.
+
+**Recommendation:** `Trainer::train` — record n-grams and amplitudes, then rank,
+with no centroid attraction — should replace `train_sentence` as the default
+learning path. The method exists and is documented; flipping the ~20 call sites
+is a separate change so the perplexity effect can be measured on its own.
+
 ## 3d. Footprint after interning
 
 The n-gram tables keyed on owned `String`s: each bigram follower stored a full

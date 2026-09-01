@@ -95,39 +95,106 @@ fn main() {
     );
 
     let trainer = Trainer::new(LEARNING_RATE);
-    let mut facet = Facet::new();
 
-    let start = std::time::Instant::now();
-    for _ in 0..epochs {
-        for (word, def) in &selected {
-            trainer.train_definition(&mut facet, word, def);
+    // Train the same data under different objectives.
+    //
+    // The mixing sweep in RESULTS §3 found that training the manifold on
+    // next-word ranking rather than centroid attraction moved its recovered
+    // predictive signal from 0.9% to 24.3% — 27x, from the objective alone. If
+    // relational structure is going to appear anywhere, it should appear under
+    // the objective that already demonstrated it carries more information.
+    let mut trained: Vec<(String, Facet)> = Vec::new();
+
+    for regime in ["co-occurrence", "ranking", "both"] {
+        let mut facet = Facet::new();
+        let start = std::time::Instant::now();
+
+        for _ in 0..epochs {
+            for (word, def) in &selected {
+                let text = format!("{} {}", word, def);
+                match regime {
+                    "co-occurrence" => {
+                        trainer.train_sentence(&mut facet, &text);
+                    }
+                    "ranking" => {
+                        // One structural pass to populate the lexicon and the
+                        // n-gram tables, then the ranking objective alone.
+                        let seed = Trainer { learning_rate: 0.0, neg_samples: 0 };
+                        seed.train_sentence(&mut facet, &text);
+                        trainer.train_predictive(&mut facet, &text);
+                        trainer.train_predictive(&mut facet, &text);
+                    }
+                    _ => {
+                        trainer.train_full(&mut facet, &text);
+                    }
+                }
+            }
+        }
+
+        println!(
+            "  [{}] {:?}  vocabulary {}  dispersion {:.4}",
+            regime,
+            start.elapsed(),
+            facet.vocabulary_size(),
+            facet.phase_dispersion()
+        );
+        trained.push((regime.to_string(), facet));
+    }
+
+    println!("\n{:<16} {:>12} {:>9} {:>9} {:>10} {:>10} {:>8}",
+        "objective", "pair>random", "near@10", "near@50", "analog@1", "analog@5", "MRR");
+    let mut best_report: Option<RelationReport> = None;
+    for (name, facet) in &trained {
+        let r = RelationBenchmark::evaluate(facet, &families);
+        let near10: f64 = r.families.iter().map(|f| f.neighbour_top10).sum::<f64>()
+            / r.families.len().max(1) as f64;
+        let near50: f64 = r.families.iter().map(|f| f.neighbour_top50).sum::<f64>()
+            / r.families.len().max(1) as f64;
+        let a5: f64 = r.families.iter().map(|f| f.analogy_top5).sum::<f64>()
+            / r.families.len().max(1) as f64;
+        let mrr: f64 = r.families.iter().map(|f| f.analogy_mrr).sum::<f64>()
+            / r.families.len().max(1) as f64;
+        println!(
+            "{:<16} {:>11.0}% {:>8.0}% {:>8.0}% {:>9.2}% {:>9.2}% {:>8.4}",
+            name,
+            r.overall_pair_vs_random * 100.0,
+            near10 * 100.0,
+            near50 * 100.0,
+            r.overall_analogy_top1 * 100.0,
+            a5 * 100.0,
+            mrr
+        );
+        if best_report.is_none() {
+            best_report = Some(r);
         }
     }
+    let chance = best_report.as_ref().map(|r| r.chance_analogy_top1).unwrap_or(0.0);
     println!(
-        "trained in {:?}  |  vocabulary {}  |  dispersion {:.4}",
-        start.elapsed(),
-        facet.vocabulary_size(),
-        facet.phase_dispersion()
+        "{:<16} {:>11.0}% {:>8.2}% {:>8.2}% {:>9.4}% {:>9.4}%",
+        "CHANCE", 50.0,
+        1000.0 / trained[0].1.vocabulary_size().max(1) as f64,
+        5000.0 / trained[0].1.vocabulary_size().max(1) as f64,
+        chance * 100.0, chance * 5.0 * 100.0
     );
 
+    // Detailed per-family view for the strongest regime, plus the grounding
+    // ablation, using the co-occurrence model for continuity with earlier runs.
+    let mut facet = trained.remove(0).1;
     let before = RelationBenchmark::evaluate(&facet, &families);
-    print_report("A. after definition training", &before);
+    print_report("per-family, co-occurrence training", &before);
 
-    // Does grounding — placing each word at the centre of mass of its own
-    // definition — improve relational structure, or only tidy it?
     DefinitionGrounder::ground_phases(&mut facet, &store);
     println!("dispersion after grounding: {:.4}", facet.phase_dispersion());
     let after = RelationBenchmark::evaluate(&facet, &families);
-    print_report("B. after definition grounding", &after);
+    print_report("per-family, after definition grounding", &after);
 
     println!("\n--- verdict ---");
-    let chance = before.chance_analogy_top1 * 100.0;
     let best = before.overall_analogy_top1.max(after.overall_analogy_top1) * 100.0;
     println!(
         "analogy: best {:.2}% against {:.4}% chance — {}",
         best,
-        chance,
-        match best > chance * 10.0 {
+        before.chance_analogy_top1 * 100.0,
+        match best > before.chance_analogy_top1 * 100.0 * 10.0 {
             true => "well above chance; the manifold encodes the relation",
             false => "at or near chance; the manifold does not encode the relation",
         }

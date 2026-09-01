@@ -22,6 +22,14 @@ use crate::facet::Facet;
 use crate::phasor::{fnv1a, SpectralPhasor};
 use serde::{Deserialize, Serialize};
 
+/// Random comparisons drawn per pair for the similarity test.
+///
+/// A single draw per pair gives ~23 Bernoulli trials across the whole probe
+/// set — a standard error near 10%, enough for the figure to swing 30 points
+/// between runs of the same experiment. Averaging many draws makes the number
+/// worth comparing.
+const RANDOM_DRAWS: usize = 64;
+
 /// One ordered pair standing in some relation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RelationPair {
@@ -41,7 +49,9 @@ pub struct FamilyResult {
     pub name: String,
     /// Pairs whose members were both in the lexicon.
     pub usable_pairs: usize,
-    /// Fraction of pairs beating a random word. Chance = 0.5.
+    /// Fraction of (pair, random word) comparisons the pair wins. Chance = 0.5.
+    /// Averaged over `RANDOM_DRAWS` draws per pair, so it is stable enough to
+    /// compare between runs.
     pub pair_vs_random: f64,
     /// Fraction of pairs where `b` is among the 10 nearest to `a`.
     pub neighbour_top10: f64,
@@ -174,7 +184,8 @@ impl RelationBenchmark {
             .filter(|p| facet.contains_word(&p.a) && facet.contains_word(&p.b))
             .collect();
 
-        let mut wins = 0usize;
+        let mut wins_frac = 0.0f64;
+        let mut wins_n = 0usize;
         let mut top10 = 0usize;
         let mut top50 = 0usize;
 
@@ -182,15 +193,25 @@ impl RelationBenchmark {
             let pa = &facet.lexicon[&p.a];
             let pb = &facet.lexicon[&p.b];
 
-            // 1. pair versus a deterministically chosen random word
-            let r = (fnv1a(&p.a) ^ (i as u64)) as usize;
-            if let Some(rand_word) = facet.lexicon.keys().nth(r % facet.lexicon.len().max(1)) {
-                if rand_word != &p.a && rand_word != &p.b {
-                    let pr = &facet.lexicon[rand_word];
-                    if pa.resonance(pb) > pa.resonance(pr) {
-                        wins += 1;
-                    }
+            // 1. pair versus random, averaged over many deterministic draws
+            let target = pa.resonance(pb);
+            let vocab: Vec<&String> = facet.lexicon.keys().collect();
+            let (mut hits, mut draws) = (0usize, 0usize);
+            for d in 0..RANDOM_DRAWS {
+                let r = (fnv1a(&p.a) ^ ((i as u64) << 32) ^ (d as u64).wrapping_mul(0x9E3779B9))
+                    as usize;
+                let cand = vocab[r % vocab.len().max(1)];
+                if cand == &p.a || cand == &p.b {
+                    continue;
                 }
+                draws += 1;
+                if target > pa.resonance(&facet.lexicon[cand]) {
+                    hits += 1;
+                }
+            }
+            if draws > 0 {
+                wins_frac += hits as f64 / draws as f64;
+                wins_n += 1;
             }
 
             // 2. neighbourhood
@@ -235,7 +256,10 @@ impl RelationBenchmark {
         FamilyResult {
             name: family.name.clone(),
             usable_pairs: usable.len(),
-            pair_vs_random: wins as f64 / n,
+            pair_vs_random: match wins_n {
+                0 => 0.0,
+                k => wins_frac / k as f64,
+            },
             neighbour_top10: top10 as f64 / n,
             neighbour_top50: top50 as f64 / n,
             analogy_top1: a1 as f64 / t,
