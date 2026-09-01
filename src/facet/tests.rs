@@ -1,4 +1,5 @@
 use super::*;
+use crate::config::TWO_PI;
 
 #[test]
 fn test_empty_facet() {
@@ -68,4 +69,70 @@ fn test_prune_singletons_halves_a_sparse_table() {
     assert!(f.ngram_entries() < before / 2);
     // The frequent transition survives.
     assert!(f.bigram_probability("the", "cat") > 0.0);
+}
+
+/// The failure the collapse guard exists to detect, and the reason the global
+/// figure could not see it.
+///
+/// A long-tailed lexicon: 100 frequent words collapsed onto a single angle, and
+/// 3,000 rare words spread uniformly. Every task the model is scored on draws
+/// its candidates from the frequent band, so this manifold is useless — and
+/// `phase_dispersion` reads above 0.95, well clear of the 0.40 floor. The band
+/// measure reads it as the collapse it is.
+#[test]
+fn test_global_dispersion_is_blind_to_a_collapsed_frequent_band() {
+    let mut f = Facet::new();
+
+    const FREQUENT: usize = 100;
+    const RARE: usize = 3_000;
+
+    for i in 0..FREQUENT {
+        let mut p = SpectralPhasor::new(1.234, 1.0, 1);
+        p.count = 1_000;
+        f.lexicon.insert(format!("frequent_{i}"), p);
+    }
+    for i in 0..RARE {
+        let theta = TWO_PI * i as f64 / RARE as f64;
+        let mut p = SpectralPhasor::new(theta, 1.0, 1);
+        p.count = 1;
+        f.lexicon.insert(format!("rare_{i}"), p);
+    }
+
+    let global = f.phase_dispersion();
+    let band = f.dispersion_top(FREQUENT);
+
+    assert!(
+        global > 0.95,
+        "global dispersion should be dominated by the tail, got {global:.4}"
+    );
+    assert!(
+        band < 0.01,
+        "the frequent band is one angle; dispersion should be ~0, got {band:.4}"
+    );
+    assert!(
+        global >= crate::cognitive::grounding::DISPERSION_FLOOR
+            && band < crate::cognitive::grounding::DISPERSION_FLOOR,
+        "this is the blind spot: the global figure passes the floor ({global:.4}) \
+         while the band fails it ({band:.4})"
+    );
+}
+
+#[test]
+fn test_dispersion_above_and_top_agree_with_the_global_form_on_a_flat_lexicon() {
+    let mut f = Facet::new();
+    for i in 0..64 {
+        let mut p = SpectralPhasor::new(TWO_PI * i as f64 / 64.0, 1.0, 1);
+        p.count = 7;
+        f.lexicon.insert(format!("w{i}"), p);
+    }
+    let global = f.phase_dispersion();
+    assert!((f.dispersion_above(7) - global).abs() < 1e-12);
+    assert!((f.dispersion_above(0) - global).abs() < 1e-12);
+    // Asking for more words than exist is the whole lexicon.
+    assert!((f.dispersion_top(1_000) - global).abs() < 1e-12);
+    // Every count is equal, so any rank cut admits every word.
+    assert!((f.dispersion_top(8) - global).abs() < 1e-12);
+    // A floor above every count leaves nothing to measure; report no collapse
+    // rather than a false one.
+    assert_eq!(f.dispersion_above(8), 1.0);
 }

@@ -29,8 +29,19 @@ pub struct BenchmarkReport {
     /// 1.0 = phases spread uniformly, 0.0 = every word at one angle.
     /// Logged beside every score because coherence rises as this falls.
     pub phase_dispersion: f64,
+    /// The same measure over the frequent band only — the words every scored
+    /// task actually draws on. The global figure is a tail average and stays
+    /// near 1.0 while the band collapses, so this is the one the alarm watches.
+    /// `serde(default)` because reports written before this field existed
+    /// deserialise as 0.0, which the monitor would read as total collapse.
+    #[serde(default = "one")]
+    pub band_dispersion: f64,
     /// Sector-occupancy inequality; rises as the manifold concentrates.
     pub sector_gini: f64,
+}
+
+fn one() -> f64 {
+    1.0
 }
 
 #[derive(Debug, Default)]
@@ -74,6 +85,7 @@ impl BenchmarkRunner {
             arc_results,
             shortcut_warnings: shortcuts,
             phase_dispersion: facet.phase_dispersion(),
+            band_dispersion: facet.dispersion_top(crate::cognitive::grounding::GUARD_BAND_TOP),
             sector_gini: facet.sector_gini(),
         }
     }

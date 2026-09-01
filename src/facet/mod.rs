@@ -291,15 +291,47 @@ impl Facet {
     /// word sits at the same angle. Dispersion falling while `coherence` rises
     /// is the signature of collapse rather than learning.
     pub fn phase_dispersion(&self) -> f64 {
-        let n = self.lexicon.len();
+        self.dispersion_above(0)
+    }
+
+    /// [`Facet::phase_dispersion`] restricted to words seen at least `floor` times.
+    ///
+    /// The global figure is dominated by the tail. A vocabulary of 30,000 words
+    /// whose 500 most frequent members have collapsed onto one angle still reads
+    /// ~0.98, because the 29,500 rare words retain their initialisation and
+    /// average away. Every task the model is scored on — next-word ranking,
+    /// relational probes, sentence completion — draws its candidates from the
+    /// frequent band, so that is the band whose dispersion has to be watched.
+    pub fn dispersion_above(&self, floor: u32) -> f64 {
+        let (n, sx, sy) = self
+            .lexicon
+            .values()
+            .filter(|p| p.count >= floor)
+            .fold((0usize, 0.0f64, 0.0f64), |(n, x, y), p| {
+                (n + 1, x + p.phase.cos(), y + p.phase.sin())
+            });
         if n == 0 {
             return 1.0;
         }
-        let (sx, sy) = self
-            .lexicon
-            .values()
-            .fold((0.0f64, 0.0f64), |(x, y), p| (x + p.phase.cos(), y + p.phase.sin()));
         1.0 - (sx.hypot(sy) / n as f64)
+    }
+
+    /// Dispersion of the `k` most frequent words.
+    ///
+    /// A rank cut rather than a count cut, for when the absolute frequencies are
+    /// corpus-dependent but the shape of the band is not.
+    pub fn dispersion_top(&self, k: usize) -> f64 {
+        if k == 0 {
+            return 1.0;
+        }
+        let mut counts: Vec<u32> = self.lexicon.values().map(|p| p.count).collect();
+        if counts.len() <= k {
+            return self.phase_dispersion();
+        }
+        // Select the k-th largest count; ties admit a few extra words, which is
+        // the conservative direction (a wider band can only look more dispersed).
+        counts.sort_unstable_by(|a, b| b.cmp(a));
+        self.dispersion_above(counts[k - 1])
     }
 
     /// Gini coefficient of sector occupancy.

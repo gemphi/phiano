@@ -45,6 +45,9 @@ pub struct EpochMetrics {
     pub coherence: f64,
     /// 1.0 = phases spread uniformly, 0.0 = fully collapsed.
     pub phase_dispersion: f64,
+    /// The same over the frequent band. Collapse shows up here epochs before the
+    /// global figure moves, because the global figure is diluted by the tail.
+    pub band_dispersion: f64,
     /// Sector-occupancy inequality; rises as the manifold concentrates.
     pub sector_gini: f64,
     pub vocab_size: usize,
@@ -195,6 +198,8 @@ impl Harness {
                 valid_ppl_no_phase: Self::perplexity_no_phase(&facet, &split.valid),
                 coherence: Self::mean_coherence(&facet, &split.valid),
                 phase_dispersion: facet.phase_dispersion(),
+                band_dispersion: facet
+                    .dispersion_top(crate::cognitive::grounding::GUARD_BAND_TOP),
                 sector_gini: facet.sector_gini(),
                 vocab_size: facet.vocabulary_size(),
                 mean_amplitude: facet.average_amplitude(),

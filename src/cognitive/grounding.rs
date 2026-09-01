@@ -63,6 +63,21 @@ impl Groundable for ChunkStore {
 /// regions" from becoming "collapses" without anyone noticing.
 pub const DISPERSION_FLOOR: f64 = 0.40;
 
+/// The band the guard actually watches.
+///
+/// The global dispersion figure is a tail average and cannot see the failure the
+/// guard exists to detect: on a 30k vocabulary, the 500 most frequent words can
+/// collapse onto a single angle while the number still reads 0.98, because the
+/// rare words keep their initialisation and dominate the mean. Every scored task
+/// draws its candidates from the frequent band, so the guard is applied there —
+/// and to the whole lexicon, since either collapsing is a failure.
+pub const GUARD_BAND_TOP: usize = 2_000;
+
+/// Global and frequent-band dispersion, in that order.
+pub fn dispersion_pair(facet: &Facet) -> (f64, f64) {
+    (facet.phase_dispersion(), facet.dispersion_top(GUARD_BAND_TOP))
+}
+
 /// Grounding engine for aligning lexical phases with source semantics.
 pub struct DefinitionGrounder;
 
@@ -128,7 +143,7 @@ impl DefinitionGrounder {
             return 0;
         }
 
-        let before = facet.phase_dispersion();
+        let (before, before_band) = dispersion_pair(facet);
         let mut candidate = facet.clone();
         let report = Conception::compose_anchored(
             &mut candidate,
@@ -142,24 +157,33 @@ impl DefinitionGrounder {
             anchor,
             None,
         );
-        let after = candidate.phase_dispersion();
+        let (after, after_band) = dispersion_pair(&candidate);
 
-        if after < DISPERSION_FLOOR {
+        if after < DISPERSION_FLOOR || after_band < DISPERSION_FLOOR {
+            let which = match after < DISPERSION_FLOOR {
+                true => "global",
+                false => "top-band",
+            };
             println!(
-                "  [compose] REJECTED: dispersion {:.3} -> {:.3}, below the {:.2} floor. \
+                "  [compose] REJECTED on {}: dispersion {:.3} -> {:.3}, \
+                 top-{} band {:.3} -> {:.3}, floor {:.2}. \
                  Keeping the pre-composition manifold.",
-                before, after, DISPERSION_FLOOR
+                which, before, after, GUARD_BAND_TOP, before_band, after_band, DISPERSION_FLOOR
             );
             return 0;
         }
 
         *facet = candidate;
         println!(
-            "  [compose] {} of {} definitions composed, dispersion {:.3} -> {:.3}",
+            "  [compose] {} of {} definitions composed, dispersion {:.3} -> {:.3}, \
+             top-{} band {:.3} -> {:.3}",
             report.heads_moved,
             entries.len(),
             before,
-            after
+            after,
+            GUARD_BAND_TOP,
+            before_band,
+            after_band
         );
         report.heads_moved
     }

@@ -316,6 +316,12 @@ impl RelationBenchmark {
         let beating = facet
             .lexicon
             .par_iter()
+            // The floor defines the pool the rank is *against*. Without this the
+            // sweep filtered only the probe pairs and the chance denominator
+            // while every ranking still ran over the whole lexicon, so the
+            // reported ratios compared a rank from one pool to a chance level
+            // from another.
+            .filter(|(_, p)| p.count >= floor)
             .filter(|(w, _)| w.as_str() != target && !exclude.contains(&w.as_str()))
             .filter(|(_, p)| query.resonance(p) > target_score)
             .count();
@@ -403,7 +409,16 @@ impl RelationBenchmark {
 
             // 1. pair versus random, averaged over many deterministic draws
             let target = pa.resonance(pb);
-            let vocab: Vec<&String> = facet.lexicon.keys().collect();
+            // Distractors come from the pool, not the lexicon, and in a fixed
+            // order — a HashMap's iteration order is not stable across runs, and
+            // this vector is indexed by a deterministic hash.
+            let mut vocab: Vec<&String> = facet
+                .lexicon
+                .iter()
+                .filter(|(_, p)| p.count >= floor)
+                .map(|(w, _)| w)
+                .collect();
+            vocab.sort_unstable();
             let (mut hits, mut draws) = (0usize, 0usize);
             for d in 0..RANDOM_DRAWS {
                 let r = (fnv1a(&p.a) ^ ((i as u64) << 32) ^ (d as u64).wrapping_mul(0x9E3779B9))
@@ -423,7 +438,7 @@ impl RelationBenchmark {
             }
 
             // 2. neighbourhood
-            if let Some((rank, _)) = Self::rank_of(facet, pa, &p.b, &[&p.a]) {
+            if let Some((rank, _)) = Self::rank_of_above(facet, pa, &p.b, &[&p.a], floor) {
                 if rank <= 10 {
                     top10 += 1;
                 }
@@ -452,7 +467,7 @@ impl RelationBenchmark {
                     Some(x) => x,
                     None => continue,
                 };
-                let ranked = Self::rank_of(facet, &query, &q.b, &[&p.a, &p.b, &q.a]);
+                let ranked = Self::rank_of_above(facet, &query, &q.b, &[&p.a, &p.b, &q.a], floor);
                 if let Some((rank, _)) = ranked {
                     tested += 1;
                     if rank == 1 {
@@ -665,5 +680,69 @@ mod tests {
         let q = RelationBenchmark::analogy_query(&facet, "man", "woman", "king").unwrap();
         // The query must differ from the word it started from.
         assert!(q.resonance(&facet.lexicon["king"]) < 0.999);
+    }
+
+    /// The floor has to reach the ranker, not just the probe filter.
+    ///
+    /// This is the bug the sweep shipped with: `evaluate_above` filtered which
+    /// pairs were scored and which pool the chance level was computed from, but
+    /// every ranking still ran over the whole lexicon. A rank drawn from 70,000
+    /// distractors reported against a 4,000-word chance level is not a
+    /// measurement of anything.
+    #[test]
+    fn test_the_floor_restricts_the_ranking_pool() {
+        let mut facet = Facet::new();
+
+        // The query sits exactly on the rare words and a little off the target,
+        // so every rare word is a *strictly* closer match. Above the floor the
+        // target stands alone and ranks first; at floor 0 the rare words are in
+        // the pool and bury it.
+        let mut query = SpectralPhasor::new(0.0, 1.0, 1);
+        for k in 0..SpectralPhasor::channels() {
+            query.set_theta(k, 0.0);
+        }
+        query.sync_phase();
+
+        {
+            let target = facet.get_or_init("target");
+            target.count = 100;
+            for k in 0..SpectralPhasor::channels() {
+                target.set_theta(k, 0.5);
+            }
+            target.sync_phase();
+        }
+
+        for i in 0..200 {
+            let p = facet.get_or_init(&format!("rare{i}"));
+            p.count = 1;
+            for k in 0..SpectralPhasor::channels() {
+                p.set_theta(k, 0.0);
+            }
+            p.sync_phase();
+        }
+
+        let (rank_all, _) =
+            RelationBenchmark::rank_of_above(&facet, &query, "target", &[], 0).unwrap();
+        let (rank_floored, _) =
+            RelationBenchmark::rank_of_above(&facet, &query, "target", &[], 50).unwrap();
+
+        assert!(
+            rank_all > rank_floored,
+            "the rare words should be distractors at floor 0 ({rank_all}) and \
+             absent at floor 50 ({rank_floored})"
+        );
+        assert_eq!(rank_floored, 1, "above the floor the target stands alone");
+    }
+
+    #[test]
+    fn test_pool_size_tracks_the_floor() {
+        let mut facet = Facet::new();
+        for i in 0..10 {
+            let p = facet.get_or_init(&format!("w{i}"));
+            p.count = i as u32 + 1;
+        }
+        assert_eq!(RelationBenchmark::pool_size(&facet, 0), 10);
+        assert_eq!(RelationBenchmark::pool_size(&facet, 5), 6);
+        assert_eq!(RelationBenchmark::pool_size(&facet, 11), 0);
     }
 }

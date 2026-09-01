@@ -84,16 +84,23 @@ impl ModelMonitor {
     /// dispersion is the architecture's characteristic failure. It is invisible
     /// to every score that is itself a function of synchronisation, which is why
     /// it needs its own alarm.
+    /// The alarm is raised on the *frequent band*, not the whole lexicon. A rare
+    /// word that never trains keeps its initial angle, so on a long-tailed
+    /// vocabulary the global mean stays near 1.0 no matter what the trained
+    /// words do — the global figure measures the part of the model that cannot
+    /// fail.
     pub fn check_collapse(&self, current: &BenchmarkReport) -> Option<Alert> {
-        match current.phase_dispersion < COLLAPSE_DISPERSION {
+        let worst = current.phase_dispersion.min(current.band_dispersion);
+        match worst < COLLAPSE_DISPERSION {
             true => Some(Alert {
                 alert_type: "manifold_collapse".to_string(),
                 message: format!(
-                    "Phase dispersion {:.4} below {:.2} — the lexicon is synchronising \
+                    "Phase dispersion {:.4} global / {:.4} frequent-band, below {:.2} — \
+                     the lexicon is synchronising \
                      (see docs/how/02_the_kuramoto_step.md)",
-                    current.phase_dispersion, COLLAPSE_DISPERSION
+                    current.phase_dispersion, current.band_dispersion, COLLAPSE_DISPERSION
                 ),
-                severity: 1.0 - current.phase_dispersion,
+                severity: 1.0 - worst,
             }),
             false => None,
         }
