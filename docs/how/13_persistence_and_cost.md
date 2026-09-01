@@ -84,8 +84,11 @@ pub trigrams:   HashMap<(u32,u32), Vec<(u32,u32)>>,   // 8 bytes/entry, no alloc
 pub phase_lags: HashMap<(u32,u32), f32>,              // 12 bytes/entry
 ```
 
-Plus singleton pruning after bulk ingest. Projected: **92 MB → 6–10 MB**, which
-lands squarely inside the README's Phinum32/64 envelope.
+Projected: **92 MB → 6–10 MB**, which lands squarely inside the README's
+Phinum32/64 envelope — and losslessly. (Singleton pruning would shrink it
+further, but measurement puts the cost at 81% perplexity on this corpus; see
+[HOW 04 §8](04_cooccurrence_memory.md). Interning is the change that costs
+nothing.)
 
 ---
 

@@ -39,6 +39,10 @@ pub struct Model {
     pub cognitive_core: CognitiveCore,
     /// Journal of taught corrections, replayed after grounding.
     pub corrections: crate::correction::CorrectionLog,
+    /// Gap detection, carrying its ledger across turns.
+    pub envisioner: Envision,
+    /// Local dictionary, consulted before the user is asked about a gap.
+    pub chunk_store: ChunkStore,
 }
 
 impl Model {
@@ -104,6 +108,8 @@ impl Model {
         Self {
             turns_since_save: 0,
             corrections,
+            envisioner: Envision::new(),
+            chunk_store: ChunkStore::new("data/chunks"),
             facet,
             trainer: Trainer::new(config::LEARNING_RATE),
             memo,
@@ -217,6 +223,7 @@ impl Model {
             context_buffer: &mut self.context_buffer,
             cognitive_core: &self.cognitive_core,
             corrections: &mut self.corrections,
+            gaps: Some(&self.envisioner.ledger),
             arg,
             line,
         };
@@ -267,14 +274,29 @@ impl Model {
         let _ = self.corrections.save(config::CORRECTION_FILE);
     }
 
-    /// Envision phase: detect knowledge gaps and project what to learn next.
+    /// Envision phase: detect knowledge gaps and close them where possible.
     ///
-    /// After each command, checks for unknown words in the input and
-    /// suggests related known words that might help define them.
-    fn envision(&self, text: &str) {
-        match Envision::new().detect_gaps(&self.facet, text) {
-            Some(v) => println!("{}", v),
-            None => {}
+    /// Unknown words are resolved against the local dictionary first and only
+    /// escalated to the user when that fails, so the loop is autonomous in the
+    /// common case and respectful of attention in the rare one. Anything it
+    /// resolves is learned properly, definition chain and all.
+    fn envision(&mut self, text: &str) {
+        let vision = self.envisioner.detect_gaps(
+            &mut self.facet,
+            Some(&self.chunk_store),
+            text,
+        );
+
+        if let Some(v) = vision {
+            for word in &v.auto_learned {
+                self.trainer.learn_definition_chain(
+                    &mut self.facet,
+                    &self.chunk_store,
+                    word,
+                    config::DEFINITION_CHAIN_DEPTH,
+                );
+            }
+            println!("{}", v);
         }
     }
 

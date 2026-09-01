@@ -47,6 +47,21 @@ impl Stats {
             println!("         see docs/how/02_the_kuramoto_step.md");
         }
 
+        if let Some(gaps) = ctx.gaps {
+            if gaps.unresolved_count() > 0 {
+                println!();
+                println!("  ── knowledge gaps ──");
+                println!("  Words seen but still unknown: {}", gaps.unresolved_count());
+                let top = gaps.unresolved_ranked();
+                for (word, count) in top.iter().take(8) {
+                    println!("    {:<24} seen {}x", word, count);
+                }
+                if top.len() > 8 {
+                    println!("    ... and {} more", top.len() - 8);
+                }
+            }
+        }
+
         if !ctx.corrections.is_empty() {
             println!();
             println!("  ── corrections ──");

@@ -35,3 +35,37 @@ fn test_dominant_band() {
     f.lexicon.insert("c".into(), SpectralPhasor::new(0.0, 1.0, 3));
     assert_eq!(f.dominant_band(), 3);
 }
+
+#[test]
+fn test_smoothed_bigram_never_zero_for_known_context() {
+    let mut f = Facet::new();
+    for _ in 0..3 {
+        f.record_bigram("the", "cat");
+    }
+    // Raw MLE gives an unseen continuation exactly zero, which makes held-out
+    // likelihood infinite; the discounted estimator leaves back-off mass.
+    assert_eq!(f.bigram_probability("the", "zebra"), 0.0);
+    let (p, backoff) = f.bigram_discounted("the", "zebra");
+    assert_eq!(p, 0.0);
+    assert!(backoff > 0.0, "unseen continuations must retain back-off mass");
+
+    let (p_seen, _) = f.bigram_discounted("the", "cat");
+    assert!(p_seen > 0.0 && p_seen < 1.0);
+}
+
+#[test]
+fn test_prune_singletons_halves_a_sparse_table() {
+    let mut f = Facet::new();
+    for _ in 0..5 {
+        f.record_bigram("the", "cat");
+    }
+    for i in 0..20 {
+        f.record_bigram("the", &format!("rare{}", i));
+    }
+    let before = f.ngram_entries();
+    let (bi, _tri) = f.prune_singletons();
+    assert_eq!(bi, 20, "every singleton should go");
+    assert!(f.ngram_entries() < before / 2);
+    // The frequent transition survives.
+    assert!(f.bigram_probability("the", "cat") > 0.0);
+}

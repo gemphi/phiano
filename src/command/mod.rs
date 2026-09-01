@@ -44,6 +44,8 @@ pub struct Context<'a> {
     pub cognitive_core: &'a CognitiveCore,
     /// Persisted journal of taught corrections, so they survive a re-ingest.
     pub corrections: &'a mut crate::correction::CorrectionLog,
+    /// Outstanding knowledge gaps, when the caller tracks them.
+    pub gaps: Option<&'a crate::envision::GapLedger>,
     /// The argument string after the command name (trimmed).
     pub arg: &'a str,
     /// The full raw input line.

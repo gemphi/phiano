@@ -257,6 +257,7 @@ pub async fn command(
         context_buffer: &mut model.context_buffer,
         cognitive_core: &model.cognitive_core,
         corrections: &mut model.corrections,
+        gaps: Some(&model.envisioner.ledger),
         arg,
         line: &line,
     };

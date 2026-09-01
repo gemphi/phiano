@@ -3,7 +3,7 @@
 > _Audited against the source, not against memory. Verified by grep on
 > `src/` at the current commit, not by what the commit messages claim._
 
-**65 of 88 proposed fixes are in.** Every document now has at least one fix applied.
+**71 of 88 proposed fixes are in.** Every document now has at least one fix applied.
 
 Legend: **A** applied · **P** partial · **—** not applied
 
@@ -27,8 +27,8 @@ Legend: **A** applied · **P** partial · **—** not applied
 | **04** | Long-range structure for the re-ranker | **A** | recurrent `ContextWaveBuffer` |
 | | Phase-layer ablation reported | **A** | `bin/experiment` |
 | | Intern vocabulary to u32 IDs | **—** | still `HashMap<String, …>`; model still 92 MB |
-| | Smoothing on Facet's own tables | **P** | in `PhianoLM` (scoring) only; `bigram_probability` is still raw MLE and returns 0.0 for unseen |
-| | Prune singleton n-grams | **—** | |
+| | Smoothing on Facet's own tables | **A** | `bigram_discounted` / `trigram_discounted` return `(p, backoff)` |
+| | Prune singleton n-grams | **A** | implemented and **measured**: −80.7% size, +81% perplexity. A trade, not a win — see RESULTS §3b |
 | **05** | Two-phase (Jacobi) grounding | **A** | order-independent now |
 | | Iterate to convergence | **A** | `GROUNDING_ROUNDS = 5` |
 | | Skip function words | **A** | |
@@ -51,10 +51,10 @@ Legend: **A** applied · **P** partial · **—** not applied
 | | Memory-based novelty in `Evaluator` | **A** | `Evaluator::eval_with_memory` |
 | | Fix the eval-weight disagreement | **A** | |
 | | Retire the misleading metrics | **A** | all three rewritten to held-out perplexity; ARC labelled a proxy |
-| **09** | Semantic suggestions via the manifold | **—** | **entire doc unapplied** |
-| | Gap ledger (track what was asked) | **—** | |
-| | Escalate to sources before asking the user | **—** | |
-| | Length prefilter, stop cloning every key | **—** | |
+| **09** | Semantic suggestions via the manifold | **A** | context wave ray-cast, blended 40/60 with spelling |
+| | Gap ledger (track what was asked) | **A** | `GapLedger`, ask-limit 3, ranked agenda in `stats` |
+| | Escalate to sources before asking the user | **A** | dictionary first, then the user; auto-learns the chain |
+| | Length prefilter, stop cloning every key | **A** | borrows keys, skips candidates >3 chars different |
 | **10** | Graded correction | **A** | `correct_graded` |
 | | Spare words shared with the correction | **A** | |
 | | Amplitude floor below initial | **A** | `CORRECTION_FLOOR = 0.3` |
@@ -103,7 +103,6 @@ Legend: **A** applied · **P** partial · **—** not applied
 
 | Group | Unapplied | Why it matters |
 |:---|:---|:---|
-| **Envision** (09) | all 4 | The best control loop in the system, still using spelling similarity while a manifold sits unused beside it. |
 | **Memory depth** (12) | semantic layers, hierarchy retrieval, consolidation | The 4-layer hierarchy is still built for display and never consulted during retrieval. |
 | **Footprint** (04, 13) | interning, pruning, f32 | The 92 MB against a documented 2–12 MB target. Mechanical, large, contained. |
 | **Generation** (11) | sampling, beam, degeneration logging | |
@@ -115,19 +114,15 @@ Legend: **A** applied · **P** partial · **—** not applied
 
 The 23 outstanding items fall into four groups.
 
-1. **Envision (HOW 09, 4 items).** The only document with nothing applied. Gap
-   detection still compares spellings, so `photosynthesis` suggests `photograph`
-   while the manifold that could suggest `plant` goes unread.
-2. **Footprint (HOW 04, 13 — 5 items).** Interning the vocabulary to u32 ids,
-   pruning singleton n-grams, f32 phasors. Mechanical, large, and the difference
-   between a 92 MB artifact and the documented 2–12 MB.
-3. **Depth (HOW 12, 16, A1 — 6 items).** Semantic memory layers, hierarchical
+1. **Footprint (HOW 04, 13 — 2 items).** Interning the vocabulary to u32 ids and
+   f32 phasors: the lossless route from a 92 MB artifact to the documented
+   2–12 MB. Pruning turned out to be the lossy route (RESULTS §3b), so interning
+   is now the whole of this group.
+2. **Depth (HOW 12, 16, A1 — 6 items).** Semantic memory layers, hierarchical
    retrieval, consolidation, a non-linear readout, sequential credit assignment,
-   Alpha/Beta weight competition. These are the research items rather than the
-   defects.
-4. **Assorted (8 items).** β anchoring, a `Groundable` trait, multiplicative
-   compounds, a sector index, real sampling, beam search, ingestion cleaning,
-   Kneser-Ney on the Facet's own tables rather than only in the scorer.
+   Alpha/Beta weight competition. Research items rather than defects.
+3. **Assorted (9 items).** β anchoring, a `Groundable` trait, multiplicative
+   compounds, a sector index, real sampling, beam search, ingestion cleaning.
 
 Nothing left in the list is a case of the code reporting success it did not
 achieve — that class is now closed.

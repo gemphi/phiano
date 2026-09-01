@@ -161,6 +161,29 @@ fn main() {
         all.extend(rows);
     }
 
+    // ---- D. does singleton pruning cost quality? ----
+    println!("\n=== D. singleton n-gram pruning ===");
+    {
+        let mut pruned = co_occurrence.clone();
+        let before_entries = pruned.ngram_entries();
+        let before_ppl = PhianoLM::with_gamma(&pruned, 0.0).perplexity(&split.valid);
+
+        let (bi, tri) = pruned.prune_singletons();
+        let after_entries = pruned.ngram_entries();
+        let after_ppl = PhianoLM::with_gamma(&pruned, 0.0).perplexity(&split.valid);
+
+        let shrink = 100.0 * (1.0 - after_entries as f64 / before_entries.max(1) as f64);
+        let cost = 100.0 * (after_ppl / before_ppl - 1.0);
+
+        println!("  n-gram entries : {} → {}  ({:.1}% smaller)", before_entries, after_entries, shrink);
+        println!("  dropped        : {} bigram, {} trigram singletons", bi, tri);
+        println!("  held-out ppl   : {:.2} → {:.2}  ({:+.1}%)", before_ppl, after_ppl, cost);
+        println!(
+            "  verdict        : {}",
+            if cost < 5.0 { "cheap on this corpus" } else { "a real size/quality trade - do not prune by default" }
+        );
+    }
+
     println!("\n--- conclusion ---");
     let best = best_row(&all);
     match best.gamma > 0.0 {

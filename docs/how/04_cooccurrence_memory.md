@@ -238,8 +238,12 @@ close to nil.
    allocations from the decode loop.
 2. **Kneser–Ney smoothing** (§5) — no zero probabilities, and gives you the
    baseline number.
-3. **Prune singletons** after bulk ingestion — halves the table, negligible
-   quality cost.
+3. **Prune singletons** — implemented as `Facet::prune_singletons`, but
+   **measure before using it**. On this corpus it shrinks the table 80.7% and
+   costs 81% perplexity (148.92 → 269.89): on a corpus this size most n-grams
+   are singletons and they carry most of the coverage. It is a size/quality
+   trade, not the free win claimed here originally. Interning is the lossless
+   way to get footprint back.
 4. **Make the manifold contribute long-range structure** by replacing the summed
    context buffer with the recurrent complex state of HOW 11:
    $h_t = \lambda R\, h_{t-1} + z_t$. That gives the re-ranker information the

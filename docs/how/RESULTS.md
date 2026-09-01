@@ -113,6 +113,29 @@ best when it is closest to uniform is a distribution that does not know much —
 which is the same conclusion the recovery percentage reports, arrived at
 independently.
 
+## 3b. A claim of mine that measurement refuted
+
+[HOW 04 §8](04_cooccurrence_memory.md) and [HOW 13 §4](13_persistence_and_cost.md)
+both asserted that pruning singleton n-grams would roughly halve the table at
+"negligible quality cost". It does not.
+
+| | before | after |
+|:---|---:|---:|
+| n-gram entries | 136,807 | 26,338 (**−80.7%**) |
+| held-out perplexity | 148.92 | 269.89 (**+81.2%**) |
+
+On a corpus of 7,757 sentences with a 6,016-word vocabulary, most n-grams are
+singletons *and they carry most of the coverage* — discarding them discards the
+model. Pruning is a size/quality trade that pays only where repetition is heavy
+enough for singletons to be genuine noise.
+
+The lossless route to footprint is vocabulary interning, which is still
+outstanding. `Facet::prune_singletons` remains available, with the measured cost
+in its doc comment rather than the assumption that motivated it.
+
+This is the harness doing the job it was built for: the claim was plausible,
+widely true elsewhere, and wrong here.
+
 ## 4. Collapse is fixed
 
 | epoch | valid ppl | coherence | **dispersion** | gini |
