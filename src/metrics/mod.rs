@@ -7,6 +7,7 @@ pub mod kn_baseline;
 pub mod forgetting;
 pub mod harness;
 pub mod relation;
+pub mod sentence;
 pub mod eval_split;
 pub mod capacity;
 pub mod regularization;

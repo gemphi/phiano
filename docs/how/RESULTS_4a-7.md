@@ -638,3 +638,82 @@ results would have silently shifted when B3 landed.
 phase distribution meaningfully better on its own (175.10 against 183.24) and
 still loses to word frequency. That is the same conclusion §4b reached about the
 non-linear readout, from a different direction.
+
+---
+
+## §7 — Is the sentence the unit of meaning?
+
+Every measurement in this project so far has scored a **word**. Analogy is
+`word:word::word:word`. Pair-versus-random is word against word. Perplexity is
+the next word. The relation set is 305 word pairs. And γ\* = 0 has held across
+seven independent attempts — all seven of them next-word prediction.
+
+That is a gap in the measurement, not a settled result. If meaning is carried by
+sentences and a word is a hair on the coat, a representation that compresses
+*what comes next at the sentence level* could be doing its job while losing
+every word-level benchmark ever run against it.
+
+`cargo run --release --bin sentence`. Given 3 sentences of context, rank the
+true continuation against 49 distractors drawn from the held-out half. Trained
+on the first 80% in corpus order (the word-level harness shuffles, and a
+next-sentence task needs contiguity). 970 items.
+
+| scorer | top-1 | top-5 | MRR |
+|---|---|---|---|
+| chance | 2.0% | – | 0.0900 |
+| phase (bag) | **8.7%** | **21.5%** | **0.1710** |
+| phase (recurrent) | 5.2% | 17.3% | 0.1351 |
+| phase (bound) | 2.7% | 11.4% | 0.1007 |
+| **lexical overlap** | **27.9%** | **54.3%** | **0.4106** |
+
+**Not supported, as tested.** Phase reaches 1.9× chance and loses to word
+overlap by a wide margin. A representation that only partially recovers word
+repetition has re-derived a bag of words in complex arithmetic; the gap to
+*lexical*, not the gap to chance, was the claim.
+
+### The finding underneath it
+
+The first version of this benchmark had only the unordered encoder, and
+reporting "phase loses to lexical" from that alone would have been a result
+about the encoder rather than about the hypothesis: a bag of words in complex
+arithmetic cannot beat a bag of words, and asking it to is asking nothing. Three
+encodings were added so the question could actually be put.
+
+The answer is the interesting part: **order makes it worse, monotonically.**
+Bag 0.1710 → recurrent 0.1351 → bound 0.1007. And this is now the *third*
+independent place the same thing has happened:
+
+| where | unordered | ordered |
+|---|---|---|
+| inside a definition (§4d) | 81.9% pair/random | 37.7% bound |
+| two-word LM context (§4c) | 183.24 ppl | 194.32 bound |
+| sentence composition (§7) | 0.1710 MRR | 0.1007 bound |
+
+Three separate tasks, three separate scales, same direction. Rotating by
+position times the golden angle is a **faithful** order encoding — the
+swap-cosine goes negative, so the representation genuinely distinguishes
+"dog bites man" from "man bites dog" — and it is a **destructive** one, because
+it scatters the same word to a different angle in every context it appears in,
+which is precisely what a shared representation must not do.
+
+That is a finding about the binding operator, not about order. It is also the
+sharpest argument yet for a *learned* rotation: §4c already noted the recurrent
+kernel (λ, ω tuned rather than fixed) beats the golden angle at word level, and
+every rotation in this codebase is currently a compile-time constant.
+
+### What this does not test
+
+Two things, and the second is the one worth building.
+
+* **Role structure, as opposed to position.** *Money is a form of currency that
+  enables transactions; usually a paper or coin representation* carries
+  `genus(money, currency)`, `function(money, transaction)`,
+  `form(money, paper)`. Those are **typed relations**, and the type is not the
+  token's position in the sentence — *currency* is the genus whether it appears
+  third or thirtieth. Everything measured above encodes position. Role-filler
+  binding is already implemented (`SpectralPhasor::bind`/`unbind`,
+  `Wave::proposition`/`query_role`) and is not on any measured path.
+* **A learned kernel.** Fixed constants cannot adapt the rotation to the
+  relation it is meant to carry. Making the rotation differentiable is what
+  would let the manifold discover its own binding operator rather than being
+  handed one.
