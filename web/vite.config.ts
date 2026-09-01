@@ -1,21 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import phidoc from '@phiace/phidoc/vite';
+import siteConfig from './phidoc.config';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), phidoc(siteConfig)],
+  resolve: {
+    dedupe: ['react', 'react-dom', '@phiace/puijs'],
+  },
   server: {
+    host: '127.0.0.1',
+    port: 5181,
     fs: {
-      allow: [
-        path.resolve(__dirname, '..'),
-        path.resolve(__dirname, '../..'),
-        path.resolve(__dirname, '../../..'),
-        path.resolve(__dirname, '../../../phinix'),
-        path.resolve(__dirname, '../../phinix'),
-      ],
-    },
-    proxy: {
-      '/api': 'http://127.0.0.1:3002',
+      allow: ['..', '../..'],
     },
   },
   build: {
