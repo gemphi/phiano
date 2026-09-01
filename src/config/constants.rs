@@ -457,3 +457,23 @@ pub const CORRECTION_FILE: &str = "data/corrections.json";
 
 /// Phase dispersion below which generation warns that the manifold is degenerate.
 pub const DEGENERACY_WARN: f64 = 0.2;
+
+/// Ground startup phases by multi-channel composition rather than the
+/// single-channel centroid.
+///
+/// The centroid grounder writes one channel of 64 and was measured to move no
+/// relation metric. Composition across all 64 moves analogy MRR from
+/// 0.0002 ± 0.0001 to 0.0270 ± 0.0031 over five seeds on 296 pairs. Both paths
+/// remain reachable for one release so the switch can be reverted without a
+/// rebuild; the old one is then retired.
+pub const GROUND_BY_COMPOSITION: bool = true;
+
+/// Weight of the pull back toward each word's trained phase during startup
+/// composition.
+///
+/// This is a product decision, not a tuning one, because the sweep has no
+/// dominant setting: alpha = 0.25 gives the best analogy MRR and alpha = 1.00
+/// the best pair/random and a healthier manifold, monotonically, in opposite
+/// directions. 0.5 sits between them, with the dispersion floor in
+/// `cognitive::grounding` as the binding constraint rather than this constant.
+pub const COMPOSITION_ANCHOR: f64 = 0.5;

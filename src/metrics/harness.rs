@@ -750,6 +750,17 @@ impl<'a> PhianoLM<'a> {
     }
 
     /// Probability of `c` following `a b`, at this model's γ.
+    /// The context construction used by [`PhianoLM::probability`] and the
+    /// γ sweep.
+    ///
+    /// B3: measured best of the three in both training regimes — phase-alone
+    /// perplexity 173.08 against 182.69 for the two-word centroid under the
+    /// ranking objective, and 188.63 against 192.57 under co-occurrence. The
+    /// two-word centroid barely encodes order at all (swap-cosine 0.62: the
+    /// swapped context is still more similar to the original than not), and it
+    /// was the default anyway.
+    pub const DEFAULT_CONTEXT: ContextKind = ContextKind::Recurrent;
+
     pub fn probability(&self, a: &str, b: &str, c: &str) -> f64 {
         let floor = 1.0 / (self.unigram.len().max(1) as f64 * 100.0);
         let idx = match self.index.get(c) {
@@ -766,8 +777,21 @@ impl<'a> PhianoLM<'a> {
         (k + coef * base).max(1e-12)
     }
 
-    /// Perplexity over held-out sentences.
+    /// Perplexity over held-out sentences, at [`PhianoLM::DEFAULT_CONTEXT`].
+    ///
+    /// B3: the recurrent state is carried across each sentence rather than
+    /// rebuilt from the last two words at every position. `probability` sees
+    /// only a trigram and structurally cannot do this, which is why the
+    /// two-word centroid stayed the default long after it was measured worse.
     pub fn perplexity(&self, sentences: &[String]) -> f64 {
+        self.perplexity_kind(sentences, Self::DEFAULT_CONTEXT)
+    }
+
+    /// Perplexity through the trigram `probability` path only.
+    ///
+    /// Kept as the comparison point B3 is measured against, and used wherever a
+    /// caller genuinely has nothing but three words.
+    pub fn perplexity_two_word(&self, sentences: &[String]) -> f64 {
         let mut log_sum = 0.0f64;
         let mut n = 0usize;
         for sentence in sentences {
@@ -780,6 +804,69 @@ impl<'a> PhianoLM<'a> {
                 n += 1;
             }
         }
+        match n {
+            0 => f64::INFINITY,
+            _ => (-log_sum / n as f64).exp(),
+        }
+    }
+
+    /// Perplexity at an explicit context construction.
+    pub fn perplexity_kind(&self, sentences: &[String], kind: ContextKind) -> f64 {
+        if self.gamma <= 0.0 {
+            // With the phase term switched off the context is never consulted,
+            // so the cheap path is also the exact one.
+            return self.perplexity_two_word(sentences);
+        }
+
+        let floor = 1.0 / (self.unigram.len().max(1) as f64 * 100.0);
+        let (log_sum, n) = sentences
+            .par_iter()
+            .map(|sentence| {
+                let toks = Tokenizer::tokenize(sentence);
+                if toks.len() < 3 {
+                    return (0.0f64, 0usize);
+                }
+                let mut h = vec![crate::wave::c64::new(0.0, 0.0); LM_CHANNELS];
+                if kind.is_recurrent() {
+                    self.advance(&mut h, &toks[0]);
+                    self.advance(&mut h, &toks[1]);
+                }
+
+                let (mut sum, mut count) = (0.0f64, 0usize);
+                for i in 2..toks.len() {
+                    let (a, b, c) = (&toks[i - 2], &toks[i - 1], &toks[i]);
+                    let idx = self.index.get(c).copied();
+
+                    let ctx = match kind {
+                        ContextKind::Recurrent => Some(Self::state_to_ctx(&h)),
+                        ContextKind::Bound => self.context_vec_bound(a, b),
+                        ContextKind::TwoWord => self.context_vec(a, b),
+                    };
+
+                    let p = match idx {
+                        None => floor,
+                        Some(idx) => {
+                            let (k, coef) = self.affine(a, b, c);
+                            let p_uni = self.unigram[idx].max(floor);
+                            let p_ph = match ctx {
+                                Some(ref v) => self.p_phase(v, idx),
+                                None => p_uni,
+                            };
+                            let base = self.gamma * p_ph + (1.0 - self.gamma) * p_uni;
+                            (k + coef * base).max(1e-12)
+                        }
+                    };
+                    sum += p.ln();
+                    count += 1;
+
+                    if kind.is_recurrent() {
+                        self.advance(&mut h, c);
+                    }
+                }
+                (sum, count)
+            })
+            .reduce(|| (0.0f64, 0usize), |a, b| (a.0 + b.0, a.1 + b.1));
+
         match n {
             0 => f64::INFINITY,
             _ => (-log_sum / n as f64).exp(),
@@ -1143,6 +1230,44 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// The default context must be the one that was measured best, and the
+    /// no-phase path must be unaffected by the choice.
+    ///
+    /// γ = 0 removes the phase term, so context construction cannot legally
+    /// touch it. If it did, every no-phase baseline in the results would have
+    /// silently moved when B3 landed.
+    #[test]
+    fn test_default_context_is_recurrent_and_gamma_zero_is_untouched() {
+        assert_eq!(
+            PhianoLM::DEFAULT_CONTEXT,
+            ContextKind::Recurrent,
+            "B3 selected the recurrent construction on measurement"
+        );
+
+        let split = Harness::split(toy_corpus(), 42);
+        let (facet, _) = Harness::train_and_measure(&split, &Trainer::new(0.05), 3, true);
+
+        let off = PhianoLM::with_gamma(&facet, 0.0);
+        assert_eq!(
+            off.perplexity(&split.valid),
+            off.perplexity_two_word(&split.valid),
+            "at γ=0 the context is never consulted, so both paths must agree exactly"
+        );
+
+        // At γ=1 the construction is consulted, so it must make a difference —
+        // otherwise the default is a label with no effect behind it.
+        let on = PhianoLM::with_gamma(&facet, 1.0);
+        let rec = on.perplexity_kind(&split.valid, ContextKind::Recurrent);
+        let two = on.perplexity_kind(&split.valid, ContextKind::TwoWord);
+        assert!(rec.is_finite() && two.is_finite());
+        assert!(
+            (rec - two).abs() > 1e-9,
+            "the context construction must change scoring at γ=1: {} vs {}",
+            rec,
+            two
+        );
     }
 
     /// A seed must do both jobs: the same seed reproduces, a different seed

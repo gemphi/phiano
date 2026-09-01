@@ -570,3 +570,71 @@ does not survive a 300-pair benchmark with error bars* — is resolved:
 clears its interval on five seeds.
 
 B and C are now unblocked.
+
+---
+
+## §6 — Workstream B: moving the measured wins into the product
+
+### §6a — B1: composition on the startup path, behind a guard
+
+`model.rs` grounded startup phases with `DefinitionGrounder::ground_phases`,
+which writes `theta(0)` and nothing else. `ground_best` replaces it with
+`Conception::compose_anchored` across all 64 channels, at
+`COMPOSITION_ANCHOR = 0.5` and `GROUND_BY_COMPOSITION = true` (both paths remain
+reachable for one release).
+
+**The guard is the load-bearing part.** Composition concentrates the manifold —
+that is how it creates concept regions — and past a point concentration *is*
+collapse, which is the failure the whole harness exists to detect. So the
+composed facet is checked before it is kept: if phase dispersion falls below
+`DISPERSION_FLOOR = 0.40`, it is discarded and the caller keeps what it had.
+
+A guard that has never been observed to reject is a comment, not a guard, so
+both paths are driven from tests:
+
+* `test_dispersion_floor_rejects_and_preserves` composes every word toward one
+  shared definer, confirms the fixture genuinely collapses, then asserts the
+  guarded path rejects it **and leaves every channel of the caller's facet
+  untouched** — not partially composed.
+* `test_healthy_composition_is_accepted` confirms a spread-preserving
+  composition is accepted and written through.
+
+The floor of 0.40 is set from the anchor sweep, which ran from 0.54 at no anchor
+to 0.81 at a strong one, and from the earlier unguarded rule that reached 0.305.
+
+The second test needed its fixture rebuilt, which is worth recording: generated
+names (`head00`…`head39`) share a long prefix and `SpectralPhasor::seeded` lands
+them in a narrow band of channel 0 — the fixture started at dispersion 0.250 and
+stayed there, so it was testing the seeding rather than the guard. Real words
+fixed it.
+
+### §6b — B3: the recurrent context, actually made default
+
+The recurrent construction has been measured best of three since §4c and was
+still not the default, because `PhianoLM::probability` takes a trigram and
+structurally cannot carry a state across a sentence. `perplexity` now walks each
+sentence maintaining the recurrent state; `perplexity_two_word` keeps the old
+path as the comparison point.
+
+Re-measured on `rust_book_corpus.txt` after the A-workstream changes:
+
+| regime | context | swap cos | phase alone |
+|---|---|---|---|
+| co-occurrence | 2-word | 0.505 | 192.46 |
+| co-occurrence | bound | −0.410 | 193.65 |
+| co-occurrence | **recurrent** | n/a | **188.60** |
+| ranking only | 2-word | 0.613 | 183.24 |
+| ranking only | bound | −0.258 | 194.32 |
+| ranking only | **recurrent** | n/a | **175.10** |
+
+Unchanged in direction and magnitude from §4c, so the A-workstream changes did
+not disturb it. γ\* is still 0 everywhere, and the γ = 0 column is identical
+across all three constructions — asserted in
+`test_default_context_is_recurrent_and_gamma_zero_is_untouched`, because if
+context construction moved the no-phase baseline, every no-phase number in these
+results would have silently shifted when B3 landed.
+
+**What B3 does not do:** it does not move γ\*. The recurrent context makes the
+phase distribution meaningfully better on its own (175.10 against 183.24) and
+still loses to word frequency. That is the same conclusion §4b reached about the
+non-linear readout, from a different direction.

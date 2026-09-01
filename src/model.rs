@@ -87,7 +87,7 @@ impl Model {
         // dictionary, and re-running it meant the model that started was never
         // quite the model that was saved.
         if !facet.lexicon.is_empty() && facet.grounded_version < config::GROUNDING_VERSION {
-            DefinitionGrounder::ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
+            DefinitionGrounder::ground_best(&mut facet, &ChunkStore::new("data/chunks"));
         }
 
         let cognitive_core = CognitiveCore::new(ChunkStore::new("data/chunks"));
