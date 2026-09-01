@@ -41,6 +41,40 @@ use phiano::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;
 
+/// Mean and sample standard deviation of a metric across seeds.
+///
+/// Sample sd (n-1), because these runs are a sample of the seeds that could
+/// have been drawn, not the population of them. With n = 5 the difference is
+/// not cosmetic.
+#[derive(Clone, Copy, Default)]
+struct Stat {
+    mean: f64,
+    sd: f64,
+    n: usize,
+}
+
+impl Stat {
+    fn of(xs: &[f64]) -> Self {
+        let n = xs.len();
+        if n == 0 {
+            return Self::default();
+        }
+        let mean = xs.iter().sum::<f64>() / n as f64;
+        let sd = match n {
+            0 | 1 => 0.0,
+            _ => (xs.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1) as f64).sqrt(),
+        };
+        Self { mean, sd, n }
+    }
+
+    /// True when this is separated from `other` by more than the two spreads
+    /// together — the crude test, stated as crude, that an effect clears its
+    /// own noise.
+    fn separated_from(&self, other: &Stat) -> bool {
+        (self.mean - other.mean).abs() > self.sd + other.sd
+    }
+}
+
 struct Row {
     name: String,
     pair_vs_random: f64,
@@ -94,6 +128,11 @@ fn record(
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    // A3: --runs N repeats the whole experiment at N seeds and reports mean and
+    // spread. One deterministic number has no error bar, and the effects left
+    // after A2 are small enough that the interval is what decides them.
+    let runs: usize = std::env::var("RUNS").ok().and_then(|v| v.parse().ok()).unwrap_or(1);
+    let base_seed: u64 = std::env::var("SEED").ok().and_then(|v| v.parse().ok()).unwrap_or(0);
     let corpus_path = args
         .get(1)
         .cloned()
@@ -119,7 +158,7 @@ fn main() {
     // measured as 27x better at putting relational structure in the manifold.
     // Testing a composition rule on top of the weaker objective would confound
     // the two.
-    let trainer = Trainer::new(LEARNING_RATE);
+    let trainer = Trainer::new(LEARNING_RATE).with_seed(base_seed);
     let base = Harness::train_ranking_only(&split, &trainer, 4);
     println!(
         "trained: {} sentences, vocabulary {}",
@@ -356,6 +395,76 @@ fn main() {
             usable,
             covered,
             report.families.len()
+        );
+    }
+
+    // Repeat at further seeds and report the spread of the two headline
+    // conditions. Only two, because each seed is a full retrain plus fifteen
+    // compositions, and an interval on the numbers actually being claimed is
+    // worth more than a wide, thin sweep.
+    if runs > 1 {
+        println!("\n=== across {} seeds ===", runs);
+        let mut base_mrr: Vec<f64> = Vec::new();
+        let mut best_mrr: Vec<f64> = Vec::new();
+        let mut base_pair: Vec<f64> = Vec::new();
+        let mut best_pair: Vec<f64> = Vec::new();
+
+        for r in 0..runs {
+            let seed = base_seed.wrapping_add(r as u64);
+            let t = Trainer::new(LEARNING_RATE).with_seed(seed);
+            let f0 = Harness::train_ranking_only(&split, &t, 4);
+            let b = measure("baseline", &f0, &split.valid);
+
+            let mut f1 = f0.clone();
+            Conception::compose_graded(
+                &mut f1,
+                &entries,
+                rounds,
+                HEAD_STEP,
+                BETA_STRONG,
+                BETA_STRONG,
+                false,
+                None,
+            );
+            let c = measure("composed", &f1, &split.valid);
+
+            println!(
+                "  seed {:<4} baseline MRR {:.4}  composed MRR {:.4}  (pair {:.1}% -> {:.1}%)",
+                seed,
+                b.analogy_mrr,
+                c.analogy_mrr,
+                b.pair_vs_random * 100.0,
+                c.pair_vs_random * 100.0
+            );
+            base_mrr.push(b.analogy_mrr);
+            best_mrr.push(c.analogy_mrr);
+            base_pair.push(b.pair_vs_random);
+            best_pair.push(c.pair_vs_random);
+        }
+
+        let (bm, cm) = (Stat::of(&base_mrr), Stat::of(&best_mrr));
+        let (bp, cp) = (Stat::of(&base_pair), Stat::of(&best_pair));
+        println!(
+            "\n  analogy MRR   baseline {:.4} +/- {:.4}   composed {:.4} +/- {:.4}   n={}",
+            bm.mean, bm.sd, cm.mean, cm.sd, cm.n
+        );
+        println!(
+            "  pair/random   baseline {:.1}% +/- {:.1}   composed {:.1}% +/- {:.1}",
+            bp.mean * 100.0,
+            bp.sd * 100.0,
+            cp.mean * 100.0,
+            cp.sd * 100.0
+        );
+        println!(
+            "\n  VERDICT: composition {} the baseline by more than the two spreads \
+             combined on MRR, and {} on pair/random.",
+            if cm.separated_from(&bm) { "clears" } else { "does NOT clear" },
+            if cp.separated_from(&bp) { "clears" } else { "does not" }
+        );
+        println!(
+            "  (Spread-sum separation is a crude test and is labelled as one: it is \n\
+             \x20 not a t-test, and n={} is small.)",
+            cm.n
         );
     }
 

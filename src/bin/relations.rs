@@ -119,7 +119,7 @@ fn main() {
                     "ranking" => {
                         // One structural pass to populate the lexicon and the
                         // n-gram tables, then the ranking objective alone.
-                        let seed = Trainer { learning_rate: 0.0, neg_samples: 0, definitions: None };
+                        let seed = Trainer { learning_rate: 0.0, neg_samples: 0, definitions: None, seed: 0 };
                         seed.train_sentence(&mut facet, &text);
                         trainer.train_predictive(&mut facet, &text);
                         trainer.train_predictive(&mut facet, &text);

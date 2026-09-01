@@ -55,12 +55,22 @@ pub struct Trainer {
     /// the anchor's own definition is never used as a negative. `None` keeps
     /// uniform sampling, which is the control the filter has to beat.
     pub definitions: Option<std::sync::Arc<crate::conception::DefinitionGraph>>,
+    /// Mixed into every stochastic decision so a run can be repeated exactly
+    /// *and* varied deliberately.
+    ///
+    /// Training became reproducible when the sample pool stopped depending on
+    /// HashMap order, but reproducible is only half of what a measurement needs:
+    /// one number from one deterministic run has no error bar, and the effects
+    /// now being reported are small enough that the interval decides them.
+    /// Varying this and holding everything else fixed is what turns a single
+    /// figure into a distribution.
+    pub seed: u64,
 }
 
 impl Trainer {
     /// Creates a new trainer with the given learning rate.
     pub fn new(learning_rate: f64) -> Self {
-        Self { learning_rate, neg_samples: NEG_SAMPLES, definitions: None }
+        Self { learning_rate, neg_samples: NEG_SAMPLES, definitions: None, seed: 0 }
     }
 
     /// Attaches a definition graph, enabling controlled negative sampling.
@@ -68,6 +78,12 @@ impl Trainer {
     /// Without this the filter in [`Trainer::apply_negatives`] is unreachable —
     /// the field stays `None` at every construction site — so calling it is
     /// what makes the mechanism live rather than merely present.
+    /// A trainer at an explicit seed.
+    pub fn with_seed(mut self, seed: u64) -> Self {
+        self.seed = seed;
+        self
+    }
+
     pub fn with_definitions(
         mut self,
         graph: std::sync::Arc<crate::conception::DefinitionGraph>,
@@ -79,7 +95,7 @@ impl Trainer {
     /// Creates a trainer with repulsion disabled — attraction only.
     /// Retained for ablation studies; not a good default.
     pub fn attraction_only(learning_rate: f64) -> Self {
-        Self { learning_rate, neg_samples: 0, definitions: None }
+        Self { learning_rate, neg_samples: 0, definitions: None, seed: 0 }
     }
 
     /// Trains on a single sentence.
@@ -103,7 +119,7 @@ impl Trainer {
         self.record_ngrams(facet, &tokens);
 
         let n_tokens = tokens.len();
-        let step_seed = fnv1a(text);
+        let step_seed = fnv1a(text) ^ splitmix(self.seed);
 
         // Which channels this step touches. Updating a rotating subset is
         // dropout-like regularisation and bounds the cost of a token update.
@@ -272,7 +288,7 @@ impl Trainer {
         self.initialize_tokens(facet, &tokens);
         facet.rebuild_sample_pool();
 
-        let step_seed = fnv1a(text) ^ 0xA5A5_5A5A_A5A5_5A5A;
+        let step_seed = fnv1a(text) ^ 0xA5A5_5A5A_A5A5_5A5A ^ splitmix(self.seed);
         let ch_offset = (splitmix(step_seed) as usize) % PHASE_CHANNELS;
         let channels: Vec<usize> = (0..CHANNELS_PER_UPDATE.min(PHASE_CHANNELS))
             .map(|i| (ch_offset + i * 7) % PHASE_CHANNELS)
@@ -632,7 +648,7 @@ impl Trainer {
                 }
             }
 
-            let epoch_trainer = Self { learning_rate: effective_lr, neg_samples: self.neg_samples, definitions: self.definitions.clone() };
+            let epoch_trainer = Self { learning_rate: effective_lr, neg_samples: self.neg_samples, definitions: self.definitions.clone(), seed: self.seed };
             let ch: Vec<usize> = (0..CHANNELS_PER_UPDATE.min(PHASE_CHANNELS)).collect();
             epoch_trainer.apply_negatives(facet, &tokens, &ch, fnv1a(text) ^ epoch as u64);
 

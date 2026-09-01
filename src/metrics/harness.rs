@@ -158,7 +158,7 @@ impl Harness {
     pub fn train_ranking_only(split: &Split, trainer: &Trainer, passes: usize) -> Facet {
         let mut facet = Facet::new();
         // One structural pass to populate n-grams and initialise the lexicon.
-        let seed = Trainer { learning_rate: 0.0, neg_samples: 0, definitions: None };
+        let seed = Trainer { learning_rate: 0.0, neg_samples: 0, definitions: None, seed: trainer.seed };
         for s in &split.train {
             seed.train_sentence(&mut facet, s);
         }
@@ -1143,6 +1143,45 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// A seed must do both jobs: the same seed reproduces, a different seed
+    /// varies.
+    ///
+    /// Half of this is easy to get wrong in each direction. A seed that is
+    /// accepted but never mixed in gives identical runs and a fake error bar of
+    /// zero; a seed that leaks into the corpus split rather than the training
+    /// stochasticity varies the *data*, and the spread then measures the split
+    /// rather than the model.
+    #[test]
+    fn test_seed_varies_training_without_varying_the_data() {
+        let split = Harness::split(toy_corpus(), 42);
+        let train = |seed: u64| {
+            Harness::train_ranking_only(&split, &Trainer::new(0.05).with_seed(seed), 3)
+        };
+
+        let a = train(7);
+        let b = train(7);
+        let c = train(8);
+
+        let differs = |x: &Facet, y: &Facet| {
+            x.lexicon.iter().any(|(w, px)| match y.lexicon.get(w) {
+                Some(py) => (0..crate::config::PHASE_CHANNELS).any(|k| px.theta(k) != py.theta(k)),
+                None => true,
+            })
+        };
+
+        assert!(!differs(&a, &b), "the same seed must reproduce exactly");
+        assert!(differs(&a, &c), "a different seed must change the model");
+
+        // The vocabulary is a property of the corpus, not of the seed. If this
+        // moves, the seed is varying the data and the spread it produces would
+        // not be a measure of training variance.
+        assert_eq!(
+            a.vocabulary_size(),
+            c.vocabulary_size(),
+            "the seed must not change what data was seen"
+        );
     }
 
     /// The phase distribution must be a distribution, not a constant.

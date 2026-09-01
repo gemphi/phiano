@@ -319,3 +319,254 @@ a tunable rather than a guess.
    Core rather than treating all 39,938 entries as equal.
 4. Wire `sample_negative_controlled` into `Trainer::apply_negatives` and measure
    it. It is built and tested but not yet on the training path.
+
+---
+
+## §4g — Reproducibility, the anchor, and three imported mechanisms that did not pay
+
+### The finding that came first: the experiments were not reproducible
+
+`Facet::rebuild_sample_pool` built the negative-sample pool by iterating
+`lexicon`, a `HashMap`. Rust seeds `HashMap` hashing randomly **per process**,
+so every run of the same binary on the same data drew a different negative
+sequence, trained a different model, and measured different numbers.
+
+Two runs of the identical composition experiment:
+
+| condition | run A | run B |
+|---|---|---|
+| control: flat at 0.8 — analogy MRR | 0.1066 | 0.0521 |
+| control: flat at 0.8 — pair/random | 92.5% | 92.3% |
+
+Same ranking, **magnitudes a factor of two apart**. Every effect smaller than
+that gap was unfalsifiable, including several reported in §4d and §4f. The pool
+and the LM's vocabulary index are now sorted; `test_training_is_reproducible`
+pins it, and two consecutive runs now produce byte-identical grounding traces.
+
+**Everything below is from a deterministic run. §4d and §4f magnitudes should be
+read as directions, not sizes.**
+
+### Deterministic results
+
+39,938 definitions, ranking-only training, 3 composition rounds, 23 usable pairs:
+
+| condition | pair/random | analogy@1 | analogy MRR | dispersion |
+|---|---|---|---|---|
+| baseline | 69.2% | 0.62% | 0.0107 | 0.994 |
+| grounder (1 channel, centroid) | 69.5% | 0.62% | 0.0092 | 0.467 |
+| compose: bag, no rotation | 81.9% | 5.56% | 0.0654 | 0.528 |
+| compose: bound, as written | 37.7% | 0.00% | 0.0108 | 0.974 |
+| + reinforce, flat at 0.15 | 83.0% | 5.56% | 0.0643 | 0.486 |
+| + strong/weak split (dict2vec) | 87.4% | 7.41% | 0.0935 | 0.411 |
+| **control: flat at 0.8** | 91.3% | **10.49%** | **0.1177** | 0.334 |
+| anchor α=0.25 | 93.6% | 5.56% | 0.0833 | 0.369 |
+| anchor α=0.50 | 94.4% | 3.70% | 0.0574 | 0.413 |
+| anchor α=1.00 | **94.7%** | 1.85% | 0.0311 | 0.507 |
+| anchor α=2.00 | 91.3% | 1.23% | 0.0197 | 0.663 |
+| anchor + held kernel | 86.4% | 0.62% | 0.0126 | 0.766 |
+| controlled negatives (retrained) | 70.8% | 0.62% | 0.0107 | 0.994 |
+
+### What holds
+
+**Definition composition is a large, real effect.** Analogy@1 goes 0.62% → 10.49%
+and MRR ×11. The existing single-channel grounder moves neither. The limitation
+was writing one channel of sixty-four, not the idea.
+
+**The anchor is a clean dial, and there is no free lunch on it.** As α rises
+0.25 → 2.0, dispersion recovers monotonically (0.369 → 0.663) and analogy MRR
+falls monotonically (0.0833 → 0.0197). Best relation accuracy and best manifold
+spread are at opposite ends. Retrofitting's trade-off is real here and the
+project has to choose a point on it rather than hope for one that dominates.
+
+### Three imported mechanisms that measured null or negative
+
+* **Strong/weak split** (dict2vec): 0.0935 MRR versus 0.1177 for its own flat
+  control. Loses. The gain in §4f was the reinforcement *rate*, not reciprocity.
+* **Grounding-kernel scheduling** (Vincent-Lamarre): 0.0126 MRR, near baseline.
+* **Controlled negative sampling** (dict2vec): pair/random +1.6pp, MRR ±0.0000,
+  dispersion ±0.000. An honest null on this corpus.
+
+The first two share one diagnosable cause. The definition graph comes out at
+**47.5:1 weak:strong** against dict2vec's ~9:1, and the kernel at **49.6% of
+entries** against the paper's ~10%. Both numbers say the same thing: Webster's
+definer sets are inflated, because `clean_definition` strips brackets and
+apparatus but not quoted usage examples and citations. Neither mechanism has
+been given the graph it assumes, so neither is refuted — both are untested.
+
+**Cleaning the source is therefore the highest-value next change**, and it
+unblocks two mechanisms at once.
+
+---
+
+## §5 — Workstream A: the measurements, made trustworthy
+
+### §5a — A1: the definitional core
+
+`clean_definition` removed *apparatus*. It never removed *illustration*, which
+is most of a Webster's entry. `definition_core` takes the first sentence of each
+of the first three senses, cutting at Webster's own structural markers (`Note:`,
+`as,`, `See`, `Cf.`, `Syn.`).
+
+| quantity | before | after | target |
+|---|---|---|---|
+| mean definers per entry | 32.4 | **10.1** | — |
+| grounding kernel | 30.5% | **9.9%** | ≤ 20% (literature ~10%) |
+| entries surviving | — | **100%** | ≥ 90% |
+| weak∶strong, raw | 50.5∶1 | 505∶1 | — |
+| weak∶strong, after promotion | — | **6.1∶1** | ≤ 15∶1 (dict2vec ~9∶1) |
+
+The kernel landing on the published ~10% is the strongest evidence the cleaning
+is right rather than merely aggressive.
+
+Raw reciprocity gets *worse*, and that is not a regression: a 10-word gloss is
+far less likely to point back than a 32-word essay. Dict2vec never reached 9∶1
+on reciprocity either — it concatenated four modern dictionaries and promoted
+weak pairs whose words are among each other's K nearest (§3.1, K = 5).
+`promote_neighbours` implements that, and takes 727 strong pairs to 38,157.
+
+**Its first version promoted 0 of 271,300 pairs and passed its test.** It ranked
+each word only among the words it defines, which makes "a is in b's top-k"
+equivalent to "b already defines a" — logically incapable of promoting anything.
+The neighbourhood is now undirected, and the test asserts promotion *can* create
+a strong pair rather than only that it breaks nothing.
+
+### §5b — A2: the probe set, and what it did to the headline
+
+23 usable pairs across 3 families → **305 pairs across 10 families**, split
+deliberately between semantic (gender, antonym, hypernym, nationality) and
+morphological (number, comparative, past tense, agent, quality, negation),
+because a manifold can learn the second from spelling while learning nothing
+about meaning and an aggregate would hide that.
+
+**The §4g headline did not survive the larger benchmark at its reported size.**
+
+| metric | on 23 pairs | on 296 pairs |
+|---|---|---|
+| analogy@1, best condition | 10.49% | **1.55%** |
+| analogy MRR, best condition | 0.1177 | **0.0267** |
+| pair/random, best condition | 92.3% | **73.7%** |
+
+The direction survives — MRR still rises ~100× from baseline, and every
+composition condition beats the grounder — but the *magnitude* was inflated
+roughly sevenfold by a benchmark too small to measure it. This is the stop
+condition from the build order firing exactly as written, and the answer is
+"survives, much smaller", not "refuted".
+
+Per family, best condition:
+
+| family | usable | pair/random | nbr@10 | analogy MRR |
+|---|---|---|---|---|
+| hypernym | 35 | 90.8% | 17.1% | 0.0285 |
+| antonym | 35 | 87.4% | 11.4% | 0.0095 |
+| quality | 25 | 85.4% | 4.0% | 0.0513 |
+| negation | 23 | 83.9% | 26.1% | **0.0740** |
+| gender | 25 | 78.3% | 4.0% | 0.0147 |
+| nationality | 25 | 69.0% | **32.0%** | 0.0423 |
+| past tense | 34 | 67.7% | 8.8% | 0.0136 |
+| agent | 29 | 64.5% | 3.4% | 0.0214 |
+| number | 35 | 63.1% | 5.7% | 0.0108 |
+| comparative | 30 | 48.1% | 0.0% | 0.0011 |
+
+The breakdown is the point. **Comparative is at chance** (48.1% pair/random is
+a coin flip), while hypernym and antonym are strong — so the manifold is not
+merely learning spelling. Negation and nationality lead on analogy, which is
+what a phase-offset representation should be best at: both are near-uniform
+transformations applied to a stem.
+
+### §5c — A4: the latency claim, measured
+
+69,786-word vocabulary, 1.06M n-gram entries, held-out words never seen in
+training. p50 / p99, in microseconds:
+
+| path | p50 | p99 | what it is |
+|---|---|---|---|
+| learn | **49 µs** | 301 µs | unseen word + definition composed into 64 channels |
+| correct | **22 µs** | 95 µs | one fact overridden, logged and applied |
+| unlearn | **0.05 µs** | 0.09 µs | prior phase restored — one struct write |
+| recall | 5.9 ms | 7.3 ms | resonance against all 69,786 words, linear scan |
+
+Unlearning is a single struct write because nothing else in the model encoded
+the fact. That is the architectural claim, and it is now a number.
+
+Recall is the outlier and the honest one: this is the full linear scan, which is
+what is wired today. The sector index exists and is not on this path — making it
+so is C1's job, and 5.9 ms is the baseline it has to beat.
+
+**The comparison is stated, not measured.** Installing one fact by gradient
+descent is a forward pass, a backward pass and an optimiser step over every
+adapted parameter — conventionally hundreds of milliseconds to seconds even for
+one LoRA step on a GPU, and one step rarely installs a fact. No such run was
+performed here. Quoting a ratio against a number nobody ran is exactly the kind
+of unmeasured assertion this harness exists to catch.
+
+### §5d — A side effect worth more than the task that produced it
+
+Expanding the probe set wedged the experiment, and the cause was `resonance`
+calling `cos` **64 times per comparison**. Resonance is the innermost operation
+in every retrieval, relation probe and analogy — one pass of the new benchmark
+makes ~190 million of these calls.
+
+Channels are quantised to one byte (`CHANNEL_QUANTA` = 256), so the angular
+difference between two channels is always one of 256 values and its cosine is a
+**table lookup on the byte difference**. Exact, not approximate: the
+quantisation already happened when the phase was stored.
+`test_resonance_matches_the_transcendental_form` asserts agreement to 1e-12, and
+`test_cos_table_matches_cos` recomputes every entry so a generated table cannot
+rot.
+
+This makes every retrieval path in the engine faster, not just the benchmark.
+
+### §5e — A3: the effect, with an error bar
+
+Training became reproducible when the sample pool stopped depending on HashMap
+order, but reproducible is only half of what a measurement needs. One
+deterministic number has no error bar, and after A2 shrank the headline
+sevenfold the remaining effects were small enough that the interval decides
+them.
+
+`Trainer::with_seed` mixes a seed into every stochastic decision. Two failure
+modes are easy here and both are tested against: a seed that is accepted but
+never mixed in gives identical runs and a *fake* error bar of zero, and a seed
+that leaks into the corpus split varies the data, so the spread would measure
+the split rather than the model.
+`test_seed_varies_training_without_varying_the_data` asserts same-seed
+reproduction, different-seed variation, and an unchanged vocabulary.
+
+Five seeds, full retrain each, 296 usable pairs:
+
+| seed | baseline MRR | composed MRR | pair/random |
+|---|---|---|---|
+| 100 | 0.0002 | 0.0278 | 64.9% → 74.5% |
+| 101 | 0.0002 | 0.0216 | 63.6% → 74.2% |
+| 102 | 0.0002 | 0.0279 | 63.5% → 74.1% |
+| 103 | 0.0002 | 0.0280 | 64.7% → 73.9% |
+| 104 | 0.0004 | 0.0294 | 63.4% → 73.6% |
+
+| metric | baseline | composed |
+|---|---|---|
+| analogy MRR | 0.0002 ± 0.0001 | **0.0270 ± 0.0031** |
+| pair/random | 64.0% ± 0.7 | **74.1% ± 0.3** |
+
+**Composition clears its own noise by a wide margin on both metrics.** The
+spread is tight — a standard deviation of 0.0031 on a mean of 0.0270, about 11%
+— so the ~135× lift over baseline is not a seed artefact.
+
+The separation test used is the crude one (means further apart than the two
+spreads combined) and is labelled as crude in the output: it is not a t-test,
+and n = 5 is small. It is enough to settle the question A2 raised.
+
+### Workstream A, closed
+
+| task | acceptance criterion | result |
+|---|---|---|
+| A1 | kernel ≤ 20%, weak∶strong ≤ 15∶1, ≥ 90% entries survive | 9.9%, 6.1∶1, 100% — **pass** |
+| A2 | ≥ 300 pairs, ≥ 8 families, per-family reported | 305 pairs, 10 families, 296 usable — **pass** |
+| A3 | `--seed`/`--runs`, all figures carry ± | 5 seeds, mean ± sd — **pass** |
+| A4 | p50 and p99 for learn / unlearn / answer, stated baseline | 49 µs / 0.05 µs / 5.9 ms — **pass** |
+
+The build order's stop condition on composition — *kill it if the analogy gain
+does not survive a 300-pair benchmark with error bars* — is resolved:
+**it survives**, at roughly a seventh of the magnitude first reported, and
+clears its interval on five seeds.
+
+B and C are now unblocked.

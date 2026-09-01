@@ -2,9 +2,9 @@
 
 Agent-facing work plan. Every task has an acceptance criterion that is a number,
 because this project's results have only been trustworthy where they were
-falsifiable. Written against `HEAD 8097133`, 137 tests passing.
+falsifiable. Written against `HEAD 8097133`; workstream A closed at 145 tests passing.
 
-Full results: `docs/how/RESULTS_4a-4g.md`.
+Full results: `docs/how/RESULTS_4a-5e.md`.
 
 ---
 
@@ -15,8 +15,15 @@ at next-word prediction: two training objectives × three context constructions 
 readout on/off, all γ\* = 0. That question is settled.
 
 The same measurements say Phiano builds real relational structure from
-definitions (analogy@1 0.62% → 10.49%), retains 98.1% after training on a new
-domain, and edits a single fact in milliseconds.
+definitions — analogy MRR 0.0002 ± 0.0001 → **0.0270 ± 0.0031** across five
+seeds on a 296-pair benchmark — retains 98.1% after training on a new domain,
+and installs a fact in **49 µs**, removes one in **0.05 µs**.
+
+> **Corrected after A2.** This section first cited analogy@1 0.62% → 10.49%.
+> That rested on 23 usable pairs. On 296 pairs the same condition gives 1.55%,
+> so the original figure overstated the effect roughly sevenfold. The effect is
+> real and clears its interval on five seeds; its size was a benchmark
+> artefact.
 
 **A system with those properties is an editable knowledge substrate, not a weak
 language model, and it has been benchmarked against the wrong opponent.** The
@@ -29,29 +36,49 @@ where that reframing turns into evidence.
 
 ## What holds, what does not, what is untested
 
+Figures below are post-A1/A2: cleaned definitions, 296 usable pairs.
+
 | Mechanism | Result | Verdict |
 |---|---|---|
-| Multi-channel definition composition | analogy@1 0.62 → 10.49% | **Holds** |
-| Mutual reinforcement between definers | MRR 0.0107 → 0.1177 | **Holds** |
-| Retrofitting anchor (α) | dispersion 0.37 → 0.66 | **Holds as a dial** |
+| Multi-channel definition composition | MRR 0.0002 ± 0.0001 → 0.0270 ± 0.0031 (n=5) | **Holds** |
+| Mutual reinforcement between definers | MRR 0.0248 → 0.0267 | **Holds, small** |
+| Retrofitting anchor (α) | dispersion 0.54 → 0.81 as α rises, MRR falls with it | **Holds as a dial** |
 | Non-linear readout (HOW 16) | γ\* stays 0 at 99.5% coverage | **Refuted** |
-| Positional binding inside definitions | pair/random −31.5pp | **Refuted** |
-| dict2vec strong/weak split | 0.0935 vs 0.1177 control | **Untested** |
-| Grounding-kernel scheduling | MRR 0.0126, ≈ baseline | **Untested** |
-| Controlled negative sampling | MRR ±0.0000 | **Untested** |
+| Positional binding inside definitions | pair/random −14.2pp | **Refuted** |
+| dict2vec strong/weak split | 0.0193 vs 0.0267 flat control | **Refuted on this source** |
+| Grounding-kernel scheduling | MRR 0.0002, ≈ baseline | **Refuted on this source** |
+| Controlled negative sampling | MRR ±0.0000 | **Refuted on this source** |
 
-The last three share one cause: `clean_definition` strips brackets and
-apparatus but not Webster's quoted usage examples, so every definer set is
-inflated. The graph comes out 47.5:1 weak:strong against dict2vec's ~9:1, and
-the kernel at 49.6% of entries against the literature's ~10%. **One fix unblocks
-three mechanisms** — hence task A1.
+The last three moved from *untested* to *refuted on this source*: A1 gave them
+the graph they assume (kernel 9.9% against the literature's ~10%, weak∶strong
+6.1∶1 against dict2vec's ~9∶1) and they still do not pay. That is now a result
+rather than a missing control. It does not generalise beyond Webster's — all
+three were developed against modern dictionaries with controlled vocabularies.
+
+Mutual reinforcement shrank the most under the corrected benchmark: it was the
+largest single effect on 23 pairs and is a small one on 296. Composition across
+64 channels, not the back-pull, is what carries the result.
 
 ---
 
-## A — Make the measurements trustworthy  *(blocks B, C, E)*
+## A — Make the measurements trustworthy  *(COMPLETE — B, C, E unblocked)*
 
 Until a number can be checked and its error bar is smaller than the effect being
 claimed, no other workstream can report a result.
+
+**Closed.** All four acceptance criteria met; see `docs/how/RESULTS_4a-5e.md`
+§5a–§5e.
+
+| task | criterion | result |
+|---|---|---|
+| A1 | kernel ≤ 20%, weak∶strong ≤ 15∶1, ≥ 90% survive | 9.9%, 6.1∶1, 100% |
+| A2 | ≥ 300 pairs, ≥ 8 families | 305 pairs, 10 families, 296 usable |
+| A3 | seeds and intervals everywhere | 5 seeds, mean ± sd |
+| A4 | p50/p99 for learn, unlearn, answer | 49 µs, 0.05 µs, 5.9 ms |
+
+The stop condition on composition fired and was answered: the analogy gain
+**survives** a 300-pair benchmark at roughly a seventh of its first reported
+magnitude — analogy MRR 0.0002 ± 0.0001 → 0.0270 ± 0.0031 across five seeds.
 
 - **A1 — Strip quoted usage from dictionary entries.** Extend `clean_definition`
   to drop quotation sentences and citation attributions.
