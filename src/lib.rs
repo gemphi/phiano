@@ -40,6 +40,7 @@ pub mod storage;
 pub mod synthesis;
 pub mod synthetic;
 pub mod tokenizer;
+pub mod topdown;
 pub mod trainer;
 pub mod wave;
 pub mod wiki_bulk;
