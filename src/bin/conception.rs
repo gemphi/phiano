@@ -216,6 +216,10 @@ fn main() {
     // flat rule above pulls both at the same rate, which gives a passing
     // mention the same weight as a reciprocal definition.
     let mut graph = DefinitionGraph::build(&entries);
+    // Before promotion: the kernel is a property of the definitional graph, and
+    // promotion adds edges inferred from phase similarity rather than from
+    // definition. Peeling the promoted graph mixes the two and measures neither.
+    let kernel = graph.kernel();
     let (raw_strong, raw_weak) = graph.counts();
     // Dict2vec SS3.1: promote a weak pair to strong when the two words are among
     // each other's K nearest. Raw reciprocity alone gives 505:1 on a cleaned
@@ -269,12 +273,11 @@ fn main() {
     // 0.986 to 0.327, which is a third of the way to collapse — the anchor is
     // the term that competes with the neighbour pull, and the sweep is what
     // says whether the relation gains survive keeping the manifold spread.
-    let kernel = graph.kernel();
     println!(
-        "grounding kernel: {} of {} entries ({:.1}%)",
+        "grounding kernel (pre-promotion): {} of {} nodes ({:.1}%)",
         kernel.len(),
-        entries.len(),
-        100.0 * kernel.len() as f64 / entries.len().max(1) as f64
+        graph.nodes(),
+        100.0 * kernel.len() as f64 / graph.nodes().max(1) as f64
     );
     for a in [0.25f64, 0.5, ANCHOR, 2.0] {
         let mut f = base.clone();

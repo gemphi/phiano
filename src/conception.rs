@@ -576,6 +576,12 @@ impl DefinitionGraph {
     /// takes. Whatever grounds those words has to come from outside the
     /// definitions: corpus statistics here, sensorimotor experience in Harnad's
     /// original framing.
+    ///
+    /// **Compute this before promotion.** The kernel is a property of the
+    /// definitional graph — which words the lexicographer used to define which
+    /// others. Promotion adds edges inferred from phase similarity, which is a
+    /// different relation, and peeling a graph that mixes the two measures
+    /// neither.
     pub fn kernel(&self) -> std::collections::HashSet<String> {
         let mut alive: std::collections::HashSet<String> = self.edges.keys().cloned().collect();
 
@@ -599,6 +605,16 @@ impl DefinitionGraph {
                 return alive;
             }
         }
+    }
+
+    /// Nodes in the graph.
+    ///
+    /// Not the same as the number of entries it was built from: promotion adds
+    /// reverse edges, and a reverse edge whose target had no entry of its own
+    /// introduces a new node. Reporting kernel size against the entry count
+    /// after promotion produced a share of 103.5%, which is how that was found.
+    pub fn nodes(&self) -> usize {
+        self.edges.len()
     }
 
     /// `(strong, weak)` edge counts. Reported so the ratio can be sanity-checked

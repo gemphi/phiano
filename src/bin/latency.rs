@@ -50,8 +50,11 @@ fn pct(sorted: &[Duration], p: f64) -> Duration {
     sorted[idx.saturating_sub(1).min(sorted.len() - 1)]
 }
 
-fn ms(d: Duration) -> f64 {
-    d.as_secs_f64() * 1000.0
+/// Microseconds. Two of these paths are a phase write and a table insert, which
+/// land below a millisecond's resolution; printing them as "0.000 ms" reads as a
+/// broken measurement rather than as the point.
+fn us(d: Duration) -> f64 {
+    d.as_secs_f64() * 1_000_000.0
 }
 
 struct Path {
@@ -65,12 +68,12 @@ impl Path {
         let mut s = self.samples.clone();
         s.sort();
         println!(
-            "  {:<10} n={:<5} p50 {:>9.3} ms   p99 {:>9.3} ms   max {:>9.3} ms   {}",
+            "  {:<10} n={:<4} p50 {:>10.2} us   p99 {:>10.2} us   max {:>10.2} us   {}",
             self.name,
             s.len(),
-            ms(pct(&s, 50.0)),
-            ms(pct(&s, 99.0)),
-            ms(*s.last().unwrap_or(&Duration::ZERO)),
+            us(pct(&s, 50.0)),
+            us(pct(&s, 99.0)),
+            us(*s.last().unwrap_or(&Duration::ZERO)),
             self.note
         );
     }
@@ -203,7 +206,7 @@ fn main() {
         Path {
             name: "unlearn",
             samples: unlearn,
-            note: "prior phase restored".into(),
+            note: "prior phase restored — one struct write".into(),
         },
     ];
 
