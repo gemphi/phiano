@@ -1192,3 +1192,91 @@ from the dictionary's own numbering, phasors from an already-trained facet, null
 from a fixed-seed xorshift at matched sample size. Two runs give identical
 tables. That is what makes a 1.31× and an 8.57× comparable at all — and it is
 why the reproducibility fix in §5e was the precondition for everything after it.
+
+---
+
+## §13 — The floor sweep, and a correction to §12
+
+§12 ended by saying the relational headlines were averaged over a mostly
+untrained vocabulary, and that restricting to trained words might raise them
+several-fold. That was stated as unknown until run. It has now been run, and the
+answer is the opposite.
+
+### The sweep
+
+`RelationBenchmark::evaluate_above` restricts the candidate pool to words seen at
+least *n* times. Restricting the pool **shrinks** it, which removes distractors
+and inflates every raw score for free — so chance is recomputed at each floor and
+only the ratio columns compare.
+
+| floor | pool | probe pairs | analogy MRR | chance | **ratio** | nbr@10 | **vs chance** |
+|---|---|---|---|---|---|---|---|
+| 0 | 69,582 | 296 | 0.0002 | 0.00017 | **1.4×** | 0.3% | **19.9×** |
+| 5 | 20,162 | 277 | 0.0002 | 0.00052 | 0.4× | 0.3% | 6.3× |
+| 25 | 4,461 | 148 | 0.0004 | 0.00201 | 0.2× | 0.7% | 3.0× |
+| 100 | 1,062 | 49 | 0.0010 | 0.00710 | 0.1× | 1.2% | 1.3× |
+| 200 | 497 | 23 | 0.0009 | 0.01365 | 0.1× | 0.0% | 0.0× |
+
+**Performance relative to chance falls monotonically as the untrained tail is
+removed.** Below 1.0 is worse than random. The relational signal the benchmark
+measures does not come from well-trained words — it is strongest when the pool
+is dominated by rare ones.
+
+### Reconciling that with §12
+
+§12 reported frequent heads at **14.14× noise coherence** and I described it as
+strong relational structure. Both readings cannot be right.
+
+Coherence measures whether pairs share an offset, and there is a degenerate way
+to score well on it: if the frequent words are all clustered together, every
+offset between them is small and similar. Consistent near-zero offsets are near
+perfect coherence and useless for ranking, because everything is near everything.
+
+| floor | words | phase dispersion |
+|---|---|---|
+| 0 | 69,582 | 0.988 |
+| 5 | 20,162 | 0.962 |
+| 25 | 4,461 | 0.889 |
+| 100 | 1,062 | 0.754 |
+| 200 | 497 | **0.681** |
+
+**Monotone, and it settles it.** The frequent words sit in a narrower region of
+the manifold. §12's 14.14× is substantially a **local collapse artefact**, not
+relational structure, and the floor sweep is what a collapsed cluster looks like
+from the ranking side.
+
+**I reported 14.14× as strong structure one section ago. It is not, and that
+correction is the result here.**
+
+### The structural finding underneath
+
+The training rule is Kuramoto coupling, which **synchronises**. The words updated
+most often synchronise most. So the objective concentrates exactly the words it
+sees most — and the effect is invisible in every dispersion number this project
+has reported, because global dispersion is 0.988 while the top 497 words sit at
+0.681. **Sixty-five thousand rare words parked at their spread-out hash seeds are
+carrying the average.**
+
+That is a monitoring blind spot, not just a result:
+
+* `DISPERSION_FLOOR = 0.40` in the startup guard is computed **globally**. A
+  facet whose top 500 words had collapsed to 0.2 would still read ~0.98 overall
+  and sail through.
+* The same is true of `phase_dispersion` in `EpochMetrics`, which is how every
+  training run in this project has been watched for collapse.
+
+**The guard should be computed on the trained subset, or on the worst band, not
+on the whole lexicon.** That is a small change and it invalidates nothing already
+measured — but until it lands, "no collapse detected" means "no collapse among
+words the model barely saw".
+
+### What this leaves standing
+
+* The prime-frequency result (§10a, −11.1% perplexity) is untouched: it is
+  held-out perplexity, not a relational metric.
+* γ\* = 0 is untouched, for the same reason.
+* The reproducibility and null-control machinery (§5e, §11) is what caught both
+  this and the raw-coherence inversion, and is the part of this work that has
+  paid the most.
+* Every *relational* number in §5b, §9, §10b, §11 and §12 should be treated as
+  unresolved until re-run with a dispersion-aware, floor-aware protocol.

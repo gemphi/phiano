@@ -86,6 +86,18 @@ pub struct RelationBenchmark;
 /// between conditions is still exact.
 const MAX_ANALOGY_PARTNERS: usize = 8;
 
+/// A word's minimum training count for it to enter the candidate pool.
+///
+/// Every relational headline in this project was computed over the full 70k
+/// vocabulary, of which most words were seen fewer than five times. A word seen
+/// four times has phases essentially equal to its hash seed, so those words
+/// contribute noise to every ranking and pull every average down.
+///
+/// Restricting the pool also *shrinks* it, which makes the task easier — so the
+/// pool size and chance level are reported at every floor and the comparison is
+/// ratio-to-chance, never a raw score against a raw score.
+pub type CountFloor = u32;
+
 impl RelationBenchmark {
     /// The default probe set: 305 pairs across 10 relation families.
     ///
@@ -284,6 +296,16 @@ impl RelationBenchmark {
         target: &str,
         exclude: &[&str],
     ) -> Option<(usize, Vec<String>)> {
+        Self::rank_of_above(facet, query, target, exclude, 0)
+    }
+
+    fn rank_of_above(
+        facet: &Facet,
+        query: &SpectralPhasor,
+        target: &str,
+        exclude: &[&str],
+        floor: CountFloor,
+    ) -> Option<(usize, Vec<String>)> {
         // Only the target's rank and the top few are wanted, so counting how
         // many words beat the target is enough — no full sort of the vocabulary,
         // which at 70k words inside a doubly-nested analogy loop was the reason
@@ -341,11 +363,33 @@ impl RelationBenchmark {
     }
 
     /// Evaluates one family.
+    /// Words eligible for the candidate pool at a given floor.
+    pub fn pool_size(facet: &Facet, floor: CountFloor) -> usize {
+        match floor {
+            0 => facet.vocabulary_size(),
+            f => facet.lexicon.values().filter(|p| p.count >= f).count(),
+        }
+    }
+
     pub fn evaluate_family(facet: &Facet, family: &RelationFamily) -> FamilyResult {
+        Self::evaluate_family_above(facet, family, 0)
+    }
+
+    /// [`RelationBenchmark::evaluate_family`] with a pool floor.
+    pub fn evaluate_family_above(
+        facet: &Facet,
+        family: &RelationFamily,
+        floor: CountFloor,
+    ) -> FamilyResult {
+        let above = |w: &str| {
+            facet.lexicon.get(w).is_some_and(|p| p.count >= floor.max(1))
+        };
+        // A probe pair whose own words are below the floor cannot be scored
+        // against a pool that excludes them.
         let usable: Vec<&RelationPair> = family
             .pairs
             .iter()
-            .filter(|p| facet.contains_word(&p.a) && facet.contains_word(&p.b))
+            .filter(|p| above(&p.a) && above(&p.b))
             .collect();
 
         let mut wins_frac = 0.0f64;
@@ -443,12 +487,26 @@ impl RelationBenchmark {
 
     /// Evaluates every family and summarises.
     pub fn evaluate(facet: &Facet, families: &[RelationFamily]) -> RelationReport {
+        Self::evaluate_above(facet, families, 0)
+    }
+
+    /// [`RelationBenchmark::evaluate`] over a candidate pool restricted to words
+    /// seen at least `floor` times.
+    ///
+    /// `vocabulary_size` in the returned report is the **pool** size, not the
+    /// lexicon's, so the chance levels beside it are the ones that actually
+    /// apply.
+    pub fn evaluate_above(
+        facet: &Facet,
+        families: &[RelationFamily],
+        floor: CountFloor,
+    ) -> RelationReport {
         let results: Vec<FamilyResult> = families
             .iter()
-            .map(|f| Self::evaluate_family(facet, f))
+            .map(|f| Self::evaluate_family_above(facet, f, floor))
             .collect();
 
-        let v = facet.vocabulary_size().max(1) as f64;
+        let v = Self::pool_size(facet, floor).max(1) as f64;
         let usable_total: usize = results.iter().map(|r| r.usable_pairs).sum();
         let tested_total: usize = results.iter().map(|r| r.analogies_tested).sum();
 
@@ -470,7 +528,7 @@ impl RelationBenchmark {
         };
 
         RelationReport {
-            vocabulary_size: facet.vocabulary_size(),
+            vocabulary_size: Self::pool_size(facet, floor),
             families: results,
             chance_neighbour_top10: 10.0 / v,
             chance_analogy_top1: 1.0 / v,
@@ -520,6 +578,49 @@ mod tests {
     ///
     /// The benchmark exists to make effects falsifiable; a benchmark that
     /// quietly shrinks back below significance defeats that silently.
+    /// The floor must shrink the pool, and chance must be reported against the
+    /// pool that was actually used.
+    ///
+    /// Restricting the pool makes the task easier — fewer distractors — so a raw
+    /// score at a high floor is not comparable to a raw score at floor 0. If
+    /// `vocabulary_size` kept reporting the whole lexicon, every chance level
+    /// derived from it would be wrong and the comparison would silently favour
+    /// the restricted run.
+    #[test]
+    fn test_floor_restricts_the_pool_and_its_chance_level() {
+        let mut facet = Facet::new();
+        let t = Trainer::new(0.05);
+        for _ in 0..40 {
+            t.train_sentence(&mut facet, "a man and a woman are adult people");
+            t.train_sentence(&mut facet, "a boy and a girl are young people");
+            t.train_sentence(&mut facet, "copper tin and zinc are metals");
+        }
+        let fams = RelationBenchmark::default_families();
+
+        let open = RelationBenchmark::evaluate_above(&facet, &fams, 0);
+        let tight = RelationBenchmark::evaluate_above(&facet, &fams, 1_000_000);
+
+        assert_eq!(open.vocabulary_size, facet.vocabulary_size());
+        assert_eq!(
+            tight.vocabulary_size,
+            RelationBenchmark::pool_size(&facet, 1_000_000),
+            "the report must describe the pool it used, not the lexicon"
+        );
+        assert!(
+            tight.vocabulary_size < open.vocabulary_size,
+            "an impossible floor must empty the pool: {} vs {}",
+            tight.vocabulary_size,
+            open.vocabulary_size
+        );
+        assert!(
+            tight.chance_neighbour_top10 >= open.chance_neighbour_top10,
+            "a smaller pool must report a higher chance level, or the \
+             comparison flatters the restricted run"
+        );
+        // No probe pair can clear an impossible floor, so nothing is scored.
+        assert_eq!(tight.families.iter().map(|f| f.usable_pairs).sum::<usize>(), 0);
+    }
+
     #[test]
     fn test_probe_set_is_large_enough_to_support_a_claim() {
         let fams = RelationBenchmark::default_families();
