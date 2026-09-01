@@ -999,3 +999,98 @@ independent directions:
 > Extraction is the blocker. Until a gloss yields several genuinely distinct
 > typed relations instead of one over-broad bucket, both role binding and
 > coherence training are machinery with nothing to work on.
+
+---
+
+## §11 — Prepositions as relation names, and the control that reversed the reading
+
+### The extraction fix
+
+§8 and §10b both concluded, with confidence, that **extraction was the
+blocker**: 94% of relations in one over-broad `genus` bucket, 1.06 relations per
+head, so role binding and coherence training both had nothing to work on.
+
+English marks its relation types explicitly, so the fix is to stop declaring an
+inventory and let the language supply one — *an instrument **for** driving
+nails*, *a disease **of** the lungs*, *a vessel used **in** cooking*. **The
+preposition is the role name.** Nothing is enumerated, and the inventory is
+whatever the corpus uses.
+
+It also reaches the one role the enum extractor never found once: *used **in**
+cooking* is Searle's context C, and no regex for `function` was going to find it.
+
+| | enum extractor | prepositional |
+|---|---|---|
+| triples | 72,210 | **82,339** |
+| relations per head | 1.06 | **2.54** |
+| heads with ≥ 3 | ~0 | **11,556** |
+| distinct roles | 3 used, 94% in one | **12** |
+
+**The count problem is fixed. And the mechanism still got nothing** — per-role
+coherence 0.019–0.077, weighted mean 0.024, against 0.026 for the single genus
+bucket. Training on the new groups moved held-out cluster coherence 0.271 →
+0.257 and purity 20.3% → 19.6%, both slightly *down*.
+
+So my own diagnosis, stated twice, was wrong: fixing extraction did not fix
+anything.
+
+### The control that changed what those numbers mean
+
+Every coherence figure above is small in absolute terms, and I had no idea what
+small *meant*. The circular mean of *N* random offsets has agreement of roughly
+1/√N by chance alone, so a coherence of 0.077 on 148 pairs and one of 0.025 on
+34,985 pairs are not comparable numbers.
+
+Same pairs count, drawn at random from the same vocabulary:
+
+| role | pairs | coherence | shuffled | ratio |
+|---|---|---|---|---|
+| with | 3,970 | 0.027 | 0.014 | **1.94×** |
+| in | 10,484 | 0.026 | 0.015 | **1.76×** |
+| of | 34,985 | 0.025 | 0.015 | **1.69×** |
+| to | 17,550 | 0.023 | 0.014 | **1.66×** |
+| from | 2,956 | 0.025 | 0.016 | 1.54× |
+| by | 4,795 | 0.021 | 0.014 | 1.48× |
+| for | 3,362 | 0.019 | 0.016 | 1.22× |
+| at | 1,090 | 0.030 | 0.025 | 1.23× |
+| into | 855 | 0.034 | 0.030 | 1.13× |
+| on | 1,750 | 0.022 | 0.021 | 1.07× |
+| upon | 394 | 0.051 | 0.049 | 1.05× |
+| against | 148 | 0.077 | 0.066 | 1.16× |
+
+**Prepositional relations are in the manifold.** Faintly — but the four largest
+groups beat their own null by 1.66–1.94×, and that is not something a
+coincidence produces four times.
+
+And the raw column, read alone, says the exact opposite of the truth. `against`
+at 0.077 looks three times better than `of` at 0.025 and is **pure noise**
+(1.16×), while `of` at a third the value carries real signal. Ranking roles by
+raw coherence would have picked the twelve smallest groups and thrown away every
+real one.
+
+### What this revises
+
+1. **"Extraction is the blocker" was wrong.** Stated in §8, restated in §10b,
+   falsified here. Relations per head went 1.06 → 2.54 and nothing downstream
+   moved. The blocker is that the manifold holds these relations at ~1.7× noise,
+   and 1.7× noise is not enough for binding, discovery, or an alignment
+   objective to act on.
+
+2. **§10b's "generalises to nothing" was reported without a null too.** Cluster
+   coherence 0.271 and purity 20.3% were compared against each other across
+   conditions, which is fine, but the *absolute* coherence numbers in that
+   section have the same problem the raw column has here. The direction of that
+   result stands; the size of it was never established.
+
+3. **Every coherence number in §9 and §10 should be read as a ratio, not a
+   value.** 0.27 cluster coherence against a null I never computed is not
+   comparable to 0.9 on planted relations, where the null is also unknown.
+
+### The rule this earns
+
+A small number is not a small effect until its null is known, and this project
+has now been caught by that twice: once when a broken extractor still produced a
+plausible 3.6 pp gap (§8), and once here, where the raw ranking of roles is
+exactly inverted. **Every metric in this harness needs a shuffled control
+beside it**, and the ones already reported need one retrofitted before they are
+quoted again.
