@@ -426,3 +426,279 @@ mod tests {
         assert_eq!(path, vec!["tree", "plant"]);
     }
 }
+
+/// A relation type **discovered from use**, not declared.
+///
+/// [`Role`] is six variants someone chose, and the extractor that fills them is
+/// a list of regexes hardcoding the phrasings someone thought of. That is the
+/// thing CLU's abstract data types were an argument against: a type is defined
+/// by the operations its instances share, not by a label supplied from outside
+/// and a hand-written list of the cases you happened to anticipate.
+///
+/// The manifold already has the invariant. If `genus` is a real relation, then
+/// the per-channel offset `θ(filler) − θ(head)` is *approximately the same
+/// vector* for `(dog, animal)` and for `(oak, tree)` — that shared offset is
+/// what makes it one relation rather than two coincidences. So the types can be
+/// recovered by clustering offsets, and nothing needs to be named in advance.
+///
+/// The test is not whether the clusters look tidy. It is whether they line up
+/// with relation labels the clustering never saw.
+#[derive(Debug, Clone)]
+pub struct DiscoveredRole {
+    /// The shared offset, one angle per channel — the role's rotation.
+    pub rotation: Vec<f64>,
+    /// Pairs assigned to this cluster, as `(head, filler)`.
+    pub members: Vec<(String, String)>,
+    /// Mean agreement between a member's offset and the centroid. Near 1.0 is a
+    /// tight relation; near 0 is a bag of unrelated pairs sharing a bin.
+    pub coherence: f64,
+}
+
+/// Recovers relation types by clustering phase offsets.
+pub struct RoleDiscovery;
+
+impl RoleDiscovery {
+    /// The offset that takes `head` to `filler`, per channel.
+    fn offset(facet: &Facet, head: &str, filler: &str) -> Option<Vec<f64>> {
+        let (h, f) = (facet.lexicon.get(head)?, facet.lexicon.get(filler)?);
+        Some((0..PHASE_CHANNELS).map(|k| f.theta(k) - h.theta(k)).collect())
+    }
+
+    /// Mean cosine between two offset vectors — 1.0 when the two pairs stand in
+    /// the same relation, 0 when they are unrelated.
+    fn agreement(a: &[f64], b: &[f64]) -> f64 {
+        let mut s = 0.0;
+        for (x, y) in a.iter().zip(b.iter()) {
+            s += (x - y).cos();
+        }
+        s / a.len().max(1) as f64
+    }
+
+    /// Circular mean of a set of offset vectors.
+    fn centroid(offsets: &[&Vec<f64>]) -> Vec<f64> {
+        (0..PHASE_CHANNELS)
+            .map(|k| {
+                let (mut x, mut y) = (0.0f64, 0.0f64);
+                for o in offsets {
+                    x += o[k].cos();
+                    y += o[k].sin();
+                }
+                match x.hypot(y) > 1e-12 {
+                    true => y.atan2(x),
+                    false => 0.0,
+                }
+            })
+            .collect()
+    }
+
+    /// Clusters `pairs` into `k` discovered relations.
+    ///
+    /// K-means on the torus: assignment by offset agreement, update by circular
+    /// mean. Seeds are chosen by farthest-point on the agreement metric rather
+    /// than at random, so the result does not depend on a seed and two runs on
+    /// the same data give the same types — which a discovery procedure has to,
+    /// or the "types" are an artefact of initialisation.
+    pub fn discover(
+        facet: &Facet,
+        pairs: &[(String, String)],
+        k: usize,
+        rounds: usize,
+    ) -> Vec<DiscoveredRole> {
+        let usable: Vec<(&(String, String), Vec<f64>)> = pairs
+            .iter()
+            .filter_map(|p| Self::offset(facet, &p.0, &p.1).map(|o| (p, o)))
+            .collect();
+        if usable.len() < k || k == 0 {
+            return Vec::new();
+        }
+
+        // Farthest-point seeding: start at the first pair, then repeatedly take
+        // the pair least like everything chosen so far.
+        let mut seeds: Vec<usize> = vec![0];
+        while seeds.len() < k {
+            let next = (0..usable.len())
+                .filter(|i| !seeds.contains(i))
+                .min_by(|a, b| {
+                    let sim = |i: &usize| {
+                        seeds
+                            .iter()
+                            .map(|s| Self::agreement(&usable[*i].1, &usable[*s].1))
+                            .fold(f64::NEG_INFINITY, f64::max)
+                    };
+                    sim(a).partial_cmp(&sim(b)).unwrap_or(std::cmp::Ordering::Equal)
+                });
+            match next {
+                Some(n) => seeds.push(n),
+                None => break,
+            }
+        }
+
+        let mut centroids: Vec<Vec<f64>> = seeds.iter().map(|s| usable[*s].1.clone()).collect();
+        let mut assign: Vec<usize> = vec![0; usable.len()];
+
+        for _ in 0..rounds {
+            let mut moved = false;
+            for (i, (_, off)) in usable.iter().enumerate() {
+                let best = centroids
+                    .iter()
+                    .enumerate()
+                    .max_by(|a, b| {
+                        Self::agreement(off, a.1)
+                            .partial_cmp(&Self::agreement(off, b.1))
+                            .unwrap_or(std::cmp::Ordering::Equal)
+                    })
+                    .map(|(c, _)| c)
+                    .unwrap_or(0);
+                if assign[i] != best {
+                    assign[i] = best;
+                    moved = true;
+                }
+            }
+            for (c, cen) in centroids.iter_mut().enumerate() {
+                let members: Vec<&Vec<f64>> = usable
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| assign[*i] == c)
+                    .map(|(_, (_, o))| o)
+                    .collect();
+                if !members.is_empty() {
+                    *cen = Self::centroid(&members);
+                }
+            }
+            if !moved {
+                break;
+            }
+        }
+
+        centroids
+            .into_iter()
+            .enumerate()
+            .map(|(c, rotation)| {
+                let members: Vec<(String, String)> = usable
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| assign[*i] == c)
+                    .map(|(_, (p, _))| ((*p).0.clone(), (*p).1.clone()))
+                    .collect();
+                let coherence = match members.is_empty() {
+                    true => 0.0,
+                    false => {
+                        let sum: f64 = usable
+                            .iter()
+                            .enumerate()
+                            .filter(|(i, _)| assign[*i] == c)
+                            .map(|(_, (_, o))| Self::agreement(o, &rotation))
+                            .sum();
+                        sum / members.len() as f64
+                    }
+                };
+                DiscoveredRole { rotation, members, coherence }
+            })
+            .collect()
+    }
+
+    /// How well discovered clusters line up with labels they never saw.
+    ///
+    /// Purity: for each cluster, the share taken by its most common true label,
+    /// weighted by cluster size. This is the only honest test of a discovery
+    /// procedure — tidy-looking clusters prove nothing, and the labels must play
+    /// no part in producing them.
+    ///
+    /// Chance purity is roughly the largest label's share of the data, so purity
+    /// must be read against that and not against 1.0.
+    pub fn purity(clusters: &[DiscoveredRole], labels: &HashMap<(String, String), String>) -> (f64, f64) {
+        let mut correct = 0usize;
+        let mut total = 0usize;
+        let mut label_counts: HashMap<&str, usize> = HashMap::new();
+
+        for c in clusters {
+            let mut here: HashMap<&str, usize> = HashMap::new();
+            for m in &c.members {
+                if let Some(l) = labels.get(m) {
+                    *here.entry(l.as_str()).or_insert(0) += 1;
+                    *label_counts.entry(l.as_str()).or_insert(0) += 1;
+                    total += 1;
+                }
+            }
+            correct += here.values().copied().max().unwrap_or(0);
+        }
+
+        let chance = label_counts.values().copied().max().unwrap_or(0) as f64
+            / total.max(1) as f64;
+        (correct as f64 / total.max(1) as f64, chance)
+    }
+}
+
+#[cfg(test)]
+mod discovery_tests {
+    use super::*;
+
+    /// Discovery must recover relations it was never told about.
+    ///
+    /// Two synthetic relations are planted by construction — filler = head
+    /// rotated by a fixed offset — and the clusterer is given the pairs with no
+    /// labels. If it cannot separate two relations that are exactly separable,
+    /// it will not find real ones.
+    #[test]
+    fn test_discovery_separates_planted_relations() {
+        let mut f = Facet::new();
+        let heads: Vec<String> = (0..24).map(|i| format!("h{}", i)).collect();
+        let rot_a: Vec<f64> = (0..PHASE_CHANNELS).map(|k| (k as f64 * 0.37) % TWO_PI).collect();
+        let rot_b: Vec<f64> = (0..PHASE_CHANNELS).map(|k| (k as f64 * 2.11 + 1.7) % TWO_PI).collect();
+
+        let mut pairs = Vec::new();
+        let mut labels: HashMap<(String, String), String> = HashMap::new();
+        for (i, h) in heads.iter().enumerate() {
+            let hp = SpectralPhasor::seeded(h, 1.0, 1);
+            f.lexicon.insert(h.clone(), hp);
+
+            let (rot, name) = match i % 2 {
+                0 => (&rot_a, "alpha"),
+                _ => (&rot_b, "beta"),
+            };
+            let fname = format!("f{}", i);
+            let mut fp = hp;
+            for k in 0..PHASE_CHANNELS {
+                fp.set_theta(k, hp.theta(k) + rot[k]);
+            }
+            fp.sync_phase();
+            f.lexicon.insert(fname.clone(), fp);
+
+            pairs.push((h.clone(), fname.clone()));
+            labels.insert((h.clone(), fname), name.to_string());
+        }
+
+        let clusters = RoleDiscovery::discover(&f, &pairs, 2, 20);
+        assert_eq!(clusters.len(), 2);
+
+        let (purity, chance) = RoleDiscovery::purity(&clusters, &labels);
+        assert!(
+            purity > 0.9,
+            "two exactly-separable relations must be separated: purity {} vs chance {}",
+            purity,
+            chance
+        );
+        for c in &clusters {
+            assert!(c.coherence > 0.9, "a recovered relation must be tight: {}", c.coherence);
+        }
+    }
+
+    /// Discovery must be reproducible: seeded by farthest point, not by chance.
+    #[test]
+    fn test_discovery_is_deterministic() {
+        let mut f = Facet::new();
+        let mut pairs = Vec::new();
+        for i in 0..20 {
+            let (h, fl) = (format!("head{}", i), format!("fill{}", i));
+            f.lexicon.insert(h.clone(), SpectralPhasor::seeded(&h, 1.0, 1));
+            f.lexicon.insert(fl.clone(), SpectralPhasor::seeded(&fl, 1.0, 1));
+            pairs.push((h, fl));
+        }
+        let a = RoleDiscovery::discover(&f, &pairs, 3, 10);
+        let b = RoleDiscovery::discover(&f, &pairs, 3, 10);
+        assert_eq!(a.len(), b.len());
+        for (x, y) in a.iter().zip(b.iter()) {
+            assert_eq!(x.members, y.members, "clustering must not move between runs");
+        }
+    }
+}

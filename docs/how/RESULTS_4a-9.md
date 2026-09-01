@@ -819,3 +819,87 @@ mechanism needs. Two things would change that, in order:
    is idle until then.
 2. **A genus benchmark from Webster's own terms**, so *dog → quadruped* scores as
    the correct answer it is.
+
+---
+
+## §9 — Types discovered from use, not declared
+
+`Role::ALL` is six variants someone chose, and `extract` is a list of regexes
+hardcoding the phrasings someone thought of. That is precisely what CLU's
+abstract data types were an argument against: a type is defined by what its
+instances share under the operations, not by a label handed in from outside
+together with a list of the cases you happened to anticipate.
+
+The manifold already holds the invariant. If `genus` is a real relation then the
+per-channel offset `θ(filler) − θ(head)` is approximately the same vector for
+`(dog, animal)` and `(oak, tree)` — that shared offset is what makes it one
+relation rather than two coincidences. So relation types can be **recovered by
+clustering offsets**, with nothing named in advance.
+
+`RoleDiscovery` does k-means on the torus: assignment by offset agreement,
+update by circular mean, farthest-point seeding so two runs on the same data
+give the same types (a discovery procedure whose types depend on initialisation
+has not discovered anything).
+
+### The procedure works
+
+`test_discovery_separates_planted_relations` builds two relations by
+construction — filler = head rotated by a fixed offset — hands the clusterer the
+pairs with no labels, and gets **purity > 0.9 with cluster coherence > 0.9**. It
+separates two exactly-separable relations, which is the floor a discovery
+procedure has to clear before its output on real data means anything.
+
+### On the trained manifold, the signal is faint
+
+296 labelled pairs from the relation benchmark, **labels withheld from the
+clusterer** and used only to score:
+
+| k | purity | chance | ratio |
+|---|---|---|---|
+| 2 | 15.5% | 11.8% | 1.31× |
+| 5 | 17.2% | 11.8% | 1.46× |
+| 10 | 20.3% | 11.8% | 1.72× |
+| 15 | 22.6% | 11.8% | 1.92× |
+
+Above chance, and rising monotonically with k — so the offsets **do** carry
+relation identity. But the number that matters is not purity, it is
+**coherence: 0.25–0.28**, against >0.9 on planted relations. Members barely
+agree with their own centroid. And no cluster is dominated by one family:
+
+```
+51 pairs, coherence 0.28  [10 number, 9 antonym, 7 past_tense]   e.g. man→woman
+34 pairs, coherence 0.25  [6 antonym, 5 comparative, 5 past]     e.g. father→mother
+32 pairs, coherence 0.25  [6 number, 5 hypernym, 4 agent]        e.g. prince→princess
+```
+
+### What this measures
+
+Not the method — the method is verified on planted data. **The representation.**
+Coherence 0.27 where 0.9 is achievable is a direct measurement of how far the
+trained manifold is from having consistent relation directions, and it is the
+first number this project has for that gap.
+
+It also explains the analogy results from the other side. Analogy `a:b::c:d` is
+exactly the assumption that `b−a ≈ d−c`. §5b measured analogy MRR at
+0.0270 ± 0.0031 — real, and small. Coherence 0.27 is the same fact seen
+directly: the offsets are consistent enough to beat chance and nowhere near
+consistent enough to be types.
+
+**So `coherence` is a better training target than analogy MRR.** It is
+measurable without a labelled probe set, it is computable on any pair list, and
+driving it toward 0.9 is what would make discovered types real. Nothing in the
+current objective optimises it, or anything like it.
+
+### The order this puts things in
+
+1. **Train for offset consistency.** The ranking objective optimises next-word
+   retrieval and gets 0.27 coherence as a by-product. An objective with a term
+   for "pairs in the same relation should share an offset" is the missing piece,
+   and unlike everything tried so far it targets the property the architecture
+   is supposed to have.
+2. **Then discovery becomes useful**, and the hardcoded `Role` enum and the
+   regex extractor can both be deleted — which is the CLU outcome: no
+   declared types, no enumerated occurrences.
+3. **Multi-relation extraction** (§8) still matters, but it is downstream of
+   this: better inputs to a representation that cannot hold relations
+   consistently will not produce types either.
