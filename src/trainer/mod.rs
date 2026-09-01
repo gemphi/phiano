@@ -2,168 +2,421 @@ pub mod metrics;
 pub use metrics::{TrainingMetrics, MultiEpochResult};
 
 use crate::config::{
-    PHI, TWO_PI, PHASE_REPULSION,
-    CONVERGENCE_THRESHOLD, AMPLITUDE_INCREMENT, AMPLITUDE_MAX,
-    AMPLITUDE_INITIAL, BAND_N_INITIAL,
+    TWO_PI, PHASE_REPULSION,
+    CONVERGENCE_THRESHOLD, AMPLITUDE_MAX, AMPLITUDE_INITIAL, BAND_N_INITIAL,
+    PHASE_CHANNELS, CHANNELS_PER_UPDATE, NEG_SAMPLES, NEG_RATE,
+    HINGE_MARGIN, FUNCTION_WORD_WEIGHT,
 };
 use crate::facet::Facet;
-use crate::phasor::SpectralPhasor;
+use crate::phasor::{fnv1a, SpectralPhasor};
 use crate::tokenizer::Tokenizer;
 
-/// Trainer - unsupervised language learning via Kuramoto-Sakaguchi phase attraction.
+/// SplitMix64 — a deterministic mixer used to derive sampling indices.
 ///
-/// Words that co-occur in a sentence get their phase angles pulled toward
-/// the sentence's centroid phase with an asymmetric phase lag (beta) to encode
-/// forward syntactic temporal direction.
+/// Training draws its randomness from the input itself rather than from a
+/// mutable generator, so a run is reproducible and `Trainer` stays `Sync`.
+#[inline]
+fn splitmix(mut z: u64) -> u64 {
+    z = z.wrapping_add(0x9E3779B97F4A7C15);
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
+    z ^ (z >> 31)
+}
+
+/// Shortest signed angular difference, wrapped into (−π, π].
+#[inline]
+pub fn wrap_signed(delta: f64) -> f64 {
+    let d = delta.rem_euclid(TWO_PI);
+    if d > std::f64::consts::PI { d - TWO_PI } else { d }
+}
+
+/// Trainer — contrastive Kuramoto-Sakaguchi learning on the phase torus.
+///
+/// Each training step has two halves:
+///
+/// * **Attraction** — words co-occurring in a sentence are pulled toward the
+///   sentence's per-channel centroid, with an asymmetric lag encoding word order.
+/// * **Repulsion** — sampled non-co-occurring words are pushed away.
+///
+/// The second half is not an optimisation. Kuramoto coupling with all-positive
+/// coupling has one globally stable attractor — total synchronisation — so an
+/// attraction-only rule drives the lexicon to a single point, at which the
+/// Kuramoto order parameter (reported as `coherence`) reads 1.0 for every input
+/// including noise. The negative term is what makes the fixed point track
+/// pointwise mutual information instead.
 #[derive(Clone)]
 pub struct Trainer {
     /// Kuramoto learning rate - controls how fast phases converge.
     pub learning_rate: f64,
+    /// Negative samples drawn per token. Zero disables repulsion.
+    pub neg_samples: usize,
 }
 
 impl Trainer {
     /// Creates a new trainer with the given learning rate.
     pub fn new(learning_rate: f64) -> Self {
-        Self { learning_rate }
+        Self { learning_rate, neg_samples: NEG_SAMPLES }
     }
 
-    /// Trains on a single sentence using Kuramoto-Sakaguchi asymmetric phase coupling.
+    /// Creates a trainer with repulsion disabled — attraction only.
+    /// Retained for ablation studies; not a good default.
+    pub fn attraction_only(learning_rate: f64) -> Self {
+        Self { learning_rate, neg_samples: 0 }
+    }
+
+    /// Trains on a single sentence.
     ///
     /// Steps:
-    /// 1. Tokenize text; initialize unseen tokens at deterministic pseudo-random phases
-    /// 2. Record n-gram co-occurrences for sequence modeling
-    /// 3. Compute semantic centroid phase from all token phasors
-    /// 4. Shift each token's phase toward centroid + directional syntactic neighbor lag
-    /// 5. Bump `band_n` for tokens already close (prevents phase collapse)
+    /// 1. Tokenize; initialize unseen tokens at identity-seeded phases
+    /// 2. Record n-gram co-occurrences and directional phase lags
+    /// 3. Pull each token toward the per-channel sentence centroid, plus a
+    ///    directional syntactic neighbour lag on channel 0
+    /// 4. Push sampled negatives away on the same channels
+    /// 5. Update log-frequency amplitude; bump `band_n` for converged tokens
     ///
     /// Returns the number of tokens that were updated.
     pub fn train_sentence(&self, facet: &mut Facet, text: &str) -> usize {
         let tokens = Tokenizer::tokenize(text);
-        match tokens.is_empty() {
-            true => return 0,
-            false => {}
+        if tokens.is_empty() {
+            return 0;
         }
 
         self.initialize_tokens(facet, &tokens);
+        self.record_ngrams(facet, &tokens);
 
-        // Record bigram, trigram, and learned syntactic phase lags
+        let n_tokens = tokens.len();
+        let step_seed = fnv1a(text);
+
+        // Which channels this step touches. Updating a rotating subset is
+        // dropout-like regularisation and bounds the cost of a token update.
+        let ch_offset = (splitmix(step_seed) as usize) % PHASE_CHANNELS;
+        let channels: Vec<usize> = (0..CHANNELS_PER_UPDATE.min(PHASE_CHANNELS))
+            .map(|i| (ch_offset + i * 7) % PHASE_CHANNELS)
+            .collect();
+
+        // Per-channel centroid of the sentence, weighted by amplitude and
+        // down-weighting closed-class words. Function words appear in nearly
+        // every sentence; at full weight they transitively couple the whole
+        // vocabulary into one cluster.
+        let mut targets = vec![0.0f64; channels.len()];
+        for (ci, &k) in channels.iter().enumerate() {
+            let (mut sx, mut sy) = (0.0f64, 0.0f64);
+            for t in &tokens {
+                if let Some(p) = facet.lexicon.get(t) {
+                    let w = p.amplitude * Self::token_weight(t);
+                    let th = p.theta(k);
+                    sx += w * th.cos();
+                    sy += w * th.sin();
+                }
+            }
+            targets[ci] = sy.atan2(sx);
+        }
+
+        // Channel-0 snapshot for the asymmetric syntactic term.
+        let token_phases: Vec<f64> = tokens
+            .iter()
+            .map(|t| facet.lexicon.get(t).map(|p| p.theta(0)).unwrap_or(0.0))
+            .collect();
+        let beta_prev: Vec<f64> = tokens
+            .iter()
+            .enumerate()
+            .map(|(i, t)| if i > 0 { facet.phase_lag(&tokens[i - 1], t) } else { 0.0 })
+            .collect();
+        let beta_next: Vec<f64> = tokens
+            .iter()
+            .enumerate()
+            .map(|(i, t)| if i + 1 < n_tokens { facet.phase_lag(t, &tokens[i + 1]) } else { 0.0 })
+            .collect();
+
+        let mut updated = 0;
+        for (i, token) in tokens.iter().enumerate() {
+            let phasor = match facet.lexicon.get_mut(token) {
+                Some(p) => p,
+                None => continue,
+            };
+
+            // --- attraction: every touched channel toward its centroid ---
+            let mut ch0_semantic = 0.0;
+            for (ci, &k) in channels.iter().enumerate() {
+                let err = (targets[ci] - phasor.theta(k)).sin();
+                if k == 0 {
+                    ch0_semantic = err;
+                }
+                phasor.nudge(k, self.learning_rate * err);
+            }
+
+            // --- channel 0 also carries word order (Sakaguchi lag) ---
+            let mut syntax_force = 0.0;
+            let mut syntax_neighbors = 0;
+            if i > 0 {
+                syntax_force += (token_phases[i - 1] - phasor.theta(0) + beta_prev[i]).sin();
+                syntax_neighbors += 1;
+            }
+            if i + 1 < n_tokens {
+                syntax_force += (token_phases[i + 1] - phasor.theta(0) - beta_next[i]).sin();
+                syntax_neighbors += 1;
+            }
+            if syntax_neighbors > 0 {
+                phasor.nudge(0, self.learning_rate * 0.3 * (syntax_force / syntax_neighbors as f64));
+            }
+            phasor.sync_phase();
+
+            if ch0_semantic.abs() < CONVERGENCE_THRESHOLD {
+                phasor.band_n += 1;
+            }
+            phasor.observe();
+            updated += 1;
+        }
+
+        self.apply_negatives(facet, &tokens, &channels, step_seed);
+        updated
+    }
+
+    /// Pushes sampled non-co-occurring words away from the sentence's centroid.
+    fn apply_negatives(
+        &self,
+        facet: &mut Facet,
+        tokens: &[String],
+        channels: &[usize],
+        step_seed: u64,
+    ) {
+        if self.neg_samples == 0 {
+            return;
+        }
+        facet.rebuild_sample_pool();
+
+        // Collect the (word, channel, delta) triples first: sampling borrows the
+        // facet immutably, applying borrows it mutably.
+        let mut pushes: Vec<(String, usize, f64)> = Vec::new();
+        for (i, token) in tokens.iter().enumerate() {
+            let anchor = match facet.lexicon.get(token) {
+                Some(p) => *p,
+                None => continue,
+            };
+            for j in 0..self.neg_samples {
+                let r = splitmix(step_seed ^ ((i as u64) << 32) ^ (j as u64).wrapping_mul(0x2545F491));
+                let neg = match facet.sample_negative(r) {
+                    Some(w) if !tokens.iter().any(|t| t == w) => w.clone(),
+                    _ => continue,
+                };
+                let negp = match facet.lexicon.get(&neg) {
+                    Some(p) => p,
+                    None => continue,
+                };
+                for &k in channels {
+                    // gradient of −cos(Δ) — push the negative away from the anchor
+                    let away = -(anchor.theta(k) - negp.theta(k)).sin();
+                    pushes.push((neg.clone(), k, self.learning_rate * NEG_RATE * away));
+                }
+            }
+        }
+
+        for (word, k, delta) in pushes {
+            if let Some(p) = facet.lexicon.get_mut(&word) {
+                p.nudge(k, delta);
+                if k == 0 {
+                    p.sync_phase();
+                }
+            }
+        }
+    }
+
+    /// Trains the model to *predict*, not merely to cluster.
+    ///
+    /// For each position the context wave is compared against the true next word
+    /// and against a sampled wrong one. When the wrong word ranks at least as
+    /// close, the true word is rotated toward the context and the wrong word
+    /// away — a hinge loss on next-word retrieval, applied online with no
+    /// backpropagation.
+    ///
+    /// Centroid attraction is a *descriptive* target ("be like your neighbours")
+    /// whose optimum is collapse. Next-word prediction is the objective that
+    /// forces a representation to encode syntax, semantics and facts, because
+    /// predicting well requires them.
+    ///
+    /// Returns the number of hinge violations corrected.
+    pub fn train_predictive(&self, facet: &mut Facet, text: &str) -> usize {
+        let tokens = Tokenizer::tokenize(text);
+        if tokens.len() < 2 {
+            return 0;
+        }
+        self.initialize_tokens(facet, &tokens);
+        facet.rebuild_sample_pool();
+
+        let step_seed = fnv1a(text) ^ 0xA5A5_5A5A_A5A5_5A5A;
+        let ch_offset = (splitmix(step_seed) as usize) % PHASE_CHANNELS;
+        let channels: Vec<usize> = (0..CHANNELS_PER_UPDATE.min(PHASE_CHANNELS))
+            .map(|i| (ch_offset + i * 7) % PHASE_CHANNELS)
+            .collect();
+
+        let mut violations = 0;
+
+        for i in 1..tokens.len() {
+            // Context = per-channel centroid of everything before position i.
+            let mut ctx = vec![0.0f64; channels.len()];
+            for (ci, &k) in channels.iter().enumerate() {
+                let (mut sx, mut sy) = (0.0f64, 0.0f64);
+                for t in &tokens[..i] {
+                    if let Some(p) = facet.lexicon.get(t) {
+                        let w = p.amplitude * Self::token_weight(t);
+                        let th = p.theta(k);
+                        sx += w * th.cos();
+                        sy += w * th.sin();
+                    }
+                }
+                ctx[ci] = sy.atan2(sx);
+            }
+
+            let pos_word = &tokens[i];
+            let r = splitmix(step_seed ^ (i as u64).wrapping_mul(0x9E3779B9));
+            let neg_word = match facet.sample_negative(r) {
+                Some(w) if w != pos_word && !tokens[..i].contains(w) => w.clone(),
+                _ => continue,
+            };
+
+            let (pos_score, neg_score) = {
+                let pos = match facet.lexicon.get(pos_word) { Some(p) => p, None => continue };
+                let neg = match facet.lexicon.get(&neg_word) { Some(p) => p, None => continue };
+                let mut ps = 0.0;
+                let mut ns = 0.0;
+                for (ci, &k) in channels.iter().enumerate() {
+                    ps += (ctx[ci] - pos.theta(k)).cos();
+                    ns += (ctx[ci] - neg.theta(k)).cos();
+                }
+                (ps / channels.len() as f64, ns / channels.len() as f64)
+            };
+
+            // Perceptron-style: only update when the ranking is wrong.
+            if neg_score < pos_score - HINGE_MARGIN {
+                continue;
+            }
+            violations += 1;
+
+            if let Some(p) = facet.lexicon.get_mut(pos_word) {
+                for (ci, &k) in channels.iter().enumerate() {
+                    p.nudge(k, self.learning_rate * (ctx[ci] - p.theta(k)).sin());
+                }
+                p.sync_phase();
+            }
+            if let Some(p) = facet.lexicon.get_mut(&neg_word) {
+                for (ci, &k) in channels.iter().enumerate() {
+                    p.nudge(k, -self.learning_rate * 0.5 * (ctx[ci] - p.theta(k)).sin());
+                }
+                p.sync_phase();
+            }
+        }
+
+        violations
+    }
+
+    /// One full pass: co-occurrence structure, then predictive ranking.
+    pub fn train_full(&self, facet: &mut Facet, text: &str) -> usize {
+        let n = self.train_sentence(facet, text);
+        self.train_predictive(facet, text);
+        n
+    }
+
+    /// Weight of a token when computing a sentence centroid.
+    #[inline]
+    fn token_weight(token: &str) -> f64 {
+        if Tokenizer::is_function_word(token) { FUNCTION_WORD_WEIGHT } else { 1.0 }
+    }
+
+    /// Records bigram, trigram and directional phase-lag statistics.
+    fn record_ngrams(&self, facet: &mut Facet, tokens: &[String]) {
         for window in tokens.windows(2) {
             facet.record_bigram(&window[0], &window[1]);
-            if let (Some(p0), Some(p1)) = (facet.lexicon.get(&window[0]), facet.lexicon.get(&window[1])) {
-                let observed_lag = (p1.phase - p0.phase).rem_euclid(TWO_PI);
+            if let (Some(p0), Some(p1)) =
+                (facet.lexicon.get(&window[0]), facet.lexicon.get(&window[1]))
+            {
+                let observed_lag = (p1.theta(0) - p0.theta(0)).rem_euclid(TWO_PI);
                 facet.record_phase_lag(&window[0], &window[1], observed_lag);
             }
         }
         for window in tokens.windows(3) {
             facet.record_trigram(&window[0], &window[1], &window[2]);
         }
-
-        let target_phase = self.compute_centroid_phase(facet, &tokens);
-        let n_tokens = tokens.len();
-
-        // Capture snapshot of current token phases and learned β_ij for asymmetric neighbor coupling
-        let token_phases: Vec<f64> = tokens.iter()
-            .map(|t| facet.lexicon.get(t).map(|p| p.phase).unwrap_or(0.0))
-            .collect();
-        let beta_prev: Vec<f64> = tokens.iter().enumerate().map(|(i, t)| {
-            match i > 0 {
-                true => facet.phase_lag(&tokens[i - 1], t),
-                false => 0.0,
-            }
-        }).collect();
-        let beta_next: Vec<f64> = tokens.iter().enumerate().map(|(i, t)| {
-            match i + 1 < n_tokens {
-                true => facet.phase_lag(t, &tokens[i + 1]),
-                false => 0.0,
-            }
-        }).collect();
-
-        let mut updated = 0;
-        for (i, token) in tokens.iter().enumerate() {
-            let phasor = facet.lexicon.get_mut(token).unwrap();
-            let semantic_force = (target_phase - phasor.phase).sin();
-
-            // Compute directional syntactic lag from preceding and subsequent words
-            let mut syntax_force = 0.0;
-            let mut syntax_neighbors = 0;
-
-            match i > 0 {
-                true => {
-                    let prev_phase = token_phases[i - 1];
-                    syntax_force += (prev_phase - phasor.phase + beta_prev[i]).sin();
-                    syntax_neighbors += 1;
-                }
-                false => {}
-            }
-            match i + 1 < n_tokens {
-                true => {
-                    let next_phase = token_phases[i + 1];
-                    syntax_force += (next_phase - phasor.phase - beta_next[i]).sin();
-                    syntax_neighbors += 1;
-                }
-                false => {}
-            }
-
-            let combined_error = match syntax_neighbors > 0 {
-                true => 0.7 * semantic_force + 0.3 * (syntax_force / syntax_neighbors as f64),
-                false => semantic_force,
-            };
-
-            phasor.phase = (phasor.phase + self.learning_rate * combined_error)
-                .rem_euclid(TWO_PI);
-
-            match semantic_force.abs() < CONVERGENCE_THRESHOLD {
-                true => phasor.band_n += 1,
-                false => {}
-            }
-
-            phasor.amplitude = (phasor.amplitude + AMPLITUDE_INCREMENT).min(AMPLITUDE_MAX);
-            updated += 1;
-        }
-
-        updated
     }
 
-    /// In-chat real-time self-correction: applies an instantaneous anti-phase pulse (π radians)
-    /// to suppress erroneous associations and aligns the corrected target.
+    /// In-chat self-correction: suppresses a wrong association and reinforces
+    /// the corrected one.
+    ///
+    /// Only tokens that appear in the wrong phrase and *not* in the correction
+    /// are pushed: a word present in both (typically a function word) is not the
+    /// thing that was wrong, and inverting it degrades the model globally to fix
+    /// one specific fact.
     pub fn correct_mistake(&self, facet: &mut Facet, wrong_phrase: &str, correct_phrase: &str) {
         let wrong_tokens = Tokenizer::tokenize(wrong_phrase);
+        let correct_tokens = Tokenizer::tokenize(correct_phrase);
 
         for token in &wrong_tokens {
-            match facet.lexicon.get_mut(token) {
-                Some(phasor) => {
-                    phasor.phase = (phasor.phase + PHASE_REPULSION).rem_euclid(TWO_PI);
-                    phasor.amplitude = (phasor.amplitude * 0.8).max(AMPLITUDE_INITIAL);
-                }
-                None => {}
+            if correct_tokens.contains(token) {
+                continue;
+            }
+            if let Some(phasor) = facet.lexicon.get_mut(token) {
+                phasor.phase = (phasor.phase + PHASE_REPULSION).rem_euclid(TWO_PI);
+                phasor.sync_channel0();
+                phasor.amplitude = (phasor.amplitude * 0.8).max(AMPLITUDE_INITIAL);
             }
         }
-        
-        // 2. Train and reinforce the correct phrase
+
         self.train_sentence(facet, correct_phrase);
     }
 
-    /// Initializes unseen tokens at deterministic pseudo-random phases.
+    /// Graded correction: rotates the offending tokens away from the corrected
+    /// meaning by `strength` radians rather than by a full π.
+    ///
+    /// A π pulse is the maximum possible rotation, so it destroys every *other*
+    /// association the word had in order to fix one. Most corrections want a
+    /// nudge.
+    pub fn correct_graded(
+        &self,
+        facet: &mut Facet,
+        wrong_phrase: &str,
+        correct_phrase: &str,
+        strength: f64,
+    ) {
+        let wrong_tokens = Tokenizer::tokenize(wrong_phrase);
+        let correct_tokens = Tokenizer::tokenize(correct_phrase);
+        let offenders: Vec<String> = wrong_tokens
+            .iter()
+            .filter(|t| !correct_tokens.contains(t))
+            .cloned()
+            .collect();
+
+        let target = self.compute_centroid_phase(facet, &correct_tokens);
+        for token in &offenders {
+            if let Some(p) = facet.lexicon.get_mut(token) {
+                let away = -(target - p.theta(0)).sin();
+                p.nudge(0, strength * away);
+                p.sync_phase();
+            }
+        }
+        self.train_sentence(facet, correct_phrase);
+    }
+
+    /// Initializes unseen tokens at identity-seeded phases.
     fn initialize_tokens(&self, facet: &mut Facet, tokens: &[String]) {
         for token in tokens {
-            facet.lexicon.entry(token.clone()).or_insert_with(|| {
-                let seed_phase = (token.len() as f64 * PHI).rem_euclid(TWO_PI);
-                SpectralPhasor::new(seed_phase, AMPLITUDE_INITIAL, BAND_N_INITIAL)
-            });
+            let entry = facet
+                .lexicon
+                .entry(token.clone())
+                .or_insert_with(|| SpectralPhasor::seeded(token, AMPLITUDE_INITIAL, BAND_N_INITIAL));
+            entry.ensure_channels(token);
         }
     }
 
-    /// Computes the amplitude-weighted centroid phase across all tokens.
+    /// Computes the amplitude-weighted centroid phase across all tokens
+    /// (channel 0), down-weighting closed-class words.
     fn compute_centroid_phase(&self, facet: &Facet, tokens: &[String]) -> f64 {
-        let mut sum_x = 0.0;
-        let mut sum_y = 0.0;
-
+        let (mut sum_x, mut sum_y) = (0.0f64, 0.0f64);
         for token in tokens {
-            let phasor = facet.lexicon.get(token).unwrap();
-            sum_x += phasor.phase.cos() * phasor.amplitude;
-            sum_y += phasor.phase.sin() * phasor.amplitude;
+            if let Some(phasor) = facet.lexicon.get(token) {
+                let w = phasor.amplitude * Self::token_weight(token);
+                sum_x += phasor.theta(0).cos() * w;
+                sum_y += phasor.theta(0).sin() * w;
+            }
         }
-
         sum_y.atan2(sum_x)
     }
 
@@ -185,10 +438,6 @@ impl Trainer {
     }
 
     /// Recursively learns a word and its definition chain.
-    /// For each unknown word: look up its definition, train on it,
-    /// then recursively learn any unknown words in that definition.
-    /// Stops at max_depth or when all words are known.
-    /// Returns the list of words learned (including recursively).
     pub fn learn_definition_chain(
         &self,
         facet: &mut Facet,
@@ -211,43 +460,37 @@ impl Trainer {
         learned: &mut Vec<String>,
         visited: &mut std::collections::HashSet<String>,
     ) {
-        match depth_left == 0 || visited.contains(word) {
-            true => return,
-            false => {}
+        if depth_left == 0 || visited.contains(word) {
+            return;
         }
         visited.insert(word.to_string());
 
-        match facet.lexicon.get(word) {
-            Some(phasor) if phasor.amplitude > 5.0 => return,
-            _ => {}
+        // Skip words already well known. The previous threshold was 5.0, which
+        // AMPLITUDE_MAX (2.0) makes unreachable, so this branch never fired and
+        // known words were re-trained on every call.
+        if let Some(phasor) = facet.lexicon.get(word) {
+            if phasor.amplitude >= AMPLITUDE_MAX * 0.9 {
+                return;
+            }
         }
 
-        // Look up definition
         let definition = match chunk_store.load_definition(word) {
             Some(d) => d,
             None => return,
         };
 
-        // Train on the word-definition pair
         self.train_definition(facet, word, &definition);
         learned.push(word.to_string());
 
-        // Find unknown words in the definition and recurse
-        let def_tokens = crate::tokenizer::Tokenizer::tokenize(&definition);
+        let def_tokens = Tokenizer::tokenize(&definition);
         for token in &def_tokens {
-            match facet.lexicon.contains_key(token) || visited.contains(token) {
-                true => {}
-                false => self.learn_chain_recursive(facet, chunk_store, token, depth_left - 1, learned, visited),
+            if !facet.lexicon.contains_key(token) && !visited.contains(token) {
+                self.learn_chain_recursive(facet, chunk_store, token, depth_left - 1, learned, visited);
             }
         }
     }
 
     /// Multi-epoch training with warmup and convergence detection.
-    ///
-    /// Inspired by Phi-4 finetuning:
-    /// - Warmup: gradually increase LR for first `warmup` epochs
-    /// - Convergence: stop early if phase shifts become negligible
-    /// - Returns metrics including epochs completed and convergence status
     pub fn train_multi_epoch(
         &self,
         facet: &mut Facet,
@@ -256,70 +499,127 @@ impl Trainer {
         warmup: usize,
     ) -> MultiEpochResult {
         let tokens = Tokenizer::tokenize(text);
-        match tokens.is_empty() {
-            true => return MultiEpochResult {
-                epochs: 0,
-                tokens_learned: 0,
-                converged: false,
-            },
-            false => {}
+        if tokens.is_empty() {
+            return MultiEpochResult { epochs: 0, tokens_learned: 0, converged: false };
         }
 
         self.initialize_tokens(facet, &tokens);
-
-        // Record bigram and trigram co-occurrences
-        for window in tokens.windows(2) {
-            facet.record_bigram(&window[0], &window[1]);
-            let prev_phase = facet.lexicon.get(&window[0]).map(|p| p.phase).unwrap_or(0.0);
-            let curr_phase = facet.lexicon.get(&window[1]).map(|p| p.phase).unwrap_or(0.0);
-            let observed_lag = (curr_phase - prev_phase).rem_euclid(TWO_PI);
-            facet.record_phase_lag(&window[0], &window[1], observed_lag);
-        }
-        for window in tokens.windows(3) {
-            facet.record_trigram(&window[0], &window[1], &window[2]);
-        }
+        self.record_ngrams(facet, &tokens);
 
         let mut converged = false;
         let mut epochs_done = 0;
 
         for epoch in 0..max_epochs {
-            let effective_lr = match epoch < warmup {
-                true => self.learning_rate * (epoch as f64 + 1.0) / warmup as f64,
-                false => self.learning_rate,
+            let effective_lr = if epoch < warmup && warmup > 0 {
+                self.learning_rate * (epoch as f64 + 1.0) / warmup as f64
+            } else {
+                self.learning_rate
             };
 
             let target_phase = self.compute_centroid_phase(facet, &tokens);
             let mut max_shift = 0.0f64;
 
             for token in &tokens {
-                let phasor = facet.lexicon.get_mut(token).unwrap();
-                let phase_error = (target_phase - phasor.phase).sin();
-                let shift = effective_lr * phase_error;
-                phasor.phase = (phasor.phase + shift).rem_euclid(TWO_PI);
-                max_shift = max_shift.max(shift.abs());
+                if let Some(phasor) = facet.lexicon.get_mut(token) {
+                    let phase_error = (target_phase - phasor.theta(0)).sin();
+                    let shift = effective_lr * phase_error;
+                    phasor.nudge(0, shift);
+                    phasor.sync_phase();
+                    max_shift = max_shift.max(shift.abs());
 
-                match phase_error.abs() < CONVERGENCE_THRESHOLD {
-                    true => phasor.band_n += 1,
-                    false => {}
+                    if phase_error.abs() < CONVERGENCE_THRESHOLD {
+                        phasor.band_n += 1;
+                    }
+                    phasor.observe();
                 }
-                phasor.amplitude = (phasor.amplitude + AMPLITUDE_INCREMENT)
-                    .min(AMPLITUDE_MAX);
             }
+
+            let epoch_trainer = Self { learning_rate: effective_lr, neg_samples: self.neg_samples };
+            let ch: Vec<usize> = (0..CHANNELS_PER_UPDATE.min(PHASE_CHANNELS)).collect();
+            epoch_trainer.apply_negatives(facet, &tokens, &ch, fnv1a(text) ^ epoch as u64);
 
             epochs_done = epoch + 1;
-            match max_shift < CONVERGENCE_THRESHOLD {
-                true => {
-                    converged = true;
-                    break;
-                }
-                false => {}
+            if max_shift < CONVERGENCE_THRESHOLD {
+                converged = true;
+                break;
             }
         }
 
-        MultiEpochResult {
-            epochs: epochs_done,
-            tokens_learned: tokens.len(),
-            converged,
+        MultiEpochResult { epochs: epochs_done, tokens_learned: tokens.len(), converged }
+    }
+}
+
+#[cfg(test)]
+mod trainer_tests {
+    use super::*;
+
+    /// The defining property of the contrastive rule: repeated training must not
+    /// drive the lexicon to a single point.
+    #[test]
+    fn test_repulsion_prevents_collapse() {
+        let sentences = [
+            "the cat sat on the mat",
+            "the dog ran in the park",
+            "the sun set on the sea",
+            "rust guarantees memory safety",
+            "the borrow checker prevents data races",
+        ];
+
+        let mut with_neg = Facet::new();
+        let t1 = Trainer::new(0.05);
+        for _ in 0..200 {
+            for s in &sentences { t1.train_sentence(&mut with_neg, s); }
         }
+
+        let mut without_neg = Facet::new();
+        let t2 = Trainer::attraction_only(0.05);
+        for _ in 0..200 {
+            for s in &sentences { t2.train_sentence(&mut without_neg, s); }
+        }
+
+        let d_with = with_neg.phase_dispersion();
+        let d_without = without_neg.phase_dispersion();
+        assert!(
+            d_with > d_without,
+            "contrastive training must preserve more dispersion: {} vs {}",
+            d_with, d_without
+        );
+    }
+
+    #[test]
+    fn test_correction_spares_shared_function_words() {
+        let mut f = Facet::new();
+        let t = Trainer::new(0.05);
+        t.train_sentence(&mut f, "rust is slow");
+        let before = f.lexicon.get("is").map(|p| p.phase).unwrap();
+        t.correct_mistake(&mut f, "rust is slow", "rust is fast");
+        let after = f.lexicon.get("is").map(|p| p.phase).unwrap();
+        // "is" appears in both phrases, so it must not have taken a π pulse
+        let moved = wrap_signed(after - before).abs();
+        assert!(moved < 1.0, "shared word moved {} rad", moved);
+    }
+
+    #[test]
+    fn test_predictive_training_runs_and_is_bounded() {
+        let mut f = Facet::new();
+        let t = Trainer::new(0.05);
+        for _ in 0..10 {
+            t.train_full(&mut f, "the borrow checker prevents data races");
+        }
+        assert!(f.vocabulary_size() >= 6);
+        for p in f.lexicon.values() {
+            assert!(p.phase.is_finite() && p.phase >= 0.0 && p.phase < TWO_PI);
+            assert!(p.amplitude >= 1.0 && p.amplitude <= AMPLITUDE_MAX);
+        }
+    }
+
+    #[test]
+    fn test_same_length_words_diverge() {
+        let mut f = Facet::new();
+        let t = Trainer::new(0.05);
+        t.train_sentence(&mut f, "cat dog war");
+        let c = f.lexicon.get("cat").unwrap().phase;
+        let d = f.lexicon.get("dog").unwrap().phase;
+        assert!(wrap_signed(c - d).abs() > 0.01, "identity seeding must separate same-length words");
     }
 }

@@ -28,6 +28,14 @@ pub struct Facet {
     /// Learned Kuramoto-Sakaguchi phase lags β_ij for word_a → word_b.
     #[serde(default)]
     pub phase_lags: HashMap<String, HashMap<String, f64>>,
+    /// Version of the definition-grounding pass already applied to this facet.
+    /// Grounding is skipped at startup when this matches `GROUNDING_VERSION`.
+    #[serde(default)]
+    pub grounded_version: u32,
+    /// Flat vocabulary list used for frequency-biased negative sampling.
+    /// Rebuilt on demand; never persisted.
+    #[serde(skip)]
+    pub sample_pool: Vec<String>,
 }
 
 impl Facet {
@@ -38,6 +46,8 @@ impl Facet {
             bigrams: HashMap::new(),
             trigrams: HashMap::new(),
             phase_lags: HashMap::new(),
+            grounded_version: 0,
+            sample_pool: Vec::new(),
         }
     }
 
@@ -56,12 +66,119 @@ impl Facet {
         self.lexicon.get(word)
     }
 
-    /// Gets or initializes a phasor for a word at a deterministic seed phase.
+    /// Gets or initializes a phasor, seeded from the word's *identity*.
+    ///
+    /// Seeding previously used `word.len() * PHI`, which depends only on
+    /// character length: `cat`, `the`, `dog` and `war` all began at exactly
+    /// 4.854102 rad, and a 100k vocabulary started from about twenty distinct
+    /// positions. [`SpectralPhasor::seeded`] hashes the word instead, giving
+    /// every word its own position in every channel.
     pub fn get_or_init(&mut self, word: &str) -> &mut SpectralPhasor {
         self.lexicon.entry(word.to_string()).or_insert_with(|| {
-            let seed_phase = (word.len() as f64 * crate::config::PHI) % (2.0 * std::f64::consts::PI);
-            SpectralPhasor::new(seed_phase, crate::config::AMPLITUDE_INITIAL, crate::config::BAND_N_INITIAL)
+            SpectralPhasor::seeded(
+                word,
+                crate::config::AMPLITUDE_INITIAL,
+                crate::config::BAND_N_INITIAL,
+            )
         })
+    }
+
+    /// Fills phase channels for any phasor loaded from a pre-multi-channel
+    /// model file, preserving each word's learned base phase on channel 0.
+    /// Returns the number of phasors migrated.
+    pub fn migrate_channels(&mut self) -> usize {
+        let words: Vec<String> = self
+            .lexicon
+            .iter()
+            .filter(|(_, p)| p.channels_unset())
+            .map(|(w, _)| w.clone())
+            .collect();
+        for w in &words {
+            if let Some(p) = self.lexicon.get_mut(w) {
+                p.ensure_channels(w);
+            }
+        }
+        words.len()
+    }
+
+    /// Rebuilds the flat sampling pool if it has drifted from the lexicon.
+    ///
+    /// Words are repeated in proportion to `sqrt(count)`, which is the usual
+    /// compromise between uniform and unigram sampling: frequent words are
+    /// drawn more often, but not so much that rare words are never negatives.
+    pub fn rebuild_sample_pool(&mut self) {
+        let target = self.lexicon.len();
+        if !self.sample_pool.is_empty() && self.sample_pool.len() >= target {
+            return;
+        }
+        let mut pool = Vec::with_capacity(target * 2);
+        for (word, phasor) in &self.lexicon {
+            let reps = ((phasor.count as f64).sqrt().round() as usize).clamp(1, 8);
+            for _ in 0..reps {
+                pool.push(word.clone());
+            }
+        }
+        self.sample_pool = pool;
+    }
+
+    /// Draws a frequency-biased negative sample. Returns `None` until
+    /// [`Facet::rebuild_sample_pool`] has been called at least once.
+    #[inline]
+    pub fn sample_negative(&self, r: u64) -> Option<&String> {
+        if self.sample_pool.is_empty() {
+            return None;
+        }
+        self.sample_pool.get((r % self.sample_pool.len() as u64) as usize)
+    }
+
+    /// Mean phase coherence between two words across all channels.
+    /// Returns 0.0 if either word is unknown.
+    pub fn resonance(&self, word_a: &str, word_b: &str) -> f64 {
+        match (self.lexicon.get(word_a), self.lexicon.get(word_b)) {
+            (Some(a), Some(b)) => a.resonance(b),
+            _ => 0.0,
+        }
+    }
+
+    /// Circular dispersion of the lexicon's channel-0 phases.
+    ///
+    /// 1.0 means phases are spread uniformly around the circle; 0.0 means every
+    /// word sits at the same angle. Kuramoto coupling is attraction-only, so
+    /// dispersion falling toward zero while `coherence` rises is the signature
+    /// of the manifold collapsing rather than learning. Log both.
+    pub fn phase_dispersion(&self) -> f64 {
+        let n = self.lexicon.len();
+        if n == 0 {
+            return 1.0;
+        }
+        let (sx, sy) = self
+            .lexicon
+            .values()
+            .fold((0.0f64, 0.0f64), |(x, y), p| (x + p.phase.cos(), y + p.phase.sin()));
+        1.0 - (sx.hypot(sy) / n as f64)
+    }
+
+    /// Gini coefficient of sector occupancy — 0.0 is perfectly even, 1.0 means
+    /// one sector holds the entire vocabulary.
+    pub fn sector_gini(&self) -> f64 {
+        let n_sectors = crate::config::SECTOR_RESOLUTION as usize;
+        let width = crate::config::TWO_PI / n_sectors as f64;
+        let mut hist = vec![0u64; n_sectors];
+        for p in self.lexicon.values() {
+            let s = (p.phase / width).floor() as usize % n_sectors;
+            hist[s] += 1;
+        }
+        hist.sort_unstable();
+        let total: u64 = hist.iter().sum();
+        if total == 0 {
+            return 0.0;
+        }
+        let n = hist.len() as f64;
+        let mut cum = 0.0;
+        for (i, &c) in hist.iter().enumerate() {
+            cum += (2.0 * (i as f64 + 1.0) - n - 1.0) * c as f64;
+        }
+        (cum / (n * total as f64)).clamp(0.0, 1.0)
     }
 
     /// Computes the average amplitude across all phasors in the lexicon.

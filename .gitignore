@@ -84,3 +84,8 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# build sync tarball used by the remote toolchain
+.sync/
+data/evaluation.json
+*.chroma.tmp

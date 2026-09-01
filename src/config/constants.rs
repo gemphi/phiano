@@ -343,3 +343,98 @@ pub const VERIFY_REINFORCE_PULL: f64 = 0.01;
 /// Tiny phase push applied to unsupported pairs (punishment).
 pub const VERIFY_REPULSE: f64 = 0.02;
 
+
+// ── MULTI-CHANNEL PHASE REPRESENTATION (D-dimensional torus) ───────────────
+
+/// Number of independent phase channels per word (D).
+///
+/// A single angle gives S^1: at 64-sector resolution that is 64 distinguishable
+/// states for the whole vocabulary. D independent channels give a representation
+/// on the torus T^D, where similarity is mean phase coherence across channels.
+/// 64 channels at one byte each costs 64 bytes/word.
+pub const PHASE_CHANNELS: usize = 64;
+
+/// Quantisation of each channel: theta_k = phases[k] * 2π / CHANNEL_QUANTA.
+pub const CHANNEL_QUANTA: f64 = 256.0;
+
+/// Channels updated per training token. Updating a random subset each step is
+/// dropout-like regularisation and keeps the cost of a token update bounded.
+pub const CHANNELS_PER_UPDATE: usize = 16;
+
+// ── CONTRASTIVE OBJECTIVE ──────────────────────────────────────────────────
+
+/// Negative samples drawn per token per training step.
+///
+/// Kuramoto coupling is attraction-only, and attraction-only dynamics have a
+/// single stable attractor: total synchronisation. The negative term is what
+/// makes the fixed point informative instead of degenerate.
+pub const NEG_SAMPLES: usize = 5;
+
+/// Repulsion rate for negative samples, relative to the learning rate.
+pub const NEG_RATE: f64 = 0.5;
+
+/// Margin for the hinge loss on next-word retrieval.
+pub const HINGE_MARGIN: f64 = 0.05;
+
+/// Weight applied to function words when computing a sentence centroid.
+/// Closed-class words appear in nearly every sentence; at full weight they
+/// transitively couple the entire vocabulary and accelerate collapse.
+pub const FUNCTION_WORD_WEIGHT: f64 = 0.1;
+
+/// Log-frequency amplitude scale: A = 1 + ln(count) / AMPLITUDE_LOG_SCALE.
+/// ln(1e6)/14 ≈ 0.99, so a millionfold range maps into [1.0, 2.0].
+pub const AMPLITUDE_LOG_SCALE: f64 = 14.0;
+
+/// Highest band_n that contributes to effective phase. 2π/64 ÷ α = 13.45, so
+/// capping at 13 keeps the fine-structure correction inside one sector and
+/// stops converged words from walking around the circle.
+pub const BAND_N_EFFECTIVE_MAX: u32 = 13;
+
+// ── RECURRENT CONTEXT STATE ────────────────────────────────────────────────
+
+/// Base decay per token for the recurrent context state, |λ| < 1.
+pub const CONTEXT_LAMBDA: f64 = 0.92;
+
+/// Base rotation per token for the recurrent context state (ω).
+/// Channel k uses λ_k and ω_k spread geometrically from these bases, giving
+/// each channel its own timescale — a diagonal complex linear recurrence.
+pub const CONTEXT_OMEGA: f64 = 0.11;
+
+// ── COMPOSE TOURNAMENT (Huberman stage/measure ordering) ───────────────────
+
+/// Repulsion applied to losing compositions, relative to the learning rate.
+pub const LOSER_REPULSION: f64 = 0.25;
+
+/// Sector-score spread below which the variant population is degenerate.
+pub const SPREAD_ALARM: f64 = 0.01;
+
+/// Bonus weight for words that appeared in a winning sector last round
+/// (Huberman's killer heuristic, 1968).
+pub const KILLER_BONUS: f64 = 0.15;
+
+/// Weight for the composition length factor. Previously this term borrowed
+/// WEIGHT_NOVELTY, which was therefore counted twice.
+pub const WEIGHT_LENGTH: f64 = 0.15;
+
+// ── PERSISTENCE ────────────────────────────────────────────────────────────
+
+/// On-disk format version. Bumped when the serialized layout changes.
+pub const FORMAT_VERSION: u32 = 2;
+
+/// Grounding pass version. A facet whose stored version matches is not
+/// re-grounded at startup.
+pub const GROUNDING_VERSION: u32 = 2;
+
+/// Number of relaxation rounds for definition grounding.
+pub const GROUNDING_ROUNDS: usize = 5;
+
+/// Turns between automatic checkpoints in the REPL.
+pub const CHECKPOINT_EVERY_TURNS: usize = 20;
+
+// ── MEMORY RECALL ──────────────────────────────────────────────────────────
+
+/// Half-life for recency weighting in memory recall (7 days, in ms).
+pub const RECALL_HALF_LIFE_MS: f64 = 7.0 * 24.0 * 3600.0 * 1000.0;
+
+/// Number of past interactions recalled into the generation context.
+pub const RECALL_K: usize = 3;

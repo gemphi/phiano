@@ -64,10 +64,14 @@ pub struct ContextWaveEntry {
 }
 
 /// 16-layer memory log - records every interaction and organizes it by depth.
+///
+/// `layers` holds *indices* into `entries` rather than clones of them. The
+/// previous layout stored every interaction twice, including its full text.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Memo {
     pub entries: Vec<ContextWaveEntry>,
-    pub layers: [Vec<ContextWaveEntry>; MEMORY_LAYERS],
+    #[serde(default)]
+    pub layers: [Vec<usize>; MEMORY_LAYERS],
 }
 
 impl Memo {
@@ -94,8 +98,89 @@ impl Memo {
             layer,
         };
 
-        self.entries.push(entry.clone());
-        self.layers[layer].push(entry);
+        self.layers[layer].push(self.entries.len());
+        self.entries.push(entry);
+    }
+
+    /// The `k` past interactions whose waves are closest to `query`.
+    ///
+    /// The memory log has always recorded every interaction with its wave, its
+    /// timestamp and its text — and nothing ever read it back during inference.
+    /// This is the retrieval half.
+    pub fn recall(&self, query: (f64, f64), k: usize) -> Vec<&ContextWaveEntry> {
+        let mut scored: Vec<(&ContextWaveEntry, f64)> = self
+            .entries
+            .iter()
+            .map(|e| {
+                let dx = query.0 - e.superposition_wave.0;
+                let dy = query.1 - e.superposition_wave.1;
+                (e, dx.hypot(dy))
+            })
+            .collect();
+        scored.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.into_iter().take(k).map(|(e, _)| e).collect()
+    }
+
+    /// Recency-weighted recall: distance is divided by an exponential decay in
+    /// age, so an older memory must be substantially closer to outrank a recent
+    /// one.
+    pub fn recall_weighted(
+        &self,
+        query: (f64, f64),
+        k: usize,
+        half_life_ms: f64,
+    ) -> Vec<&ContextWaveEntry> {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_millis() as f64)
+            .unwrap_or(0.0);
+
+        let mut scored: Vec<(&ContextWaveEntry, f64)> = self
+            .entries
+            .iter()
+            .map(|e| {
+                let dx = query.0 - e.superposition_wave.0;
+                let dy = query.1 - e.superposition_wave.1;
+                let age = (now - e.timestamp_ms as f64).max(0.0);
+                let recency = 0.5f64.powf(age / half_life_ms.max(1.0));
+                (e, dx.hypot(dy) / recency.max(1e-6))
+            })
+            .collect();
+        scored.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.into_iter().take(k).map(|(e, _)| e).collect()
+    }
+
+    /// Novelty of a wave measured against *experience* rather than geometry.
+    ///
+    /// Distance to the nearest thing ever processed, squashed to [0, 1]. This
+    /// does not degrade as the lexicon grows, and it cannot be driven to a
+    /// constant by phase collapse the way centroid-distance novelty can.
+    pub fn novelty(&self, query: (f64, f64)) -> f64 {
+        if self.entries.is_empty() {
+            return 1.0;
+        }
+        let nearest = self
+            .entries
+            .iter()
+            .map(|e| {
+                let dx = query.0 - e.superposition_wave.0;
+                let dy = query.1 - e.superposition_wave.1;
+                dx.hypot(dy)
+            })
+            .fold(f64::MAX, f64::min);
+        1.0 - (-nearest).exp()
+    }
+
+    /// Rebuilds the layer index from `entries`. Used after loading a file
+    /// written before layers held indices.
+    pub fn reindex(&mut self) {
+        for l in self.layers.iter_mut() {
+            l.clear();
+        }
+        for (i, e) in self.entries.iter().enumerate() {
+            let layer = e.layer.min(MEMORY_LAYERS - 1);
+            self.layers[layer].push(i);
+        }
     }
 
     /// Classifies input text into one of 16 memory layers.
@@ -144,20 +229,28 @@ impl Memo {
             .unwrap_or(0)
     }
 
-    /// Saves the memory log to a binary file using bincode serialization.
+    /// Saves the memory log to a binary file, atomically (write then rename).
     pub fn save_to_file(&self, path: &str) -> Result<()> {
-        let file = File::create(path)?;
-        let writer = BufWriter::new(file);
-        bincode::serialize_into(writer, self)
-            .map_err(|e| Error::new(ErrorKind::Other, e))
+        let tmp = format!("{}.tmp", path);
+        {
+            let file = File::create(&tmp)?;
+            let writer = BufWriter::new(file);
+            bincode::serialize_into(writer, self)
+                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+        }
+        std::fs::rename(&tmp, path)
     }
 
     /// Loads a memory log from a binary file using bincode deserialization.
     pub fn load_from_file(path: &str) -> Result<Self> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
-        bincode::deserialize_from(reader)
-            .map_err(|e| Error::new(ErrorKind::Other, e))
+        let mut memo: Self =
+            bincode::deserialize_from(reader).map_err(|e| Error::new(ErrorKind::Other, e))?;
+        if memo.layers.iter().all(|l| l.is_empty()) && !memo.entries.is_empty() {
+            memo.reindex();
+        }
+        Ok(memo)
     }
 
     /// Computes an FNV-1a 64-bit hash of the input text.

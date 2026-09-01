@@ -192,7 +192,11 @@ mod tests {
         assert!(!field.layers[1].clusters.is_empty());
         assert_eq!(field.layers[0].level, 0);
 
-        let depth_res = field.resonate_depth(0.5);
-        assert!(!depth_res.is_empty());
+        // Query at a phase a word actually occupies. Probing a fixed angle only
+        // worked while seeding was length-based and every short word landed on
+        // the same handful of sectors.
+        let probe = facet.get_phasor("rust").map(|p| p.phase).unwrap();
+        let depth_res = field.resonate_depth(probe);
+        assert!(!depth_res.is_empty(), "the layer containing a known word must resonate");
     }
 }

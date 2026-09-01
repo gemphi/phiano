@@ -1,4 +1,4 @@
-use crate::config::ALPHA;
+use crate::config::{ALPHA, FORMAT_VERSION};
 use crate::facet::Facet;
 use crate::phasor::SpectralPhasor;
 use serde::{Deserialize, Serialize};
@@ -7,9 +7,6 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Error, ErrorKind, Result};
 
 /// Header metadata prepended to binary .chroma files.
-///
-/// Contains version info, vocabulary size, and the fine-structure alpha
-/// used when the file was written, for compatibility checking.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChromaHeader {
     /// File format version number.
@@ -20,10 +17,22 @@ pub struct ChromaHeader {
     pub fine_structure_alpha: f64,
 }
 
-/// Serialized payload container for the entire facet.
+/// Borrowed view of a facet for serialization.
 ///
-/// This is the on-disk representation of a `Facet`, consisting of
-/// a header and a clone of the lexicon.
+/// Serializing by reference avoids cloning the entire model — lexicon, bigrams,
+/// trigrams and phase lags — into a second copy before writing, which on a large
+/// model doubled peak memory for the duration of every save.
+#[derive(Serialize)]
+struct FacetRef<'a> {
+    header: ChromaHeader,
+    lexicon: &'a HashMap<String, SpectralPhasor>,
+    bigrams: &'a HashMap<String, HashMap<String, u32>>,
+    trigrams: &'a HashMap<String, HashMap<String, u32>>,
+    phase_lags: &'a HashMap<String, HashMap<String, f64>>,
+    grounded_version: u32,
+}
+
+/// Owned on-disk representation of a `Facet`.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SerializedFacet {
     /// File header with metadata.
@@ -39,24 +48,12 @@ pub struct SerializedFacet {
     /// Learned Kuramoto-Sakaguchi phase lags β_ij.
     #[serde(default)]
     pub phase_lags: HashMap<String, HashMap<String, f64>>,
+    /// Grounding pass already applied to this facet.
+    #[serde(default)]
+    pub grounded_version: u32,
 }
 
 impl SerializedFacet {
-    /// Creates a serialized facet from a `Facet` reference.
-    pub fn from_facet(facet: &Facet) -> Self {
-        Self {
-            header: ChromaHeader {
-                version: 1,
-                vocabulary_size: facet.vocabulary_size(),
-                fine_structure_alpha: ALPHA,
-            },
-            lexicon: facet.lexicon.clone(),
-            bigrams: facet.bigrams.clone(),
-            trigrams: facet.trigrams.clone(),
-            phase_lags: facet.phase_lags.clone(),
-        }
-    }
-
     /// Deserializes back into a `Facet`.
     pub fn into_facet(self) -> Facet {
         Facet {
@@ -64,23 +61,16 @@ impl SerializedFacet {
             bigrams: self.bigrams,
             trigrams: self.trigrams,
             phase_lags: self.phase_lags,
+            grounded_version: self.grounded_version,
+            sample_pool: Vec::new(),
         }
-    }
-
-    /// Saves the serialized facet to a binary file using bincode.
-    pub fn save_to_file(&self, file_path: &str) -> Result<()> {
-        let file = File::create(file_path)?;
-        let writer = BufWriter::new(file);
-        bincode::serialize_into(writer, self)
-            .map_err(|e| Error::new(ErrorKind::Other, e))
     }
 
     /// Loads a serialized facet from a binary file using bincode.
     pub fn load_from_file(file_path: &str) -> Result<Self> {
         let file = File::open(file_path)?;
         let reader = BufReader::new(file);
-        bincode::deserialize_from(reader)
-            .map_err(|e| Error::new(ErrorKind::Other, e))
+        bincode::deserialize_from(reader).map_err(|e| Error::new(ErrorKind::Other, e))
     }
 }
 
@@ -88,7 +78,6 @@ impl SerializedFacet {
 pub struct Storage;
 
 /// Legacy serialized facet (v1 format, no bigrams).
-/// Used for backward-compatible loading of old .chroma files.
 #[derive(Serialize, Deserialize, Debug)]
 struct LegacySerializedFacet {
     pub header: ChromaHeader,
@@ -96,19 +85,62 @@ struct LegacySerializedFacet {
 }
 
 impl Storage {
-    /// Saves a facet to a binary .chroma file.
+    /// Saves a facet to a binary .chroma file, atomically.
+    ///
+    /// The model is written to a sibling temporary file and then renamed over
+    /// the target. `rename` is atomic on every mainstream filesystem, so an
+    /// interrupted save can no longer leave a truncated model that fails to load
+    /// and silently starts the next session from an empty lexicon.
     pub fn save(facet: &Facet, path: &str) -> Result<()> {
-        SerializedFacet::from_facet(facet).save_to_file(path)
+        let tmp = format!("{}.tmp", path);
+
+        {
+            let file = File::create(&tmp)?;
+            let writer = BufWriter::new(file);
+            let view = FacetRef {
+                header: ChromaHeader {
+                    version: FORMAT_VERSION,
+                    vocabulary_size: facet.vocabulary_size(),
+                    fine_structure_alpha: ALPHA,
+                },
+                lexicon: &facet.lexicon,
+                bigrams: &facet.bigrams,
+                trigrams: &facet.trigrams,
+                phase_lags: &facet.phase_lags,
+                grounded_version: facet.grounded_version,
+            };
+            bincode::serialize_into(writer, &view).map_err(|e| Error::new(ErrorKind::Other, e))?;
+        }
+
+        std::fs::rename(&tmp, path)
     }
 
     /// Loads a facet from a binary .chroma file.
-    /// Tries the new format (with bigrams) first, falls back to legacy format.
+    ///
+    /// Tries the current format, then the legacy v1 format. A file written by a
+    /// *newer* build is rejected with a message that names both versions, rather
+    /// than falling through to "starting empty".
     pub fn load(path: &str) -> Result<Facet> {
-        // Try new format first
         match SerializedFacet::load_from_file(path) {
-            Ok(sf) => Ok(sf.into_facet()),
+            Ok(sf) => {
+                if sf.header.version > FORMAT_VERSION {
+                    return Err(Error::new(
+                        ErrorKind::InvalidData,
+                        format!(
+                            "{} is format v{}, this build reads v{}",
+                            path, sf.header.version, FORMAT_VERSION
+                        ),
+                    ));
+                }
+                if (sf.header.fine_structure_alpha - ALPHA).abs() > 1e-12 {
+                    eprintln!(
+                        "  [warn] {} was trained with alpha={:.9}, this build uses {:.9}",
+                        path, sf.header.fine_structure_alpha, ALPHA
+                    );
+                }
+                Ok(sf.into_facet())
+            }
             Err(_) => {
-                // Fall back to legacy format (no bigrams field)
                 let file = File::open(path)?;
                 let reader = BufReader::new(file);
                 let legacy: LegacySerializedFacet = bincode::deserialize_from(reader)
@@ -118,6 +150,8 @@ impl Storage {
                     bigrams: HashMap::new(),
                     trigrams: HashMap::new(),
                     phase_lags: HashMap::new(),
+                    grounded_version: 0,
+                    sample_pool: Vec::new(),
                 })
             }
         }

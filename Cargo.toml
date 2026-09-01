@@ -37,6 +37,14 @@ name = "bootstrap_facet"
 path = "src/bin/bootstrap_facet.rs"
 
 [[bin]]
+name = "evaluate"
+path = "src/bin/evaluate.rs"
+
+[[bin]]
+name = "experiment"
+path = "src/bin/experiment.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

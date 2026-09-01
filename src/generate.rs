@@ -2,6 +2,7 @@ use crate::attention;
 use crate::config::{
     DEFAULT_CONTEXT_WINDOW, PHI_CONJUGATE, TWO_PI,
     SYNTACTIC_MOMENTUM_DEFAULT, TORUS_DECODE_POOL,
+    CONTEXT_LAMBDA, CONTEXT_OMEGA, PHASE_CHANNELS,
 };
 use crate::facet::Facet;
 use crate::phase_flow::PhaseFlow;
@@ -15,11 +16,25 @@ pub const CONTEXT_WINDOW_SIZE: usize = DEFAULT_CONTEXT_WINDOW;
 pub const CONTEXT_LAYERS_COUNT: usize = 16;
 pub const CONTEXT_DECAY_BASE: f64 = 0.5;
 
-/// ContextWaveBuffer - maintains a running superposition wave of multi-turn conversation context.
+/// ContextWaveBuffer — a diagonal complex linear recurrence over the context.
+///
+/// State evolves as `h_t = λ_k · e^{i ω_k} · h_{t-1} + z_t`, independently per
+/// channel, with `λ_k` and `ω_k` spread geometrically so that each channel has
+/// its own timescale and rotation frequency.
+///
+/// The previous buffer was a decayed *sum*, which is commutative: it could not
+/// distinguish "dog bites man" from "man bites dog", and every token in a turn
+/// carried the same weight regardless of position. A rotation-and-decay
+/// recurrence is order-sensitive by construction, gives recent tokens more
+/// influence than old ones, and is the same mechanism modern state-space models
+/// (S4/S5, LRU, Mamba's linear component) use to carry long-range structure at
+/// constant memory.
 pub struct ContextWaveBuffer {
-    /// The running complex superposition wave (represented as x + iy -> (r, theta))
+    /// Channel-0 state, exposed as (x, y) for compatibility.
     pub sum_x: f64,
     pub sum_y: f64,
+    /// Per-channel recurrent state.
+    h: Vec<c64>,
     /// Ring buffer of recent tokens
     tokens: VecDeque<String>,
     max_capacity: usize,
@@ -36,42 +51,72 @@ impl ContextWaveBuffer {
         Self {
             sum_x: 0.0,
             sum_y: 0.0,
-            tokens: VecDeque::with_capacity(capacity),
+            h: vec![c64::new(0.0, 0.0); PHASE_CHANNELS],
+            tokens: VecDeque::with_capacity(capacity.min(4096)),
             max_capacity: capacity,
         }
     }
 
-    /// Appends new text to the context wave, applying exponential decay to past context.
-    pub fn push_turn(&mut self, facet: &Facet, text: &str) {
-        // Decay past context wave
-        self.sum_x *= CONTEXT_DECAY_BASE;
-        self.sum_y *= CONTEXT_DECAY_BASE;
+    /// Decay and rotation for channel `k`.
+    ///
+    /// Channel 0 keeps the slowest decay and no rotation, so it behaves like a
+    /// smoothed running topic; higher channels decay faster and rotate quicker,
+    /// giving the state a spectrum of timescales rather than a single one.
+    #[inline]
+    fn kernel(k: usize) -> c64 {
+        let frac = k as f64 / PHASE_CHANNELS as f64;
+        let lambda = CONTEXT_LAMBDA.powf(1.0 + 3.0 * frac);
+        let omega = CONTEXT_OMEGA * (1.0 + 4.0 * frac);
+        c64::from_polar(lambda, omega)
+    }
 
-        let turn_tokens = Tokenizer::tokenize(text);
-        for token in turn_tokens {
-            if self.tokens.len() >= self.max_capacity {
-                self.tokens.pop_front();
+    /// Advances the state by one token.
+    pub fn push_token(&mut self, facet: &Facet, token: &str) {
+        for k in 0..PHASE_CHANNELS {
+            self.h[k] *= Self::kernel(k);
+        }
+        if let Some(phasor) = facet.lexicon.get(token) {
+            for k in 0..PHASE_CHANNELS {
+                self.h[k] += c64::from_polar(phasor.amplitude, phasor.theta(k));
             }
-            if let Some(phasor) = facet.lexicon.get(&token) {
-                self.sum_x += phasor.amplitude * phasor.phase.cos();
-                self.sum_y += phasor.amplitude * phasor.phase.sin();
-            }
-            self.tokens.push_back(token);
+        }
+        if self.tokens.len() >= self.max_capacity {
+            self.tokens.pop_front();
+        }
+        self.tokens.push_back(token.to_string());
+        self.sum_x = self.h[0].re;
+        self.sum_y = self.h[0].im;
+    }
+
+    /// Appends a whole turn, token by token, so order is preserved.
+    pub fn push_turn(&mut self, facet: &Facet, text: &str) {
+        for token in Tokenizer::tokenize(text) {
+            self.push_token(facet, &token);
         }
     }
 
     /// Computes the current context phase angle in [0, 2pi).
     pub fn context_phase(&self) -> f64 {
-        let angle = self.sum_y.atan2(self.sum_x);
-        match angle < 0.0 {
-            true => angle + TWO_PI,
-            false => angle,
-        }
+        self.h[0].arg().rem_euclid(TWO_PI)
     }
 
     /// Returns the context wave magnitude (amplitude).
     pub fn context_amplitude(&self) -> f64 {
-        (self.sum_x * self.sum_x + self.sum_y * self.sum_y).sqrt()
+        self.h[0].norm()
+    }
+
+    /// The full multi-channel context state, for channel-aware retrieval.
+    pub fn channels(&self) -> &[c64] {
+        &self.h
+    }
+
+    /// Clears the recurrent state without dropping the token ring.
+    pub fn reset_state(&mut self) {
+        for z in self.h.iter_mut() {
+            *z = c64::new(0.0, 0.0);
+        }
+        self.sum_x = 0.0;
+        self.sum_y = 0.0;
     }
 }
 
@@ -209,12 +254,20 @@ impl Generator {
         self.torus_ray_cast(facet, flow, target_phase, recent)
     }
 
+    /// Whether a token may be emitted.
+    ///
+    /// Numerals are allowed: the previous rule required every character to be
+    /// alphabetic, so the model could not state a quantity, a version or a date.
     fn speakable(word: &str) -> bool {
         let n = word.chars().count();
-        n >= 2
-            && n <= 16
-            && word.chars().all(|c| c.is_ascii_alphabetic())
-            && !Self::boilerplate(word)
+        if n == 0 || n > 16 || Self::boilerplate(word) {
+            return false;
+        }
+        let all_digits = word.chars().all(|c| c.is_ascii_digit());
+        if all_digits {
+            return n <= 6;
+        }
+        n >= 2 && word.chars().all(|c| c.is_ascii_alphanumeric())
     }
 
     fn boilerplate(word: &str) -> bool {
@@ -242,9 +295,13 @@ impl Generator {
     ) -> Option<String> {
         let mut best: Option<(String, f64)> = None;
         for (word, count) in candidates {
-            if !Self::speakable(word) || recent.contains(word) {
+            if !Self::speakable(word) {
                 continue;
             }
+            // Soft penalty rather than a hard block: an outright ban on any word
+            // seen in the last 12 tokens makes "the cat sat on the mat"
+            // unwriteable.
+            let repeat_penalty = if recent.contains(word) { 0.15 } else { 1.0 };
             let phase_align = facet
                 .lexicon
                 .get(word)
@@ -253,7 +310,8 @@ impl Generator {
             let resonance = flow.resonance_with(facet, word);
             let capped = (*count as f64).min(24.0).ln_1p();
             let content = if Tokenizer::is_function_word(word) { 0.55 } else { 1.35 };
-            let score = capped * (0.35 + 0.25 * phase_align + 0.40 * resonance) * content;
+            let score =
+                capped * (0.35 + 0.25 * phase_align + 0.40 * resonance) * content * repeat_penalty;
             match &best {
                 Some((_, best_score)) if score <= *best_score => {}
                 _ => best = Some((word.clone(), score)),

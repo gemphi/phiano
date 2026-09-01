@@ -23,6 +23,8 @@ use std::fs;
 /// doesn't know, applies training, evaluates understanding, iterates
 /// on gaps, and scales by persisting knowledge.
 pub struct Model {
+    /// Turns since the last automatic checkpoint.
+    turns_since_save: usize,
     /// The facet - lexicon of words mapped to complex phasors.
     pub facet: Facet,
     /// The trainer - Kuramoto phase attraction learning engine.
@@ -47,11 +49,26 @@ impl Model {
                 println!("  [loaded] {} words", m.vocabulary_size());
                 m
             }
-            Err(_) => {
+            Err(e) => {
+                // Never fail silently into an empty model: a corrupt or
+                // future-format file used to look exactly like a first run.
+                if std::path::Path::new(config::CHROMA_FILE).exists() {
+                    eprintln!(
+                        "  [WARN] could not load {}: {} — starting from an empty lexicon",
+                        config::CHROMA_FILE, e
+                    );
+                }
                 let _ = fs::create_dir_all("data");
                 Facet::new()
             }
         };
+
+        // Fill phase channels for any phasor saved before the lexicon carried
+        // them, preserving each word's learned base phase on channel 0.
+        let migrated = facet.migrate_channels();
+        if migrated > 0 {
+            println!("  [migrate] {} phasors given phase channels", migrated);
+        }
 
         // Bootstrap bigrams from chunk data if empty (legacy model compat)
         match facet.bigrams.is_empty() && !facet.lexicon.is_empty() {
@@ -59,13 +76,12 @@ impl Model {
             false => {}
         }
 
-        // Definition-grounded phase re-seeding
-        // Replaces word.len()*PHI with definition centroid phases
-        match !facet.lexicon.is_empty() {
-            true => {
-                DefinitionGrounder::ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
-            }
-            false => {}
+        // Definition-grounded phase re-seeding. Runs once per grounding
+        // version rather than on every startup: it is a full pass over the
+        // dictionary, and re-running it meant the model that started was never
+        // quite the model that was saved.
+        if !facet.lexicon.is_empty() && facet.grounded_version < config::GROUNDING_VERSION {
+            DefinitionGrounder::ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
         }
 
         let cognitive_core = CognitiveCore::new(ChunkStore::new("data/chunks"));
@@ -74,6 +90,7 @@ impl Model {
             .unwrap_or_else(|_| Memo::new());
 
         Self {
+            turns_since_save: 0,
             facet,
             trainer: Trainer::new(config::LEARNING_RATE),
             memo,
@@ -143,7 +160,14 @@ impl Model {
                         false => {}
                     }
                 }
-                Err(_) => break,
+                // Ctrl-C, Ctrl-D or a closed stream. Persist before leaving:
+                // this path previously exited without saving, so an interrupted
+                // session lost everything it had learned.
+                Err(_) => {
+                    println!();
+                    self.scale();
+                    break;
+                }
             }
         }
     }
@@ -165,6 +189,13 @@ impl Model {
         }
 
         let arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
+
+        // Prime the context wave with relevant past turns before dispatching.
+        let recalled = self.recall_context(line);
+        for past in &recalled {
+            self.context_buffer.push_turn(&self.facet, past);
+        }
+
         let mut ctx = Context {
             manifold: &mut self.facet,
             trainer: &self.trainer,
@@ -181,10 +212,44 @@ impl Model {
             false => return,
         }
 
-        let wave = crate::wave::Wave::text(&self.facet, line);
+        // Record the interaction under its order-sensitive wave, so that recall
+        // can tell "dog bites man" from "man bites dog".
+        let wave = crate::wave::Wave::text_bound(&self.facet, line);
         self.memo.record((wave.re, wave.im), line);
 
         self.envision(line);
+
+        // Checkpoint periodically. Persistence used to happen only on a clean
+        // `exit`, so a crash or a power loss discarded the session.
+        self.turns_since_save += 1;
+        if self.turns_since_save >= config::CHECKPOINT_EVERY_TURNS {
+            self.scale_quiet();
+            self.turns_since_save = 0;
+        }
+    }
+
+    /// Pulls the most relevant past interactions into the working context.
+    ///
+    /// The memory log has recorded every interaction's wave since the beginning;
+    /// nothing read it back. This is what makes the session conversational
+    /// rather than stateless per turn.
+    fn recall_context(&self, line: &str) -> Vec<String> {
+        if self.memo.is_empty() {
+            return Vec::new();
+        }
+        let q = crate::wave::Wave::text_bound(&self.facet, line);
+        self.memo
+            .recall_weighted((q.re, q.im), config::RECALL_K, config::RECALL_HALF_LIFE_MS)
+            .into_iter()
+            .filter(|e| !e.text.is_empty() && e.text != line)
+            .map(|e| e.text.clone())
+            .collect()
+    }
+
+    /// Persists without printing a banner — used for automatic checkpoints.
+    fn scale_quiet(&self) {
+        let _ = Storage::save(&self.facet, config::CHROMA_FILE);
+        let _ = self.memo.save_to_file(config::MEMORY_FILE);
     }
 
     /// Envision phase: detect knowledge gaps and project what to learn next.
@@ -202,8 +267,13 @@ impl Model {
     ///
     /// Called on exit to ensure all learned knowledge is saved.
     pub fn scale(&self) {
-        let _ = Storage::save(&self.facet, config::CHROMA_FILE);
-        let _ = self.memo.save_to_file(config::MEMORY_FILE);
+        if let Err(e) = Storage::save(&self.facet, config::CHROMA_FILE) {
+            eprintln!("  [ERROR] could not save {}: {}", config::CHROMA_FILE, e);
+            return;
+        }
+        if let Err(e) = self.memo.save_to_file(config::MEMORY_FILE) {
+            eprintln!("  [ERROR] could not save {}: {}", config::MEMORY_FILE, e);
+        }
         println!(
             "  [saved] {} ({} words)",
             config::CHROMA_FILE,

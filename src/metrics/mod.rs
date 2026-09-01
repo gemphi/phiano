@@ -3,6 +3,8 @@
 //! regularization, generalization, adversarial robustness, ARC benchmarks.
 
 pub mod baseline;
+pub mod kn_baseline;
+pub mod harness;
 pub mod eval_split;
 pub mod capacity;
 pub mod regularization;

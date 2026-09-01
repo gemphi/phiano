@@ -1,7 +1,8 @@
-use crate::compose::better::{Evaluator as ComposerEvaluator, SectorScore};
+use crate::compose::better::{Evaluator as ComposerEvaluator, KillerWords, SectorScore};
 use crate::compose::flow::RiverFlow;
 use crate::compose::worse::Discarder;
 use crate::compose::{SectorPalette, Composition};
+use crate::config;
 use crate::facet::Facet;
 use crate::trainer::Trainer;
 
@@ -35,6 +36,8 @@ pub struct CompositionTuner {
     pub evaluator: ComposerEvaluator,
     /// The discarder (worse.rs).
     pub discarder: Discarder,
+    /// Cross-round memory of words from winning sectors (Huberman's killer heuristic).
+    pub killers: KillerWords,
 }
 
 impl CompositionTuner {
@@ -47,6 +50,7 @@ impl CompositionTuner {
             depth: 8,
             evaluator: ComposerEvaluator::new(),
             discarder: Discarder::new(),
+            killers: KillerWords::new(),
         }
     }
 
@@ -73,30 +77,50 @@ impl CompositionTuner {
             let flows = RiverFlow::generate_variations(facet, prompt, self.depth);
 
             // Phase 2: EVALUATE - score all 64
-            all_scores = self.evaluator.evaluate_variations(facet, &flows);
+            all_scores = self.evaluator.evaluate_variations(facet, &flows, &self.killers);
 
             best_score = all_scores[0].clone();
             let avg = self.evaluator.average_score(&all_scores);
             let spread = self.evaluator.score_spread(&all_scores);
 
             println!(
-                "  [round {}/{}] best: {:.4} (sector {} {}) avg: {:.4} spread: {:.4}",
+                "  [round {}/{}] best: {:.4} (stage {}, sector {} {}) avg: {:.4} spread: {:.4}",
                 round + 1,
                 self.max_rounds,
                 best_score.score,
+                best_score.stage,
                 best_score.sector,
                 best_score.color,
                 avg,
                 spread,
             );
 
-            // Phase 3: DISCARD + TRAIN - keep better, discard worse, train on better
+            // A vanishing spread is degeneracy, not success: the variants have
+            // become indistinguishable, so selection has nothing left to act on.
+            if spread < config::SPREAD_ALARM && round > 0 {
+                eprintln!(
+                    "  [WARN] sector spread {:.4} below {:.4} — variants are degenerate; \
+                     the manifold may be collapsing (see docs/how/08_self_scoring.md)",
+                    spread, config::SPREAD_ALARM
+                );
+            }
+
+            // Phase 3: GUARD + SELECT + REINFORCE + PENALISE
             let result = self.discarder.discard_and_train(facet, trainer, &all_scores);
             self.discarder.print_summary(&result);
 
-            // Phase 4: CONVERGE - check if we're done
+            // Remember what won, for next round's candidate ordering.
+            for text in &result.trained_texts {
+                self.killers.record_winner(text);
+            }
+
+            // Phase 4: CONVERGE - check if we're done. Degeneracy is reported
+            // separately so it is never mistaken for convergence.
             if self.evaluator.has_converged(&all_scores, prev_best) && round > 0 {
-                println!("  [converged] improvement below threshold");
+                match self.evaluator.is_degenerate(&all_scores) {
+                    true => println!("  [halted] population degenerate — stopping, not converged"),
+                    false => println!("  [converged] improvement below threshold"),
+                }
                 rounds_completed = round + 1;
                 break;
             }
@@ -107,7 +131,7 @@ impl CompositionTuner {
 
         // Final evaluation with the re-tuned facet
         let final_flows = RiverFlow::generate_variations(facet, prompt, self.depth);
-        let final_scores = self.evaluator.evaluate_variations(facet, &final_flows);
+        let final_scores = self.evaluator.evaluate_variations(facet, &final_flows, &self.killers);
 
         let winner = &final_scores[0];
         let sector_scores: Vec<(u16, f64)> = final_scores
