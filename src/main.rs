@@ -4,6 +4,7 @@ mod cognitive;
 mod command;
 mod compose;
 mod config;
+mod correction;
 mod curriculum;
 mod data;
 mod drivers;
@@ -81,6 +82,7 @@ fn main() {
         world: &mut model.world,
         context_buffer: &mut model.context_buffer,
         cognitive_core: &model.cognitive_core,
+        corrections: &mut model.corrections,
         arg: "",
         line: "",
     });

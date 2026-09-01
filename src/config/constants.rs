@@ -438,3 +438,22 @@ pub const RECALL_HALF_LIFE_MS: f64 = 7.0 * 24.0 * 3600.0 * 1000.0;
 
 /// Number of past interactions recalled into the generation context.
 pub const RECALL_K: usize = 3;
+
+// ── CORRECTION ─────────────────────────────────────────────────────────────
+
+/// Amplitude floor after a correction.
+///
+/// The floor was AMPLITUDE_INITIAL (1.0), so a repeatedly-corrected word could
+/// never become *less* familiar than a word never seen — leaving no way to
+/// represent "I have actively learned this is wrong" as distinct from "I have
+/// no idea". Those are different epistemic states.
+pub const CORRECTION_FLOOR: f64 = 0.3;
+
+/// Default rotation for a graded correction, in radians.
+pub const CORRECTION_STRENGTH: f64 = 0.3;
+
+/// Path to the persisted correction journal.
+pub const CORRECTION_FILE: &str = "data/corrections.json";
+
+/// Phase dispersion below which generation warns that the manifold is degenerate.
+pub const DEGENERACY_WARN: f64 = 0.2;

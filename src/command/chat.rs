@@ -103,13 +103,29 @@ impl ChatCmd {
                     let rest = &question["!correct ".len()..];
                     match rest.split_once('|') {
                         Some((wrong, correct)) => {
-                            ctx.trainer.correct_mistake(
+                            let (wrong, correct) = (wrong.trim(), correct.trim());
+                            let evaluator = crate::eval::Evaluator::new();
+                            let before = evaluator.eval(ctx.manifold, wrong).coherence;
+
+                            ctx.trainer.correct_graded(
                                 ctx.manifold,
-                                wrong.trim(),
-                                correct.trim(),
+                                wrong,
+                                correct,
+                                crate::config::CORRECTION_STRENGTH,
                             );
-                            println!("\n  Phiano> Corrected: repulsed '{}' and reinforced '{}'.\n",
-                                wrong.trim(), correct.trim());
+                            ctx.corrections.record(
+                                wrong,
+                                correct,
+                                Some(crate::config::CORRECTION_STRENGTH),
+                            );
+
+                            // Show the correction took, rather than asserting it.
+                            let after = evaluator.eval(ctx.manifold, wrong).coherence;
+                            println!(
+                                "\n  Phiano> Corrected. '{}' coherence {:.2} → {:.2}; \
+                                 reinforced '{}'. Journalled ({} total).\n",
+                                wrong, before, after, correct, ctx.corrections.len()
+                            );
                         }
                         None => {
                             println!("\n  Phiano> Usage: !correct wrong phrase | correct phrase\n");

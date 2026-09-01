@@ -4,6 +4,7 @@ pub use metrics::{TrainingMetrics, MultiEpochResult};
 use crate::config::{
     TWO_PI, PHASE_REPULSION,
     CONVERGENCE_THRESHOLD, AMPLITUDE_MAX, AMPLITUDE_INITIAL, BAND_N_INITIAL,
+    CORRECTION_FLOOR,
     PHASE_CHANNELS, CHANNELS_PER_UPDATE, NEG_SAMPLES, NEG_RATE,
     HINGE_MARGIN, FUNCTION_WORD_WEIGHT,
 };
@@ -356,7 +357,7 @@ impl Trainer {
             if let Some(phasor) = facet.lexicon.get_mut(token) {
                 phasor.phase = (phasor.phase + PHASE_REPULSION).rem_euclid(TWO_PI);
                 phasor.sync_channel0();
-                phasor.amplitude = (phasor.amplitude * 0.8).max(AMPLITUDE_INITIAL);
+                phasor.amplitude = (phasor.amplitude * 0.8).max(CORRECTION_FLOOR);
             }
         }
 

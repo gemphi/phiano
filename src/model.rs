@@ -37,6 +37,8 @@ pub struct Model {
     pub context_buffer: crate::generate::ContextWaveBuffer,
     /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: CognitiveCore,
+    /// Journal of taught corrections, replayed after grounding.
+    pub corrections: crate::correction::CorrectionLog,
 }
 
 impl Model {
@@ -89,8 +91,19 @@ impl Model {
         let memo = Memo::load_from_file(config::MEMORY_FILE)
             .unwrap_or_else(|_| Memo::new());
 
+        // Replay what the user taught. Grounding and bootstrap both rewrite
+        // phases from source data, which would otherwise silently undo every
+        // correction the user has ever made.
+        let corrections = crate::correction::CorrectionLog::load(config::CORRECTION_FILE);
+        if !corrections.is_empty() {
+            let trainer = Trainer::new(config::LEARNING_RATE);
+            let n = corrections.replay(&mut facet, &trainer);
+            println!("  [corrections] replayed {} taught correction(s)", n);
+        }
+
         Self {
             turns_since_save: 0,
+            corrections,
             facet,
             trainer: Trainer::new(config::LEARNING_RATE),
             memo,
@@ -203,6 +216,7 @@ impl Model {
             world: &mut self.world,
             context_buffer: &mut self.context_buffer,
             cognitive_core: &self.cognitive_core,
+            corrections: &mut self.corrections,
             arg,
             line,
         };
@@ -250,6 +264,7 @@ impl Model {
     fn scale_quiet(&self) {
         let _ = Storage::save(&self.facet, config::CHROMA_FILE);
         let _ = self.memo.save_to_file(config::MEMORY_FILE);
+        let _ = self.corrections.save(config::CORRECTION_FILE);
     }
 
     /// Envision phase: detect knowledge gaps and project what to learn next.
@@ -273,6 +288,9 @@ impl Model {
         }
         if let Err(e) = self.memo.save_to_file(config::MEMORY_FILE) {
             eprintln!("  [ERROR] could not save {}: {}", config::MEMORY_FILE, e);
+        }
+        if let Err(e) = self.corrections.save(config::CORRECTION_FILE) {
+            eprintln!("  [ERROR] could not save {}: {}", config::CORRECTION_FILE, e);
         }
         println!(
             "  [saved] {} ({} words)",

@@ -256,6 +256,7 @@ pub async fn command(
         world: &mut model.world,
         context_buffer: &mut model.context_buffer,
         cognitive_core: &model.cognitive_core,
+        corrections: &mut model.corrections,
         arg,
         line: &line,
     };

@@ -42,6 +42,8 @@ pub struct Context<'a> {
     pub context_buffer: &'a mut ContextWaveBuffer,
     /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: &'a CognitiveCore,
+    /// Persisted journal of taught corrections, so they survive a re-ingest.
+    pub corrections: &'a mut crate::correction::CorrectionLog,
     /// The argument string after the command name (trimmed).
     pub arg: &'a str,
     /// The full raw input line.

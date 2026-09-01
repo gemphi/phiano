@@ -166,6 +166,19 @@ impl Generator {
     ) -> (Vec<String>, PhaseFlow) {
         context_buffer.push_turn(facet, prompt);
 
+        // Under a collapsed manifold every candidate aligns with every target
+        // phase, so the phase term stops discriminating and decoding degrades
+        // smoothly into a plain n-gram sampler — with no error and no warning.
+        // One O(V) check per generation buys the warning.
+        let dispersion = facet.phase_dispersion();
+        if dispersion < crate::config::DEGENERACY_WARN {
+            eprintln!(
+                "  [WARN] phase dispersion {:.4} — the manifold is not discriminating; \
+                 generation is effectively n-gram only (docs/how/11_generation.md)",
+                dispersion
+            );
+        }
+
         let mut generated_tokens: Vec<String> = Vec::new();
         let mut current_phase = context_buffer.context_phase();
         let mut phase_momentum: f64 = SYNTACTIC_MOMENTUM_DEFAULT;

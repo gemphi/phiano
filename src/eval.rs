@@ -32,6 +32,11 @@ pub enum Verdict {
 
 impl Verdict {
     /// Determines a verdict from the three eval scores.
+    ///
+    /// `novelty` may be NaN when the sentence wave is too small for its
+    /// direction to mean anything; every comparison below is written so that an
+    /// undefined novelty falls through to a coherence-and-resonance judgement
+    /// rather than silently taking a branch.
     pub fn from_scores(coherence: f64, novelty: f64, resonance: f64) -> Self {
         if resonance < 0.3 {
             return Self::Noise;
@@ -88,10 +93,14 @@ pub struct Eval {
 
 impl fmt::Display for Eval {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let novelty = match self.novelty.is_nan() {
+            true => "  n/a".to_string(),
+            false => format!("{:.2}", self.novelty),
+        };
         write!(
             f,
-            "  Coherence: {:.2}  Novelty: {:.2}  Resonance: {:.2}  Overall: {:.2}\n  Verdict: {}",
-            self.coherence, self.novelty, self.resonance, self.overall, self.verdict,
+            "  Coherence: {:.2}  Novelty: {}  Resonance: {:.2}  Overall: {:.2}\n  Verdict: {}",
+            self.coherence, novelty, self.resonance, self.overall, self.verdict,
         )
     }
 }
@@ -135,26 +144,44 @@ impl Evaluator {
             0.0
         } else if known == 1 {
             // Single word: measure alignment with facet centroid direction
-            let centroid_dir = centroid.arg();
-            let word_phase = wave.arg();
-            let alignment = (centroid_dir - word_phase).cos().max(0.0);
+            let alignment = (centroid.arg() - wave.arg()).cos().max(0.0);
             alignment * 0.5 + 0.25
         } else {
             // Multiple words: Kuramoto order parameter
             (wave.norm() / known as f64).clamp(0.0, 1.0)
         };
 
-        let novelty = if facet.vocabulary_size() > 0 && wave.norm() > 1e-10 {
-            let centroid_arg = centroid.arg();
-            let wave_arg = wave.arg();
-            let angular_dist = ((centroid_arg - wave_arg).abs()).min(PI);
-            let normalized = angular_dist / PI;
-            (1.0 - (-(normalized * config::NOVELTY_SCALE * 5.0).min(20.0)).exp()).clamp(0.0, 1.0)
-        } else {
-            1.0
+        // Novelty is the *direction* of the sentence wave relative to the
+        // lexicon centroid — but the direction of a near-zero vector is
+        // floating-point noise. Exactly when coherence is lowest, `arg()` is
+        // least meaningful, so novelty is left undefined rather than folded
+        // into `overall` as though it were a measurement.
+        let degenerate = known == 0
+            || wave.norm() < 0.1 * known as f64
+            || facet.vocabulary_size() == 0
+            || centroid.norm() < 1e-10;
+
+        let novelty = match degenerate {
+            true => f64::NAN,
+            false => {
+                let angular_dist = ((centroid.arg() - wave.arg()).abs()).min(PI);
+                let normalized = angular_dist / PI;
+                (1.0 - (-(normalized * config::NOVELTY_SCALE * 5.0).min(20.0)).exp())
+                    .clamp(0.0, 1.0)
+            }
         };
 
-        let overall = config::PhiConfig::eval_overall(coherence, novelty, resonance);
+        let overall = match novelty.is_nan() {
+            // Renormalise across the terms that are actually defined.
+            true => {
+                let w = config::EVAL_WEIGHT_COHERENCE + config::EVAL_WEIGHT_RESONANCE;
+                (coherence * config::EVAL_WEIGHT_COHERENCE
+                    + resonance * config::EVAL_WEIGHT_RESONANCE)
+                    / w
+            }
+            false => config::PhiConfig::eval_overall(coherence, novelty, resonance),
+        };
+
         let verdict = Verdict::from_scores(coherence, novelty, resonance);
 
         Eval {
@@ -166,6 +193,30 @@ impl Evaluator {
         }
     }
 
+}
+
+impl Evaluator {
+    /// Evaluates a text, measuring novelty against **experience** rather than
+    /// geometry.
+    ///
+    /// Centroid-distance novelty degrades as the lexicon grows: the centroid
+    /// becomes a stable average that barely moves, and under phase collapse it
+    /// converges on the point every word is converging on, so novelty tends to
+    /// zero for everything. Distance to the nearest thing ever processed does
+    /// not have that failure mode, and the memory log has been recording it
+    /// since the beginning.
+    pub fn eval_with_memory(&self, facet: &Facet, memo: &crate::memory::Memo, text: &str) -> Eval {
+        let mut base = self.eval(facet, text);
+        if memo.is_empty() {
+            return base;
+        }
+        let wave = Wave::text_bound(facet, text);
+        base.novelty = memo.novelty((wave.re, wave.im));
+        base.overall =
+            config::PhiConfig::eval_overall(base.coherence, base.novelty, base.resonance);
+        base.verdict = Verdict::from_scores(base.coherence, base.novelty, base.resonance);
+        base
+    }
 }
 
 impl Default for Evaluator {
