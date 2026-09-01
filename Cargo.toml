@@ -77,6 +77,10 @@ name = "sentence"
 path = "src/bin/sentence.rs"
 
 [[bin]]
+name = "roles"
+path = "src/bin/roles.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

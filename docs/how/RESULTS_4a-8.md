@@ -717,3 +717,105 @@ Two things, and the second is the one worth building.
   relation it is meant to carry. Making the rotation differentiable is what
   would let the manifold discover its own binding operator rather than being
   handed one.
+
+---
+
+## §8 — Constitutive rules: *X counts as Y in context C*
+
+Positional binding failed three times (§4d definitions, §4c LM context, §7
+sentence composition), and the diagnosis was not "order is bad". Position is a
+**nonce** role: *currency* lands at angle 1·φ in one entry and 7·φ in another, so
+the same concept is scattered to a different angle in every context it appears
+in, and superposed copies cancel instead of accumulating.
+
+A **role** rotation is the opposite. Every `genus` binds at the same angle
+everywhere, so the relation becomes a *direction* in the manifold. `src/roles.rs`
+implements this: six roles (genus, function, form, instance, context, property),
+each with a rotation derived from its own name so it is identical in every
+process without being stored, and a word's identity is the superposition of its
+bound relations.
+
+### The mechanism works
+
+`test_identity_answers_role_queries` composes *money* from
+`genus(money, currency)`, `function(money, transaction)`,
+`form(money, paper)` — Searle's own canonical example — and asks the composition
+what its genus is. It answers *currency*; asked its function, it answers
+*transaction*. Same for *cow* (animal / milk / hide) and *tree* (plant / shade /
+wood). Binding is exactly invertible to one phase quantum, and the six roles are
+mutually near-orthogonal (|resonance| < 0.35 between any two).
+
+Hierarchy composes as a path rather than a table:
+`bessie → cow → animal → organism → thing`, and a cyclic definition terminates
+instead of spinning.
+
+### On real data it has nothing to do
+
+`cargo run --release --bin roles`, extracting rules from 68,175 Webster's
+glosses and scoring genus recovery on the benchmark's hypernym family:
+
+| scorer | top-1 | top-5 |
+|---|---|---|
+| role query | 10.7% | 10.7% |
+| bag (control) | 7.1% | 10.7% |
+| chance | 0.0014% | 0.0072% |
+
+**A tie on top-5, and the reason is in the extraction counts:**
+
+| role | rules found |
+|---|---|
+| genus | 68,025 |
+| form | 2,234 |
+| function | 1,951 |
+| instance, context, property | 0 |
+
+Almost every word ends up with **exactly one rule**, and with one rule the bag
+and the role query are the same vector up to a constant rotation. Role binding
+disambiguates relations; give it one relation and there is nothing to
+disambiguate. The unit test works because *money* has three roles. The
+dictionary pass gives 94% of words one.
+
+### And the scoring is mismatched too
+
+What the extractor actually recovers is good, and the benchmark marks it wrong:
+
+```
+dog     → quadruped     (benchmark expects: animal)
+hammer  → instrument    (expects: tool)
+wheat   → cereal        (expects: grain)
+copper  → metal         (expects: metal)  ✓
+```
+
+*A dog is a quadruped* and *a hammer is an instrument* are Webster's own genus
+terms and they are correct. The hypernym family was written with modern
+hypernyms, so it scores 1913 lexicography as failure. The 10.7% is measuring
+agreement between two vocabularies, not whether role binding works.
+
+### A bug worth recording
+
+The first extractor filtered adjectives but not function words, then picked the
+candidate with the highest definitional in-degree, on the theory that genus terms
+are general and general terms get used a lot. Frequency-as-generality is exactly
+backwards once function words are in the pool: *the* has the highest in-degree in
+any dictionary, so every entry came back with `genus(dog, the)` and the chains
+read `cow → the → before → time → any → one`.
+
+**The role-versus-bag comparison still ran, and still showed role binding ahead
+by 3.6 pp** — on garbage input. A comparison that produces a plausible gap from
+nonsense is a warning about every A/B in this project: the control tells you the
+*difference* is real, not that either side is meaningful.
+
+### What this settles and what it does not
+
+**Settled:** role binding is invertible, roles are separable, hierarchies
+compose, and the representation answers typed queries. The mechanism is sound.
+
+**Not settled, and now clearly the bottleneck:** whether it helps on real text,
+because a regex extractor cannot produce the multi-relation structure the
+mechanism needs. Two things would change that, in order:
+
+1. **Multi-relation extraction.** A dependency parse, or an LLM pass over the
+   glosses, producing 3–5 typed relations per entry instead of 1. The mechanism
+   is idle until then.
+2. **A genus benchmark from Webster's own terms**, so *dog → quadruped* scores as
+   the correct answer it is.
