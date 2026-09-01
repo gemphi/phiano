@@ -29,12 +29,22 @@ impl BenchmarkHistory {
         self.entries.push(BenchmarkEntry { timestamp, report });
     }
 
-    /// Returns the coherence trend over time.
+    /// Held-out perplexity over time. Lower is better.
+    ///
+    /// This previously tracked the phase-baseline *coherence*, which is the
+    /// Kuramoto order parameter — a quantity the training rule maximises and
+    /// that rises as the manifold collapses. A trend line that improves while
+    /// the model degrades is worse than no trend line.
     pub fn trend(&self) -> Vec<f64> {
         self.entries
             .iter()
-            .map(|e| e.report.baselines.2)
+            .filter_map(|e| e.report.headline_ppl())
             .collect()
+    }
+
+    /// Phase dispersion over time — the collapse trace, logged alongside.
+    pub fn dispersion_trend(&self) -> Vec<f64> {
+        self.entries.iter().map(|e| e.report.phase_dispersion).collect()
     }
 
     /// Saves history to a JSON file.

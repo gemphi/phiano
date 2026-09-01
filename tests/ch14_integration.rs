@@ -61,17 +61,24 @@ fn test_generalization_and_adversarial_metrics() {
         trainer.train_sentence(&mut facet, s);
     }
 
-    let train_words = vec!["quantum".to_string(), "particles".to_string(), "wave".to_string()];
-    let in_dist_test = vec!["entanglement".to_string(), "measurement".to_string()];
-    let novel_test = vec!["gastronomy".to_string(), "culinary".to_string()];
+    // Held-out material, split by how much of it the model has vocabulary for.
+    // The measurement is perplexity, which is a different quantity from the
+    // coverage used to select the halves — the previous version selected by
+    // phase distance and then measured phase coherence, which was circular.
+    let held_out = vec![
+        "quantum superposition links particles in measurement".to_string(),
+        "gastronomy and culinary technique reward patient braising".to_string(),
+    ];
 
-    let local_score = Generalization::local_score(&facet, &train_words, &in_dist_test);
-    let extreme_score = Generalization::extreme_score(&facet, &train_words, &novel_test);
-    let gap = Generalization::gap(local_score, extreme_score);
+    let report = Generalization::assess(&facet, &held_out);
 
-    assert!(local_score >= 0.0);
-    assert!(extreme_score >= 0.0);
-    assert!(gap >= -1.0 && gap <= 1.0);
+    assert_eq!(report.n_local + report.n_extreme, held_out.len());
+    if report.local_score.is_finite() && report.extreme_score.is_finite() {
+        assert!(report.local_score > 0.0);
+        assert!(report.extreme_score > 0.0);
+        // Unfamiliar material must not come out easier than familiar material.
+        assert!(report.extreme_score >= report.local_score);
+    }
 
     let sensitivity = Adversarial::sensitivity(&facet, "quantum mechanics", 5);
     assert!(sensitivity >= 0.0);
@@ -138,7 +145,14 @@ fn test_program_synthesis_and_library() {
         phase_template: vec![0.5, 1.2, 2.4],
     };
 
-    library.register("phase_sort_component", prog.clone(), &facet);
+    // register() now takes the task text it is keyed on, because matching is by
+    // the phase shape of that text rather than by a positional list of angles.
+    library.register(
+        "phase_sort_component",
+        prog.clone(),
+        &facet,
+        "sort the phase shifted list",
+    );
     assert_eq!(library.components.len(), 1);
 
     library.mark_used("phase_sort_component");
