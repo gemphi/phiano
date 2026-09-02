@@ -110,6 +110,57 @@
 //! establishes is that relations are *present and recoverable*, not that they
 //! are strong.
 //!
+//! # Standing waves: the bound, derived
+//!
+//! Bentov, *Stalking the Wild Pendulum* (1977), ch. 1: "Standing waves cannot
+//! exist unless they divide their medium into an integral number of half waves.
+//! A standing wave having a fractional wavelength cannot be sustained... The
+//! dimensions of the plate are the factors that govern what is the size or
+//! wavelength of the standing wave that can be sustained in the plate."
+//!
+//! If a relation is a standing wave across the channel index rather than an
+//! arbitrary direction in channel space, the medium admits only integer modes,
+//! and a 64-channel torus sustains exactly 64 of them — mode 64 aliases onto
+//! mode 0. **The bound stops being a claim and becomes the channel count.**
+//! `MAX_RELATION_TYPES = PHASE_CHANNELS` is then forced by geometry, and there
+//! is no 65th type to look for.
+//!
+//! The testable half is sharper than the philosophical half. [`harmonic_rotation`]
+//! fits *nothing*: no centroids, no k-means, no seed, identical on every corpus.
+//! The clustered rows above fit 64 rotations of 64 channels each — 4,096 free
+//! numbers — to these very pairs. Same pairs, same null, same scoring:
+//!
+//! ```text
+//! manifold        offset            held-out   shuffled     gain  g/noise
+//! bottom-up       raw                 0.2523     0.2519   0.0005     0.9x
+//! bottom-up       head-centered       0.7178     0.7187  -0.0009      --
+//! bottom-up       double-centered     0.7090     0.7024   0.0066     1.7x
+//! after descent   raw                 0.2789     0.2603   0.0187    48.4x
+//! after descent   head-centered       0.6672     0.6566   0.0105    29.3x
+//! after descent   double-centered     0.5294     0.5366  -0.0072      --
+//! ```
+//!
+//! **On raw offsets the fixed basis beats fitted k-means: 0.0187 against 0.0122,
+//! at 48x its noise floor against 15x — with zero fitted parameters against
+//! 4,096.** Relations in this manifold are closer to modes of the medium than to
+//! arbitrary directions in it, and the discovery apparatus was partly solving a
+//! problem the geometry had already answered.
+//!
+//! Two things not to overstate. The largest *absolute* effect is still fitted
+//! k-means on double-centered offsets (0.0597); the harmonic basis wins on
+//! significance and on parsimony, not on size. And the two corrections do not
+//! compose — double-centering, which was the best estimator under clustering,
+//! is worse than its own null under the harmonic basis (-0.0072), because
+//! centering destroys the very phase ramp the modes are made of. They are
+//! alternative readouts, not stackable improvements.
+//!
+//! What survives every arm: nothing works on the bottom-up manifold. Fixed basis,
+//! fitted basis, centered, uncentered — all at or under their nulls. The descent
+//! is the precondition for every relational result in this module.
+//!
+//! Everything else in that book — subjective time, the model of the universe,
+//! the kundalini appendix — is not testable here and was not used.
+//!
 //! That is a finding about the representation, not about the discovery
 //! procedure: the planted-relation tests below pass, so the clustering finds
 //! real shared offsets when there are any to find.
@@ -312,6 +363,36 @@ impl RelationType {
     }
 }
 
+/// The rotation of standing-wave mode `m` on a medium of `channels` channels.
+///
+/// Bentov, *Stalking the Wild Pendulum*, ch. 1: "Standing waves cannot exist
+/// unless they divide their medium into an integral number of half waves. A
+/// standing wave having a fractional wavelength cannot be sustained... The
+/// dimensions of the plate are the factors that govern what is the size or
+/// wavelength of the standing wave that can be sustained in the plate."
+///
+/// That is a derivation of the bounded-type claim rather than an assertion of
+/// it. If a relation is a standing wave across the channel index, the medium
+/// admits only integer modes, and a 64-channel torus sustains exactly 64 of them
+/// — mode 64 aliases back onto mode 0. **The bound is the channel count.** It
+/// was never a number to be chosen; `MAX_RELATION_TYPES = PHASE_CHANNELS` is
+/// forced by the geometry.
+///
+/// The experimental consequence is sharper than the philosophical one. A
+/// harmonic basis is *fixed a priori*: it fits nothing, has no free parameters,
+/// and is identical on every corpus and every seed. K-means fits 64 arbitrary
+/// 64-dimensional rotations to the data — 4,096 fitted numbers. If the fixed
+/// basis holds its own against that, relations in this manifold are modes of the
+/// medium rather than arbitrary directions in it, and the entire discovery
+/// apparatus was solving a problem the geometry had already answered.
+pub fn harmonic_rotation(m: usize, channels: usize) -> Vec<f64> {
+    let n = channels.max(1);
+    (0..n)
+        .map(|k| (crate::config::TWO_PI * (m % n) as f64 * k as f64 / n as f64)
+            .rem_euclid(crate::config::TWO_PI))
+        .collect()
+}
+
 /// One discovered type's evidence.
 #[derive(Debug, Clone)]
 pub struct TypeEvidence {
@@ -407,6 +488,78 @@ impl RelationTypes {
             })
             .collect();
         Self { rotations, evidence }
+    }
+
+    /// The standing-wave modes of the medium, as relation types.
+    ///
+    /// Nothing is fitted. Mode `m` is [`harmonic_rotation`], and there are
+    /// exactly [`PHASE_CHANNELS`] of them because a bounded medium sustains only
+    /// integer harmonics. Compare against [`RelationTypes::discover`], which
+    /// fits 64 free rotations of 64 channels each to the same pairs.
+    pub fn harmonic() -> Self {
+        let rotations: Vec<Vec<f64>> = (0..PHASE_CHANNELS)
+            .map(|m| harmonic_rotation(m, PHASE_CHANNELS))
+            .collect();
+        let evidence = (0..PHASE_CHANNELS)
+            .map(|i| TypeEvidence {
+                relation: RelationType(i as u8),
+                members: Vec::new(),
+                coherence: 0.0,
+            })
+            .collect();
+        Self { rotations, evidence }
+    }
+
+    /// Held-out agreement to the fixed harmonic basis, against the same null.
+    ///
+    /// There is no fit/held split here because there is nothing to fit — every
+    /// pair is held out. The null is the same permuted-filler control, put
+    /// through the identical basis, so the gain means what it means everywhere
+    /// else in this module.
+    pub fn harmonic_saturation(
+        facet: &Facet,
+        pairs: &[(String, String)],
+        est: OffsetEstimator,
+    ) -> SaturationPoint {
+        let basis = Self::harmonic();
+        let score = |set: &[(String, String)]| -> f64 {
+            let table = OffsetTable::build(facet, set, est);
+            let mut sum = 0.0;
+            let mut n = 0usize;
+            for i in 0..table.len() {
+                if let Some((_, a)) = table.best_match(i, &basis.rotations) {
+                    if a.is_finite() {
+                        sum += a;
+                        n += 1;
+                    }
+                }
+            }
+            match n {
+                0 => 0.0,
+                _ => sum / n as f64,
+            }
+        };
+        SaturationPoint {
+            k: PHASE_CHANNELS,
+            held_out: score(pairs),
+            shuffled: score(&permute_fillers(pairs, 0x9E37_79B9_7F4A_7C15)),
+            shuffled_b: score(&permute_fillers(pairs, 0x1234_5678_9ABC_DEF1)),
+        }
+    }
+
+    /// Which mode a pair sits closest to, and how closely.
+    ///
+    /// The mode index *is* the relation type — an integer, not a fitted vector.
+    pub fn harmonic_mode(
+        facet: &Facet,
+        head: &str,
+        filler: &str,
+        est_table: &OffsetTable,
+        index: usize,
+    ) -> Option<(usize, f64)> {
+        let _ = (facet, head, filler);
+        let basis = Self::harmonic();
+        est_table.best_match(index, &basis.rotations)
     }
 
     /// Binds a head to a relation type: the head's phases rotated by the type's.
@@ -853,6 +1006,61 @@ mod tests {
             "a purely additive offset table should double-center to zero; \
              largest residual {worst:.6}"
         );
+    }
+
+    /// The medium admits exactly as many modes as it has channels.
+    ///
+    /// This is where the bound comes from. Mode 64 on a 64-channel torus is mode
+    /// 0 — it aliases — so there is no 65th standing wave to have, and the cap
+    /// is geometry rather than a choice.
+    #[test]
+    fn test_the_harmonic_basis_has_exactly_channel_count_distinct_modes() {
+        let basis = RelationTypes::harmonic();
+        assert_eq!(basis.len(), PHASE_CHANNELS);
+
+        // Every mode is distinct from every other.
+        for a in 0..PHASE_CHANNELS {
+            for b in (a + 1)..PHASE_CHANNELS {
+                let same = (0..PHASE_CHANNELS).all(|k| {
+                    let d = (basis.rotations[a][k] - basis.rotations[b][k]).abs();
+                    d < 1e-9 || (d - TWO_PI).abs() < 1e-9
+                });
+                assert!(!same, "modes {a} and {b} are the same rotation");
+            }
+        }
+
+        // And the (n+1)-th aliases onto the first.
+        let wrapped = harmonic_rotation(PHASE_CHANNELS, PHASE_CHANNELS);
+        for k in 0..PHASE_CHANNELS {
+            let d = (wrapped[k] - basis.rotations[0][k]).abs();
+            assert!(d < 1e-9 || (d - TWO_PI).abs() < 1e-9, "mode n should alias to mode 0");
+        }
+    }
+
+    /// A pair built on a mode must be recognised as that mode, with nothing
+    /// fitted.
+    #[test]
+    fn test_a_pair_built_on_a_mode_is_read_back_as_that_mode() {
+        let basis = RelationTypes::harmonic();
+        let mut f = Facet::new();
+        f.get_or_init("head");
+        let base: Vec<f64> = (0..PHASE_CHANNELS).map(|k| f.lexicon["head"].theta(k)).collect();
+
+        for m in [1usize, 5, 17, 40] {
+            let rot = harmonic_rotation(m, PHASE_CHANNELS);
+            let name = format!("filler{m}");
+            let p = f.get_or_init(&name);
+            for k in 0..PHASE_CHANNELS {
+                p.set_theta(k, base[k] + rot[k]);
+            }
+            p.sync_phase();
+
+            let pairs = vec![("head".to_string(), name.clone())];
+            let table = OffsetTable::build(&f, &pairs, OffsetEstimator::Raw);
+            let (best, agree) = table.best_match(0, &basis.rotations).expect("a nearest mode");
+            assert_eq!(best, m, "mode {m} read back as {best}");
+            assert!(agree > 0.99, "agreement with its own mode should be ~1, got {agree:.4}");
+        }
     }
 
     /// The split must not correlate with anything about the pairs.
