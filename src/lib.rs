@@ -34,6 +34,7 @@ pub mod phinum;
 pub mod phiton;
 pub mod roles;
 pub mod reasoning;
+pub mod relation_type;
 pub mod server;
 pub mod sources;
 pub mod storage;

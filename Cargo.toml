@@ -85,6 +85,10 @@ name = "topdown"
 path = "src/bin/topdown.rs"
 
 [[bin]]
+name = "types"
+path = "src/bin/types.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 
