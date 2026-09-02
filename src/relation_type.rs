@@ -26,41 +26,53 @@
 //! on the other, because in-sample cluster tightness rises with `k` for free and
 //! would "confirm" any bound you asked it about. A shuffled-pair null runs
 //! beside it, because a curve without a floor under it is not a measurement.
-
+//!
 //! # What it measured
 //!
 //! 19,797 head-filler pairs from the dictionary, restricted to words seen 25+
-//! times, clustered on their phase offsets. Half fitted, half held out:
+//! times, clustered on their phase offsets. Half fitted, half held out. Run on
+//! two manifolds: the bottom-up one this project ships, and the same one after
+//! the downward pass in [`crate::topdown`].
 //!
 //! ```text
-//!    k   held-out   shuffled      gain     noise
-//!    1     0.1468     0.1430    0.0038    0.0003
-//!    4     0.2019     0.2006    0.0013    0.0040
-//!   16     0.2644     0.2585    0.0060    0.0032
-//!   64     0.3600     0.3484    0.0116    0.0044
-//!   96     0.3878     0.3803    0.0075    0.0028   (past the cap)
-//!  128     0.4107     0.4075    0.0032    0.0042   (past the cap)
+//!                    k   held-out   shuffled      gain     noise   gain/noise
+//! bottom-up          4     0.2019     0.2006    0.0013    0.0040         0.3x
+//!                   16     0.2644     0.2585    0.0060    0.0032         1.9x
+//!                   64     0.3600     0.3484    0.0116    0.0044         2.6x
+//!                   96     0.3878     0.3803    0.0075    0.0028         2.7x
+//!                  128     0.4107     0.4075    0.0032    0.0042         0.8x
+//!
+//! after descent      4     0.2981     0.2859    0.0122    0.0014         8.7x
+//!                   16     0.3387     0.3292    0.0094    0.0028         3.4x
+//!                   64     0.3740     0.3619    0.0122    0.0008        15.3x
 //! ```
 //!
-//! Held-out agreement climbs steadily with the type count, and the shuffled null
-//! climbs with it point for point. Every gain is within a few multiples of the
-//! distance between two independent runs of the null itself, and the gain is not
-//! even monotonic — it is negative at k=2. Adding centroids fits random offsets
-//! as well as real ones, which is what k-means does to any cloud of points.
+//! **Bottom-up: no relation types at any k.** Held-out agreement climbs steadily
+//! with the type count and the shuffled null climbs with it point for point.
+//! Every gain sits within a few multiples of the distance between two
+//! independent runs of the null itself, and it is not monotonic. Adding
+//! centroids fits random offsets as well as real ones, which is what k-means
+//! does to any cloud of points.
 //!
-//! So the bounded-type question does not get an answer: its premise fails.
-//! There are no discoverable relation types in these phase offsets to be
-//! bounded, and whether the bound is 64 or 6 or 600 is moot until there is
-//! structure for a type to be a type *of*.
+//! **After the descent: structure.** The same procedure on the same pairs clears
+//! its null by 8.7x at four types and 15x at sixty-four. So the downward pass
+//! builds the shared offsets that the bottom-up manifold does not have, and the
+//! threefold analogy gain it produced *is* relational structure rather than
+//! something else wearing the shape of one.
 //!
-//! The diagnostic says what the clusters are doing instead: **71.3% of pairs
-//! share their cluster with another pair of the same head, against 9.1% expected
-//! if the head were ignored**. The offset from `adversary` to `against` and from
-//! `adversary` to `another` land together not because those are the same
-//! relation but because they share a word. Offsets are dominated by the head's
-//! own position, so clustering them recovers word identity. A relation type
-//! needs the offset to be *about* the step, and in this manifold it is mostly
-//! about where the step started.
+//! On the bound: the gain is flat across the whole range — 0.0122 at k=4 and
+//! 0.0122 at k=64. Sixty more types buy nothing measurable. So a 64-wide type is
+//! not too small; if anything the evidence supports a handful. But read the
+//! absolute number before celebrating: 0.012 on a 0-to-1 agreement scale is a
+//! real effect and a tiny one.
+//!
+//! And the mechanism the clusters use is still mostly word identity. **71.3% of
+//! pairs share their cluster with another pair of the same head, against 9.1%
+//! expected if the head were ignored; the descent moves that to 59.8%.**
+//! `adversary->against` and `adversary->another` land together because they share
+//! a word, not because they are the same relation. Offsets are dominated by
+//! where the step started rather than by the step. The descent improves this by
+//! eleven points and does not fix it, which is the next thing to attack.
 //!
 //! That is a finding about the representation, not about the discovery
 //! procedure: the planted-relation tests below pass, so the clustering finds
