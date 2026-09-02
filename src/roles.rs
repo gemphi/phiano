@@ -508,6 +508,22 @@ impl RoleDiscovery {
             .iter()
             .filter_map(|p| Self::offset(facet, &p.0, &p.1).map(|o| (p, o)))
             .collect();
+        Self::cluster(&usable, k, rounds)
+    }
+
+    /// [`RoleDiscovery::discover`] over offsets that have already been computed.
+    ///
+    /// Split out because the offset is not always the plain difference. Head
+    /// domination — pairs clustering because they share a word rather than a
+    /// relation — is a *main effect* of the head, and removing it means
+    /// centering the offsets before they are clustered. The clustering itself
+    /// does not change, and must not: the comparison between estimators is only
+    /// fair if everything downstream of the offset is identical.
+    pub fn cluster(
+        usable: &[(&(String, String), Vec<f64>)],
+        k: usize,
+        rounds: usize,
+    ) -> Vec<DiscoveredRole> {
         if usable.len() < k || k == 0 {
             return Vec::new();
         }

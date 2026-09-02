@@ -45,7 +45,7 @@
 use phiano::chunker::ChunkStore;
 use phiano::config::LEARNING_RATE;
 use phiano::metrics::harness::Harness;
-use phiano::relation_type::{RelationTypes, MAX_RELATION_TYPES};
+use phiano::relation_type::{OffsetEstimator, RelationTypes};
 use phiano::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phiano::topdown::{Descent, Up};
@@ -154,123 +154,85 @@ fn main() {
     // cannot find the number wrong. 128 was already shown flat on the bottom-up
     // manifold and costs more than the rest of the sweep together, so the
     // comparison runs to 64 and the earlier run stands for the tail.
-    let ks: Vec<usize> = vec![4, 16, 64];
+    let ks: Vec<usize> = vec![16, 64];
 
-    for (label, f) in [("bottom-up", &facet), ("after descent", &descended)] {
-        println!("\n=== {} : does the type count saturate? ===", label);
-        println!(
-            "  {:>6} {:>11} {:>11} {:>10} {:>10} {:>7}",
-            "k", "held-out", "shuffled", "gain", "noise", "time"
-        );
+    println!(
+        "\n  {:<14} {:<16} {:>4} {:>10} {:>10} {:>10} {:>9} {:>10}",
+        "manifold", "offset", "k", "held-out", "shuffled", "gain", "g/noise", "head-dom"
+    );
 
-        // `saturation` clusters uncapped on purpose: if it clamped to the cap,
-        // rows past 64 would silently repeat 64, the curve would look flat past
-        // the cap, and the sweep would confirm the bound by construction.
-        let mut curve: Vec<phiano::relation_type::SaturationPoint> = Vec::new();
-        for &k in &ks {
-            let started = std::time::Instant::now();
-            let p = RelationTypes::saturation_at(f, &pairs, k, 10);
-            println!(
-                "  {:>6} {:>11.4} {:>11.4} {:>10.4} {:>10.4} {:>6.0}s{}",
-                p.k,
-                p.held_out,
-                p.shuffled,
-                p.gain(),
-                p.noise(),
-                started.elapsed().as_secs_f64(),
-                match p.k > MAX_RELATION_TYPES {
-                    true => " past cap",
-                    false => "",
+    // Optional third argument restricts which manifold runs, so a long grid can
+    // be finished in pieces after an out-of-memory kill without redoing the
+    // rows that already landed.
+    let only = args.get(3).cloned().unwrap_or_else(|| "both".to_string());
+    let arms: Vec<(&str, &phiano::facet::Facet)> = match only.as_str() {
+        "base" => vec![("bottom-up", &facet)],
+        "descent" => vec![("after descent", &descended)],
+        _ => vec![("bottom-up", &facet), ("after descent", &descended)],
+    };
+
+    for (label, f) in arms {
+        for est in OffsetEstimator::ALL {
+            // Head domination, measured once per (manifold, estimator) at the
+            // full type count. Centering *mechanically* lowers this, so it is
+            // not a verdict on its own — it says what the clusters are grouping
+            // by, and the gain column says whether that grouping is worth
+            // anything. Both are needed: a rule that destroyed the offsets
+            // entirely would score 9.1% here and nothing at all there.
+            let types = RelationTypes::discover_with(f, &pairs, 64, 12, est);
+            let (mut shared, mut total) = (0usize, 0usize);
+            for t in types.all() {
+                if let Some(e) = types.evidence(t) {
+                    let mut heads: HashMap<&str, usize> = HashMap::new();
+                    for (h, _) in &e.members {
+                        *heads.entry(h.as_str()).or_insert(0) += 1;
+                    }
+                    shared += heads.values().filter(|c| **c > 1).sum::<usize>();
+                    total += e.members.len();
                 }
-            );
-            curve.push(p);
-        }
-
-        let best = curve
-            .iter()
-            .max_by(|a, b| a.gain().partial_cmp(&b.gain()).unwrap_or(std::cmp::Ordering::Equal))
-            .copied()
-            .expect("curve non-empty");
-        // The noise scale: how far two independent runs of the *null* land from
-        // each other. A gain smaller than this is not a small effect, it is no
-        // effect, and reporting it as a peak is how a sweep confirms whatever it
-        // was asked about — which is exactly what this did on its first run,
-        // calling a gain of 0.0116 a peak and printing "the bound holds".
-        let noise = curve.iter().map(|p| p.noise()).fold(0.0f64, f64::max);
-        println!(
-            "  best gain {:.4} at k={}; the null's own run-to-run spread is {:.4}  ->  {}",
-            best.gain(),
-            best.k,
-            noise,
-            match best.gain() >= 3.0 * noise {
-                true => "STRUCTURE",
-                false => "no structure at any k",
             }
-        );
+            let head_dom = shared as f64 / total.max(1) as f64 * 100.0;
 
-        // ---- what the clusters are actually grouping by ----
-        //
-        // The first run's clusters looked like `adversary->against`,
-        // `adversary->another`, `adversary->is`, `adversary->one` — four fillers
-        // of one head in one cluster. If clusters group by head rather than by
-        // relation then the "types" are word identity in disguise, which would
-        // explain a null that tracks the signal exactly.
-        let types = RelationTypes::discover(f, &pairs, 64, 12);
-        let (mut shared, mut total) = (0usize, 0usize);
-        for t in types.all() {
-            if let Some(e) = types.evidence(t) {
-                let mut heads: HashMap<&str, usize> = HashMap::new();
-                for (h, _) in &e.members {
-                    *heads.entry(h.as_str()).or_insert(0) += 1;
-                }
-                shared += heads.values().filter(|c| **c > 1).sum::<usize>();
-                total += e.members.len();
+            for &k in &ks {
+                let p = RelationTypes::saturation_at_with(f, &pairs, k, 10, est);
+                println!(
+                    "  {:<14} {:<16} {:>4} {:>10.4} {:>10.4} {:>10.4} {:>8.1}x {:>9.1}%",
+                    label,
+                    est.label(),
+                    p.k,
+                    p.held_out,
+                    p.shuffled,
+                    p.gain(),
+                    match p.noise() > 1e-9 {
+                        true => p.gain() / p.noise(),
+                        false => f64::INFINITY,
+                    },
+                    head_dom
+                );
             }
-        }
-        // Under assignment that ignores the head, a pair shares its cluster with
-        // another pair of the same head only as often as that head's fan-out and
-        // the cluster count allow.
-        let mut fan: HashMap<&str, usize> = HashMap::new();
-        for (h, _) in &pairs {
-            *fan.entry(h.as_str()).or_insert(0) += 1;
-        }
-        let expected: f64 = fan
-            .values()
-            .map(|&f| {
-                let f = f as f64;
-                f * (1.0 - (1.0 - 1.0 / 64.0f64).powf(f - 1.0))
-            })
-            .sum::<f64>()
-            / total.max(1) as f64;
-        println!(
-            "  clusters grouping by head: {:.1}% of pairs share a cluster with \
-             another pair of the same head ({:.1}% expected if the head were ignored)",
-            shared as f64 / total.max(1) as f64 * 100.0,
-            expected * 100.0
-        );
-
-        let mut ev: Vec<_> = types.all().into_iter().filter_map(|t| types.evidence(t)).collect();
-        ev.sort_by_key(|e| std::cmp::Reverse(e.members.len()));
-        for e in ev.iter().take(4) {
-            let sample: Vec<String> = e
-                .members
-                .iter()
-                .take(4)
-                .map(|(h, f)| format!("{h}->{f}"))
-                .collect();
-            println!(
-                "    {:<5} {:>6} pairs  coh {:>6.3}  {}",
-                e.relation.label(),
-                e.members.len(),
-                e.coherence,
-                sample.join(", ")
-            );
         }
     }
 
+    // The chance level for the head-domination column: with 64 clusters and a
+    // head taking up to 8 fillers, some collisions happen for free.
+    let mut fan: HashMap<&str, usize> = HashMap::new();
+    for (h, _) in &pairs {
+        *fan.entry(h.as_str()).or_insert(0) += 1;
+    }
+    let n_pairs: usize = fan.values().sum();
+    let expected: f64 = fan
+        .values()
+        .map(|&f| {
+            let f = f as f64;
+            f * (1.0 - (1.0 - 1.0 / 64.0f64).powf(f - 1.0))
+        })
+        .sum::<f64>()
+        / n_pairs.max(1) as f64;
+
     println!(
-        "\n  The labels are t00, t01 and so on because nothing named these. A gain\n\
-         \x20 below three times the null's own spread is not a small effect, it is no\n\
-         \x20 effect — the bounded-type question needs structure to be a bound ON."
+        "\n  head-dom chance level: {:.1}%. A gain under 3x its noise is no effect.\n\
+         \x20 Centering lowers head-dom by construction, so it only counts when the\n\
+         \x20 gain survives — the two columns have to move the right way together.",
+        expected * 100.0
     );
 }

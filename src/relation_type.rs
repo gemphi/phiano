@@ -66,13 +66,49 @@
 //! absolute number before celebrating: 0.012 on a 0-to-1 agreement scale is a
 //! real effect and a tiny one.
 //!
-//! And the mechanism the clusters use is still mostly word identity. **71.3% of
-//! pairs share their cluster with another pair of the same head, against 9.1%
-//! expected if the head were ignored; the descent moves that to 59.8%.**
-//! `adversary->against` and `adversary->another` land together because they share
-//! a word, not because they are the same relation. Offsets are dominated by
-//! where the step started rather than by the step. The descent improves this by
-//! eleven points and does not fix it, which is the next thing to attack.
+//! # Removing word identity from the readout
+//!
+//! The clusters were grouping by word, not by relation: **71.3% of pairs shared
+//! a cluster with another pair of the same head, against 9.1% expected if the
+//! head were ignored.** `adversary->against` and `adversary->another` land
+//! together because both differences contain `-theta(adversary)`.
+//!
+//! That is a main effect, so [`OffsetEstimator`] centers it out. The full grid,
+//! two manifolds by three estimators:
+//!
+//! ```text
+//! manifold        offset             k   held-out   shuffled     gain  g/noise  head-dom
+//! bottom-up       raw               16     0.2644     0.2585   0.0060     1.9x     71.3%
+//! bottom-up       raw               64     0.3600     0.3484   0.0116     2.6x     71.3%
+//! bottom-up       head-centered     16     0.7677     0.7711  -0.0034    -1.8x     70.7%
+//! bottom-up       head-centered     64     0.7763     0.7827  -0.0064    -2.4x     70.7%
+//! bottom-up       double-centered   16     0.6379     0.6354   0.0025     1.3x     78.2%
+//! bottom-up       double-centered   64     0.6514     0.6485   0.0029     3.6x     78.2%
+//! after descent   raw               16     0.3387     0.3292   0.0094     3.3x     59.8%
+//! after descent   raw               64     0.3740     0.3619   0.0122    14.9x     59.8%
+//! after descent   head-centered     16     0.7474     0.7420   0.0054     1.4x     26.5%
+//! after descent   head-centered     64     0.7639     0.7587   0.0053    12.1x     26.5%
+//! after descent   double-centered   16     0.5649     0.5063   0.0585     5.3x     33.5%
+//! after descent   double-centered   64     0.5801     0.5204   0.0597     6.4x     33.5%
+//! ```
+//!
+//! **Descent plus double-centering: gain 0.0597 at 6.4x noise — five times the
+//! best raw gain, and the largest relational effect this project has measured.**
+//! Head domination falls from 59.8% to 33.5% at the same time, so the clusters
+//! are grouping less by word identity *and* the grouping is worth more. Those
+//! two columns had to move together for this to mean anything, and they did.
+//!
+//! The interaction is the real finding. Centering does nothing on the bottom-up
+//! manifold — head-centering there is *negative*, fitting worse than centered
+//! noise. It only pays on the descended one. So the two halves are not
+//! independent improvements to be summed: the descent creates an interaction
+//! term, and centering is what lets it be read. Neither works alone.
+//!
+//! Read the absolute number honestly. 0.0597 on a 0-to-1 agreement scale is
+//! still small, head domination at 33.5% is still far from the 9.1% floor, and
+//! the sixty-fold increase in types from k=4 to k=64 buys 0.0012. What this
+//! establishes is that relations are *present and recoverable*, not that they
+//! are strong.
 //!
 //! That is a finding about the representation, not about the discovery
 //! procedure: the planted-relation tests below pass, so the clustering finds
@@ -82,6 +118,8 @@ use crate::facet::Facet;
 use crate::phasor::SpectralPhasor;
 use crate::roles::RoleDiscovery;
 use crate::config::PHASE_CHANNELS;
+use crate::wave::c64;
+use std::collections::HashMap;
 
 /// The most relation types this can represent.
 ///
@@ -90,6 +128,168 @@ use crate::config::PHASE_CHANNELS;
 /// needs this many is a separate question, and [`RelationTypes::saturation`] is
 /// how it gets asked rather than assumed.
 pub const MAX_RELATION_TYPES: usize = 64;
+
+/// How the step from a head to a filler is turned into a vector.
+///
+/// The plain difference `theta(filler) - theta(head)` is what every relational
+/// measurement in this project has used, and the type sweep showed what is wrong
+/// with it: **71.3% of pairs share a cluster with another pair of the same head,
+/// against 9.1% expected if the head were ignored.** `adversary->against` and
+/// `adversary->another` land together because both differences contain
+/// `-theta(adversary)`, not because they are the same relation.
+///
+/// That is a *main effect* of the head, and main effects have a standard
+/// removal: centering. Writing the offset as
+///
+/// ```text
+/// offset(h, f) = grand + head_effect(h) + filler_effect(f) + interaction(h, f)
+/// ```
+///
+/// a relation — a step that means the same thing wherever it is taken — can only
+/// live in the interaction term. The estimators below strip the other terms
+/// away, one at a time, so the question "is there anything left once word
+/// identity is removed" gets an answer instead of an assumption.
+///
+/// All of it is done in circular space: an offset is a unit complex number per
+/// channel, a mean is a circular mean, and centering subtracts angles.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OffsetEstimator {
+    /// `theta(filler) - theta(head)`. What every earlier measurement used.
+    Raw,
+    /// Raw, minus the head's own mean offset across all its fillers.
+    ///
+    /// Removes the head main effect and nothing else. If relations are real,
+    /// this should *help*: what remains is how this particular filler differs
+    /// from the head's typical filler.
+    HeadCentered,
+    /// Raw, minus the head's mean and the filler's mean, plus the grand mean.
+    ///
+    /// The two-way residual — the interaction alone. This is the strictest
+    /// version of the question, and the one whose failure would be decisive:
+    /// if nothing survives here, the manifold places words with no relational
+    /// interaction at all, and no readout can recover what was never encoded.
+    DoubleCentered,
+}
+
+impl OffsetEstimator {
+    pub fn label(self) -> &'static str {
+        match self {
+            OffsetEstimator::Raw => "raw",
+            OffsetEstimator::HeadCentered => "head-centered",
+            OffsetEstimator::DoubleCentered => "double-centered",
+        }
+    }
+
+    pub const ALL: [OffsetEstimator; 3] = [
+        OffsetEstimator::Raw,
+        OffsetEstimator::HeadCentered,
+        OffsetEstimator::DoubleCentered,
+    ];
+}
+
+/// Offsets for a pair set, under one estimator.
+///
+/// Built once and clustered many times. Centering needs the whole set — a head's
+/// mean is over every filler it takes — so the estimator cannot be applied one
+/// pair at a time.
+#[derive(Debug, Clone)]
+pub struct OffsetTable {
+    pairs: Vec<(String, String)>,
+    offsets: Vec<Vec<f64>>,
+}
+
+impl OffsetTable {
+    pub fn len(&self) -> usize {
+        self.pairs.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.pairs.is_empty()
+    }
+
+    /// Computes every pair's offset under `est`.
+    pub fn build(
+        facet: &Facet,
+        pairs: &[(String, String)],
+        est: OffsetEstimator,
+    ) -> Self {
+        let mut kept: Vec<(String, String)> = Vec::new();
+        let mut raw: Vec<Vec<f64>> = Vec::new();
+        for p in pairs {
+            if let Some(o) = RoleDiscovery::offset(facet, &p.0, &p.1) {
+                kept.push(p.clone());
+                raw.push(o);
+            }
+        }
+        if matches!(est, OffsetEstimator::Raw) || kept.is_empty() {
+            return Self { pairs: kept, offsets: raw };
+        }
+
+        // Circular means, accumulated as unit vectors. A mean of angles is the
+        // argument of the sum of their unit vectors, not the mean of the angles.
+        let mut head_acc: HashMap<&str, Vec<c64>> = HashMap::new();
+        let mut filler_acc: HashMap<&str, Vec<c64>> = HashMap::new();
+        let mut grand = vec![c64::new(0.0, 0.0); PHASE_CHANNELS];
+        let zeros = || vec![c64::new(0.0, 0.0); PHASE_CHANNELS];
+
+        for (p, o) in kept.iter().zip(raw.iter()) {
+            let h = head_acc.entry(p.0.as_str()).or_insert_with(zeros);
+            for k in 0..PHASE_CHANNELS {
+                let z = c64::from_polar(1.0, o[k]);
+                h[k] += z;
+                grand[k] += z;
+            }
+            let f = filler_acc.entry(p.1.as_str()).or_insert_with(zeros);
+            for k in 0..PHASE_CHANNELS {
+                f[k] += c64::from_polar(1.0, o[k]);
+            }
+        }
+
+        let arg_or_zero = |z: c64| match z.norm() > 1e-12 {
+            true => z.arg(),
+            false => 0.0,
+        };
+
+        let offsets: Vec<Vec<f64>> = kept
+            .iter()
+            .zip(raw.iter())
+            .map(|(p, o)| {
+                let h = &head_acc[p.0.as_str()];
+                let f = &filler_acc[p.1.as_str()];
+                (0..PHASE_CHANNELS)
+                    .map(|k| {
+                        let centered = match est {
+                            OffsetEstimator::Raw => o[k],
+                            OffsetEstimator::HeadCentered => o[k] - arg_or_zero(h[k]),
+                            OffsetEstimator::DoubleCentered => {
+                                o[k] - arg_or_zero(h[k]) - arg_or_zero(f[k])
+                                    + arg_or_zero(grand[k])
+                            }
+                        };
+                        centered.rem_euclid(crate::config::TWO_PI)
+                    })
+                    .collect()
+            })
+            .collect();
+
+        Self { pairs: kept, offsets }
+    }
+
+    /// The `(pair, offset)` view the clustering takes.
+    fn usable(&self) -> Vec<(&(String, String), Vec<f64>)> {
+        self.pairs.iter().zip(self.offsets.iter()).map(|(p, o)| (p, o.clone())).collect()
+    }
+
+    /// Nearest centroid and its agreement, for a pair already in the table.
+    fn best_match(&self, index: usize, rotations: &[Vec<f64>]) -> Option<(usize, f64)> {
+        let off = self.offsets.get(index)?;
+        rotations
+            .iter()
+            .enumerate()
+            .map(|(i, r)| (i, RoleDiscovery::agreement(off, r)))
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+    }
+}
 
 /// A relation type.
 ///
@@ -182,8 +382,20 @@ impl RelationTypes {
     /// `k` is clamped to [`MAX_RELATION_TYPES`]. Use [`RelationTypes::saturation`]
     /// to choose it from evidence rather than by taste.
     pub fn discover(facet: &Facet, pairs: &[(String, String)], k: usize, rounds: usize) -> Self {
+        Self::discover_with(facet, pairs, k, rounds, OffsetEstimator::Raw)
+    }
+
+    /// [`RelationTypes::discover`] under a chosen offset estimator.
+    pub fn discover_with(
+        facet: &Facet,
+        pairs: &[(String, String)],
+        k: usize,
+        rounds: usize,
+        est: OffsetEstimator,
+    ) -> Self {
         let k = k.min(MAX_RELATION_TYPES);
-        let found = RoleDiscovery::discover(facet, pairs, k, rounds);
+        let table = OffsetTable::build(facet, pairs, est);
+        let found = RoleDiscovery::cluster(&table.usable(), k, rounds);
         let rotations: Vec<Vec<f64>> = found.iter().map(|d| d.rotation.clone()).collect();
         let evidence = found
             .into_iter()
@@ -281,6 +493,22 @@ impl RelationTypes {
         k: usize,
         rounds: usize,
     ) -> SaturationPoint {
+        Self::saturation_at_with(facet, pairs, k, rounds, OffsetEstimator::Raw)
+    }
+
+    /// [`RelationTypes::saturation_at`] under a chosen offset estimator.
+    ///
+    /// The estimator is applied to the null exactly as to the signal. That is
+    /// what makes the comparison legitimate: centering mechanically reduces head
+    /// domination, so a centered arm scored against an uncentered null would
+    /// "improve" for free. Both arms are centered, or neither.
+    pub fn saturation_at_with(
+        facet: &Facet,
+        pairs: &[(String, String)],
+        k: usize,
+        rounds: usize,
+        est: OffsetEstimator,
+    ) -> SaturationPoint {
         let (fit, held, null_fit, null_held) = Self::split(pairs);
         let (null_fit_b, null_held_b) = (
             permute_fillers(&fit, 0x1234_5678_9ABC_DEF1),
@@ -288,9 +516,9 @@ impl RelationTypes {
         );
         SaturationPoint {
             k,
-            held_out: Self::held_out_agreement(facet, &fit, &held, k, rounds),
-            shuffled: Self::held_out_agreement(facet, &null_fit, &null_held, k, rounds),
-            shuffled_b: Self::held_out_agreement(facet, &null_fit_b, &null_held_b, k, rounds),
+            held_out: Self::held_out_agreement(facet, &fit, &held, k, rounds, est),
+            shuffled: Self::held_out_agreement(facet, &null_fit, &null_held, k, rounds, est),
+            shuffled_b: Self::held_out_agreement(facet, &null_fit_b, &null_held_b, k, rounds, est),
         }
     }
 
@@ -346,25 +574,29 @@ impl RelationTypes {
         held: &[(String, String)],
         k: usize,
         rounds: usize,
+        est: OffsetEstimator,
     ) -> f64 {
-        let found = RoleDiscovery::discover(facet, fit, k, rounds);
+        let fit_table = OffsetTable::build(facet, fit, est);
+        let found = RoleDiscovery::cluster(&fit_table.usable(), k, rounds);
         if found.is_empty() {
             return 0.0;
         }
+        let rotations: Vec<Vec<f64>> = found.into_iter().map(|d| d.rotation).collect();
+
+        // The held-out half is centered on *its own* statistics, not the fit
+        // half's. Centering a held-out pair with means computed from the training
+        // pairs would leak, and centering it with means that include itself would
+        // not be held out either — this is the honest middle: the estimator is a
+        // property of the set it is applied to, and the two sets are disjoint.
+        let held_table = OffsetTable::build(facet, held, est);
         let mut sum = 0.0;
         let mut n = 0usize;
-        for (h, f) in held {
-            let off = match RoleDiscovery::offset(facet, h, f) {
-                Some(o) => o,
-                None => continue,
-            };
-            let best = found
-                .iter()
-                .map(|d| RoleDiscovery::agreement(&off, &d.rotation))
-                .fold(f64::NEG_INFINITY, f64::max);
-            if best.is_finite() {
-                sum += best;
-                n += 1;
+        for i in 0..held_table.len() {
+            if let Some((_, a)) = held_table.best_match(i, &rotations) {
+                if a.is_finite() {
+                    sum += a;
+                    n += 1;
+                }
             }
         }
         match n {
@@ -419,6 +651,7 @@ fn permute_fillers(pairs: &[(String, String)], seed: u64) -> Vec<(String, String
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::TWO_PI;
 
     fn facet_with(words: &[&str]) -> Facet {
         let mut f = Facet::new();
@@ -513,6 +746,112 @@ mod tests {
             unchanged < pairs.len() / 10,
             "{unchanged} of {} fillers stayed put",
             pairs.len()
+        );
+    }
+
+    /// Centering must remove the head main effect and keep the relation.
+    ///
+    /// Built so the two are separable: every pair's offset is a per-head
+    /// constant (the main effect) plus one of two relation rotations (the
+    /// interaction). Raw offsets are dominated by the head constant and cluster
+    /// by head. Head-centered offsets have the constant gone, so they must
+    /// cluster by relation instead — the thing the real data does not do.
+    #[test]
+    fn test_head_centering_removes_the_head_effect_and_keeps_the_relation() {
+        const HEADS: usize = 24;
+        let mut f = Facet::new();
+        let mut pairs: Vec<(String, String)> = Vec::new();
+
+        for i in 0..HEADS {
+            let h = format!("h{i}");
+            f.get_or_init(&h);
+            // A large per-head constant: this is the main effect that buries the
+            // relation in the raw difference.
+            let bias = TWO_PI * i as f64 / HEADS as f64;
+            for (suffix, rel) in [("_x", 0.35), ("_y", -0.35)] {
+                let name = format!("{h}{suffix}");
+                let base: Vec<f64> = (0..PHASE_CHANNELS).map(|k| f.lexicon[&h].theta(k)).collect();
+                let p = f.get_or_init(&name);
+                for k in 0..PHASE_CHANNELS {
+                    p.set_theta(k, base[k] + bias + rel);
+                }
+                p.sync_phase();
+                pairs.push((h.clone(), name));
+            }
+        }
+
+        let cluster_of = |est: OffsetEstimator, i: usize, suffix: &str| -> usize {
+            let types = RelationTypes::discover_with(&f, &pairs, 2, 20, est);
+            let table = OffsetTable::build(&f, &pairs, est);
+            let idx = pairs
+                .iter()
+                .position(|p| p.1 == format!("h{i}{suffix}"))
+                .expect("pair present");
+            table
+                .best_match(idx, &types.rotations)
+                .expect("a nearest type")
+                .0
+        };
+
+        // Raw: two heads with different biases are in different clusters even
+        // though they stand in the same relation.
+        let raw_same_relation_far_heads =
+            cluster_of(OffsetEstimator::Raw, 0, "_x") == cluster_of(OffsetEstimator::Raw, 12, "_x");
+        // Head-centered: same relation, same cluster, whatever the head.
+        let centered_same_relation = cluster_of(OffsetEstimator::HeadCentered, 0, "_x")
+            == cluster_of(OffsetEstimator::HeadCentered, 12, "_x");
+        let centered_different_relation = cluster_of(OffsetEstimator::HeadCentered, 0, "_x")
+            != cluster_of(OffsetEstimator::HeadCentered, 0, "_y");
+
+        assert!(
+            !raw_same_relation_far_heads,
+            "the fixture must actually bury the relation under the head effect, \
+             or the test proves nothing"
+        );
+        assert!(
+            centered_same_relation,
+            "head-centering should put the same relation in one cluster across heads"
+        );
+        assert!(
+            centered_different_relation,
+            "head-centering should still separate the two relations"
+        );
+    }
+
+    /// Double-centering leaves nothing when there is nothing but main effects.
+    ///
+    /// Offsets built purely from a head term and a filler term have no
+    /// interaction, so the two-way residual is zero and any clustering of it is
+    /// clustering noise. If the real data behaves like this, the manifold
+    /// encodes no relations and no readout can recover them.
+    #[test]
+    fn test_double_centering_annihilates_a_pure_main_effect_table() {
+        let mut f = Facet::new();
+        let heads: Vec<String> = (0..12).map(|i| format!("h{i}")).collect();
+        let fillers: Vec<String> = (0..12).map(|i| format!("f{i}")).collect();
+        for w in heads.iter().chain(fillers.iter()) {
+            f.get_or_init(w);
+        }
+        // theta(filler) - theta(head) is additive in the two words by
+        // construction: the offset table has main effects and no interaction.
+        let pairs: Vec<(String, String)> = heads
+            .iter()
+            .flat_map(|h| fillers.iter().map(move |fl| (h.clone(), fl.clone())))
+            .collect();
+
+        let table = OffsetTable::build(&f, &pairs, OffsetEstimator::DoubleCentered);
+        let mut worst = 0.0f64;
+        for o in &table.offsets {
+            for a in o {
+                // Residuals should sit at 0 (mod 2pi).
+                let d = (a + std::f64::consts::PI).rem_euclid(TWO_PI) - std::f64::consts::PI;
+                worst = worst.max(d.abs());
+            }
+        }
+        assert!(
+            worst < 1e-6,
+            "a purely additive offset table should double-center to zero; \
+             largest residual {worst:.6}"
         );
     }
 
