@@ -117,6 +117,10 @@ name = "dimensions"
 path = "src/bin/dimensions.rs"
 
 [[bin]]
+name = "relational"
+path = "src/bin/relational.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

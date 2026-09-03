@@ -33,6 +33,7 @@ mod phical;
 mod phinum;
 #[allow(dead_code)]
 mod phiton;
+mod relational;
 mod roles;
 mod reasoning;
 mod server;

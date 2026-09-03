@@ -33,6 +33,7 @@ pub mod phical;
 pub mod phinum;
 #[allow(dead_code)]
 pub mod phiton;
+pub mod relational;
 pub mod roles;
 pub mod reasoning;
 pub mod relation_type;
