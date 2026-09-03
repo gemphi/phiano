@@ -73,6 +73,13 @@
 //!
 //! The sentence row is the same null it has been all along: every band at or
 //! below chance, 0.0946 against 0.0900 using everything.
+//!
+//! Re-measured on fixed seeds after the [`phiano::phasor::mix64`] fix, both
+//! conclusions stand. The profile is still flat — best word band +1.30 sd, best
+//! sentence band +1.36 sd, neither near the 2 sd bar — and holographic retention
+//! is unchanged at 69% (13.1 of 18.9 points). The bottom-up arm now reads 50.7%
+//! using all 64 channels, so its retention is reported as undefined rather than
+//! as a ratio to an effect that is not there.
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiano::facet::Facet;

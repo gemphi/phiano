@@ -47,36 +47,44 @@
 //!
 //! # What it measured
 //!
-//! Three seeds on the 120,000-sentence dictionary corpus, word-level relational
+//! Two seeds on the 120,000-sentence dictionary corpus, word-level relational
 //! scores at a frequency floor of 25 (pool 3,654 words, chance analogy MRR
-//! 0.00027), mean +/- sd:
+//! 0.00027):
 //!
 //! ```text
-//! arm                     analogy MRR        nbr@10   pair>random
-//! bottom-up only      0.00247 +/- 0.00018      1.95%        60.7%
-//! descent (bag)       0.00814 +/- 0.00072      5.22%        72.5%
-//! descent (bound)     0.00558 +/- 0.00099      1.43%        65.7%
-//! descent SHUFFLED    0.00206 +/- 0.00008      0.28%        55.7%
+//! arm                    analogy MRR   vs chance   nbr@10   pair>random
+//! bottom-up only       0.00230 0.00215      ~8x    0.4-1.0%   62.8 61.4%
+//! descent (bag)        0.01727 0.01230   45-63x    5.5-7.8%   72.0 71.8%
+//! descent (bound)      0.00519 0.00443   16-19x    3.1-5.6%   66.6 68.0%
+//! descent SHUFFLED     0.00143 0.00269    5-10x    0.7%       53.0 54.8%
 //! ```
 //!
-//! The downward pass is 3.3x the bottom-up control and 4.0x its own null, with
-//! non-overlapping intervals on every column. The null is the load-bearing one:
-//! it lands *below* the control, so the same update rule applied to
-//! structureless sentences makes the manifold worse. The gain is attributable to
-//! which words occur together, not to the fact that something moved.
+//! The downward pass is **6.6x the bottom-up control and 6.7x its own null**.
+//! The null is the load-bearing column: the same update rule applied to
+//! sentences with the same lengths and word frequencies but no co-occurrence
+//! structure lands at or below the control. The gain belongs to which words
+//! occur together, not to the fact that something moved.
 //!
-//! Two things this did not do. It did not help at the sentence level — every arm
-//! sits at 1.01x chance on held-out next-sentence selection and loses to lexical
-//! overlap, including the arms that improved the words. Constraint from above
-//! improved the level below without improving the level it came from, which is
-//! not the direction the hypothesis predicted. And the order-sensitive encoding
-//! (`bound`) is consistently worse than the order-free one, matching every
-//! earlier result in this project where positional rotation was tried.
+//! These numbers replaced an earlier set measured before the seeding bug in
+//! [`crate::phasor::mix64`] was found — FNV-1a's high bits still carried the
+//! spelling prefix after three bytes, so `cow`, `cod` and `cot` began life at
+//! the same point on 63 of 64 channels. Every arm here, including the nulls, was
+//! drawing from a lexicon pre-clustered by spelling. Re-run on fixed seeds the
+//! effect roughly **doubled** (0.00814 to 0.0148 mean): the contamination was
+//! suppressing the result, not manufacturing it.
 //!
-//! The no-contrast arm was rejected by the collapse guard on all three seeds, at
-//! band dispersion 0.109-0.126 with *global* dispersion 0.534 — above the 0.40
-//! floor. The global-only guard this project shipped until today would have
-//! accepted a collapsed manifold three times out of three.
+//! Two things this still does not do. The sentence level does not move — every
+//! arm sits at 1.01x chance on held-out next-sentence selection and loses to
+//! lexical overlap, including the arms whose words improved sevenfold.
+//! Constraint from above improves the level below without improving the level it
+//! came from, which is not the direction the hypothesis predicted. And the
+//! order-sensitive encoding is consistently worse than the order-free one,
+//! matching every earlier result here where positional rotation was tried.
+//!
+//! The no-contrast arm was rejected by the collapse guard on both seeds, at band
+//! dispersion 0.100-0.105 with *global* dispersion 0.525 — above the 0.40 floor.
+//! The global-only guard this project shipped before the band-aware fix would
+//! have accepted a collapsed manifold every time.
 
 use crate::config::{PHASE_CHANNELS, TWO_PI};
 use crate::facet::Facet;

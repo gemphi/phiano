@@ -158,6 +158,39 @@
 //! fitted basis, centered, uncentered — all at or under their nulls. The descent
 //! is the precondition for every relational result in this module.
 //!
+//! # Re-measured on fixed seeds
+//!
+//! Every table above predates the seeding bug in [`crate::phasor::mix64`]: FNV-1a
+//! had not avalanched after three bytes, so `cow`, `cod` and `cot` started at the
+//! same point on 63 of 64 channels and the whole lexicon — nulls included — was
+//! pre-clustered by spelling. Re-run:
+//!
+//! ```text
+//! manifold        offset            held-out   shuffled     gain  g/noise
+//! bottom-up       raw                 0.2440     0.2436   0.0004     0.7x
+//! bottom-up       head-centered       0.7131     0.7144  -0.0013       --
+//! bottom-up       double-centered     0.7021     0.6942   0.0080     6.4x
+//! after descent   raw                 0.2765     0.2573   0.0192    35.2x
+//! after descent   head-centered       0.6667     0.6560   0.0107   138.6x
+//! after descent   double-centered     0.5277     0.5415  -0.0138       --
+//! ```
+//!
+//! The fixed harmonic basis holds: 0.0192 on the descended manifold at 35x its
+//! noise, against 0.0187 before — unchanged within noise, and still with zero
+//! fitted parameters against k-means' 4,096. The bottom-up manifold is still at
+//! its null on every estimator.
+//!
+//! One reversal. Double-centering, which was the largest absolute effect under
+//! fitted clustering (0.0597), is now *negative* under the harmonic basis on the
+//! descended manifold (-0.0138) — it was -0.0072 before, so the direction was
+//! already there and the fixed seeds sharpened it. Centering destroys the phase
+//! ramp the modes are made of; the two corrections remain alternative readouts
+//! rather than stackable improvements, and this is now unambiguous.
+//!
+//! The k-means grid at k=16 and 64 has not been re-run on fixed seeds — it is
+//! killed for memory at k=64 on this machine — so every number in the two tables
+//! above it should be read as provisional.
+//!
 //! Everything else in that book — subjective time, the model of the universe,
 //! the kundalini appendix — is not testable here and was not used.
 //!
