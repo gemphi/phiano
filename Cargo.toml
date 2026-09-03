@@ -93,6 +93,10 @@ name = "bands"
 path = "src/bin/bands.rs"
 
 [[bin]]
+name = "context"
+path = "src/bin/context.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 

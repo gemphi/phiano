@@ -359,6 +359,120 @@ impl OffsetTable {
         Self { pairs: kept, offsets }
     }
 
+    /// Offsets centered within a *context class* — Searle's C.
+    ///
+    /// Searle's constitutive rule is "X counts as Y **in C**", and this codebase
+    /// has been dropping the third term: every relation measured here is X to Y
+    /// with no context, and `roles::Role::Context` is declared and never once
+    /// assigned. A context-free offset is not a partial version of the rule, it
+    /// is a different claim — that the step from X to Y means the same thing
+    /// everywhere — and head domination at 59.8% against a 9.1% floor is what
+    /// that claim looks like when it fails.
+    ///
+    /// Here C enters as a frame that shifts everything inside it: the mean offset
+    /// of the class is subtracted from each of its members, so what remains is
+    /// what this pair does *that its context does not already do*. A relation
+    /// that is only a property of the context vanishes; one that survives is a
+    /// relation the context does not explain.
+    ///
+    /// `classes` is one class per pair, in the same order as `pairs`. Where it
+    /// comes from is the caller's problem and the experiment's variable — a
+    /// syntactic classifier, a clustering of the sentences, or a shuffle with
+    /// matching class sizes, which is the control that decides whether C is doing
+    /// anything at all.
+    pub fn build_contextual(
+        facet: &Facet,
+        pairs: &[(String, String)],
+        classes: &[u16],
+    ) -> Self {
+        let mut kept: Vec<(String, String)> = Vec::new();
+        let mut raw: Vec<Vec<f64>> = Vec::new();
+        let mut cls: Vec<u16> = Vec::new();
+        for (i, p) in pairs.iter().enumerate() {
+            if let Some(o) = RoleDiscovery::offset(facet, &p.0, &p.1) {
+                kept.push(p.clone());
+                raw.push(o);
+                cls.push(*classes.get(i).unwrap_or(&0));
+            }
+        }
+        if kept.is_empty() {
+            return Self { pairs: kept, offsets: raw };
+        }
+
+        let mut acc: HashMap<u16, Vec<c64>> = HashMap::new();
+        for (c, o) in cls.iter().zip(raw.iter()) {
+            let e = acc.entry(*c).or_insert_with(|| vec![c64::new(0.0, 0.0); PHASE_CHANNELS]);
+            for k in 0..PHASE_CHANNELS {
+                e[k] += c64::from_polar(1.0, o[k]);
+            }
+        }
+
+        let offsets: Vec<Vec<f64>> = raw
+            .iter()
+            .zip(cls.iter())
+            .map(|(o, c)| {
+                let m = &acc[c];
+                (0..PHASE_CHANNELS)
+                    .map(|k| {
+                        let shift = match m[k].norm() > 1e-12 {
+                            true => m[k].arg(),
+                            false => 0.0,
+                        };
+                        (o[k] - shift).rem_euclid(crate::config::TWO_PI)
+                    })
+                    .collect()
+            })
+            .collect();
+
+        Self { pairs: kept, offsets }
+    }
+
+    /// Held-out agreement of these offsets to the fixed harmonic basis.
+    ///
+    /// Nothing is fitted, so every pair is held out and the comparison across
+    /// context sources is a comparison of the contexts alone.
+    pub fn harmonic_agreement(&self) -> f64 {
+        let basis = RelationTypes::harmonic();
+        let (mut sum, mut n) = (0.0f64, 0usize);
+        for i in 0..self.len() {
+            if let Some((_, a)) = self.best_match(i, &basis.rotations) {
+                if a.is_finite() {
+                    sum += a;
+                    n += 1;
+                }
+            }
+        }
+        match n {
+            0 => 0.0,
+            _ => sum / n as f64,
+        }
+    }
+
+    /// How often two pairs sharing a head land on the same harmonic mode.
+    ///
+    /// The diagnostic the whole context question turns on: 59.8% against a 9.1%
+    /// chance level means the offset is carrying the head rather than the step.
+    pub fn head_domination(&self) -> f64 {
+        let basis = RelationTypes::harmonic();
+        let mut by_mode: HashMap<usize, HashMap<&str, usize>> = HashMap::new();
+        let mut total = 0usize;
+        for i in 0..self.len() {
+            if let Some((m, _)) = self.best_match(i, &basis.rotations) {
+                *by_mode
+                    .entry(m)
+                    .or_default()
+                    .entry(self.pairs[i].0.as_str())
+                    .or_insert(0) += 1;
+                total += 1;
+            }
+        }
+        let shared: usize = by_mode
+            .values()
+            .map(|heads| heads.values().filter(|c| **c > 1).sum::<usize>())
+            .sum();
+        shared as f64 / total.max(1) as f64
+    }
+
     /// The `(pair, offset)` view the clustering takes.
     fn usable(&self) -> Vec<(&(String, String), Vec<f64>)> {
         self.pairs.iter().zip(self.offsets.iter()).map(|(p, o)| (p, o.clone())).collect()
