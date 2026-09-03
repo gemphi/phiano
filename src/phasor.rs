@@ -315,6 +315,46 @@ impl SpectralPhasor {
         (sum / PHASE_CHANNELS as f64).clamp(-1.0, 1.0)
     }
 
+    /// [`SpectralPhasor::resonance`] over one contiguous band of channels.
+    ///
+    /// The channel index is not a bag of interchangeable dimensions. The kernel
+    /// in `config::channel_kernel` gives channel `k` a decay of
+    /// `CONTEXT_LAMBDA^(1 + 3k/64)` and a frequency of `2*pi*p_k/PRIME_MODULUS`
+    /// with `p_k` the k-th prime, so low channels are slow with long memory and
+    /// high channels fast with short memory. That is a hierarchy of rates built
+    /// into the design and never once checked.
+    ///
+    /// Bentov, *Stalking the Wild Pendulum*, ch. 3, "Hierarchies of motion":
+    /// each level up the ladder of structures moves much more slowly than the
+    /// one below — atoms at gigahertz, molecules slower, cells slower again —
+    /// "a process of gradually stepping down the high vibratory rates." If
+    /// language is built the same way, the levels should separate by rate:
+    /// discourse in the slow channels, local word transitions in the fast ones.
+    ///
+    /// This is what makes that measurable: score any task on a band and see
+    /// where each level peaks.
+    pub fn resonance_band(&self, other: &Self, lo: usize, hi: usize) -> f64 {
+        let (lo, hi) = (lo.min(PHASE_CHANNELS), hi.min(PHASE_CHANNELS));
+        if hi <= lo {
+            return 0.0;
+        }
+        let mut sum = 0.0f64;
+        for k in lo..hi {
+            let da = self.theta_byte(k);
+            let db = other.theta_byte(k);
+            sum += COS_BYTE[da.wrapping_sub(db) as usize];
+        }
+        (sum / (hi - lo) as f64).clamp(-1.0, 1.0)
+    }
+
+    /// The stored byte for channel `k` — the quantised phase itself.
+    #[inline]
+    pub fn theta_byte(&self, k: usize) -> u8 {
+        let w = k / 8;
+        let shift = 8 * (k % 8);
+        ((self.packed[w] >> shift) & 0xFF) as u8
+    }
+
     /// Binds a filler to a role by channel-wise phase addition.
     ///
     /// This is circular convolution in the phase domain: binding is addition,
@@ -435,6 +475,39 @@ impl TorusPhasor {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_band_resonance_over_the_whole_range_equals_plain_resonance() {
+        let a = SpectralPhasor::seeded("alpha", 1.0, 1);
+        let b = SpectralPhasor::seeded("beta", 1.0, 1);
+        let full = a.resonance(&b);
+        let band = a.resonance_band(&b, 0, PHASE_CHANNELS);
+        assert!((full - band).abs() < 1e-12, "{full} vs {band}");
+    }
+
+    #[test]
+    fn test_bands_partition_the_channels() {
+        let a = SpectralPhasor::seeded("gamma", 1.0, 1);
+        let b = SpectralPhasor::seeded("delta", 1.0, 1);
+        // Eight bands of eight average back to the whole.
+        let mean: f64 = (0..8)
+            .map(|i| a.resonance_band(&b, i * 8, (i + 1) * 8))
+            .sum::<f64>()
+            / 8.0;
+        assert!((mean - a.resonance(&b)).abs() < 1e-12);
+        // An empty band is not silently a perfect match.
+        assert_eq!(a.resonance_band(&b, 5, 5), 0.0);
+    }
+
+    #[test]
+    fn test_theta_byte_is_the_stored_quantisation_of_theta() {
+        let p = SpectralPhasor::seeded("epsilon", 1.0, 1);
+        for k in 0..PHASE_CHANNELS {
+            let from_byte = p.theta_byte(k) as f64 * TWO_PI / CHANNEL_QUANTA as f64;
+            let d = (from_byte - p.theta(k)).abs();
+            assert!(d < 1e-9 || (d - TWO_PI).abs() < 1e-9, "channel {k}: {from_byte} vs {}", p.theta(k));
+        }
+    }
 
     /// The lookup table must be the real cosine, or every resonance in the
     /// engine is quietly wrong. Generated tables rot; this recomputes.
