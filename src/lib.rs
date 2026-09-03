@@ -12,6 +12,7 @@ pub mod drivers;
 pub mod envision;
 pub mod eval;
 pub mod facet;
+pub mod frames;
 #[allow(dead_code)]
 pub mod gemgum;
 pub mod generate;

@@ -12,6 +12,7 @@ mod drivers;
 mod envision;
 mod eval;
 mod facet;
+mod frames;
 #[allow(dead_code)]
 mod gemgum;
 mod generate;

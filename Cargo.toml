@@ -97,6 +97,14 @@ name = "context"
 path = "src/bin/context.rs"
 
 [[bin]]
+name = "prepare_prose"
+path = "src/bin/prepare_prose.rs"
+
+[[bin]]
+name = "frames"
+path = "src/bin/frames.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 
