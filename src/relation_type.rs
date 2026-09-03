@@ -448,6 +448,25 @@ impl OffsetTable {
         }
     }
 
+    /// The harmonic mode each pair falls on, as an index in `0..PHASE_CHANNELS`.
+    ///
+    /// Nothing is fitted — the modes are the medium's standing waves — so this is
+    /// a *labelling* of the pairs that no training produced and no context saw.
+    /// That is what makes it usable as the target of a prediction test: if a
+    /// context class predicts these labels on held-out pairs, the context carries
+    /// information about which relation holds.
+    pub fn modes(&self) -> Vec<usize> {
+        let basis = RelationTypes::harmonic();
+        (0..self.len())
+            .map(|i| self.best_match(i, &basis.rotations).map(|(m, _)| m).unwrap_or(0))
+            .collect()
+    }
+
+    /// The pairs, in the order `modes` reports them.
+    pub fn pairs(&self) -> &[(String, String)] {
+        &self.pairs
+    }
+
     /// How often two pairs sharing a head land on the same harmonic mode.
     ///
     /// The diagnostic the whole context question turns on: 59.8% against a 9.1%

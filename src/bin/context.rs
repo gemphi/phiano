@@ -72,10 +72,51 @@
 //! construction, and a reading that took the agreement column alone would have
 //! called that the best result on the page.
 //!
-//! What this does not rule out: C as a *shift* is one formalisation of "in C",
-//! and the obvious other one is untested — C as a prior over which relation is
-//! expected, selecting among the harmonic modes rather than translating them.
-//! That is a different experiment, and this result is not evidence against it.
+//! # C as a mode prior — the other formalisation, also measured
+//!
+//! The medium sustains 64 standing waves, so the natural second reading of "in
+//! C" is that the context says *which one you are in* rather than translating
+//! it: `cow counts as animal` in a taxonomy and `cow counts as livestock` in a
+//! market are two modes, not one mode plus an offset. That is a prediction test
+//! with no free parameters on either side — the mode labels come from the fixed
+//! harmonic basis, which no training produced and no context ever saw.
+//!
+//! The confound had to be killed first. The gloss contains the head and the
+//! filler, so a context built from it trivially knows the pair, and the
+//! shuffled-C null does not control for that. The context state is therefore the
+//! gloss **with the pair's own two words removed** — the rest of the sentence,
+//! not the sentence quoting the answer back.
+//!
+//! ```text
+//! context C              classes   log-loss   vs marginal   vs shuffled
+//! discovered, K=8              8     3.1845       +0.0077       +0.0177
+//! discovered, K=64            27     3.1747       +0.0020       +0.0320
+//! syntactic (phinum)           5     3.1589       -0.0014       +0.0089
+//! uniform chance = ln(64) = 4.1589
+//! ```
+//!
+//! **The same verdict, from the other direction.** Context beats a random
+//! partition of the same shape — the effect is real — and buys **at most +0.008
+//! nats out of 3.17**, a quarter of one percent of the log-loss. Knowing the
+//! context is very nearly worthless for predicting which relation holds.
+//!
+//! One column needs reading carefully, because it flatters. "vs shuffled" grows
+//! from +0.0177 to +0.0320 as K goes 8 to 64, which looks like finer context
+//! helping more. It is mostly the null getting worse: a random partition into 27
+//! classes costs more in estimation noise than one into 8, so the shuffled arm
+//! degrades faster than the real one improves. The honest column is "vs
+//! marginal", which *shrinks* over the same range, +0.0077 to +0.0020.
+//!
+//! And `phinum` is negative against the marginal again (-0.0014), for the second
+//! time on a different test. This repo's Searle speech-act classifier carries no
+//! information about which relation a pair stands in, under either reading of C.
+//!
+//! So both formalisations of the third term are now measured and both fail. That
+//! is not "C is unimportant in language" — it is that the context available here,
+//! from a dictionary gloss with the pair removed, does not determine the relation
+//! in this representation. A corpus where the same pair genuinely recurs in
+//! different frames would be the fair test, and a dictionary is close to the
+//! worst case for it: each entry states its relation once.
 
 use phiano::chunker::ChunkStore;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
@@ -216,6 +257,61 @@ fn collapse_small(classes: &[u16]) -> (Vec<u16>, usize) {
     (out, used)
 }
 
+/// Held-out log-loss of predicting a pair's harmonic mode from its context class,
+/// and the gain over the context-free marginal.
+///
+/// Fitted on half the pairs and scored on the other half, split by content hash
+/// rather than position — a per-head extractor emits pairs in an order that
+/// index parity would stratify. Laplace smoothing, so an unseen (class, mode)
+/// costs a finite amount rather than infinity.
+///
+/// Returns `(log_loss, marginal_log_loss - log_loss)`: positive gain means the
+/// context helped.
+fn predictive_gain(classes: &[u16], modes: &[usize]) -> (f64, f64) {
+    let n = classes.len().min(modes.len());
+    let side = |i: usize| -> bool {
+        mix64(fnv1a(&format!("{}:{}", classes[i], i))) >> 63 == 0
+    };
+
+    const ALPHA: f64 = 0.5;
+    let mut joint: HashMap<(u16, usize), f64> = HashMap::new();
+    let mut per_class: HashMap<u16, f64> = HashMap::new();
+    let mut marginal = vec![0.0f64; PHASE_CHANNELS];
+    let mut fit_n = 0.0f64;
+
+    for i in 0..n {
+        if !side(i) {
+            continue;
+        }
+        *joint.entry((classes[i], modes[i])).or_insert(0.0) += 1.0;
+        *per_class.entry(classes[i]).or_insert(0.0) += 1.0;
+        marginal[modes[i].min(PHASE_CHANNELS - 1)] += 1.0;
+        fit_n += 1.0;
+    }
+    if fit_n < 1.0 {
+        return (0.0, 0.0);
+    }
+
+    let m = PHASE_CHANNELS as f64;
+    let (mut ll, mut ll_marg, mut held) = (0.0f64, 0.0f64, 0.0f64);
+    for i in 0..n {
+        if side(i) {
+            continue;
+        }
+        let mode = modes[i].min(PHASE_CHANNELS - 1);
+        let c = classes[i];
+        let num = joint.get(&(c, mode)).copied().unwrap_or(0.0) + ALPHA;
+        let den = per_class.get(&c).copied().unwrap_or(0.0) + ALPHA * m;
+        ll -= (num / den).ln();
+        ll_marg -= ((marginal[mode] + ALPHA) / (fit_n + ALPHA * m)).ln();
+        held += 1.0;
+    }
+    match held < 1.0 {
+        true => (0.0, 0.0),
+        false => (ll / held, (ll_marg - ll) / held),
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let chunks = args.get(1).cloned().unwrap_or_else(|| "data/chunks".to_string());
@@ -343,6 +439,102 @@ fn main() {
             "", used, s_agree, s_dom * 100.0
         );
     }
+
+    // ---- C as a mode prior ----
+    //
+    // The mean-shift reading of "in C" failed. The other reading fits the
+    // geometry better: the medium sustains 64 standing waves, and C says *which
+    // one you are in* rather than translating it. `cow counts as animal` in a
+    // taxonomy and `cow counts as livestock` in a market are two modes, not one
+    // mode plus an offset.
+    //
+    // That is a prediction test with no free parameters on either side. The mode
+    // labels come from the fixed harmonic basis, which no training produced and
+    // no context ever saw. If a context class predicts them on held-out pairs
+    // better than the marginal does, C carries information about which relation
+    // holds.
+    //
+    // The confound to kill first: the gloss contains the head and the filler, so
+    // a context built from it trivially knows the pair, and the shuffled-C null
+    // does not control for that — shuffling destroys the link entirely rather
+    // than isolating it. So the context state is the gloss **with the pair's own
+    // two words removed**, the same leave-one-out discipline the downward pass
+    // uses. What is left is the rest of the sentence, and any predictive power
+    // is not the sentence quoting the answer back.
+    println!("\n  --- C as a mode prior (leave-the-pair-out context) ---");
+
+    let loo_context: Vec<String> = pairs
+        .iter()
+        .zip(sources.iter())
+        .map(|((h, f), gloss)| {
+            Tokenizer::tokenize(gloss)
+                .into_iter()
+                .filter(|w| w != h && w != f)
+                .collect::<Vec<_>>()
+                .join(" ")
+        })
+        .collect();
+
+    let table = OffsetTable::build(&facet, &pairs, phiano::relation_type::OffsetEstimator::Raw);
+    let modes = table.modes();
+    let kept: Vec<(String, String)> = table.pairs().to_vec();
+
+    // Realign the leave-one-out contexts onto the pairs the table kept.
+    let index: HashMap<(&str, &str), usize> = pairs
+        .iter()
+        .enumerate()
+        .map(|(i, p)| ((p.0.as_str(), p.1.as_str()), i))
+        .collect();
+    let ctx_for_kept: Vec<String> = kept
+        .iter()
+        .map(|p| {
+            index
+                .get(&(p.0.as_str(), p.1.as_str()))
+                .map(|i| loo_context[*i].clone())
+                .unwrap_or_default()
+        })
+        .collect();
+
+    println!(
+        "  {:<22} {:>8} {:>14} {:>14} {:>12}",
+        "context C", "classes", "log-loss", "vs marginal", "vs shuffled"
+    );
+
+    for k in [8usize, 64] {
+        let classes = discover_classes(&facet, &ctx_for_kept, k, 8);
+        let (classes, used) = collapse_small(&classes);
+        let real = predictive_gain(&classes, &modes);
+        let shuffled = predictive_gain(&shuffle_classes(&classes, 0xC2B2_AE3D_27D4_EB4F), &modes);
+        println!(
+            "  {:<22} {:>8} {:>14.4} {:>+14.4} {:>+12.4}",
+            format!("discovered, K={k}"),
+            used,
+            real.0,
+            real.1,
+            real.1 - shuffled.1
+        );
+    }
+
+    let syn: Vec<u16> = kept
+        .iter()
+        .zip(ctx_for_kept.iter())
+        .map(|(_, g)| phiano::phinum::topology::SentenceType::classify(g).base as u16)
+        .collect();
+    let (syn, used) = collapse_small(&syn);
+    let real = predictive_gain(&syn, &modes);
+    let shuffled = predictive_gain(&shuffle_classes(&syn, 0xC2B2_AE3D_27D4_EB4F), &modes);
+    println!(
+        "  {:<22} {:>8} {:>14.4} {:>+14.4} {:>+12.4}",
+        "syntactic (phinum)", used, real.0, real.1, real.1 - shuffled.1
+    );
+
+    println!(
+        "\n  Log-loss is in nats per pair over 64 modes; the marginal is what you\n\
+         \x20 pay knowing only how common each mode is. A positive 'vs marginal' means\n\
+         \x20 the context helped, and a positive 'vs shuffled' means it helped for a\n\
+         \x20 reason other than being a partition. Uniform chance is ln(64) = {:.4}.",
+        (PHASE_CHANNELS as f64).ln()
+    );
 
     // The chance level for head domination, given each head's fan-out and 64
     // modes to fall into.
