@@ -1,56 +1,16 @@
-mod attention;
-mod chunker;
-mod cognitive;
-mod command;
-mod compose;
-mod conception;
-mod config;
-mod correction;
-mod curriculum;
-mod data;
-mod drivers;
-mod envision;
-mod eval;
-mod facet;
-mod frames;
-#[allow(dead_code)]
-mod gemgum;
-mod generate;
-mod instruction;
-mod layers;
-mod lifelong;
-mod memory;
-mod metrics;
-mod nonlinear;
-mod model;
-mod oscillator;
-mod phase_flow;
-mod persona;
-mod phasor;
-#[allow(dead_code)]
-mod phical;
-#[allow(dead_code)]
-mod phinum;
-#[allow(dead_code)]
-mod phiton;
-mod relational;
-mod roles;
-mod reasoning;
-mod server;
-mod sources;
-mod storage;
-mod synthesis;
-mod synthetic;
-mod relation_type;
-mod tokenizer;
-mod topdown;
-mod trainer;
-mod wave;
-mod wiki_bulk;
+//! The REPL binary.
+//!
+//! This file used to re-declare all forty-five modules with `mod`, which meant
+//! the whole crate compiled twice — once as the library every experiment binary
+//! links against, and again inside this binary, where the REPL touches maybe a
+//! third of it. The second copy produced a hundred and seven dead-code warnings
+//! for code that is very much alive on the library side, and those drowned the
+//! real ones. It now links the library like every other binary does.
 
-use command::help::Help;
-use command::Context;
-use model::Model;
+use phiano::command::help::Help;
+use phiano::command::Context;
+use phiano::model::Model;
+use phiano::server;
 
 /// Entry point - initializes the model, prints help, and runs the REPL.
 ///

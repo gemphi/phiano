@@ -123,7 +123,7 @@ use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiano::metrics::harness::Harness;
 use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
 use phiano::phasor::{fnv1a, mix64};
-use phiano::relation_type::{OffsetTable, RelationTypes};
+use phiano::relation_type::OffsetTable;
 use phiano::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phiano::topdown::{Descent, Up};

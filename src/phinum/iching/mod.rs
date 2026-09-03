@@ -5,7 +5,7 @@ pub mod table;
 mod tests;
 pub mod trigram;
 
-pub use table::{archetype_name, KING_WEN_MAP};
+pub use table::KING_WEN_MAP;
 pub use trigram::Trigram;
 
 use super::searle::SpeechAct;

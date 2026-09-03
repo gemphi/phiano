@@ -100,7 +100,7 @@ use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiano::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::{RelationBenchmark, RelationFamily};
-use phiano::phasor::{fnv1a, mix64};
+use phiano::phasor::fnv1a;
 use phiano::tokenizer::Tokenizer;
 use phiano::topdown::{Descent, Up};
 use phiano::trainer::Trainer;

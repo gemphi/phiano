@@ -89,3 +89,5 @@ Thumbs.db
 .sync/
 data/evaluation.json
 *.chroma.tmp
+
+_to_delete/

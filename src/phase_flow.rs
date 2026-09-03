@@ -1,20 +1,23 @@
 use crate::config::{LEARNING_RATE, SYNTACTIC_MOMENTUM_DEFAULT, TWO_PI};
 use crate::facet::Facet;
 use crate::phical::PhicalOps;
-use crate::phasor::{SpectralPhasor, TorusPhasor};
+use crate::phasor::SpectralPhasor;
 use crate::tokenizer::Tokenizer;
 use crate::wave::c64;
 use serde::Serialize;
 
 /// Coupling type between two flow nodes.
-#[allow(dead_code)]
+///
+/// Two variants — `Semantic` and `AntiPhase` — were declared here and never
+/// constructed anywhere, held in place by an `#[allow(dead_code)]` on the enum.
+/// A variant nothing can produce is a claim about the model with no code behind
+/// it, and from the outside it reads exactly like a capability. They are gone;
+/// what remains is what the builder actually emits.
 #[derive(Debug, Clone, Copy, Serialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum CouplingKind {
     Bigram,
     SyntaxLag,
-    Semantic,
-    AntiPhase,
 }
 
 /// A node in the dynamic phase computation graph.

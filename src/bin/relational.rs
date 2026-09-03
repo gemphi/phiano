@@ -23,6 +23,36 @@
 //!
 //! And the comparison that decides whether any of it was worth doing:
 //! pair-versus-random against the shipped trained manifold, on identical probes.
+//!
+//! # What it found
+//!
+//! On **similarity** the new representation loses, and the module doc for
+//! [`phiano::relational`] says why: relation-specific channels make comparison
+//! sparse, and sparse comparison loses to dense averaging when the question is
+//! "are these two words alike" — 38.8% for the best single dimension against
+//! 61.5% for the shipped mean of sixty-four.
+//!
+//! On **composition** the order reverses, and that is the test the architecture
+//! exists for. `a : b :: c : ?` scored as mean reciprocal rank over 1,536
+//! probes, each scorer also run against a decoy target so every ratio has an
+//! empirical null underneath it:
+//!
+//! ```text
+//! best channel   0.00810   5.6x its null
+//! all channels   0.00088   0.6x
+//! shipped        0.00207   0.8x
+//! ```
+//!
+//! Traversing one named channel is the only reading of the three that composes
+//! at all; both dense readings sit at or below their own null. But the win is
+//! confined to families whose step has a surface form — gender, number,
+//! comparative, past tense, agent, quality, negation clear the null; antonym,
+//! hypernym and nationality do not.
+//!
+//! The first version of that table quoted 53.2x, because it took chance for
+//! mean reciprocal rank to be `1/N`. That is precision@1. A random ranking
+//! scores `H_N / N`, which at this pool size is 9.4 times larger — and the
+//! decoy null now printed under the table reproduces it to within a percent.
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiano::metrics::harness::Harness;
@@ -259,10 +289,242 @@ fn main() {
     });
     println!("  {:<40} {:>13.1}%", "relational: mean of best 8", rel_top8 * 100.0);
 
+    // ---- composition: traverse a relation, do not blend all of them ----
+    //
+    // The similarity rows above measure what relation-specific channels cost and
+    // not what they are for. Similarity wants every relation at once; composition
+    // wants one, named, and traversed. `a : b :: c : ?` is that operation — apply
+    // the step from `a` to `b` to `c` — and the architecture's claim is that the
+    // step lives in a channel, so applying it should work *better* in that channel
+    // alone than smeared across sixty-four.
+    //
+    // Scored per family on its own best channel, against two baselines on
+    // identical probes: the same analogy over all channels evidence-weighted, and
+    // the shipped manifold's 64-channel version.
+    println!("\n  === composition: a:b :: c:? ===");
     println!(
-        "\n  Chance is 50.0%. The shipped row scored 61.3% with the mean and 43.9%\n\
-         \x20 with the best dimension — averaging beat specialising, because there was\n\
-         \x20 nothing specialised to find. If the symmetry break worked, the best\n\
-         \x20 dimension is no longer the worst option here."
+        "  {:<12} {:>6} {:>6} {:>17} {:>17} {:>17}",
+        "", "", "", "best channel", "all channels", "shipped"
+    );
+    println!(
+        "  {:<12} {:>6} {:>6} {:>9} {:>8} {:>9} {:>8} {:>9} {:>8}",
+        "family", "probes", "pool", "MRR", "vs null", "MRR", "vs null", "MRR", "vs null"
+    );
+
+    // Two rules, both learned the hard way earlier in this project.
+    //
+    // First: all three scorers rank against the *same* candidate set. The
+    // one-channel scorer can only rank a word it has evidence for, so if it were
+    // allowed to skip words with `mag[k] == 0` while the other two ranked against
+    // the full pool, its ranks would come from a pool of a few hundred and theirs
+    // from six thousand. That is the `rank_of_above` bug wearing a different hat.
+    // So the family's channel decides the candidate set and all three use it.
+    //
+    // Second: chance for mean-reciprocal-rank is not `1/N`. That is precision@1.
+    // A uniformly random ranking scores `H_N / N`, roughly nine times higher at
+    // this pool size. Rather than trust the closed form against a pool that has
+    // ties and exclusions in it, each scorer is also run against a decoy target —
+    // same probe, same pool, same code path, wrong answer. That empirical null is
+    // the scale every ratio below is quoted against.
+    let pool_ref: Vec<&String> = pool.iter().collect();
+    let (mut tot_ch, mut tot_all, mut tot_ship, mut tot_n) = (0.0f64, 0.0f64, 0.0f64, 0usize);
+    let (mut nul_ch, mut nul_all, mut nul_ship) = (0.0f64, 0.0f64, 0.0f64);
+
+    for (fi, fam) in families.iter().enumerate() {
+        let pairs: Vec<(String, String)> = fam
+            .pairs
+            .iter()
+            .filter(|p| known(&p.a) && known(&p.b))
+            .map(|p| (p.a.clone(), p.b.clone()))
+            .collect();
+        if pairs.len() < 4 {
+            continue;
+        }
+        let (prof, _, _) = profile(&rel, &pairs);
+        let (k, v) = argmax(&prof);
+        if !v.is_finite() {
+            continue;
+        }
+
+        // The candidate set: words this family's channel can actually place.
+        // Every scorer ranks inside it, so the three numbers are commensurable.
+        let cand: Vec<&String> = pool_ref
+            .iter()
+            .copied()
+            .filter(|w| rel.words[*w].mag[k] > 0.0)
+            .collect();
+        if cand.len() < 32 {
+            continue;
+        }
+
+        // A deterministic subset of ordered pairs-of-pairs, so the probe set is
+        // identical between the three scorers and between runs.
+        let stride = (pairs.len() / 6).max(1);
+        let (mut ch, mut all, mut ship, mut n) = (0.0f64, 0.0f64, 0.0f64, 0usize);
+        let (mut nch, mut nall, mut nship) = (0.0f64, 0.0f64, 0.0f64);
+        for (i, (a, b)) in pairs.iter().enumerate() {
+            for (j, (c, d)) in pairs.iter().enumerate() {
+                if i == j || j % stride != i % stride {
+                    continue;
+                }
+                // The decoy: a candidate that is not the answer and not a term of
+                // the probe. Picked by position so it is fixed across runs and
+                // across scorers, and drawn from the same set being ranked.
+                let decoy = {
+                    let mut pick: Option<&String> = None;
+                    for t in 0..cand.len() {
+                        let w = cand[(i * 7919 + j * 104_729 + t) % cand.len()];
+                        if w != d && w != a && w != b && w != c {
+                            pick = Some(w);
+                            break;
+                        }
+                    }
+                    match pick {
+                        Some(w) => w,
+                        None => continue,
+                    }
+                };
+                let exclude = [a.as_str(), b.as_str(), c.as_str()];
+
+                // One channel: the step is an angle on k, applied to c.
+                let want =
+                    rel.words[c].theta[k] + rel.words[b].theta[k] - rel.words[a].theta[k];
+                let rr_ch = |target: &String| -> f64 {
+                    let t = (rel.words[target].theta[k] - want).cos();
+                    let r = 1 + cand
+                        .iter()
+                        .filter(|w| **w != target && !exclude.contains(&w.as_str()))
+                        .filter(|w| (rel.words[**w].theta[k] - want).cos() > t)
+                        .count();
+                    1.0 / r as f64
+                };
+
+                // All channels, evidence-weighted: the same step taken in every
+                // dimension at once.
+                let score_all = |w: &str| -> f64 {
+                    let (pw, pa, pb, pc) =
+                        (&rel.words[w], &rel.words[a], &rel.words[b], &rel.words[c]);
+                    let (mut dot, mut nw) = (0.0f64, 0.0f64);
+                    for kk in 0..PHASE_CHANNELS {
+                        let m = pw.mag[kk] * pa.mag[kk].min(pb.mag[kk]).min(pc.mag[kk]);
+                        if m > 0.0 {
+                            let target = pc.theta[kk] + pb.theta[kk] - pa.theta[kk];
+                            dot += m * (pw.theta[kk] - target).cos();
+                            nw += m;
+                        }
+                    }
+                    match nw > 0.0 {
+                        true => dot / nw,
+                        false => f64::NEG_INFINITY,
+                    }
+                };
+                let rr_all = |target: &String| -> f64 {
+                    let t = score_all(target);
+                    let r = 1 + cand
+                        .iter()
+                        .filter(|w| **w != target && !exclude.contains(&w.as_str()))
+                        .filter(|w| score_all(w) > t)
+                        .count();
+                    1.0 / r as f64
+                };
+
+                // The shipped manifold, all 64 channels, unweighted.
+                let sq = {
+                    let (pa, pb, pc) =
+                        (&shipped.lexicon[a], &shipped.lexicon[b], &shipped.lexicon[c]);
+                    let mut q = *pc;
+                    for kk in 0..PHASE_CHANNELS {
+                        q.set_theta(kk, pc.theta(kk) + pb.theta(kk) - pa.theta(kk));
+                    }
+                    q.sync_phase();
+                    q
+                };
+                let rr_ship = |target: &String| -> f64 {
+                    let t = sq.resonance(&shipped.lexicon[target]);
+                    let r = 1 + cand
+                        .iter()
+                        .filter(|w| **w != target && !exclude.contains(&w.as_str()))
+                        .filter(|w| sq.resonance(&shipped.lexicon[**w]) > t)
+                        .count();
+                    1.0 / r as f64
+                };
+
+                ch += rr_ch(d);
+                all += rr_all(d);
+                ship += rr_ship(d);
+                nch += rr_ch(decoy);
+                nall += rr_all(decoy);
+                nship += rr_ship(decoy);
+                n += 1;
+            }
+        }
+        if n == 0 {
+            continue;
+        }
+        let _ = fi;
+        let f = n as f64;
+        println!(
+            "  {:<12} {:>6} {:>6} {:>9.5} {:>7.1}x {:>9.5} {:>7.1}x {:>9.5} {:>7.1}x",
+            fam.name,
+            n,
+            cand.len(),
+            ch / f,
+            ch / nch.max(f64::MIN_POSITIVE),
+            all / f,
+            all / nall.max(f64::MIN_POSITIVE),
+            ship / f,
+            ship / nship.max(f64::MIN_POSITIVE),
+        );
+        tot_ch += ch;
+        tot_all += all;
+        tot_ship += ship;
+        nul_ch += nch;
+        nul_all += nall;
+        nul_ship += nship;
+        tot_n += n;
+    }
+
+    if tot_n > 0 {
+        let t = tot_n as f64;
+        println!(
+            "  {:<12} {:>6} {:>6} {:>9.5} {:>7.1}x {:>9.5} {:>7.1}x {:>9.5} {:>7.1}x",
+            "ALL",
+            tot_n,
+            "",
+            tot_ch / t,
+            tot_ch / nul_ch.max(f64::MIN_POSITIVE),
+            tot_all / t,
+            tot_all / nul_all.max(f64::MIN_POSITIVE),
+            tot_ship / t,
+            tot_ship / nul_ship.max(f64::MIN_POSITIVE),
+        );
+        println!(
+            "  {:<12} {:>6} {:>6} {:>9.5} {:>8} {:>9.5} {:>8} {:>9.5} {:>8}",
+            "decoy null",
+            tot_n,
+            "",
+            nul_ch / t,
+            "",
+            nul_all / t,
+            "",
+            nul_ship / t,
+            "",
+        );
+    }
+
+    println!(
+        "\n  The decoy null is what a scorer gets for confidently retrieving the\n\
+         \x20 wrong word, and it lands at 0.00144 for the one-channel scorer —\n\
+         \x20 within a percent of H_N/N for this pool, so the null is calibrated\n\
+         \x20 and the ratios above mean what they say.\n\n\
+         \x20 Both dense readings sit at or below their own null: blending all\n\
+         \x20 sixty-four dimensions does not compose, and neither does the shipped\n\
+         \x20 manifold. Traversing one named channel is the only one of the three\n\
+         \x20 that clears its null, and it does so on the families whose step is\n\
+         \x20 formal — gender, number, comparative, past tense, agent, quality,\n\
+         \x20 negation. It fails on antonym, hypernym and nationality, where the\n\
+         \x20 step is semantic and there is no regular surface change to carry it.\n\
+         \x20 That split is the finding, and it is narrower than the architecture\n\
+         \x20 claims."
     );
 }

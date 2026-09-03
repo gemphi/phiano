@@ -33,7 +33,6 @@ use phiano::chunker::ChunkStore;
 use phiano::conception::Conception;
 use phiano::config::LEARNING_RATE;
 use phiano::correction::CorrectionLog;
-use phiano::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::phasor::SpectralPhasor;
 use phiano::sources::definition_core;

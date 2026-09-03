@@ -305,7 +305,7 @@ impl Trainer {
         let mut sx = vec![0.0f64; channels.len()];
         let mut sy = vec![0.0f64; channels.len()];
 
-        let mut add_token = |facet: &Facet, sx: &mut Vec<f64>, sy: &mut Vec<f64>, t: &str| {
+        let add_token = |facet: &Facet, sx: &mut Vec<f64>, sy: &mut Vec<f64>, t: &str| {
             if let Some(p) = facet.lexicon.get(t) {
                 let w = p.amplitude * Self::token_weight(t);
                 for (ci, &k) in channels.iter().enumerate() {

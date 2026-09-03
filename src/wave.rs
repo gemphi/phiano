@@ -5,7 +5,6 @@ use crate::tokenizer::Tokenizer;
 use num_complex::Complex64;
 use rayon::prelude::*;
 use std::cmp::Ordering;
-use std::f64::consts::PI;
 
 /// Type alias for a complex number with f64 real and imaginary parts.
 #[allow(non_camel_case_types)]

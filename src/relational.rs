@@ -93,7 +93,6 @@
 
 use crate::config::{PHASE_CHANNELS, TWO_PI};
 use crate::phasor::{fnv1a, mix64};
-use crate::tokenizer::Tokenizer;
 use std::collections::HashMap;
 
 /// Channels reserved for relative offset. The rest go to markers.
@@ -425,6 +424,7 @@ impl RelationalFacet {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tokenizer::Tokenizer;
 
     fn docs(raw: &[&str]) -> Vec<Vec<String>> {
         raw.iter().map(|s| Tokenizer::tokenize(s)).collect()

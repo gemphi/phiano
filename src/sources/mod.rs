@@ -62,17 +62,19 @@ pub fn clean_definition(raw: &str) -> String {
 /// and drops the tail.
 const MAX_SENSES: usize = 3;
 
-/// The most senses a word is allowed to have.
+/// Truncation limit on the sense list read out of a dictionary entry.
 ///
-/// The architecture is 64 phase channels, and the claim this bound expresses is
-/// that every level of language has a *bounded* inventory of forms — a word has
-/// so many uses, a sentence so many shapes — so each level's identity is a type
-/// index rather than an open set. That is CLU's position applied to language:
-/// the type is finite and known, and instances are values of it.
+/// This was documented as a *bound* — the claim that a word's uses are finite,
+/// so a sense can be a type index rather than a string. It never did that work.
+/// `defstats` measured 1.51 senses per word with a maximum of 45, so `.take(64)`
+/// has never once fired: it is inert, and a cap that never binds demonstrates
+/// nothing about whether the inventory is bounded. Worse, whatever senses do
+/// come back are collapsed into a single phasor immediately afterwards, so the
+/// representation cannot tell two of them apart in any case — which is where
+/// `bin/frames` found Searle's third term going missing.
 ///
-/// Whether 64 is the right bound is an empirical question this does not settle.
-/// What it settles is that the number is *finite and declared*, which is what
-/// lets a sense be an index instead of a string.
+/// It stays as a guard against a malformed entry producing a runaway list. It is
+/// not evidence for the architecture, and the doc no longer says it is.
 pub const MAX_WORD_SENSES: usize = 64;
 
 /// The definitional core of a dictionary entry.
