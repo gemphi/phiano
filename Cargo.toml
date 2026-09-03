@@ -105,6 +105,10 @@ name = "frames"
 path = "src/bin/frames.rs"
 
 [[bin]]
+name = "senses"
+path = "src/bin/senses.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 
