@@ -109,6 +109,10 @@ name = "senses"
 path = "src/bin/senses.rs"
 
 [[bin]]
+name = "constructed"
+path = "src/bin/constructed.rs"
+
+[[bin]]
 name = "bench"
 path = "src/bin/bench.rs"
 
