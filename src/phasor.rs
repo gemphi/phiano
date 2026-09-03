@@ -101,6 +101,30 @@ pub fn fnv1a(text: &str) -> u64 {
     hash
 }
 
+/// splitmix64's finaliser: avalanches every input bit into every output bit.
+///
+/// FNV-1a does not avalanche in a few rounds. Over three bytes its high bits are
+/// still dominated by the first byte, and its low bit is the parity of all of
+/// them — the multiply by an odd prime preserves it. Neither end is safe to slice
+/// bits out of, and this project has been bitten by both:
+///
+/// * `seeded` took `h >> 11` as a word's phase, so `cow`, `cod` and `cot`
+///   (`f604f819…`, `f604eb19…`, `f604fb19…`) received *the same* phase on 63 of
+///   64 channels and resonated at 1.0000. Every word's starting position was a
+///   function of its spelling prefix, which is exactly the thing the manifold is
+///   supposed to learn its way out of.
+/// * `relation_type::split_side` took the low bit, so `h_x` and `h_y` landed in
+///   opposite halves of a fit/held split without exception.
+///
+/// Anything deriving a number from a word hash goes through this first.
+#[inline]
+pub fn mix64(h: u64) -> u64 {
+    let mut z = h.wrapping_add(0x9E37_79B9_7F4A_7C15);
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    z ^ (z >> 31)
+}
+
 /// SpectralPhasor — a word's position on the phase torus T^D.
 ///
 /// The complex wave representation of channel 0 is `Z = A * e^(i*(phi + n*alpha))`,
@@ -165,7 +189,7 @@ impl SpectralPhasor {
     /// character length shared one exact starting angle — roughly twenty
     /// distinct positions for an entire vocabulary.
     pub fn seeded(word: &str, amplitude: f64, band_n: u32) -> Self {
-        let h = fnv1a(word);
+        let h = mix64(fnv1a(word));
         let base = ((h >> 11) as f64 / (1u64 << 53) as f64) * TWO_PI;
 
         let mut p = Self {
@@ -179,9 +203,7 @@ impl SpectralPhasor {
         // channel index, then spread by the golden angle so that even correlated
         // hash bits land far apart on the circle.
         for k in 0..PHASE_CHANNELS {
-            let mut hk = h ^ (k as u64).wrapping_mul(0x9E3779B97F4A7C15);
-            hk = hk.wrapping_mul(1099511628211);
-            hk ^= hk >> 29;
+            let hk = mix64(h ^ (k as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15));
             let frac = (hk >> 11) as f64 / (1u64 << 53) as f64;
             p.set_theta(k, frac * TWO_PI + (k as f64) * GOLDEN_ANGLE);
         }
@@ -475,6 +497,56 @@ impl TorusPhasor {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The seed must not encode spelling.
+    ///
+    /// `cow`, `cod` and `cot` hash to `f604f819…`, `f604eb19…`, `f604fb19…`:
+    /// FNV-1a has not avalanched after three bytes, so its high bits still carry
+    /// the prefix. Reading `h >> 11` from that gave those three words the same
+    /// phase on 63 of 64 channels and a resonance of 1.0000, and every word in
+    /// the lexicon started life positioned by how it was spelled.
+    #[test]
+    fn test_seeds_do_not_cluster_by_spelling_prefix() {
+        let cow = SpectralPhasor::seeded("cow", 1.0, 1);
+        for w in ["cod", "cot", "cob", "coo", "com"] {
+            let r = cow.resonance(&SpectralPhasor::seeded(w, 1.0, 1));
+            assert!(
+                r.abs() < 0.35,
+                "cow/{w} seeded resonance {r:.4}: the seed is encoding spelling"
+            );
+        }
+
+        // Longer shared prefixes are the harder case — more rounds of the hash
+        // agree before the words diverge.
+        let a = SpectralPhasor::seeded("consideration", 1.0, 1);
+        for w in ["considerations", "considerate", "considering", "considered"] {
+            let r = a.resonance(&SpectralPhasor::seeded(w, 1.0, 1));
+            assert!(r.abs() < 0.35, "consideration/{w} seeded resonance {r:.4}");
+        }
+    }
+
+    /// Seeds must spread, not merely differ.
+    ///
+    /// Pairwise resonance over a sample of words should look like the mean of 64
+    /// independent cosines: centred on zero with a small spread. A distribution
+    /// shifted away from zero means the seeds share structure.
+    #[test]
+    fn test_seed_resonance_is_centred_on_zero() {
+        let words: Vec<String> = (0..300).map(|i| format!("word{i}")).collect();
+        let ps: Vec<SpectralPhasor> =
+            words.iter().map(|w| SpectralPhasor::seeded(w, 1.0, 1)).collect();
+
+        let mut rs = Vec::new();
+        for i in 0..ps.len() {
+            for j in (i + 1)..ps.len() {
+                rs.push(ps[i].resonance(&ps[j]));
+            }
+        }
+        let mean = rs.iter().sum::<f64>() / rs.len() as f64;
+        let worst = rs.iter().cloned().fold(0.0f64, |a, b| a.max(b.abs()));
+        assert!(mean.abs() < 0.02, "mean pairwise seed resonance {mean:.4}");
+        assert!(worst < 0.6, "some pair of seeds is nearly identical: {worst:.4}");
+    }
 
     #[test]
     fn test_band_resonance_over_the_whole_range_equals_plain_resonance() {

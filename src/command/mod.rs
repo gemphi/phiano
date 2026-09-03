@@ -161,6 +161,46 @@ impl Parser {
     /// Strips surrounding single or double quotes from a string.
     ///
     /// Returns the string unchanged if it's not quoted.
+    /// Splits `"quoted text" 8` into the text and the trailing count.
+    ///
+    /// The obvious version — `split_whitespace()` then `strip_quotes(parts[0])`
+    /// — silently truncates every multi-word argument to its first token. The
+    /// `resonance` command shipped with exactly that, so
+    /// `resonance "a large four-footed animal" 8` queried the word `a` and
+    /// returned `a, the, to, or, in`. It looked like a bag-of-words failure of
+    /// the model and was a parser reading one word.
+    ///
+    /// Unquoted input keeps a trailing integer as the count only when there is
+    /// other text before it, so `synonym 7 3` still asks about the word `7`.
+    pub fn text_and_count(arg: &str, default: usize) -> (String, usize) {
+        let arg = arg.trim();
+
+        // Quoted: everything inside the quotes is the text, anything after is
+        // the count.
+        for q in ['"', '\''] {
+            if let Some(rest) = arg.strip_prefix(q) {
+                if let Some(end) = rest.find(q) {
+                    let text = rest[..end].to_string();
+                    let count = rest[end + 1..]
+                        .trim()
+                        .parse()
+                        .unwrap_or(default);
+                    return (text, count);
+                }
+            }
+        }
+
+        let parts: Vec<&str> = arg.split_whitespace().collect();
+        match parts.len() {
+            0 => (String::new(), default),
+            1 => (parts[0].to_string(), default),
+            n => match parts[n - 1].parse::<usize>() {
+                Ok(c) => (parts[..n - 1].join(" "), c),
+                Err(_) => (parts.join(" "), default),
+            },
+        }
+    }
+
     pub fn strip_quotes(s: &str) -> String {
         let s = s.trim();
         let is_quoted = (s.starts_with('"') && s.ends_with('"'))
@@ -170,5 +210,39 @@ impl Parser {
             true => s[1..s.len() - 1].to_string(),
             false => s.to_string(),
         }
+    }
+}
+
+#[cfg(test)]
+mod parser_tests {
+    use super::Parser;
+
+    /// The bug this replaced: `split_whitespace()[0]` on a quoted argument
+    /// silently kept one word, so `resonance "a large four-footed animal" 8`
+    /// queried `a`.
+    #[test]
+    fn test_quoted_text_survives_intact_with_its_count() {
+        let (t, n) = Parser::text_and_count("\"a large four-footed animal\" 8", 5);
+        assert_eq!(t, "a large four-footed animal");
+        assert_eq!(n, 8);
+
+        let (t, n) = Parser::text_and_count("'single quoted here'", 5);
+        assert_eq!(t, "single quoted here");
+        assert_eq!(n, 5, "no count given, so the default stands");
+    }
+
+    #[test]
+    fn test_unquoted_word_and_count() {
+        assert_eq!(Parser::text_and_count("ownership 5", 3), ("ownership".into(), 5));
+        assert_eq!(Parser::text_and_count("ownership", 3), ("ownership".into(), 3));
+        // A lone numeric argument is the subject, not a count — `synonym 7`
+        // asks about the word seven.
+        assert_eq!(Parser::text_and_count("7", 3), ("7".into(), 3));
+        // Unquoted multi-word input keeps every word.
+        assert_eq!(
+            Parser::text_and_count("large four footed animal", 5),
+            ("large four footed animal".into(), 5)
+        );
+        assert_eq!(Parser::text_and_count("", 5), (String::new(), 5));
     }
 }

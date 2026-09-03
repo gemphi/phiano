@@ -1,3 +1,22 @@
+//! Builds the facet the REPL and server load on startup.
+//!
+//! Two things about this binary were wrong, and both meant the shipped model was
+//! the arm that measures at chance.
+//!
+//! **The corpus.** The default was 4,000 sentences of the Rust book — a 2,917
+//! word vocabulary — while every measurement in this project runs on the 120,000
+//! sentence dictionary corpus at 62,000 words. So `synonym ownership` returned
+//! `label, contents, situation, usually, position`: not a failure of the model
+//! so much as a query against a facet that had never seen a dictionary.
+//!
+//! **The descent.** The downward pass is the difference between no relational
+//! structure at any k and structure at 15x its noise floor, and it lived only
+//! inside experiment binaries. The facet on disk had never had it applied.
+//!
+//! Both fixed here. The guard still decides: if the downward pass collapses the
+//! frequent band it is discarded, and this binary says so out loud rather than
+//! shipping the control under the same filename.
+
 use std::fs;
 use std::io::{BufRead, BufReader};
 use std::time::Instant;
@@ -34,11 +53,11 @@ fn main() {
 
     let corpus_path = std::env::args()
         .nth(1)
-        .unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+        .unwrap_or_else(|| "data/dictionary_corpus.txt".to_string());
     let max_lines: usize = std::env::args()
         .nth(2)
         .and_then(|s| s.parse().ok())
-        .unwrap_or(4000);
+        .unwrap_or(usize::MAX);
 
     match load_sentences(&corpus_path, max_lines) {
         Ok(sentences) => {
@@ -48,8 +67,23 @@ fn main() {
                 corpus_path,
                 max_lines
             );
-            let tokens = trainer.train_corpus(&mut facet, &sentences);
+            let (tokens, descent) = trainer.train_corpus_with_descent(&mut facet, &sentences);
             println!("  [corpus] {} token updates", tokens);
+            println!(
+                "  [descent] {} of {} words moved, dispersion {:.3} -> {:.3}, \
+                 frequent band {:.3} -> {:.3}{}",
+                descent.words_moved,
+                descent.words_seen,
+                descent.dispersion_before,
+                descent.dispersion_after,
+                descent.band_before,
+                descent.band_after,
+                match descent.rejected {
+                    true => "  REJECTED by the collapse guard — shipping the \
+                             bottom-up manifold",
+                    false => "",
+                }
+            );
         }
         Err(e) => println!("  [corpus] skipped ({}): {}", corpus_path, e),
     }

@@ -141,20 +141,49 @@ impl Wave {
     ///
     /// Returns `(word, delta)` sorted ascending, where delta = 1 − score, so
     /// smaller is still better for every existing caller.
+    /// Minimum training count for a word to be offered as a retrieval result.
+    ///
+    /// A word seen once or twice still sits essentially at its hash seed, and a
+    /// hash seed is a function of spelling. That is why `synonym cow` on a
+    /// 77,000-word dictionary manifold returned `cod, cot, coz, cos` — not a
+    /// semantic failure but a pool full of words the model had never moved.
+    /// Every relational benchmark in this project applies a frequency floor for
+    /// the same reason; retrieval had never had one.
+    pub const RETRIEVAL_COUNT_FLOOR: u32 = 5;
+
+    /// The floor to actually use, backed off when it would empty the pool.
+    ///
+    /// A freshly bootstrapped or small facet can have almost nothing above the
+    /// floor, and returning nothing is worse than returning weak matches. The
+    /// floor applies only while it leaves a pool several times the requested
+    /// result count.
+    fn pool_floor(facet: &Facet, top_k: usize) -> u32 {
+        let above = facet
+            .lexicon
+            .values()
+            .filter(|p| p.count >= Self::RETRIEVAL_COUNT_FLOOR)
+            .count();
+        match above >= top_k.max(1) * 10 {
+            true => Self::RETRIEVAL_COUNT_FLOOR,
+            false => 0,
+        }
+    }
+
     pub fn ray_cast_word(facet: &Facet, target_word: &str, top_k: usize) -> Vec<(String, f64)> {
         let target = match facet.lexicon.get(target_word) {
             Some(p) => *p,
             None => return vec![],
         };
 
+        let floor = Self::pool_floor(facet, top_k);
+        let ceiling = Self::pool_ceiling(facet);
         let mut hits: Vec<(&String, f64)> = facet
             .lexicon
             .par_iter()
-            .filter(|(word, _)| *word != target_word)
+            .filter(|(word, p)| *word != target_word && p.count >= floor && p.count <= ceiling)
             .map(|(word, phasor)| {
                 let sim = 0.5 * (target.resonance(phasor) + 1.0);
-                let fam = phasor.amplitude / config::AMPLITUDE_MAX;
-                (word, 1.0 - sim * (0.8 + 0.2 * fam))
+                (word, 1.0 - sim)
             })
             .collect();
 
@@ -172,13 +201,15 @@ impl Wave {
         }
         let q = wave.arg();
 
+        let floor = Self::pool_floor(facet, top_k);
+        let ceiling = Self::pool_ceiling(facet);
         let mut hits: Vec<(&String, f64)> = facet
             .lexicon
             .par_iter()
+            .filter(|(_, p)| p.count >= floor && p.count <= ceiling)
             .map(|(word, phasor)| {
                 let d = (q - phasor.effective_phase()).cos().max(0.0);
-                let fam = phasor.amplitude / config::AMPLITUDE_MAX;
-                (word, 1.0 - d * (0.8 + 0.2 * fam))
+                (word, 1.0 - d)
             })
             .collect();
 
@@ -195,22 +226,55 @@ impl Wave {
         if qs.is_empty() {
             return vec![];
         }
+        let floor = Self::pool_floor(facet, top_k);
+
+        let ceiling = Self::pool_ceiling(facet);
 
         let mut hits: Vec<(&String, f64)> = facet
             .lexicon
             .par_iter()
+            .filter(|(_, p)| p.count >= floor && p.count <= ceiling)
             .map(|(word, phasor)| {
                 let mut sum = 0.0;
                 for (k, &qk) in qs.iter().enumerate() {
                     sum += (qk - phasor.theta(k)).cos();
                 }
                 let sim = 0.5 * (sum / qs.len() as f64 + 1.0);
-                let fam = phasor.amplitude / config::AMPLITUDE_MAX;
-                (word, 1.0 - sim * (0.8 + 0.2 * fam))
+                (word, 1.0 - sim)
             })
             .collect();
 
         Self::take_smallest(&mut hits, top_k)
+    }
+
+    /// Words this frequent are excluded from retrieval results.
+    ///
+    /// A query for "a large four-footed animal" used to return `is, a, in, to,
+    /// of`. Function words sit near everything because they occur with
+    /// everything, and no similarity measure fixes that — being common is what
+    /// makes them uninformative about any query.
+    ///
+    /// The first attempt at a fix scaled each candidate's score by its rarity.
+    /// That inverted the problem instead of solving it: the multiplier swung
+    /// 20% while the similarities between candidates differ by far less, so
+    /// rarity decided the ranking outright and the same query returned
+    /// `columella, scalariform, superficies, submultiple`. A score multiplier is
+    /// the wrong instrument.
+    ///
+    /// So frequency restricts the *pool* and leaves the score alone: the top
+    /// [`Wave::STOPWORD_RANK`] words by count are not offered as answers, and
+    /// everything below them is ranked on similarity, undistorted.
+    pub const STOPWORD_RANK: usize = 120;
+
+    /// The count above which a word is treated as a stopword, or `u32::MAX` when
+    /// the vocabulary is too small for the cut to mean anything.
+    fn pool_ceiling(facet: &Facet) -> u32 {
+        if facet.lexicon.len() < Self::STOPWORD_RANK * 20 {
+            return u32::MAX;
+        }
+        let mut counts: Vec<u32> = facet.lexicon.values().map(|p| p.count).collect();
+        counts.sort_unstable_by(|a, b| b.cmp(a));
+        counts[Self::STOPWORD_RANK.min(counts.len() - 1)]
     }
 
     /// Partial-selects the `top_k` smallest deltas, then sorts just those.
@@ -386,6 +450,51 @@ impl SectorIndex {
 
 #[cfg(test)]
 mod wave_tests {
+
+    /// Retrieval must not offer words the model never moved.
+    ///
+    /// A word seen once sits at its hash seed, which is a function of its
+    /// spelling — the reason `synonym cow` returned `cod, cot, coz`.
+    #[test]
+    fn test_retrieval_excludes_the_untrained_tail() {
+        let mut f = Facet::new();
+        // A well-trained pool, plus one rare word placed right on top of the
+        // target so it would win every ranking without a floor.
+        for i in 0..200 {
+            let p = f.get_or_init(&format!("trained{i}"));
+            p.count = 50;
+        }
+        let target = f.get_or_init("target");
+        target.count = 50;
+        let thetas: Vec<f64> =
+            (0..crate::config::PHASE_CHANNELS).map(|k| f.lexicon["target"].theta(k)).collect();
+
+        let rare = f.get_or_init("rare_twin");
+        rare.count = 1;
+        for (k, t) in thetas.iter().enumerate() {
+            rare.set_theta(k, *t);
+        }
+        rare.sync_phase();
+
+        let hits = Wave::ray_cast_word(&f, "target", 5);
+        assert!(
+            !hits.iter().any(|(w, _)| w == "rare_twin"),
+            "a word seen once should not be offered: {hits:?}"
+        );
+
+        // And the floor backs off rather than returning nothing when almost
+        // everything is rare.
+        let mut sparse = Facet::new();
+        for i in 0..6 {
+            let p = sparse.get_or_init(&format!("w{i}"));
+            p.count = 1;
+        }
+        assert!(
+            !Wave::ray_cast_word(&sparse, "w0", 3).is_empty(),
+            "the floor must back off on a facet with nothing above it"
+        );
+    }
+
     use super::*;
     use crate::trainer::Trainer;
 

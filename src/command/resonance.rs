@@ -18,15 +18,17 @@ impl Resonance {
             return true;
         }
 
-        let parts: Vec<&str> = ctx.arg.split_whitespace().collect();
-        let text = Parser::strip_quotes(parts[0]);
-        let count: usize = parts
-            .get(1)
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(5);
+        let (text, count) = Parser::text_and_count(ctx.arg, 5);
 
-        let wave = Wave::text(ctx.manifold, &text);
-        let matches = Wave::ray_cast(ctx.manifold, wave, count);
+        // All 64 channels, not one. `Wave::text` collapses a sentence to a
+        // single complex number, and `ray_cast` then compares candidates on that
+        // one angle — 77,000 words crowded onto one circle, where everything is
+        // near everything. `sentence_channels` keeps the channels apart, which
+        // is what the torus representation is for; its own doc comment says so,
+        // and this command was not using it.
+        let words: Vec<String> = crate::tokenizer::Tokenizer::tokenize(&text);
+        let query = Wave::sentence_channels(ctx.manifold, &words, false);
+        let matches = Wave::ray_cast_channels(ctx.manifold, &query, count);
 
         if matches.is_empty() {
             println!("  No resonant words found.");

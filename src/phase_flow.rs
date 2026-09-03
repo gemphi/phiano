@@ -241,13 +241,23 @@ impl PhaseFlow {
     }
 
     /// Computes resonance of a candidate word with the current collective phase.
+    /// Alignment between the flow's collective phase and a word.
+    ///
+    /// Compared on channel 0 alone, because that is the only channel a single
+    /// collective angle determines. The previous version built a whole
+    /// `SpectralPhasor` from that one angle and compared all its harmonics — but
+    /// those harmonics came from `SpectralPhasor::new`, which spreads by the
+    /// golden angle, while a real word's come from its hash. So 63 of the 64
+    /// channels being compared were fabricated on one side and unrelated on the
+    /// other, and the result was noise with a sign.
+    ///
+    /// It read as working only because seeded phases used to cluster by spelling:
+    /// with that fixed, `test_resonance_with_known_word` began failing on a word
+    /// compared against *itself*, which is what a fabricated comparison looks
+    /// like once the accidental structure it rode on is removed.
     pub fn resonance_with(&self, facet: &Facet, word: &str) -> f64 {
         match facet.lexicon.get(word) {
-            Some(phasor) => {
-                let target_torus = TorusPhasor::from_spectral(&SpectralPhasor::new(self.collective_phase, 1.0, 0));
-                let word_torus = TorusPhasor::from_spectral(phasor);
-                target_torus.resonance(&word_torus)
-            }
+            Some(phasor) => (self.collective_phase - phasor.phase).cos(),
             None => 0.0,
         }
     }
@@ -331,6 +341,10 @@ mod tests {
 
         let flow = PhaseFlow::build(&facet, "hello");
         let res = flow.resonance_with(&facet, "hello");
-        assert!(res > 0.0, "self-resonance should be positive");
+        assert!(
+            res > 0.99,
+            "a flow built from one word sits on that word's phase, so its \
+             self-resonance is 1: got {res:.4}"
+        );
     }
 }

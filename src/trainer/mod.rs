@@ -545,6 +545,46 @@ impl Trainer {
         sentences.iter().map(|s| self.train_sentence(facet, s)).sum()
     }
 
+    /// Trains a corpus, then lets the sentences constrain the words.
+    ///
+    /// [`Trainer::train_corpus`] is the bottom-up half: words move to predict
+    /// their neighbours, a sentence is whatever sum its words produce, and no
+    /// level above ever pushes back. On the dictionary corpus that manifold
+    /// measures **at its own null** on every relational probe — analogy, type
+    /// discovery, harmonic modes, all of them.
+    ///
+    /// [`crate::topdown::Descent`] is the missing direction, and it is worth
+    /// three-fold on analogy MRR (0.00247 to 0.00814, four times its shuffled
+    /// null) and the difference between no relation types at any k and types at
+    /// 15x their noise floor. Until now it existed only inside experiment
+    /// binaries, so the facet this project actually ships was the arm that does
+    /// not work.
+    ///
+    /// The guard is kept: if the downward pass collapses the frequent band, the
+    /// composed manifold is discarded and the bottom-up one is returned
+    /// unchanged. `rejected` on the report says which happened, and a caller
+    /// that ignores it will silently ship the control.
+    pub fn train_corpus_with_descent(
+        &self,
+        facet: &mut Facet,
+        sentences: &[String],
+    ) -> (usize, crate::topdown::DescentReport) {
+        let tokens = self.train_corpus(facet, sentences);
+        let toks: Vec<Vec<String>> = sentences
+            .iter()
+            .map(|s| crate::tokenizer::Tokenizer::tokenize(s))
+            .collect();
+        let report = crate::topdown::Descent::cycle(
+            facet,
+            &toks,
+            crate::topdown::Up::Bag,
+            crate::topdown::DEFAULT_ROUNDS,
+            crate::topdown::DEFAULT_STEP,
+            true,
+        );
+        (tokens, report)
+    }
+
     /// Trains on a word-definition pair - the core learning unit.
     pub fn train_definition(&self, facet: &mut Facet, word: &str, definition: &str) {
         let combined = format!("{} {}", word, definition);
