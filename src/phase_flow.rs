@@ -2,22 +2,55 @@ use crate::config::{LEARNING_RATE, SYNTACTIC_MOMENTUM_DEFAULT, TWO_PI};
 use crate::facet::Facet;
 use crate::phical::PhicalOps;
 use crate::phasor::SpectralPhasor;
+use crate::relational::{RelationVocab, RelationalFacet, WINDOW};
 use crate::tokenizer::Tokenizer;
 use crate::wave::c64;
 use serde::Serialize;
 
-/// Coupling type between two flow nodes.
+/// What kind of coupling holds two flow nodes together.
 ///
-/// Two variants — `Semantic` and `AntiPhase` — were declared here and never
-/// constructed anywhere, held in place by an `#[allow(dead_code)]` on the enum.
-/// A variant nothing can produce is a claim about the model with no code behind
-/// it, and from the outside it reads exactly like a capability. They are gone;
-/// what remains is what the builder actually emits.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq)]
+/// This enum used to carry two more variants, `Semantic` and `AntiPhase`, which
+/// nothing constructed — held alive by an `#[allow(dead_code)]`. Deleting them
+/// was right and it was not enough, because the idea they gestured at is real
+/// and was missing: when two words are associated, the association *has a kind*,
+/// and the kind is nameable. In `a dog eats a donut` the coupling between `dog`
+/// and `donut` is `eats`. The graph did not have that edge in any form. It built
+/// `dog→eats`, `eats→a`, `a→donut` and stopped, so the one relation in the
+/// sentence a reader would name was the one relation the graph could not.
+///
+/// [`CouplingKind::Relation`] is that edge, and it carries the thing an enum
+/// variant could never carry: the **dimension** the coupling acts in.
+/// [`crate::relational::RelationVocab`] assigns every observable relation its
+/// own channel out of the sixty-four, so `eats` is not just a label on the edge
+/// — it names which of the word's sixty-four complex components the coupling
+/// reads. Two words coupled by `eats` are compared on the `eats` channel and no
+/// other. That is why the variant is a struct and not a bare tag, and why it is
+/// discovered from the corpus rather than declared here: the kinds are whatever
+/// the text supplies, up to the channel count.
+#[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum CouplingKind {
+    /// Adjacency, weighted by bigram probability.
     Bigram,
+    /// Adjacency, carrying the learned phase lag.
     SyntaxLag,
+    /// A named relation between two words that need not be adjacent, and the
+    /// channel it occupies. `marker` is the word standing between them, or the
+    /// offset's name when the relation is bare distance.
+    Relation { marker: String, channel: usize },
+}
+
+impl CouplingKind {
+    /// The channel this coupling reads, when it has one.
+    ///
+    /// Adjacency has no channel: a bigram edge is a claim about position, and
+    /// position is not one of the sixty-four relations.
+    pub fn channel(&self) -> Option<usize> {
+        match self {
+            CouplingKind::Relation { channel, .. } => Some(*channel),
+            _ => None,
+        }
+    }
 }
 
 /// A node in the dynamic phase computation graph.
@@ -133,6 +166,89 @@ impl PhaseFlow {
             momentum: SYNTACTIC_MOMENTUM_DEFAULT,
             order_parameter,
         }
+    }
+
+    /// Builds the graph with named relation edges as well as adjacency.
+    ///
+    /// [`Self::build`] connects each word to the next one and stops, so the only
+    /// couplings it can represent are positional. This adds the edge a reader
+    /// would draw: for every pair of words inside the relation window that
+    /// [`RelationVocab`] can name, an edge carrying that name and the channel it
+    /// owns. `a dog eats a donut` gains `dog —eats→ donut`.
+    ///
+    /// The lag on a relation edge is read from the channel of its own kind —
+    /// `theta_to[k] - theta_from[k]` — not from the word's single global phase.
+    /// This is where the coupling kind stops being a label: `eats` and `of`
+    /// between the same two words would pull them toward different angles,
+    /// because they are angles in different dimensions. The weight is the
+    /// geometric mean of the evidence both words carry on that channel, so a
+    /// relation asserted once between two words the corpus barely places there
+    /// pulls proportionately less than one it has seen a thousand times.
+    pub fn build_relational(
+        facet: &Facet,
+        rel: &RelationalFacet,
+        vocab: &RelationVocab,
+        prompt: &str,
+    ) -> Self {
+        let mut flow = Self::build(facet, prompt);
+        let toks = Tokenizer::tokenize(prompt);
+
+        // Node indices are deduplicated by word, so a repeated word is one node.
+        let index_of = |w: &str| flow.nodes.iter().position(|n| n.word == w);
+
+        for i in 0..toks.len() {
+            for j in (i + 1)..(i + 1 + WINDOW).min(toks.len()) {
+                let k = match vocab.channel(&toks, i, j) {
+                    Some(k) => k,
+                    None => continue,
+                };
+                // Adjacency already has two edges; a relation edge on top of them
+                // would be a third vote for the same fact.
+                if j == i + 1 {
+                    continue;
+                }
+                let (from, to) = match (index_of(&toks[i]), index_of(&toks[j])) {
+                    (Some(a), Some(b)) if a != b => (a, b),
+                    _ => continue,
+                };
+                let (pa, pb) = match (rel.words.get(&toks[i]), rel.words.get(&toks[j])) {
+                    (Some(a), Some(b)) => (a, b),
+                    _ => continue,
+                };
+                let weight = (pa.mag[k] * pb.mag[k]).sqrt();
+                if weight <= 0.0 {
+                    continue;
+                }
+                flow.edges.push(FlowEdge {
+                    from,
+                    to,
+                    coupling: CouplingKind::Relation {
+                        marker: vocab.name(k),
+                        channel: k,
+                    },
+                    lag: (pb.theta[k] - pa.theta[k]).rem_euclid(TWO_PI),
+                    weight,
+                });
+            }
+        }
+        flow
+    }
+
+    /// The distinct relation kinds this graph actually used.
+    ///
+    /// Reported rather than assumed: the architecture allows sixty-four, and how
+    /// many a given sentence or corpus supplies is a fact about the text.
+    pub fn coupling_kinds(&self) -> Vec<(String, usize)> {
+        let mut seen: Vec<(String, usize)> = Vec::new();
+        for e in &self.edges {
+            if let CouplingKind::Relation { marker, channel } = &e.coupling {
+                if !seen.iter().any(|(_, c)| c == channel) {
+                    seen.push((marker.clone(), *channel));
+                }
+            }
+        }
+        seen.sort_by_key(|(_, c)| *c);
+        seen
     }
 
     /// Propagates phase waves through the graph for `steps` iterations.
@@ -349,5 +465,89 @@ mod tests {
             "a flow built from one word sits on that word's phase, so its \
              self-resonance is 1: got {res:.4}"
         );
+    }
+
+    /// The edge the graph could not previously draw.
+    ///
+    /// `a dog eats a donut` has one relation in it that a reader would name, and
+    /// it holds between two words that are not adjacent. `build` produces only
+    /// adjacency, so `dog` and `donut` are three hops apart and connected by
+    /// nothing that mentions `eats`. This asserts the relation edge exists, that
+    /// it runs between the right two nodes, and that its channel is the one the
+    /// vocabulary gave `eats` — not merely that *some* extra edge appeared.
+    #[test]
+    fn test_a_relation_edge_names_the_word_between_its_endpoints() {
+        use crate::relational::{RelationVocab, RelationalFacet};
+
+        // A corpus, not four sentences. The rule that picks the marker compares
+        // how often each candidate links, so it needs a text where the
+        // determiner actually behaves like one — common everywhere, not merely
+        // present. On a four-sentence fixture `a` occurs twice and `eats` three
+        // times, so `a` is the rarer word and correctly wins a rule that is
+        // looking for the rarer word. The fixture was wrong, not the rule.
+        let mut sentences: Vec<String> = Vec::new();
+        let eaters = ["dog", "cat", "child", "bird", "fox", "otter"];
+        let foods = ["donut", "fish", "apple", "seed", "berry", "clam"];
+        for (a, f) in eaters.iter().zip(foods.iter()) {
+            sentences.push(format!("a {a} eats a {f}"));
+        }
+        // The determiner earns its frequency the way it does in English: by
+        // appearing in every other sentence, most of which are about nothing in
+        // particular.
+        for a in &eaters {
+            for verb in ["sleeps", "waits", "runs", "watches", "rests"] {
+                sentences.push(format!("a {a} {verb} near a river"));
+                sentences.push(format!("the {a} {verb} by the shore"));
+            }
+        }
+        for f in &foods {
+            for adj in ["fresh", "small", "ripe", "plain"] {
+                sentences.push(format!("the {f} was {adj} today"));
+                sentences.push(format!("a {f} sits on a table"));
+            }
+        }
+        let sentences: Vec<&str> = sentences.iter().map(|s| s.as_str()).collect();
+        let docs: Vec<Vec<String>> = sentences
+            .iter()
+            .map(|s| Tokenizer::tokenize(s))
+            .collect();
+        let vocab = RelationVocab::learn(&docs);
+        let rel = RelationalFacet::train(&docs, &vocab, 4);
+        let facet = Facet::new();
+
+        let flow = PhaseFlow::build_relational(&facet, &rel, &vocab, "a dog eats a donut");
+        let plain = PhaseFlow::build(&facet, "a dog eats a donut");
+
+        assert!(
+            plain.coupling_kinds().is_empty(),
+            "adjacency-only build must produce no named relation at all — that \
+             absence is what this edge exists to fix"
+        );
+
+        let dog = flow.nodes.iter().position(|n| n.word == "dog").unwrap();
+        let donut = flow.nodes.iter().position(|n| n.word == "donut").unwrap();
+        let eats_channel = vocab.channel(&Tokenizer::tokenize("a dog eats a donut"), 1, 3);
+
+        let edge = flow
+            .edges
+            .iter()
+            .find(|e| e.from == dog && e.to == donut)
+            .expect("dog and donut must be coupled directly, not only through the words between them");
+
+        match &edge.coupling {
+            CouplingKind::Relation { marker, channel } => {
+                assert_eq!(
+                    marker, "eats",
+                    "the coupling must be named by the word standing between the pair"
+                );
+                assert_eq!(
+                    Some(*channel),
+                    eats_channel,
+                    "the edge must read the channel the vocabulary assigned to `eats`, \
+                     or the kind is a label and not a dimension"
+                );
+            }
+            other => panic!("expected a named relation, got {other:?}"),
+        }
     }
 }

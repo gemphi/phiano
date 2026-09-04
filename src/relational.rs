@@ -113,6 +113,15 @@ pub const CHANNEL_DISPERSION_FLOOR: f64 = 0.35;
 /// Below this vocabulary the collapse guard does not run.
 pub const GUARD_MIN_VOCAB: usize = 200;
 
+
+
+/// The widest gap at which a word between a pair may still name their relation.
+///
+/// Three means at most two words stand between them, which covers `dog eats
+/// donut` and `a dog eats a donut` and stops well short of picking some rare
+/// word six positions away purely because it is rare.
+pub const MARKER_MAX_GAP: usize = 3;
+
 /// A word as 64 complex numbers: one per relation.
 #[derive(Debug, Clone)]
 pub struct RelationalPhasor {
@@ -191,24 +200,77 @@ pub struct RelationVocab {
 impl RelationVocab {
     /// Counts what appears between word pairs and gives the commonest their own
     /// channels.
+    ///
+    /// # Why the gap is not fixed at one word
+    ///
+    /// The first version took the marker to be the single word between a pair,
+    /// and only when there was exactly one. `dog eats donut` worked. `a dog eats
+    /// a donut` did not, because the determiner makes the gap three, and English
+    /// puts a determiner in that position constantly — so the rule found the
+    /// relation in the sentence a grammarian would write and missed it in the
+    /// sentence a person would say. A unit test in `phase_flow` caught this by
+    /// asserting the marker was `eats` and getting `offset+3`.
+    ///
+    /// The fix is not a wider fixed gap, which would let `a` name relations. It
+    /// is to skip the words that cannot be naming anything and see what is left.
+    /// Which words those are is read off the corpus by rank — the same criterion
+    /// `wave::STOPWORD_RANK` already uses — and not from a list written here,
+    /// because a hand-written list of English function words is a claim about
+    /// English that this module has no way to check.
     pub fn learn(docs: &[Vec<String>]) -> Self {
-        let mut counts: HashMap<&str, usize> = HashMap::new();
+        // Pass one: how often does each word occur at all, and how often does it
+        // occur as the single word joining two others?
+        let mut total: HashMap<&str, usize> = HashMap::new();
+        for toks in docs {
+            for t in toks {
+                *total.entry(t.as_str()).or_insert(0) += 1;
+            }
+        }
+        // How often each word stands between a pair the marker rule will actually
+        // consult — the same gaps `marker` reads, so the ranking is a count of
+        // the thing being ranked.
+        //
+        // An earlier version restricted this to words standing between two
+        // *content* words, on the reasoning that a relation joins two things and
+        // the things are the rare words. It is a good argument and it is wrong
+        // about English, in a way that kills exactly the case it was written for:
+        // in `the dog eats the donut` the neighbours of `eats` are `dog` and
+        // `the`, because a determiner always stands next to its noun. Under that
+        // restriction `eats` can never be counted as linking anything, and the
+        // sentence that motivated the whole rule is the sentence it cannot see.
+        let mut linking: HashMap<&str, usize> = HashMap::new();
         for toks in docs {
             for i in 0..toks.len() {
-                for j in (i + 2)..(i + 1 + WINDOW).min(toks.len()) {
-                    // Exactly one word between the pair names the relation.
-                    if j == i + 2 {
-                        *counts.entry(toks[i + 1].as_str()).or_insert(0) += 1;
+                for j in (i + 2)..(i + 1 + MARKER_MAX_GAP).min(toks.len()) {
+                    for m in (i + 1)..j {
+                        *linking.entry(toks[m].as_str()).or_insert(0) += 1;
                     }
                 }
             }
         }
-        let mut ranked: Vec<(&str, usize)> = counts.into_iter().collect();
+
+        // Ranked by how often the word links, in absolute terms. `bin/markers`
+        // prints both this ranking and the obvious alternative, and the two are
+        // not close: absolute count gives `the and of to in a was by on for with
+        // that as from at`, which is the inventory of English relational markers
+        // with the determiners and copulas included. The share of a word's
+        // occurrences spent linking — tried here, and wrong — gives `nautical
+        // stoppani cu facto botanist`, every one of them a word that occurs a
+        // dozen times and happens to occur between two rare words each time. A
+        // ratio rewards a small denominator, and the words that name relations
+        // are the words with the largest denominators in the language.
+        // No minimum count is needed: ranking is by absolute linking count, so a
+        // word seen five times ranks below one seen thirty thousand times and
+        // falls outside the channels on its own. A threshold here would do
+        // nothing on a corpus and would silently empty the vocabulary on a small
+        // one, which is how two unit tests failed before it was removed.
+        let mut ranked: Vec<(&str, usize)> = linking.into_iter().collect();
+        let _ = &total;
         // Sorted by count, ties by word, so the assignment is reproducible.
         ranked.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(b.0)));
 
         let room = PHASE_CHANNELS - OFFSET_CHANNELS;
-        let marker_channel = ranked
+        let marker_channel: HashMap<String, usize> = ranked
             .into_iter()
             .take(room)
             .enumerate()
@@ -217,16 +279,46 @@ impl RelationVocab {
         Self { marker_channel }
     }
 
+    /// The marker channel for a pair at `i` and `j`, if a word between them
+    /// names their relation.
+    ///
+    /// The rule is: among the words between the pair, the marker is the one that
+    /// links *least often* across the corpus. This replaced a filler set, and it
+    /// is both simpler and better founded.
+    ///
+    /// The problem it solves is `a dog eats a donut`. The original rule fired
+    /// only when exactly one word separated the pair, so `dog eats donut` was an
+    /// `eats` relation and `a dog eats a donut` was an offset-3 one — the rule
+    /// found the relation in the sentence a grammarian would write and missed it
+    /// in the sentence a person would say. The first fix was a filler list of
+    /// frequent words to skip over, and it deleted `of`, `in` and `to`, which are
+    /// frequent *and* are the clearest relational markers in the language.
+    ///
+    /// Rarity settles it without a list. Between `dog` and `donut` stand `eats`
+    /// and `a`; `a` links fourteen thousand times and `eats` a handful, so `eats`
+    /// is the more specific claim about this pair and it wins. Between
+    /// `president` and `states` stand `of` and `the`; `of` links thirty-two
+    /// thousand times against `the`'s forty thousand, so `of` wins. The same
+    /// comparison, no exceptions, and it needs no extra storage: channels are
+    /// handed out in rank order, so a *higher channel index is a rarer marker*
+    /// and the rule is a maximum over channel indices.
+    fn marker(&self, toks: &[String], i: usize, j: usize) -> Option<usize> {
+        match j - i <= MARKER_MAX_GAP {
+            true => ((i + 1)..j)
+                .filter_map(|m| self.marker_channel.get(&toks[m]).copied())
+                .max(),
+            false => None,
+        }
+    }
+
     /// The channel for a pair at `i` and `j` in `toks`, if any.
     ///
     /// A marked relation takes precedence over a bare offset: `bread of wheat`
     /// is an `of` relation first and an offset-2 relation second, and the marker
     /// is the more specific claim.
     pub fn channel(&self, toks: &[String], i: usize, j: usize) -> Option<usize> {
-        if j == i + 2 {
-            if let Some(c) = self.marker_channel.get(&toks[i + 1]) {
-                return Some(*c);
-            }
+        if let Some(c) = self.marker(toks, i, j) {
+            return Some(c);
         }
         let d = j - i;
         match d <= OFFSET_CHANNELS {
