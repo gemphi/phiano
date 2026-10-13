@@ -84,7 +84,9 @@ impl DialogueSource {
         let mut turns = Vec::new();
         if let Ok(file) = File::open(path) {
             let reader = BufReader::new(file);
-            for line in reader.lines().flatten() {
+            for line in reader.lines() {
+                // An unreadable line (e.g. invalid UTF-8) is skipped, not fatal.
+                let Ok(line) = line else { continue };
                 let trimmed = line.trim();
                 if trimmed.is_empty() {
                     continue;

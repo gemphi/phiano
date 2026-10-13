@@ -1,5 +1,5 @@
-/// Convergence diagnostics for reasoning chains.
-/// Detects oscillation, divergence, and stuck states.
+//! Convergence diagnostics for reasoning chains.
+//! Detects oscillation, divergence, and stuck states.
 
 use crate::reasoning::pathfinding::ReasoningChain;
 use serde::Serialize;

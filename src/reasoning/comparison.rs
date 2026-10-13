@@ -1,5 +1,5 @@
-/// Reasoning comparison and step templating.
-/// Provides readable step output and side-by-side comparison of reasoning methods.
+//! Reasoning comparison and step templating.
+//! Provides readable step output and side-by-side comparison of reasoning methods.
 
 use crate::facet::Facet;
 use crate::reasoning::diagnostics::Diagnostics;

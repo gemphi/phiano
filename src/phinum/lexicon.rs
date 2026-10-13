@@ -1,8 +1,8 @@
-/// Phinum lexicon — word understanding with 16/32/64 variation levels.
-///
-/// Each word is classified into a word class, then mapped to variation
-/// slots at all three Phinum levels. The lexicon tracks which variations
-/// have been seen and builds the spider net of links between them.
+//! Phinum lexicon — word understanding with 16/32/64 variation levels.
+//!
+//! Each word is classified into a word class, then mapped to variation
+//! slots at all three Phinum levels. The lexicon tracks which variations
+//! have been seen and builds the spider net of links between them.
 
 use super::syntax::PartOfSpeech;
 use super::variants::{Phinum16, Phinum32, Phinum64, PhinumEngine, Variation, PhinumLevel};

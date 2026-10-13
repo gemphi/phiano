@@ -1,14 +1,15 @@
-/// Direction of fit and satisfaction agents.
-///
-/// Split from speech_acts.rs to keep files under 200 lines.
-/// These agents depend on SpeechActAgent's classification.
+//! Direction of fit and satisfaction agents.
+//!
+//! Split from speech_acts.rs to keep files under 200 lines.
+//! These agents depend on SpeechActAgent's classification.
 
 use super::types::*;
-use super::speech_acts::SpeechActAgent;
+use super::speech::SpeechActAgent;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
 /// 5. DirectionOfFitAgent - maps speech act to mind-world alignment.
+///
 /// Searle's direction of fit:
 /// - Assertives: mind→world (belief should match reality)
 /// - Directives: world→mind (reality should change to match desire)
@@ -39,6 +40,7 @@ impl DirectionOfFitAgent {
 }
 
 /// 6. SatisfactionAgent - checks if intentional state satisfaction conditions can be met.
+///
 /// For beliefs: satisfied when the world matches the content.
 /// For desires: satisfied when the world changes to match the content.
 /// For intentions: satisfied when the action is completed.

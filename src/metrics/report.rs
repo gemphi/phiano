@@ -1,6 +1,6 @@
-/// Benchmark report formatting: human-readable output and comparison.
+//! Benchmark report formatting: human-readable output and comparison.
 
-use super::benchmark_runner::BenchmarkReport;
+use super::benchmark::runner::BenchmarkReport;
 use std::fmt;
 
 impl fmt::Display for BenchmarkReport {

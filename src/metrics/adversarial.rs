@@ -1,5 +1,5 @@
-/// Adversarial robustness: phase perturbation tests and brittleness scoring.
-/// Implements Ch 14.2's adversarial examples concept for phase-oscillator models.
+//! Adversarial robustness: phase perturbation tests and brittleness scoring.
+//! Implements Ch 14.2's adversarial examples concept for phase-oscillator models.
 
 use crate::config::TWO_PI;
 use crate::eval::Evaluator;

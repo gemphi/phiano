@@ -82,59 +82,51 @@ impl ChatCmd {
             }
 
             let question = input.trim().to_string();
-            match question.is_empty() {
-                true => continue,
-                false => {}
+            if question.is_empty() {
+                continue;
             }
 
-            match question.eq_ignore_ascii_case("bye")
+            if question.eq_ignore_ascii_case("bye")
                 || question.eq_ignore_ascii_case("exit")
                 || question.eq_ignore_ascii_case("quit")
             {
-                true => {
-                    println!("\n  Phiano> Farewell. The phase circle turns.\n");
-                    break;
-                }
-                false => {}
+                println!("\n  Phiano> Farewell. The phase circle turns.\n");
+                break;
             }
 
-            match question.starts_with("!correct ") {
-                true => {
-                    let rest = &question["!correct ".len()..];
-                    match rest.split_once('|') {
-                        Some((wrong, correct)) => {
-                            let (wrong, correct) = (wrong.trim(), correct.trim());
-                            let evaluator = crate::eval::Evaluator::new();
-                            let before = evaluator.eval(ctx.manifold, wrong).coherence;
+            if let Some(rest) = question.strip_prefix("!correct ") {
+                match rest.split_once('|') {
+                    Some((wrong, correct)) => {
+                        let (wrong, correct) = (wrong.trim(), correct.trim());
+                        let evaluator = crate::eval::Evaluator::new();
+                        let before = evaluator.eval(ctx.manifold, wrong).coherence;
 
-                            ctx.trainer.correct_graded(
-                                ctx.manifold,
-                                wrong,
-                                correct,
-                                crate::config::CORRECTION_STRENGTH,
-                            );
-                            ctx.corrections.record(
-                                wrong,
-                                correct,
-                                Some(crate::config::CORRECTION_STRENGTH),
-                            );
+                        ctx.trainer.correct_graded(
+                            ctx.manifold,
+                            wrong,
+                            correct,
+                            crate::config::CORRECTION_STRENGTH,
+                        );
+                        ctx.corrections.record(
+                            wrong,
+                            correct,
+                            Some(crate::config::CORRECTION_STRENGTH),
+                        );
 
-                            // Show the correction took, rather than asserting it.
-                            let after = evaluator.eval(ctx.manifold, wrong).coherence;
-                            println!(
-                                "\n  Phiano> Corrected. '{}' coherence {:.2} → {:.2}; \
-                                 reinforced '{}'. Journalled ({} total).\n",
-                                wrong, before, after, correct, ctx.corrections.len()
-                            );
-                        }
-                        None => {
-                            println!("\n  Phiano> Usage: !correct wrong phrase | correct phrase\n");
-                        }
+                        // Show the correction took, rather than asserting it.
+                        let after = evaluator.eval(ctx.manifold, wrong).coherence;
+                        println!(
+                            "\n  Phiano> Corrected. '{}' coherence {:.2} → {:.2}; \
+                             reinforced '{}'. Journalled ({} total).\n",
+                            wrong, before, after, correct, ctx.corrections.len()
+                        );
                     }
-                    turn += 1;
-                    continue;
+                    None => {
+                        println!("\n  Phiano> Usage: !correct wrong phrase | correct phrase\n");
+                    }
                 }
-                false => {}
+                turn += 1;
+                continue;
             }
 
             let response = InstructionEngine::generate_response(

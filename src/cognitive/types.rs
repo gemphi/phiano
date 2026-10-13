@@ -1,10 +1,10 @@
-/// Core types for the cognitive system - Searle's intentional state model.
-///
-/// Searle's key insight: mental states have:
-/// - Content (what they're about - the propositional content)
-/// - Direction of fit (mind→world or world→mind)
-/// - Satisfaction conditions (when the state is fulfilled)
-/// - Psychological mode (belief, desire, intention, fear, hope, etc.)
+//! Core types for the cognitive system - Searle's intentional state model.
+//!
+//! Searle's key insight: mental states have:
+//! - Content (what they're about - the propositional content)
+//! - Direction of fit (mind→world or world→mind)
+//! - Satisfaction conditions (when the state is fulfilled)
+//! - Psychological mode (belief, desire, intention, fear, hope, etc.)
 
 use serde::Serialize;
 

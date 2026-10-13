@@ -53,9 +53,8 @@ impl ChunkStore {
             let dir = format!("{}/{}", self.root, letter);
             let _ = fs::create_dir_all(&dir);
             let path = format!("{}/{}.json", dir, letter);
-            match serde_json::to_string(words) {
-                Ok(json) => { let _ = fs::write(&path, json); }
-                Err(_) => {}
+            if let Ok(json) = serde_json::to_string(words) {
+                let _ = fs::write(&path, json);
             }
         });
 
@@ -65,9 +64,8 @@ impl ChunkStore {
     /// Load all chunks in parallel using rayon and return (word, definition) pairs.
     pub fn load_all(&self) -> Vec<(String, String)> {
         let root = &self.root;
-        match Path::new(root).exists() {
-            false => return vec![],
-            true => {}
+        if !Path::new(root).exists() {
+            return vec![];
         }
 
         let letter_dirs: Vec<String> = fs::read_dir(root)
@@ -118,12 +116,9 @@ impl ChunkStore {
     ) -> crate::trainer::TrainingMetrics {
         let start = Instant::now();
         let entries = self.load_all();
-        match entries.is_empty() {
-            true => {
-                eprintln!("  [error] No chunks found in {}", self.root);
-                return crate::trainer::TrainingMetrics::empty();
-            }
-            false => {}
+        if entries.is_empty() {
+            eprintln!("  [error] No chunks found in {}", self.root);
+            return crate::trainer::TrainingMetrics::empty();
         }
 
         println!("  [ingest] {} entries, {} epochs", entries.len(), epochs);

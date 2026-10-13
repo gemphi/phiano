@@ -1,0 +1,14 @@
+# Brief for one interpreted paper on Barbara Liskov (read fully before writing)
+
+You are writing ONE markdown paper for Phient about ONE work by Barbara Liskov (born Barbara Huberman; Stanford PhD 1968 under John McCarthy; MITRE; MIT; Turing Award 2008), interpreted through Phient's paradigm. She is the author of the 1968 chess-endgame program built on a forcing tree with two comparison functions, *better* and *worse*, and no evaluation number; of the Venus operating system; of CLU and abstract data types; of Argus, Promises, viewstamped replication, the behavioural notion of subtyping (the Liskov substitution principle), and practical Byzantine fault tolerance. Phient has adopted her three operators — better, worse, loss — as its own (see PHIENT_FACTS.md and, if present, ../../86_liskov_three_operators.md). Read `PHIENT_FACTS.md` (same folder) first.
+
+Rules, non-negotiable:
+1. Research first: use WebSearch/WebFetch to find and read the work itself (ACM DL abstract, DTIC, MIT/PMG pages, Chess Programming Wiki, Wikipedia as a last resort) so every claim about HER work is what the work actually says. If you cannot verify a detail, do not state it. Never invent quotes, dates, co-authors or results. Say in section 16 which sources you reached and which you could not. She was never at IBM; do not say she was.
+2. Every number about Phient comes from PHIENT_FACTS.md, cited exactly. Anything not measured is said to be not measured.
+3. Open with the paradigm paragraph verbatim (in PHIENT_FACTS.md), right after the front matter.
+4. Front matter:
+   # <Our own title>
+   *Phient interpreted papers · Liskov series, N of 16 · <date> · on: "<her work's title>" (<authors, year, venue>)*
+5. Sixteen numbered sections `## <n>. <heading>`, each 380–450 words (about 6,500 words in all). Arc: 1 our abstract; 2 what the work claims, in its terms; 3 the mechanism or the mathematics, plainly; 4 what it demonstrated or how it was used, as reported; 5 the one idea restated; 6–10 the interpretation in Phical terms — the word as a function, the relation channel as a coordinate, the operator as X ⇒ Y under c, and specifically how her idea (abstraction, specification, the forcing tree, better/worse, substitution, guardians, promises, replication, fault tolerance) reads as a claim about *language* and lands in phinet, phiano, phiecs, the quest, the helix or the three operators; 11 what Phient has measured that bears on it (facts file only); 12 the experiment that would test her idea inside phinet, with the control named; 13 where we disagree or the analogy breaks; 14 the person and the moment (verified facts only); 15 what remains; 16 sources.
+6. Style: the plain, exact voice of the existing Phient docs. Short sentences. No hype, no em-dash asides, no "not X but Y", no "worth noting", no bullet lists in body sections (tables fine), no emoji. Honest about limits.
+7. Write the file to the exact path given. Nothing else.

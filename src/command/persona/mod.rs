@@ -1,14 +1,14 @@
-/// PersonaCmd - manages personas and impersonation.
-///
-/// Subcommands:
-///   persona add <name> "example 1" "example 2" ...
-///   persona from <name> "block of text"
-///   persona list
-///   persona show <name>
-///   persona compare <name_a> <name_b>
-///   persona impersonate <name> "prompt"
-///   persona match "unknown text"
-///   persona chat <name>
+//! PersonaCmd - manages personas and impersonation.
+//!
+//! Subcommands:
+//!   persona add <name> "example 1" "example 2" ...
+//!   persona from <name> "block of text"
+//!   persona list
+//!   persona show <name>
+//!   persona compare <name_a> <name_b>
+//!   persona impersonate <name> "prompt"
+//!   persona match "unknown text"
+//!   persona chat <name>
 
 mod chat;
 

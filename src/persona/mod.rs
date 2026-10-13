@@ -1,8 +1,12 @@
+pub mod dialog;
 pub mod fingerprint;
 pub mod impersonate;
+pub mod store;
 pub mod world;
 
+pub use dialog::{Dialogue, Reply};
 pub use fingerprint::Fingerprint;
+pub use store::PersonaStore;
 pub use impersonate::Impersonator;
 pub use world::World;
 

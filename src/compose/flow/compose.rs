@@ -15,70 +15,65 @@
 //!   │
 //!   ▼
 //! Composer::compose()
-//!   ├─▶ 1. Opening Chapter (Source Sector Bank)
-//!   ├─▶ 2. Progression (Chromatic Phase Sector Shifts)
-//!   └─▶ 3. Harmonic Resolution (Resonant Word Cluster)
+//!   ├─▶ one generated segment per sector on the path, each pulled toward
+//!   │   that sector's bank word (the generator's goal)
+//!   └─▶ a closing segment pulled toward the most resonant word
 //! ```
 
+use crate::config;
 use crate::facet::Facet;
+use crate::generate::{ContextWaveBuffer, Decode, Generator};
+use crate::tokenizer::Tokenizer;
+
+/// Tokens generated per sector of the path.
+pub const SEGMENT_TOKENS: usize = 8;
+/// Context tokens carried from one segment to the next.
+pub const SEGMENT_CONTEXT: usize = 6;
+/// How hard each segment is pulled toward its sector's bank word.
+pub const GOAL_PULL: f64 = 1.0;
 
 /// Text composition engine for synthesizing prose from phase river flows.
 pub struct Composer;
 
 impl Composer {
-    /// Composes text from the river flow path and word banks into cohesive narrative prose.
-    pub fn compose(_path: &[u16], banks: &[Vec<String>], resonant: &[String]) -> String {
-        let mut story = Vec::new();
-
-        // 1. Opening Chapter
-        if let Some(source_words) = banks.first() {
-            if !source_words.is_empty() {
-                let w = source_words.iter().take(3).cloned().collect::<Vec<_>>();
-                if w.len() >= 2 {
-                    story.push(format!("In the beginning, the narrative opens with {} and {}.", w[0], w[1]));
-                } else if !w.is_empty() {
-                    story.push(format!("In the beginning, the narrative centers upon {}.", w[0]));
-                }
+    /// Composes text along the river flow: the prompt, then one generated
+    /// segment per sector on the path, each pulled toward that sector's
+    /// bank (`Generator::with_goal`) — the words move under the sector as
+    /// the condition. Until this existed the segments were four fixed
+    /// sentence frames with the bank words filled in.
+    pub fn compose(facet: &Facet, prompt: &str, path: &[u16], banks: &[Vec<String>], resonant: &[String]) -> String {
+        let mut text: Vec<String> = Vec::new();
+        let mut context = Tokenizer::tokenize(prompt);
+        let seed0 = phistd::mix64(path.first().copied().unwrap_or(0) as u64 ^ (prompt.len() as u64) << 8);
+        let goals: Vec<Option<String>> = banks.iter().map(|b| b.iter().find(|w| w.len() > 2 && w.chars().all(|c| c.is_alphabetic())).cloned()).chain(std::iter::once(resonant.first().cloned())).collect();
+        for (i, goal) in goals.iter().enumerate() {
+            let g = Generator::deterministic(SEGMENT_TOKENS, 0.3, seed0.wrapping_add(i as u64 * 7919)).with_decode(Decode::Trigram);
+            let g = match goal {
+                Some(w) => g.with_goal(w, GOAL_PULL),
+                None => g,
+            };
+            let start = context.len().saturating_sub(SEGMENT_CONTEXT);
+            let seed_text = context[start..].join(" ");
+            if seed_text.is_empty() {
+                continue;
             }
-        }
-
-        // 2. Progression through chromatic phase sectors
-        for (i, bank) in banks.iter().enumerate().skip(1) {
-            if bank.is_empty() { continue; }
-            let clean_words: Vec<String> = bank.iter()
-                .filter(|w| w.len() > 2 && w.chars().all(|c| c.is_alphabetic()))
-                .take(3)
-                .cloned()
-                .collect();
-
-            if clean_words.is_empty() { continue; }
-
-            if i % 3 == 0 {
-                story.push(format!("As tension shifts across the manifold, the current evokes {}.", clean_words.join(" and ")));
-            } else if i % 2 == 0 {
-                story.push(format!("Through continuous resonance, the structure deepens with {}.", clean_words.join(" and ")));
-            } else {
-                story.push(format!("Moving through neighboring sectors, we encounter {}.", clean_words.join(" and ")));
+            let mut buf = ContextWaveBuffer::new(config::DEFAULT_CONTEXT_WINDOW);
+            let out = Tokenizer::tokenize(&g.generate(facet, &mut buf, &seed_text));
+            if out.is_empty() {
+                continue;
             }
+            context.extend(out.iter().cloned());
+            text.extend(out);
         }
-
-        // 3. Harmonic Resolution
-        if !resonant.is_empty() {
-            let res_words: Vec<String> = resonant.iter()
-                .filter(|w| w.len() > 2 && w.chars().all(|c| c.is_alphabetic()))
-                .take(3)
-                .cloned()
-                .collect();
-            if !res_words.is_empty() {
-                story.push(format!("Finally, the composition achieves harmonic equilibrium, resting in {}.", res_words.join(" and ")));
-            }
+        if text.is_empty() {
+            return String::new();
         }
-
-        if story.is_empty() {
-            return "The harmonic phase waves converge into a stable attractor state.".to_string();
+        let mut s = text.join(" ");
+        if let Some(c) = s.get_mut(0..1) {
+            c.make_ascii_uppercase();
         }
-
-        story.join(" ")
+        s.push('.');
+        s
     }
 
     /// Reorders words in a bank using bigram transition probabilities from the [`Facet`].

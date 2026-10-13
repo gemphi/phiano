@@ -1,4 +1,4 @@
-/// OscillatorField - a collection of oscillators built from the facet.
+//! OscillatorField - a collection of oscillators built from the facet.
 
 use super::Oscillator;
 use crate::facet::Facet;

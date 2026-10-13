@@ -6,7 +6,7 @@ pub struct SyntheticCmd;
 impl SyntheticCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
         let parts: Vec<&str> = ctx.arg.split_whitespace().collect();
-        let mode = parts.get(0).map(|s| *s).unwrap_or("pairs");
+        let mode = parts.first().copied().unwrap_or("pairs");
 
         match mode {
             "pairs" | "contrast" => {

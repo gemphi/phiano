@@ -1,0 +1,20 @@
+676 files · 33037 relation sightings · 20886 distinct relations → code_s7.tsv
+by kind: calls 12954 · has 1708 · holds 845 · implements 69 · part-of 1539 · returns 1300 · takes 2471
+
+R = 64 · 16734 told · 4152 held out · pool 2835
+movement (the kind's count × the name's function): held out MRR 0.157 · hit@5 24.8% · within kind 0.158 · under the type law 0.158
+held out MRR 0.096 (prior 0.157) · hit@5 15.5% · within kind 0.126 (prior 0.157) · under the type law 0.119 (prior 0.157)
+  ⟨holds⟩        173 held out · MRR 0.143 · within kind 0.272 (prior 0.368)
+  ⟨has⟩          335 held out · MRR 0.020 · within kind 0.029 (prior 0.027)
+  ⟨implements⟩    14 held out · MRR 0.026 · within kind 0.428 (prior 0.461)
+  ⟨calls⟩       2593 held out · MRR 0.067 · within kind 0.076 (prior 0.115)
+  ⟨part-of⟩      317 held out · MRR 0.038 · within kind 0.108 (prior 0.099)
+  ⟨takes⟩        469 held out · MRR 0.218 · within kind 0.289 (prior 0.339)
+  ⟨returns⟩      251 held out · MRR 0.303 · within kind 0.375 (prior 0.345)
+
+RelationModel · has ⇒ names (0.57), dispersion (0.35), joint (0.33), rows (0.32), depth (0.30)
+train · calls ⇒ and_modify (0.52), max (0.50), sentence_coherence (0.48), min (0.45), rem_euclid (0.42)
+Episode · has ⇒ composites_at (0.47), action (0.43), words (0.39), auto_learned (0.26), kind (0.25)
+score · returns ⇒ Vec (0.44), Option (0.41), f64 (0.40), Score (0.37), usize (0.33)
+Counts · implements ⇒ Learner (0.38), System (0.08), Module (0.07), PhinumEngine (0.05), Oracle (0.03)
+saved code_s7.relate (ask it: relate_ask code_s7.relate <name> <kind>)

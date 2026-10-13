@@ -1,6 +1,6 @@
-/// Sorting as a reasoning test (Ch 14.4 example).
-/// A program generalizes to any list size; a neural net doesn't.
-/// Phiano's phase model should sort by phase angle reliably.
+//! Sorting as a reasoning test (Ch 14.4 example).
+//! A program generalizes to any list size; a neural net doesn't.
+//! Phiano's phase model should sort by phase angle reliably.
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;
@@ -60,7 +60,7 @@ impl SortingTest {
                 })
             })
             .collect();
-        indexed.sort_by(|a, b| a.1.cmp(&b.1));
+        indexed.sort_by_key(|a| a.1);
         indexed.into_iter().map(|(w, _)| w).collect()
     }
 }

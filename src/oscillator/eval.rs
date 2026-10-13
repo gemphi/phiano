@@ -1,4 +1,4 @@
-/// OscillatorEval and ComparisonResult - evaluation results.
+//! OscillatorEval and ComparisonResult - evaluation results.
 
 use super::OscillatorField;
 use crate::facet::Facet;

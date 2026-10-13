@@ -1,12 +1,12 @@
-/// Meta-learning: extracts common structure across tasks and uses it to
-/// warm-start a new one.
-///
-/// The prior is a **circular mean** of each word's phase across the tasks it
-/// appeared in, and `adapt` actually applies it. The previous version sorted
-/// raw phase values numerically — which breaks the circle, since 0.01 and 6.27
-/// are adjacent on the manifold and maximally distant in a sorted list — took
-/// the interquartile slice of that, stored it as `common_phases`, and then
-/// never read it: `adapt` used only the adaptation rates.
+//! Meta-learning: extracts common structure across tasks and uses it to
+//! warm-start a new one.
+//!
+//! The prior is a **circular mean** of each word's phase across the tasks it
+//! appeared in, and `adapt` actually applies it. The previous version sorted
+//! raw phase values numerically — which breaks the circle, since 0.01 and 6.27
+//! are adjacent on the manifold and maximally distant in a sorted list — took
+//! the interquartile slice of that, stored it as `common_phases`, and then
+//! never read it: `adapt` used only the adaptation rates.
 
 use crate::eval::Evaluator;
 use crate::facet::Facet;
@@ -98,7 +98,7 @@ impl MetaModel {
         let effective_lr = (0.05 + avg_rate.abs() * 0.1).min(0.15);
         let effective_epochs = (16.0 + avg_rate * 100.0).max(8.0) as usize;
 
-        let adapted = Trainer { learning_rate: effective_lr, neg_samples: trainer.neg_samples, definitions: trainer.definitions.clone(), seed: trainer.seed };
+        let adapted = Trainer { learning_rate: effective_lr, neg_samples: trainer.neg_samples, definitions: trainer.definitions.clone(), seed: trainer.seed, relations: trainer.relations, rounding: trainer.rounding };
         for _ in 0..effective_epochs {
             adapted.train_sentence(facet, new_task);
         }
@@ -115,7 +115,7 @@ mod tests {
     fn test_circular_mean_wraps_correctly() {
         // 0.1 and 2π−0.1 are adjacent on the circle; their mean is ~0, not ~π.
         let m = MetaLearner::circular_mean(&[0.1, crate::config::TWO_PI - 0.1]);
-        assert!(m < 0.05 || m > crate::config::TWO_PI - 0.05, "got {}", m);
+        assert!(!(0.05..=crate::config::TWO_PI - 0.05).contains(&m), "got {}", m);
     }
 
     #[test]

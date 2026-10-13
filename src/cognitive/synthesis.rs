@@ -1,22 +1,22 @@
-/// Mental causation agent - Searle's theory of how mental states cause action.
-///
-/// Searle's key insight: intentional states (beliefs, desires, intentions)
-/// have causal power - they drive behavior. This is NOT epiphenomenalism.
-///
-/// The model:
-/// 1. Beliefs (mind→world) - represent how the world is
-/// 2. Desires (world→mind) - represent how the world should be
-/// 3. Intentions (world→mind) - commitments to making the world match
-///
-/// Practical reasoning (Searle's adaptation of Aristotle):
-///   Belief: "X is the case" + Desire: "I want Y" → Intention: "I will do A to get Y"
-///
-/// The MentalCausation agent constructs intentional states from the prompt,
-/// then uses them to drive word selection and sentence construction.
+//! Mental causation agent - Searle's theory of how mental states cause action.
+//!
+//! Searle's key insight: intentional states (beliefs, desires, intentions)
+//! have causal power - they drive behavior. This is NOT epiphenomenalism.
+//!
+//! The model:
+//! 1. Beliefs (mind→world) - represent how the world is
+//! 2. Desires (world→mind) - represent how the world should be
+//! 3. Intentions (world→mind) - commitments to making the world match
+//!
+//! Practical reasoning (Searle's adaptation of Aristotle):
+//!   Belief: "X is the case" + Desire: "I want Y" → Intention: "I will do A to get Y"
+//!
+//! The MentalCausation agent constructs intentional states from the prompt,
+//! then uses them to drive word selection and sentence construction.
 
 use super::types::*;
-use super::speech_acts::SpeechActAgent;
-use super::word_selection;
+use super::speech::SpeechActAgent;
+use super::selection;
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
@@ -43,10 +43,10 @@ impl MentalCausationAgent {
             .rem_euclid(2.0 * std::f64::consts::PI);
 
         // Select words using intentional states as guides
-        let synthesis_words = word_selection::WordSelector::select_words(facet, prompt, &states, collective_phase);
+        let synthesis_words = selection::WordSelector::select_words(facet, prompt, &states, collective_phase);
 
         // Synthesize output using intentional state-driven construction
-        let output = word_selection::WordSelector::synthesize(&synthesis_words, act, &states, prompt);
+        let output = selection::WordSelector::synthesize(&synthesis_words, act, &states, prompt);
 
         let contrib = AgentContribution {
             agent_name: "MentalCausation",

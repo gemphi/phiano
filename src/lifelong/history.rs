@@ -1,7 +1,7 @@
-/// Benchmark history tracking: records benchmark results over time.
-/// Serializes to data/benchmark_history.json.
+//! Benchmark history tracking: records benchmark results over time.
+//! Serializes to data/benchmark_history.json.
 
-use crate::metrics::benchmark_runner::BenchmarkReport;
+use crate::metrics::benchmark::runner::BenchmarkReport;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,6 +1,6 @@
-/// Hybrid reasoner: combines geometric pathfinding with structural analogy.
-/// Implements Ch 14.4's key lesson: combine geometric pattern recognition
-/// with discrete, program-like reasoning.
+//! Hybrid reasoner: combines geometric pathfinding with structural analogy.
+//! Implements Ch 14.4's key lesson: combine geometric pattern recognition
+//! with discrete, program-like reasoning.
 
 use crate::facet::Facet;
 use crate::reasoning::analogy::Analogy;

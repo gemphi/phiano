@@ -1,0 +1,176 @@
+#[allow(unused_imports)]
+use super::*;
+
+#[derive(Deserialize)]
+pub struct TextRequest {
+    pub text: String,
+    pub epochs: Option<usize>,
+    pub warmup: Option<usize>,
+    pub max_tokens: Option<usize>,
+    pub temperature: Option<f64>,
+}
+
+#[derive(Deserialize)]
+pub struct DefineRequest {
+    pub word: String,
+}
+
+#[derive(Serialize)]
+pub struct DefineResponse {
+    pub word: String,
+    pub definition: String,
+    pub source: String,
+    pub phase: Option<f64>,
+    pub amplitude: Option<f64>,
+    pub vocabulary: usize,
+}
+
+#[derive(Serialize)]
+pub struct EvalResponse {
+    pub coherence: f64,
+    pub novelty: f64,
+    pub resonance: f64,
+    pub overall: f64,
+    pub verdict: String,
+    pub vocabulary: usize,
+}
+
+#[derive(Serialize)]
+pub struct LearnResponse {
+    pub tokens: usize,
+    pub vocabulary: usize,
+    pub message: String,
+}
+
+#[derive(Serialize)]
+pub struct MultiLearnResponse {
+    pub epochs: usize,
+    pub tokens: usize,
+    pub converged: bool,
+    pub vocabulary: usize,
+}
+
+#[derive(Serialize)]
+pub struct GenerateResponse {
+    pub prompt: String,
+    pub generated: String,
+    pub vocabulary: usize,
+    pub context_phase: f64,
+    pub context_amplitude: f64,
+}
+
+#[derive(Serialize)]
+pub struct InstructResponse {
+    pub prompt: String,
+    pub output: String,
+    pub vocabulary: usize,
+}
+
+#[derive(Serialize)]
+pub struct ReasoningResponse {
+    pub problem: String,
+    pub converged: bool,
+    pub steps_count: usize,
+    pub final_answer: String,
+}
+
+#[derive(Serialize)]
+pub struct LayersResponse {
+    pub layers_count: usize,
+    pub layer_summaries: Vec<LayerSummaryItem>,
+}
+
+#[derive(Serialize)]
+pub struct LayerSummaryItem {
+    pub level: usize,
+    pub sector_count: u16,
+    pub clusters_count: usize,
+}
+
+#[derive(Serialize)]
+pub struct SyntheticResponse {
+    pub accepted_count: usize,
+    pub vocabulary: usize,
+    pub message: String,
+}
+
+#[derive(Serialize)]
+pub struct Phi4LearnResponse {
+    pub vocab_tokens_loaded: usize,
+    pub merges_trained: usize,
+    pub doc_sentences_trained: usize,
+    pub final_vocabulary_size: usize,
+    pub message: String,
+}
+
+#[derive(Deserialize)]
+pub struct IngestRequest {
+    pub wiki_topics: Option<usize>,
+    pub phi4: Option<bool>,
+    pub dialogue: Option<bool>,
+    pub curriculum: Option<bool>,
+}
+
+#[derive(Serialize)]
+pub struct IngestResponse {
+    pub vocabulary_before: usize,
+    pub vocabulary_after: usize,
+    pub curriculum_sentences: usize,
+    pub dialogues_trained: usize,
+    pub phi4_merges: usize,
+    pub wiki_topics: usize,
+    pub wiki_tokens: usize,
+    pub message: String,
+}
+
+#[derive(Serialize)]
+pub struct StatsResponse {
+    pub vocabulary: usize,
+    pub memory_entries: usize,
+}
+
+#[derive(Serialize)]
+pub struct CommandResponse {
+    pub output: String,
+}
+
+#[derive(Deserialize)]
+pub struct WikiRequest {
+    pub topic: String,
+    pub epochs: Option<usize>,
+}
+
+#[derive(Serialize)]
+pub struct WikiLearnResponse {
+    pub topic: String,
+    pub title: String,
+    pub extract: String,
+    pub tokens_trained: usize,
+    pub vocabulary_before: usize,
+    pub vocabulary_after: usize,
+    pub coherence: f64,
+    pub novelty: f64,
+    pub resonance: f64,
+    pub verdict: String,
+    pub message: String,
+}
+
+#[derive(Serialize)]
+pub struct WikiSearchResult {
+    pub title: String,
+    pub description: String,
+    pub url: String,
+}
+
+#[derive(Serialize)]
+pub struct WikiSearchResponse {
+    pub query: String,
+    pub results: Vec<WikiSearchResult>,
+}
+
+#[derive(Deserialize)]
+pub struct ReasonChainRequest {
+    pub text: String,
+    #[serde(default = "default_max_steps")]
+    pub max_steps: usize,
+}

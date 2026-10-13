@@ -1,4 +1,4 @@
-/// SphereView - renders text-based projections of the oscillator sphere.
+//! SphereView - renders text-based projections of the oscillator sphere.
 
 use super::OscillatorField;
 use std::f64::consts::PI;

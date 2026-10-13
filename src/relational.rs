@@ -1,5 +1,16 @@
 //! One channel per relation, and a magnitude that can carry something.
 //!
+//! **Promoted.** What this module found is now in the lexicon type itself:
+//! [`crate::phasor::SpectralPhasor`] carries per-channel evidence
+//! (`evidence`, `deposit`, `similarity_with`, `on`, `shared_relation_with`),
+//! [`crate::facet::Facet`] carries the relation inventory (`relations`,
+//! `learn_relations`, `channel_balance`) and
+//! [`crate::trainer::Trainer::couple_relations`] deposits evidence on the
+//! channel of the relation each pair was observed under, with a contrastive
+//! term this module's attraction-only step lacked. [`RelationalPhasor`] and
+//! [`RelationalFacet`] stay as the isolated experiment `bin/relational` runs;
+//! `bin/promoted` measures the promotion against the shipped trainer.
+//!
 //! `bin/dimensions` established two things about the shipped representation.
 //!
 //! **The channels cannot specialise.** Training is symmetric in them: seeds are
@@ -91,8 +102,22 @@
 //! first. Fixed, and the conclusion was unchanged — the offset channels really do
 //! cover every pair.
 
+mod phasor;
+mod vocab;
+mod learn;
+mod store;
+mod facet;
+#[cfg(test)]
+mod tests;
+#[allow(unused_imports)]
+use phasor::*;
+#[allow(unused_imports)]
+use vocab::*;
+#[allow(unused_imports)]
+use facet::*;
+
 use crate::config::{PHASE_CHANNELS, TWO_PI};
-use crate::phasor::{fnv1a, mix64};
+use phiecs::relation::Relations;
 use std::collections::HashMap;
 
 /// Channels reserved for relative offset. The rest go to markers.
@@ -113,8 +138,6 @@ pub const CHANNEL_DISPERSION_FLOOR: f64 = 0.35;
 /// Below this vocabulary the collapse guard does not run.
 pub const GUARD_MIN_VOCAB: usize = 200;
 
-
-
 /// The widest gap at which a word between a pair may still name their relation.
 ///
 /// Three means at most two words stand between them, which covers `dog eats
@@ -133,215 +156,21 @@ pub struct RelationalPhasor {
     pub mag: Vec<f64>,
 }
 
-impl RelationalPhasor {
-    /// A word's starting position: hash-seeded angles, zero evidence.
-    ///
-    /// Magnitudes start at zero rather than one. A word has no claim to any
-    /// relation until it is seen in one, and starting every word with full
-    /// magnitude everywhere would reproduce the flat representation this module
-    /// exists to replace.
-    pub fn seeded(word: &str) -> Self {
-        let h = mix64(fnv1a(word));
-        let theta = (0..PHASE_CHANNELS)
-            .map(|k| {
-                let hk = mix64(h ^ (k as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15));
-                (hk >> 11) as f64 / (1u64 << 53) as f64 * TWO_PI
-            })
-            .collect();
-        Self { theta, mag: vec![0.0; PHASE_CHANNELS] }
-    }
-
-    /// Normalised complex inner product, magnitude included.
-    ///
-    /// A channel where either word has no evidence contributes nothing, so two
-    /// words are compared only on the relations they both participate in. That
-    /// is the behaviour the shipped `resonance` cannot have: averaging 64
-    /// cosines gives a channel the same vote whether the word was ever seen
-    /// there or not.
-    pub fn similarity(&self, other: &Self) -> f64 {
-        let (mut dot, mut na, mut nb) = (0.0f64, 0.0f64, 0.0f64);
-        for k in 0..PHASE_CHANNELS {
-            let (a, b) = (self.mag[k], other.mag[k]);
-            dot += a * b * (self.theta[k] - other.theta[k]).cos();
-            na += a * a;
-            nb += b * b;
-        }
-        match na > 1e-12 && nb > 1e-12 {
-            true => (dot / (na.sqrt() * nb.sqrt())).clamp(-1.0, 1.0),
-            false => 0.0,
-        }
-    }
-
-    /// Agreement on one relation alone, weighted by the evidence for it.
-    pub fn on(&self, other: &Self, k: usize) -> f64 {
-        let w = (self.mag[k] * other.mag[k]).sqrt();
-        match w > 1e-12 {
-            true => (self.theta[k] - other.theta[k]).cos(),
-            false => 0.0,
-        }
-    }
-
-    /// Total evidence, for reporting how concentrated a word's relations are.
-    pub fn evidence(&self) -> f64 {
-        self.mag.iter().sum()
-    }
-}
-
 /// Which channel each observable relation occupies.
 ///
 /// Built from the corpus, capped at [`PHASE_CHANNELS`]: offsets first, then the
 /// most frequent between-word markers until the channels run out. The bound is
-/// the channel count, exactly as `relation_type::MAX_RELATION_TYPES` is.
+/// the channel count, exactly as `kinds::MAX_RELATION_TYPES` is.
+///
+/// Since docs/159 this is a thin view over the one channel registry of the
+/// workspace, [`phiecs::relation::Relations`]: the eight offset channels are
+/// declared first under the names `offset+1..=8`, and every marker after them
+/// in rank order, so a channel index means the same thing to a `Facet` here
+/// and to a `World` in phiecs. The public API and the `.chroma` entry format
+/// are unchanged.
 #[derive(Debug, Clone)]
 pub struct RelationVocab {
-    marker_channel: HashMap<String, usize>,
-}
-
-impl RelationVocab {
-    /// Counts what appears between word pairs and gives the commonest their own
-    /// channels.
-    ///
-    /// # Why the gap is not fixed at one word
-    ///
-    /// The first version took the marker to be the single word between a pair,
-    /// and only when there was exactly one. `dog eats donut` worked. `a dog eats
-    /// a donut` did not, because the determiner makes the gap three, and English
-    /// puts a determiner in that position constantly — so the rule found the
-    /// relation in the sentence a grammarian would write and missed it in the
-    /// sentence a person would say. A unit test in `phase_flow` caught this by
-    /// asserting the marker was `eats` and getting `offset+3`.
-    ///
-    /// The fix is not a wider fixed gap, which would let `a` name relations. It
-    /// is to skip the words that cannot be naming anything and see what is left.
-    /// Which words those are is read off the corpus by rank — the same criterion
-    /// `wave::STOPWORD_RANK` already uses — and not from a list written here,
-    /// because a hand-written list of English function words is a claim about
-    /// English that this module has no way to check.
-    pub fn learn(docs: &[Vec<String>]) -> Self {
-        // Pass one: how often does each word occur at all, and how often does it
-        // occur as the single word joining two others?
-        let mut total: HashMap<&str, usize> = HashMap::new();
-        for toks in docs {
-            for t in toks {
-                *total.entry(t.as_str()).or_insert(0) += 1;
-            }
-        }
-        // How often each word stands between a pair the marker rule will actually
-        // consult — the same gaps `marker` reads, so the ranking is a count of
-        // the thing being ranked.
-        //
-        // An earlier version restricted this to words standing between two
-        // *content* words, on the reasoning that a relation joins two things and
-        // the things are the rare words. It is a good argument and it is wrong
-        // about English, in a way that kills exactly the case it was written for:
-        // in `the dog eats the donut` the neighbours of `eats` are `dog` and
-        // `the`, because a determiner always stands next to its noun. Under that
-        // restriction `eats` can never be counted as linking anything, and the
-        // sentence that motivated the whole rule is the sentence it cannot see.
-        let mut linking: HashMap<&str, usize> = HashMap::new();
-        for toks in docs {
-            for i in 0..toks.len() {
-                for j in (i + 2)..(i + 1 + MARKER_MAX_GAP).min(toks.len()) {
-                    for m in (i + 1)..j {
-                        *linking.entry(toks[m].as_str()).or_insert(0) += 1;
-                    }
-                }
-            }
-        }
-
-        // Ranked by how often the word links, in absolute terms. `bin/markers`
-        // prints both this ranking and the obvious alternative, and the two are
-        // not close: absolute count gives `the and of to in a was by on for with
-        // that as from at`, which is the inventory of English relational markers
-        // with the determiners and copulas included. The share of a word's
-        // occurrences spent linking — tried here, and wrong — gives `nautical
-        // stoppani cu facto botanist`, every one of them a word that occurs a
-        // dozen times and happens to occur between two rare words each time. A
-        // ratio rewards a small denominator, and the words that name relations
-        // are the words with the largest denominators in the language.
-        // No minimum count is needed: ranking is by absolute linking count, so a
-        // word seen five times ranks below one seen thirty thousand times and
-        // falls outside the channels on its own. A threshold here would do
-        // nothing on a corpus and would silently empty the vocabulary on a small
-        // one, which is how two unit tests failed before it was removed.
-        let mut ranked: Vec<(&str, usize)> = linking.into_iter().collect();
-        let _ = &total;
-        // Sorted by count, ties by word, so the assignment is reproducible.
-        ranked.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(b.0)));
-
-        let room = PHASE_CHANNELS - OFFSET_CHANNELS;
-        let marker_channel: HashMap<String, usize> = ranked
-            .into_iter()
-            .take(room)
-            .enumerate()
-            .map(|(i, (w, _))| (w.to_string(), OFFSET_CHANNELS + i))
-            .collect();
-        Self { marker_channel }
-    }
-
-    /// The marker channel for a pair at `i` and `j`, if a word between them
-    /// names their relation.
-    ///
-    /// The rule is: among the words between the pair, the marker is the one that
-    /// links *least often* across the corpus. This replaced a filler set, and it
-    /// is both simpler and better founded.
-    ///
-    /// The problem it solves is `a dog eats a donut`. The original rule fired
-    /// only when exactly one word separated the pair, so `dog eats donut` was an
-    /// `eats` relation and `a dog eats a donut` was an offset-3 one — the rule
-    /// found the relation in the sentence a grammarian would write and missed it
-    /// in the sentence a person would say. The first fix was a filler list of
-    /// frequent words to skip over, and it deleted `of`, `in` and `to`, which are
-    /// frequent *and* are the clearest relational markers in the language.
-    ///
-    /// Rarity settles it without a list. Between `dog` and `donut` stand `eats`
-    /// and `a`; `a` links fourteen thousand times and `eats` a handful, so `eats`
-    /// is the more specific claim about this pair and it wins. Between
-    /// `president` and `states` stand `of` and `the`; `of` links thirty-two
-    /// thousand times against `the`'s forty thousand, so `of` wins. The same
-    /// comparison, no exceptions, and it needs no extra storage: channels are
-    /// handed out in rank order, so a *higher channel index is a rarer marker*
-    /// and the rule is a maximum over channel indices.
-    fn marker(&self, toks: &[String], i: usize, j: usize) -> Option<usize> {
-        match j - i <= MARKER_MAX_GAP {
-            true => ((i + 1)..j)
-                .filter_map(|m| self.marker_channel.get(&toks[m]).copied())
-                .max(),
-            false => None,
-        }
-    }
-
-    /// The channel for a pair at `i` and `j` in `toks`, if any.
-    ///
-    /// A marked relation takes precedence over a bare offset: `bread of wheat`
-    /// is an `of` relation first and an offset-2 relation second, and the marker
-    /// is the more specific claim.
-    pub fn channel(&self, toks: &[String], i: usize, j: usize) -> Option<usize> {
-        if let Some(c) = self.marker(toks, i, j) {
-            return Some(c);
-        }
-        let d = j - i;
-        match d <= OFFSET_CHANNELS {
-            true => Some(d - 1),
-            false => None,
-        }
-    }
-
-    pub fn markers(&self) -> usize {
-        self.marker_channel.len()
-    }
-
-    /// The marker a channel stands for, for inspection.
-    pub fn name(&self, k: usize) -> String {
-        if k < OFFSET_CHANNELS {
-            return format!("offset+{}", k + 1);
-        }
-        self.marker_channel
-            .iter()
-            .find(|(_, c)| **c == k)
-            .map(|(w, _)| w.clone())
-            .unwrap_or_else(|| format!("ch{k}"))
-    }
+    pub(super) inner: Relations,
 }
 
 /// The manifold: one relational phasor per word.
@@ -351,300 +180,4 @@ pub struct RelationalFacet {
     pub counts: HashMap<String, u32>,
     /// Channels that survived the collapse guard.
     pub live: usize,
-}
-
-impl RelationalFacet {
-    /// Trains by coupling each observed pair **on its relation's channel only**.
-    ///
-    /// This is the whole point. The shipped trainer moves all 64 channels on
-    /// every observation, which is why no channel can come to mean anything. Here
-    /// an observation is evidence about one relation, so it moves one channel and
-    /// deposits its evidence there.
-    pub fn train(docs: &[Vec<String>], vocab: &RelationVocab, epochs: usize) -> Self {
-        let mut facet = Self::default();
-        for toks in docs {
-            for w in toks {
-                facet.counts.entry(w.clone()).and_modify(|c| *c += 1).or_insert(1);
-                facet
-                    .words
-                    .entry(w.clone())
-                    .or_insert_with(|| RelationalPhasor::seeded(w));
-            }
-        }
-
-        for _ in 0..epochs.max(1) {
-            for toks in docs {
-                for i in 0..toks.len() {
-                    for j in (i + 1)..(i + 1 + WINDOW).min(toks.len()) {
-                        if toks[i] == toks[j] {
-                            continue;
-                        }
-                        let k = match vocab.channel(toks, i, j) {
-                            Some(k) => k,
-                            None => continue,
-                        };
-                        // Kuramoto on one channel: each word moves a little
-                        // toward the other, and both gain evidence for this
-                        // relation.
-                        let (ta, tb) = (
-                            facet.words[&toks[i]].theta[k],
-                            facet.words[&toks[j]].theta[k],
-                        );
-                        let d = (tb - ta).sin();
-                        if let Some(p) = facet.words.get_mut(&toks[i]) {
-                            p.theta[k] = (ta + RATE * d).rem_euclid(TWO_PI);
-                            p.mag[k] += 1.0;
-                        }
-                        if let Some(p) = facet.words.get_mut(&toks[j]) {
-                            p.theta[k] = (tb - RATE * d).rem_euclid(TWO_PI);
-                            p.mag[k] += 1.0;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Evidence is a count; compress it so one very frequent relation does not
-        // dominate every comparison a word takes part in.
-        for p in facet.words.values_mut() {
-            for m in p.mag.iter_mut() {
-                *m = (1.0 + *m).ln();
-            }
-        }
-
-        facet.balance();
-        facet.silence_collapsed();
-        facet
-    }
-
-    /// Equalises how loudly each channel votes.
-    ///
-    /// Traffic is wildly unequal: every adjacent pair feeds an offset channel,
-    /// while a marker channel only sees pairs joined by that one word. Left raw,
-    /// the offset channels carry two orders of magnitude more evidence and decide
-    /// every comparison — the first run of `bin/relational` had all ten relation
-    /// families peaking on offset channels and not one on a marker.
-    ///
-    /// Dividing each channel by its own mean evidence makes a channel's vote
-    /// proportional to how much *this word* uses it relative to how much anyone
-    /// does, rather than to how common the relation is.
-    fn balance(&mut self) {
-        let n = self.words.len().max(1) as f64;
-        let mut mean = vec![0.0f64; PHASE_CHANNELS];
-        for p in self.words.values() {
-            for k in 0..PHASE_CHANNELS {
-                mean[k] += p.mag[k];
-            }
-        }
-        for m in mean.iter_mut() {
-            *m = (*m / n).max(1e-9);
-        }
-        for p in self.words.values_mut() {
-            for k in 0..PHASE_CHANNELS {
-                p.mag[k] /= mean[k];
-            }
-        }
-    }
-
-    /// Mutes channels whose phases have collapsed onto one angle.
-    ///
-    /// Kuramoto coupling is attraction-dominated, and restricting it to a channel
-    /// does not change that — it concentrates the failure. A channel every pair
-    /// feeds pulls its whole vocabulary to a point, after which every word agrees
-    /// with every other there and the channel is pure noise with a loud voice.
-    /// That is what put the first run *below chance*: the collapsed offset
-    /// channels agreed about everything, so the only discrimination left came
-    /// from sparse marker channels holding near-random angles.
-    ///
-    /// The project already has this guard for the manifold as a whole
-    /// (`cognitive::grounding::DISPERSION_FLOOR`); this applies it per channel,
-    /// which is where the new representation can fail.
-    fn silence_collapsed(&mut self) {
-        // Dispersion over a handful of points is not a measurement, and muting a
-        // channel on that basis destroys information rather than protecting it.
-        // The same back-off `Wave::pool_floor` applies to retrieval.
-        if self.words.len() < GUARD_MIN_VOCAB {
-            self.live = PHASE_CHANNELS;
-            return;
-        }
-        let n = self.words.len().max(1) as f64;
-        let mut keep = vec![true; PHASE_CHANNELS];
-        for k in 0..PHASE_CHANNELS {
-            let (mut x, mut y) = (0.0f64, 0.0f64);
-            for p in self.words.values() {
-                if p.mag[k] > 0.0 {
-                    x += p.theta[k].cos();
-                    y += p.theta[k].sin();
-                }
-            }
-            let dispersion = 1.0 - x.hypot(y) / n;
-            keep[k] = dispersion >= CHANNEL_DISPERSION_FLOOR;
-        }
-        self.live = keep.iter().filter(|k| **k).count();
-        for p in self.words.values_mut() {
-            for k in 0..PHASE_CHANNELS {
-                if !keep[k] {
-                    p.mag[k] = 0.0;
-                }
-            }
-        }
-    }
-
-    pub fn similarity(&self, a: &str, b: &str) -> f64 {
-        match (self.words.get(a), self.words.get(b)) {
-            (Some(x), Some(y)) => x.similarity(y),
-            _ => 0.0,
-        }
-    }
-
-    pub fn on(&self, a: &str, b: &str, k: usize) -> f64 {
-        match (self.words.get(a), self.words.get(b)) {
-            (Some(x), Some(y)) => x.on(y, k),
-            _ => 0.0,
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        self.words.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.words.is_empty()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::tokenizer::Tokenizer;
-
-    fn docs(raw: &[&str]) -> Vec<Vec<String>> {
-        raw.iter().map(|s| Tokenizer::tokenize(s)).collect()
-    }
-
-    /// The point of the module: an observation moves the channel of the relation
-    /// it observed, and no other.
-    ///
-    /// The invariant is *evidence implies movement, and only that* — not "one
-    /// channel moves". A single sentence exhibits several relations at once:
-    /// `alpha of beta` puts `alpha` next to `of` (an offset relation) as well as
-    /// two away from `beta` (the `of` relation), so two channels legitimately
-    /// fire. The first version of this test asserted the narrower thing and
-    /// failed on correct behaviour.
-    #[test]
-    fn test_training_moves_only_the_channels_it_has_evidence_for() {
-        let d = docs(&["alpha of beta", "alpha of beta"]);
-        let v = RelationVocab::learn(&d);
-        let k = v.channel(&d[0], 0, 2).expect("a channel for the `of` relation");
-
-        let before = RelationalPhasor::seeded("alpha");
-        let f = RelationalFacet::train(&d, &v, 3);
-        let after = &f.words["alpha"];
-
-        assert!(after.mag[k] > 0.0, "the `of` relation must leave evidence");
-        assert!(
-            (after.theta[k] - before.theta[k]).abs() > 1e-9,
-            "the relation's own channel must move"
-        );
-
-        let mut moved = 0usize;
-        for c in 0..PHASE_CHANNELS {
-            let shifted = (after.theta[c] - before.theta[c]).abs() > 1e-12;
-            match after.mag[c] > 0.0 {
-                // Evidence and movement go together, in both directions.
-                true => {
-                    moved += 1;
-                    assert!(shifted, "channel {c} has evidence but never moved");
-                }
-                false => assert!(shifted == false, "channel {c} moved with no evidence"),
-            }
-        }
-        assert!(
-            moved < PHASE_CHANNELS / 4,
-            "a three-word sentence exhibits a handful of relations, not {moved} of \
-             {PHASE_CHANNELS} — that would be the symmetric update this replaces"
-        );
-    }
-
-    /// Two words seen under the same relation agree on that channel, and two seen
-    /// under different relations do not.
-    #[test]
-    fn test_the_channel_holds_its_own_relation() {
-        let mut raw: Vec<String> = Vec::new();
-        for _ in 0..40 {
-            raw.push("king of realm".into());
-            raw.push("queen of realm".into());
-            raw.push("bread in oven".into());
-        }
-        let d: Vec<Vec<String>> = raw.iter().map(|s| Tokenizer::tokenize(s)).collect();
-        let v = RelationVocab::learn(&d);
-        let f = RelationalFacet::train(&d, &v, 6);
-
-        let of = v.channel(&Tokenizer::tokenize("king of realm"), 0, 2).unwrap();
-        let in_ = v.channel(&Tokenizer::tokenize("bread in oven"), 0, 2).unwrap();
-        assert_ne!(of, in_, "different markers must take different channels");
-
-        // `king` and `queen` are both pulled toward `realm` on the `of` channel,
-        // so they converge there.
-        assert!(
-            f.on("king", "queen", of) > 0.9,
-            "co-related words should agree on their shared relation: {}",
-            f.on("king", "queen", of)
-        );
-        // And `king` has no evidence at all on the `in` channel.
-        assert_eq!(f.words["king"].mag[in_], 0.0);
-        assert_eq!(f.on("king", "bread", in_), 0.0);
-    }
-
-    /// Magnitude must be able to change a comparison — the failure that made the
-    /// shipped representation's complex numbers inert.
-    #[test]
-    fn test_per_channel_magnitude_changes_the_similarity() {
-        let mut a = RelationalPhasor::seeded("a");
-        let mut b = RelationalPhasor::seeded("b");
-        for k in 0..PHASE_CHANNELS {
-            a.theta[k] = 0.0;
-            b.theta[k] = match k == 3 {
-                true => 0.0,
-                false => std::f64::consts::PI,
-            };
-            a.mag[k] = 1.0;
-            b.mag[k] = 1.0;
-        }
-        // Evidence spread evenly: the one agreeing channel is outvoted.
-        let spread = a.similarity(&b);
-
-        // The same angles, with the evidence concentrated where they agree.
-        for k in 0..PHASE_CHANNELS {
-            let w = match k == 3 {
-                true => 8.0,
-                false => 0.05,
-            };
-            a.mag[k] = w;
-            b.mag[k] = w;
-        }
-        let concentrated = a.similarity(&b);
-
-        assert!(
-            concentrated > spread + 0.5,
-            "magnitude must move the score: {spread:.4} -> {concentrated:.4}"
-        );
-        // A per-word scalar could not do this: it cancels in the normalisation.
-        assert!(spread < 0.0 && concentrated > 0.0, "the sign should flip");
-    }
-
-    #[test]
-    fn test_relation_vocab_is_bounded_and_reproducible() {
-        let d = docs(&[
-            "a of b", "c of d", "e in f", "g in h", "i on j", "k at l", "m of n",
-        ]);
-        let v1 = RelationVocab::learn(&d);
-        let v2 = RelationVocab::learn(&d);
-        assert!(v1.markers() + OFFSET_CHANNELS <= PHASE_CHANNELS);
-        for k in 0..PHASE_CHANNELS {
-            assert_eq!(v1.name(k), v2.name(k), "channel {k} assignment is not stable");
-        }
-        // Offsets own the low channels.
-        assert_eq!(v1.name(0), "offset+1");
-    }
 }

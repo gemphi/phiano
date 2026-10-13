@@ -1,13 +1,13 @@
-/// Reusable component library: stores synthesized programs for reuse.
-///
-/// Matching is by **phase histogram**, not by a positional list of angles.
-/// The previous similarity compared position *i* of one signature to position
-/// *i* of another, so `"sort the list"` and `"please sort the list"` — the same
-/// task, offset by one word — were compared entirely out of alignment. It also
-/// scored ~0.5 on average for two unrelated signatures (the mean of
-/// `1 − |Δ|/π` for uniform Δ), against a 0.6 acceptance threshold: roughly
-/// 0.7σ above chance for a four-token task, and 1.0 for everything once the
-/// manifold synchronised.
+//! Reusable component library: stores synthesized programs for reuse.
+//!
+//! Matching is by **phase histogram**, not by a positional list of angles.
+//! The previous similarity compared position *i* of one signature to position
+//! *i* of another, so `"sort the list"` and `"please sort the list"` — the same
+//! task, offset by one word — were compared entirely out of alignment. It also
+//! scored ~0.5 on average for two unrelated signatures (the mean of
+//! `1 − |Δ|/π` for uniform Δ), against a 0.6 acceptance threshold: roughly
+//! 0.7σ above chance for a four-token task, and 1.0 for everything once the
+//! manifold synchronised.
 
 use super::program::Program;
 use crate::config::{SECTOR_RESOLUTION, TWO_PI};

@@ -1,8 +1,8 @@
-/// Oscillator module - sphere model for language.
-///
-/// In the oscillator model, words are living oscillators on a sphere.
-/// Each word spins at its own frequency. The sphere's surface is a color
-/// spectrum - hue from longitude, brightness from latitude.
+//! Oscillator module - sphere model for language.
+//!
+//! In the oscillator model, words are living oscillators on a sphere.
+//! Each word spins at its own frequency. The sphere's surface is a color
+//! spectrum - hue from longitude, brightness from latitude.
 
 pub mod field;
 pub mod eval;

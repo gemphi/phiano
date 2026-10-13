@@ -1,9 +1,9 @@
-/// Intentionality agents - model *aboutness* and pre-intentional Background.
-///
-/// Searle's Intentionality thesis: mental states are *about* objects/states of affairs.
-/// The content of an intentional state is its representational content.
-/// The Background is the set of pre-intentional capacities that enable intentionality -
-/// knowing *how* to do things, not knowing *that* things are the case.
+//! Intentionality agents - model *aboutness* and pre-intentional Background.
+//!
+//! Searle's Intentionality thesis: mental states are *about* objects/states of affairs.
+//! The content of an intentional state is its representational content.
+//! The Background is the set of pre-intentional capacities that enable intentionality -
+//! knowing *how* to do things, not knowing *that* things are the case.
 
 use super::types::*;
 use crate::facet::Facet;
@@ -13,6 +13,7 @@ use crate::wave::Wave;
 use std::f64::consts::PI;
 
 /// 1. IntentionalityAgent - determines what the utterance is *about*.
+///
 /// Models the intentional state's content: the prompt's phase centroid
 /// represents the "aboutness vector" - the direction the mental state points.
 pub struct IntentionalityAgent;
@@ -47,6 +48,7 @@ impl IntentionalityAgent {
 }
 
 /// 2. AboutnessAgent - maps words to their referents via phase proximity.
+///
 /// In Searle's framework, aboutness is the directedness of the mental state.
 /// Here we model it as: each word *points to* its nearest semantic neighbors.
 pub struct AboutnessAgent;
@@ -57,24 +59,20 @@ impl AboutnessAgent {
         let mut grounded = Vec::new();
 
         for token in &tokens {
-            match facet.lexicon.get(token) {
-                Some(phasor) => {
-                    let mut neighbors: Vec<(String, f64)> = facet.lexicon.iter()
-                        .filter(|(w, _)| *w != token)
-                        .map(|(w, p)| {
-                            let mut diff = (p.phase - phasor.phase).abs();
-                            match diff > PI {
-                                true => diff = 2.0 * PI - diff,
-                                false => {}
-                            }
-                            (w.clone(), diff)
-                        })
-                        .collect();
-                    neighbors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
-                    let refs: Vec<String> = neighbors.iter().take(3).map(|(w, _)| w.clone()).collect();
-                    grounded.push(format!("{} → [{}]", token, refs.join(", ")));
-                }
-                None => {}
+            if let Some(phasor) = facet.lexicon.get(token) {
+                let mut neighbors: Vec<(String, f64)> = facet.lexicon.iter()
+                    .filter(|(w, _)| *w != token)
+                    .map(|(w, p)| {
+                        let mut diff = (p.phase - phasor.phase).abs();
+                        if diff > PI {
+                            diff = 2.0 * PI - diff;
+                        }
+                        (w.clone(), diff)
+                    })
+                    .collect();
+                neighbors.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+                let refs: Vec<String> = neighbors.iter().take(3).map(|(w, _)| w.clone()).collect();
+                grounded.push(format!("{} → [{}]", token, refs.join(", ")));
             }
         }
 
@@ -97,6 +95,7 @@ impl AboutnessAgent {
 }
 
 /// 3. BackgroundAgent - Searle's pre-intentional Background.
+///
 /// The Background is NOT a set of beliefs or representations - it's the
 /// capacity to *use* representations. It's "knowing how" vs "knowing that".
 /// Here we model it as the accumulated context wave - the pre-reflective

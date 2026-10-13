@@ -1,32 +1,32 @@
-/// Gemgum — Golden-ratio Elastic Matrix: GUm for word Mapping.
-///
-/// The binding layer that couples the phiton/chiton light architecture
-/// to the linguistic word model. Gemgum uses the golden ratio φ to
-/// create a natural, self-organizing mapping between:
-///
-/// - **Phase angles** (the existing facet model)
-/// - **Color wavelengths** (phiton's spectral domain)
-/// - **Temporal frequencies** (chiton's wave domain)
-/// - **Word meanings** (the lexicon)
-///
-/// # How It Works
-///
-/// The golden ratio φ ≈ 1.618 provides the optimal distribution of
-/// semantic points across the color-space-time manifold. Gemgum acts as
-/// the "gum" that binds words to their physically-derived positions:
-///
-/// 1. A word's `SpectralPhasor` (phase, amplitude, band_n) is mapped
-///    through phical to a `ColorSpaceTimePoint` on the manifold.
-/// 2. The golden ratio determines the word's natural position within
-///    its spectral band (sub-band distribution).
-/// 3. Gemgum computes the binding strength between a word and its
-///    manifold position, which determines how "settled" the word is.
-///
-/// This is where "natural linguistic functions and word mapping make
-/// intelligence plausible" — words follow the physics of light.
+//! Gemgum — Golden-ratio Elastic Matrix: GUm for word Mapping.
+//!
+//! The binding layer that couples the phiton/chiton light architecture
+//! to the linguistic word model. Gemgum uses the golden ratio φ to
+//! create a natural, self-organizing mapping between:
+//!
+//! - **Phase angles** (the existing facet model)
+//! - **Color wavelengths** (phiton's spectral domain)
+//! - **Temporal frequencies** (chiton's wave domain)
+//! - **Word meanings** (the lexicon)
+//!
+//! # How It Works
+//!
+//! The golden ratio φ ≈ 1.618 provides the optimal distribution of
+//! semantic points across the color-space-time manifold. Gemgum acts as
+//! the "gum" that binds words to their physically-derived positions:
+//!
+//! 1. A word's `SpectralPhasor` (phase, amplitude, band_n) is mapped
+//!    through phical to a `ColorSpaceTimePoint` on the manifold.
+//! 2. The golden ratio determines the word's natural position within
+//!    its spectral band (sub-band distribution).
+//! 3. Gemgum computes the binding strength between a word and its
+//!    manifold position, which determines how "settled" the word is.
+//!
+//! This is where "natural linguistic functions and word mapping make
+//! intelligence plausible" — words follow the physics of light.
 
 use crate::config::{ALPHA, PHI, PHI_CONJUGATE, TWO_PI};
-use crate::phical::{ColorSpaceTimePoint, Phical, PhicalOps};
+use crate::physics::{ColorSpaceTimePoint, Phical, PhicalOps};
 use crate::phiton::chiton::Chiton;
 use crate::phiton::types::LightQuantum;
 use crate::phiton::{Phiton, PhitonColor, PhitonSpectrum};
@@ -93,7 +93,8 @@ impl Gemgum {
     /// - Color distance (wavelength difference)
     /// - Time distance (frequency difference)
     /// - Quantum distance (band level difference)
-    /// all weighted by the golden ratio φ.
+    ///
+    /// All three are weighted by the golden ratio φ.
     pub fn semantic_distance(a: &SpectralPhasor, b: &SpectralPhasor) -> f64 {
         let pa = ColorSpaceTimePoint::from_phase(a.phase, a.band_n);
         let pb = ColorSpaceTimePoint::from_phase(b.phase, b.band_n);

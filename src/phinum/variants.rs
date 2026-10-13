@@ -1,14 +1,14 @@
-/// Phinum variation engine — 16/32/64 level primitives.
-///
-/// Each level doubles the classification granularity:
-/// - **Phinum16**: 16 core categories — fast, coarse
-/// - **Phinum32**: 32 core categories — balanced
-/// - **Phinum64**: 64 core categories — fine, complete
-///
-/// The "64 ways to look at anything" principle: every linguistic unit
-/// (word, phrase, sentence, paragraph) can be classified at any of
-/// these three levels. The variations and their links form the spider
-/// net that captures language without storing examples.
+//! Phinum variation engine — 16/32/64 level primitives.
+//!
+//! Each level doubles the classification granularity:
+//! - **Phinum16**: 16 core categories — fast, coarse
+//! - **Phinum32**: 32 core categories — balanced
+//! - **Phinum64**: 64 core categories — fine, complete
+//!
+//! The "64 ways to look at anything" principle: every linguistic unit
+//! (word, phrase, sentence, paragraph) can be classified at any of
+//! these three levels. The variations and their links form the spider
+//! net that captures language without storing examples.
 
 use serde::{Deserialize, Serialize};
 

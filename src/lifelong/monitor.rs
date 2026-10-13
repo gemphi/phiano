@@ -1,9 +1,9 @@
-/// Deployment monitoring: detects drift, regression and manifold collapse.
+//! Deployment monitoring: detects drift, regression and manifold collapse.
 
 use crate::facet::Facet;
 use crate::lifelong::history::BenchmarkHistory;
-use crate::metrics::benchmark_runner::BenchmarkReport;
-use crate::metrics::ood_detection::OodDetector;
+use crate::metrics::benchmark::runner::BenchmarkReport;
+use crate::metrics::detection::ood::OodDetector;
 use serde::Serialize;
 
 /// Relative perplexity increase that counts as a regression.

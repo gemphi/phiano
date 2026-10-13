@@ -136,3 +136,23 @@ fn test_dispersion_above_and_top_agree_with_the_global_form_on_a_flat_lexicon() 
     // rather than a false one.
     assert_eq!(f.dispersion_above(8), 1.0);
 }
+
+#[test]
+fn relational_fit_at_the_last_position_is_relational_score() {
+    use crate::tokenizer::Tokenizer;
+    let mut facet = Facet::new();
+    let t = crate::trainer::Trainer::new(0.05);
+    for s in ["the dog sat down", "the cat sat down", "a bird sat down", "the dog ran off"] {
+        t.train(&mut facet, s);
+    }
+    let toks = Tokenizer::tokenize("the dog sat");
+    let (a, na) = facet.relational_score(&toks[..2], "sat");
+    let (b, nb) = facet.relational_fit(&toks, 2, "sat");
+    assert_eq!(na, nb, "the same pairs are read");
+    assert!((a - b).abs() < 1e-12, "the Liskov reading at the end is the next-word reading");
+    // In the middle, neighbours on both sides are read; a word with no lexicon entry has no fit.
+    let (_, n_mid) = facet.relational_fit(&toks, 1, "cat");
+    assert!(n_mid >= 1);
+    assert_eq!(facet.relational_fit(&toks, 1, "zebra"), (0.0, 0));
+    assert_eq!(facet.calls_for("zebra", "sat"), 0.0);
+}

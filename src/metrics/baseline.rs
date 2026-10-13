@@ -16,9 +16,11 @@
 //!
 //! All five are measured on text never trained on, so all five can go up.
 
+pub mod kn;
+
 use crate::facet::Facet;
 use crate::metrics::harness::{Harness, PhianoLM, Split};
-use crate::metrics::kn_baseline::KneserNey;
+use crate::metrics::baseline::kn::KneserNey;
 use crate::tokenizer::Tokenizer;
 use serde::{Deserialize, Serialize};
 

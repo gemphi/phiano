@@ -1,14 +1,14 @@
-/// Feature and architecture reuse: extracts and applies reusable phase patterns.
-///
-/// A transferable feature is a **shape**, not a location: the arrangement of a
-/// group of words relative to their own centre, which can be carried to a
-/// different region of the manifold and re-imposed on different words.
-///
-/// The previous implementation created one synthetic token per feature set,
-/// named `meta_sector_N`, and then overwrote its phase once per element of the
-/// pattern — so the token ended at the last phase in the vector and every
-/// earlier one was discarded. Nothing was transferred, and
-/// `TransferResult.features_transferred` counted the feature sets anyway.
+//! Feature and architecture reuse: extracts and applies reusable phase patterns.
+//!
+//! A transferable feature is a **shape**, not a location: the arrangement of a
+//! group of words relative to their own centre, which can be carried to a
+//! different region of the manifold and re-imposed on different words.
+//!
+//! The previous implementation created one synthetic token per feature set,
+//! named `meta_sector_N`, and then overwrote its phase once per element of the
+//! pattern — so the token ended at the last phase in the vector and every
+//! earlier one was discarded. Nothing was transferred, and
+//! `TransferResult.features_transferred` counted the feature sets anyway.
 
 use crate::config::{SECTOR_RESOLUTION, TWO_PI};
 use crate::facet::Facet;

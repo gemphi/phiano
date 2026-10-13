@@ -76,7 +76,7 @@ impl CorrectionLog {
     pub fn save(&self, path: &str) -> Result<()> {
         let tmp = format!("{}.tmp", path);
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         std::fs::write(&tmp, json)?;
         std::fs::rename(&tmp, path)
     }
