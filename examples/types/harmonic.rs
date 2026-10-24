@@ -17,7 +17,7 @@ pub(super) fn harmonic_basis(facet: &Facet, descended: &Facet, pairs: &[(String,
     );
     for (label, f) in [("bottom-up", facet), ("after descent", descended)] {
         for est in OffsetEstimator::ALL {
-            let p = RelationTypes::harmonic_saturation(f, pairs, est);
+            let p = KindTable::harmonic_saturation(f, pairs, est);
             println!(
                 "  {:<14} {:<16} {:>10.4} {:>10.4} {:>10.4} {:>8.1}x",
                 label,

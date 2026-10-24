@@ -39,7 +39,7 @@ fn test_saturation_flattens_once_the_planted_types_are_covered() {
         })
         .collect();
 
-    let curve = RelationTypes::saturation(&f, &pairs, &[1, 2, 4, 8], 12);
+    let curve = KindTable::saturation(&f, &pairs, &[1, 2, 4, 8], 12);
     let at = |k: usize| curve.iter().find(|p| p.k == k).unwrap();
 
     assert!(

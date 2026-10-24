@@ -19,7 +19,7 @@ pub(super) fn shuffled_null(facet: &Facet, n: usize, salt: u64) -> f64 {
     Coherence::measure(facet, &pairs)
 }
 
-/// Relations, grouped by how polysemous their head is.
+/// Register, grouped by how polysemous their head is.
 pub(super) fn sense_bands(
     facet: &Facet,
     lex: &LexicalRules,

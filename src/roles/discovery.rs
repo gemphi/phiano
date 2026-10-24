@@ -38,7 +38,7 @@ impl RoleDiscovery {
     /// Clusters `pairs` into `k` discovered relations.
     ///
     /// K-means on the torus: assignment by offset agreement, update by circular
-    /// mean. Seeds are chosen by farthest-point on the agreement metric rather
+    /// mean. Seeding are chosen by farthest-point on the agreement metric rather
     /// than at random, so the result does not depend on a seed and two runs on
     /// the same data give the same types — which a discovery procedure has to,
     /// or the "types" are an artefact of initialisation.

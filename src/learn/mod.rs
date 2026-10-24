@@ -52,7 +52,7 @@ impl GenWeights {
         Self { w, heldout_nll: f64::NAN, baseline_nll: f64::NAN, positions: 0 }
     }
 
-    /// Counts only.
+    /// Tally only.
     pub fn counts_only() -> Self {
         let mut w = [0.0; N_FEATURES];
         w[0] = 1.0;

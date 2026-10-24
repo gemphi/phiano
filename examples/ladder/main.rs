@@ -1,7 +1,7 @@
 //! The hierarchy, one rung at a time (docs/156). The reader of `Knowing::next`
 //! is built from levels: the prior, then the path's scopes, then the last
 //! word (and the word under each scope), then the last pair, then a base the
-//! levels move from — the last word's kin (`Counts::kin_base`, docs/138) or a
+//! levels move from — the last word's kin (`Tally::kin_base`, docs/138) or a
 //! trained operator. This binary turns the rungs on one at a time and asks,
 //! on held-out *Emma*, what each level adds — split by stratum: positions
 //! whose word was told after the last word or pair (**told**), and positions

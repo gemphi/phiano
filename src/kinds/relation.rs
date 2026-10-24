@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-impl RelationTypes {
+impl KindTable {
     pub fn len(&self) -> usize {
         self.rotations.len()
     }
@@ -21,13 +21,13 @@ impl RelationTypes {
 
     /// Discovers the types a corpus's pairs exhibit, at a given count.
     ///
-    /// `k` is clamped to [`MAX_RELATION_TYPES`]. Use [`RelationTypes::saturation`]
+    /// `k` is clamped to [`MAX_RELATION_TYPES`]. Use [`KindTable::saturation`]
     /// to choose it from evidence rather than by taste.
     pub fn discover(facet: &Facet, pairs: &[(String, String)], k: usize, rounds: usize) -> Self {
         Self::discover_with(facet, pairs, k, rounds, OffsetEstimator::Raw)
     }
 
-    /// [`RelationTypes::discover`] under a chosen offset estimator.
+    /// [`KindTable::discover`] under a chosen offset estimator.
     pub fn discover_with(
         facet: &Facet,
         pairs: &[(String, String)],
@@ -55,7 +55,7 @@ impl RelationTypes {
     ///
     /// Nothing is fitted. Mode `m` is [`harmonic_rotation`], and there are
     /// exactly [`PHASE_CHANNELS`] of them because a bounded medium sustains only
-    /// integer harmonics. Compare against [`RelationTypes::discover`], which
+    /// integer harmonics. Compare against [`KindTable::discover`], which
     /// fits 64 free rotations of 64 channels each to the same pairs.
     pub fn harmonic() -> Self {
         let rotations: Vec<Vec<f64>> = (0..PHASE_CHANNELS)

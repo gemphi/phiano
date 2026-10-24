@@ -117,7 +117,7 @@ use vocab::*;
 use facet::*;
 
 use crate::config::{PHASE_CHANNELS, TWO_PI};
-use phiecs::relation::Relations;
+use phiecs::relation::Register;
 use std::collections::HashMap;
 
 /// Channels reserved for relative offset. The rest go to markers.
@@ -163,14 +163,14 @@ pub struct RelationalPhasor {
 /// the channel count, exactly as `kinds::MAX_RELATION_TYPES` is.
 ///
 /// Since docs/159 this is a thin view over the one channel registry of the
-/// workspace, [`phiecs::relation::Relations`]: the eight offset channels are
+/// workspace, [`phiecs::relation::Register`]: the eight offset channels are
 /// declared first under the names `offset+1..=8`, and every marker after them
 /// in rank order, so a channel index means the same thing to a `Facet` here
 /// and to a `World` in phiecs. The public API and the `.chroma` entry format
 /// are unchanged.
 #[derive(Debug, Clone)]
 pub struct RelationVocab {
-    pub(super) inner: Relations,
+    pub(super) inner: Register,
 }
 
 /// The manifold: one relational phasor per word.

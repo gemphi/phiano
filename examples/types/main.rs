@@ -62,7 +62,7 @@ use phiano::chunker::ChunkStore;
 use phiano::config::LEARNING_RATE;
 use phiano::facet::Facet;
 use phiano::metrics::harness::{Harness, Split};
-use phiano::kinds::{OffsetEstimator, RelationTypes};
+use phiano::kinds::{OffsetEstimator, KindTable};
 use phiano::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phiano::topdown::{Descent, Up};

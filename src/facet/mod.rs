@@ -50,7 +50,7 @@ pub struct Vocab {
     pub(super) words: Vec<String>,
 }
 
-/// Counts needed to score one n-gram continuation.
+/// Tally needed to score one n-gram continuation.
 #[derive(Debug, Clone, Copy)]
 pub struct NgramStats {
     /// Times this exact continuation was seen.

@@ -7,11 +7,11 @@
 //! `cargo run --release --bin anatomy -- [--ask "left elbow"] [--rows out.tsv] [--show N]`
 
 use phikit::Kit;
-use phiplm::relate::{Counts, ScopeTree};
+use phiplm::relate::{Tally, ScopeTree};
 
 use phiano::lab::flag;
 
-fn print_tree(tree: &ScopeTree, counts: &Counts, scope: &str, depth: usize, max_depth: usize, width: usize) {
+fn print_tree(tree: &ScopeTree, counts: &Tally, scope: &str, depth: usize, max_depth: usize, width: usize) {
     let children = tree.children(scope);
     let words = Kit::said_by(counts, scope);
     let name = scope.rsplit('/').next().unwrap_or(scope);

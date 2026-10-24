@@ -47,7 +47,7 @@ impl LexicalRules {
         v
     }
 
-    /// Relations per head — the number that was 1.06 with the enum extractor.
+    /// Register per head — the number that was 1.06 with the enum extractor.
     pub fn mean_per_head(&self) -> f64 {
         match self.by_head.is_empty() {
             true => 0.0,

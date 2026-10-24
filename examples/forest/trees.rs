@@ -52,7 +52,7 @@ const TREES: [[&str; 6]; 16] = [
         "a unit on the path from the word up to the whole story",
         "the unit's parent in the cut tree",
         "the word being read; its ancestors are mixed, weights counted for it",
-        "phiplm::prose::strand::path (Path, Scopes::path)",
+        "phiplm::prose::strand::path (Path, ScopeSet::path)",
         "the node stack a ray traversal keeps — here the whole stack is read, not just the leaf",
     ],
     [
@@ -60,7 +60,7 @@ const TREES: [[&str; 6]; 16] = [
         "a condition: a scope, the last word, the last pair, or a word under a scope",
         "finer than its parent; the path's scopes, then the word, then the pair",
         "the words said so far; what the levels give is the next word's distribution",
-        "phiplm::relate::levels, relate::path (Weights::Path)",
+        "phiplm::relate::levels, relate::path (Weighting::Path)",
         "the traversal's result turned into an answer: every node on the path contributes, by a counted weight",
     ],
     [
@@ -92,7 +92,7 @@ const TREES: [[&str; 6]; 16] = [
         "a word",
         "not nesting but neighbourhood: the words with the closest left and right company",
         "a word never told after the last one; its kin answer in its place",
-        "phiplm::relate::kin (Counts::kin, kin_base)",
+        "phiplm::relate::kin (Tally::kin, kin_base)",
         "the fallback when a ray misses every volume: ask what lies near instead",
     ],
     [

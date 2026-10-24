@@ -5,7 +5,7 @@ use super::*;
 ///
 /// Chosen to match the channel count, so a type index and a channel index are
 /// the same width — the bounded-type claim, made structural. Whether the *data*
-/// needs this many is a separate question, and [`RelationTypes::saturation`] is
+/// needs this many is a separate question, and [`KindTable::saturation`] is
 /// how it gets asked rather than assumed.
 pub const MAX_RELATION_TYPES: usize = 64;
 
@@ -65,7 +65,7 @@ pub struct OffsetTable {
 /// A relation type.
 ///
 /// Opaque by construction: the field is private, there is no public constructor,
-/// and the rotation it stands for lives in the [`RelationTypes`] that issued it.
+/// and the rotation it stands for lives in the [`KindTable`] that issued it.
 /// A caller can hold one, compare it, and pass it to an operation. It cannot
 /// build one, take it apart, or mean anything by it that the data did not put
 /// there.
@@ -84,7 +84,7 @@ pub struct TypeEvidence {
 
 /// A vocabulary's relation types, and the operations over them.
 #[derive(Debug, Clone)]
-pub struct RelationTypes {
+pub struct KindTable {
     pub(super) rotations: Vec<Vec<f64>>,
     pub(super) evidence: Vec<TypeEvidence>,
 }

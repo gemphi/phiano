@@ -6,7 +6,7 @@ impl Default for RelationVocab {
     /// The eight offset channels, which every vocabulary holds before any
     /// marker is learned.
     fn default() -> Self {
-        let mut inner = Relations::new();
+        let mut inner = Register::new();
         for k in 0..OFFSET_CHANNELS {
             inner.declare(&format!("offset+{}", k + 1));
         }
@@ -22,7 +22,7 @@ impl RelationVocab {
     }
 
     /// The shared registry this vocabulary is a view of.
-    pub fn relations(&self) -> &Relations {
+    pub fn relations(&self) -> &Register {
         &self.inner
     }
 

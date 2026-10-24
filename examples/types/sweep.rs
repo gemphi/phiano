@@ -35,7 +35,7 @@ pub(super) fn sweep(facet: &Facet, descended: &Facet, pairs: &[(String, String)]
             let head_dom = head_domination(f, pairs, est);
 
             for &k in &ks {
-                let p = RelationTypes::saturation_at_with(f, pairs, k, 10, est);
+                let p = KindTable::saturation_at_with(f, pairs, k, 10, est);
                 println!(
                     "  {:<14} {:<16} {:>4} {:>10.4} {:>10.4} {:>10.4} {:>8.1}x {:>9.1}%",
                     label,
@@ -62,7 +62,7 @@ pub(super) fn sweep(facet: &Facet, descended: &Facet, pairs: &[(String, String)]
 /// destroyed the offsets entirely would score 9.1% here and nothing at all
 /// there.
 fn head_domination(f: &Facet, pairs: &[(String, String)], est: OffsetEstimator) -> f64 {
-    let types = RelationTypes::discover_with(f, pairs, 64, 12, est);
+    let types = KindTable::discover_with(f, pairs, 64, 12, est);
     let (mut shared, mut total) = (0usize, 0usize);
     for t in types.all() {
         if let Some(e) = types.evidence(t) {

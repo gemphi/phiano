@@ -1,7 +1,7 @@
 //! A story as a tree of knowing, and going on from it (docs/127). The
 //! story lies on disk as `story/<chapter>/<paragraph>/<sentence>.txt`;
 //! every word is told under its path (`phiano::prose`), counted
-//! (`phiano::relate::Counts`), and the tree of scopes is built from the
+//! (`phiano::relate::Tally`), and the tree of scopes is built from the
 //! `within` rows (`ScopeTree`). Nothing is trained: a new paragraph on
 //! disk is new rows the moment it is read.
 //!
@@ -25,7 +25,7 @@ mod operator;
 mod strata;
 
 use phiano::prose::Knowing;
-use phiano::relate::{Counts, ScopeTree};
+use phiano::relate::{Tally, ScopeTree};
 
 use phiano::lab::flag;
 
@@ -52,8 +52,8 @@ fn main() {
     let kin = a.iter().position(|x| x == "--kin").map(|i| a.remove(i)).is_some();
     // `--weights breadth|path` (`--breadth`): the held-out readings again under another rule (docs/147, 149).
     let other = match (a.iter().position(|x| x == "--breadth").map(|i| a.remove(i)), flag(&mut a, "--weights").as_deref()) {
-        (Some(_), _) | (_, Some("breadth")) => Some(phiano::relate::Weights::Breadth),
-        (_, Some("path")) => Some(phiano::relate::Weights::Path),
+        (Some(_), _) | (_, Some("breadth")) => Some(phiano::relate::Weighting::Breadth),
+        (_, Some("path")) => Some(phiano::relate::Weighting::Path),
         _ => None,
     };
     let order = match flag(&mut a, "--order").as_deref() {
@@ -128,7 +128,7 @@ fn main() {
             println!("{}", phiano::prose::heldout::score(&story).row(&format!("flat, {w:?} weights")));
             story.flat = false;
             println!("{}", phiano::prose::heldout::score(&story).row(&format!("tree, {w:?} weights")));
-            story.counts.weights = phiano::relate::Weights::Counted;
+            story.counts.weights = phiano::relate::Weighting::Counted;
         }
         if let Some(r) = phasor {
             story = story.with_field(r);
@@ -177,7 +177,7 @@ fn main() {
 }
 
 /// The tree with what each scope says most (its words by count).
-fn print_tree(t: &ScopeTree, c: &Counts, scope: &str, depth: usize, max_depth: usize) {
+fn print_tree(t: &ScopeTree, c: &Tally, scope: &str, depth: usize, max_depth: usize) {
     if depth > max_depth {
         return;
     }

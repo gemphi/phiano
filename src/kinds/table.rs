@@ -151,7 +151,7 @@ impl OffsetTable {
     /// Nothing is fitted, so every pair is held out and the comparison across
     /// context sources is a comparison of the contexts alone.
     pub fn harmonic_agreement(&self) -> f64 {
-        let basis = RelationTypes::harmonic();
+        let basis = KindTable::harmonic();
         let (mut sum, mut n) = (0.0f64, 0usize);
         for i in 0..self.len() {
             if let Some((_, a)) = self.best_match(i, &basis.rotations) {

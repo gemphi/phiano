@@ -76,7 +76,7 @@ impl RuleSet {
         &self.rules
     }
 
-    /// Counts per role, for reporting what an extractor actually found.
+    /// Tally per role, for reporting what an extractor actually found.
     pub fn role_counts(&self) -> Vec<(Role, usize)> {
         Role::ALL
             .iter()

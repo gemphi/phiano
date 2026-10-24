@@ -47,7 +47,7 @@ fn test_two_planted_relations_are_recovered_as_two_types() {
         })
         .collect();
 
-    let types = RelationTypes::discover(&f, &pairs, 2, 12);
+    let types = KindTable::discover(&f, &pairs, 2, 12);
     assert_eq!(types.len(), 2);
 
     // Every `_x` pair lands in one type and every `_y` pair in the other,
@@ -71,7 +71,7 @@ fn test_bind_unbind_round_trips_through_the_handle() {
         ("alpha".to_string(), "beta".to_string()),
         ("gamma".to_string(), "delta".to_string()),
     ];
-    let types = RelationTypes::discover(&f, &pairs, 2, 8);
+    let types = KindTable::discover(&f, &pairs, 2, 8);
     let t = types.all()[0];
 
     let bound = types.bind(&f, "alpha", t).unwrap();
@@ -131,7 +131,7 @@ fn test_head_centering_removes_the_head_effect_and_keeps_the_relation() {
     }
 
     let cluster_of = |est: OffsetEstimator, i: usize, suffix: &str| -> usize {
-        let types = RelationTypes::discover_with(&f, &pairs, 2, 20, est);
+        let types = KindTable::discover_with(&f, &pairs, 2, 20, est);
         let table = OffsetTable::build(&f, &pairs, est);
         let idx = pairs
             .iter()

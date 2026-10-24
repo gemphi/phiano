@@ -80,14 +80,14 @@ impl PersonaPrior {
 }
 
 impl Generator {
-    /// Conditions generation on a persona (see [`PersonaPrior`]).
+    /// ConditionSet generation on a persona (see [`PersonaPrior`]).
     // The prior is shared (`Rc`) with `persona::dialog`, never sent across
     // threads: its sector memo is a `RefCell`.
     pub fn with_persona(self, facet: &Facet, fp: &Fingerprint, weight: f64) -> Self {
         self.with_persona_prior(Rc::new(PersonaPrior::new(facet, fp, weight)))
     }
 
-    /// Conditions generation on a prior already built — one persona's
+    /// ConditionSet generation on a prior already built — one persona's
     /// bigram table is large, and a dialogue reuses it across turns and
     /// candidates rather than rebuilding it.
     pub fn with_persona_prior(mut self, prior: Rc<PersonaPrior>) -> Self {
@@ -104,7 +104,7 @@ impl Generator {
         p.bonus(facet, word) + p.ngram_bonus(ctx.last().map(|s| s.as_str()), word)
     }
 
-    /// Conditions generation on a persona and its own bigram table.
+    /// ConditionSet generation on a persona and its own bigram table.
     pub fn with_persona_examples(self, facet: &Facet, fp: &Fingerprint, examples: &[String], weight: f64, ngram_weight: f64) -> Self {
         self.with_persona_prior(Rc::new(PersonaPrior::new(facet, fp, weight).with_examples(examples, ngram_weight)))
     }

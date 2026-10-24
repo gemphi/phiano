@@ -75,7 +75,7 @@ impl ReadoutState {
     ///
     /// `features_true` are the features of the word that actually followed
     /// (the ground truth from training text); `features_pred` are the features
-    /// of the word the readout would have ranked highest instead. Weights move
+    /// of the word the readout would have ranked highest instead. Weighting move
     /// toward making the true continuation outscore the erroneous prediction.
     pub fn observe(&mut self, features_true: [f64; READOUT_FEATURES], features_pred: [f64; READOUT_FEATURES]) {
         for i in 0..READOUT_FEATURES {

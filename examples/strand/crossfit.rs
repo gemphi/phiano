@@ -12,7 +12,7 @@
 //! The path reading (`strand::Path`) counts each unit's weights over its
 //! whole path for that unit alone.
 
-use phiplm::prose::strand::{Path, Prior, Scopes, Strand};
+use phiplm::prose::strand::{Path, Prior, ScopeSet, Strand};
 
 pub const READERS: [&str; 12] = [
     "whole, left out",
@@ -50,8 +50,8 @@ fn flat(s: &Strand) -> (Vec<usize>, Vec<Span>) {
 struct Read {
     strand: Strand,
     units: Vec<usize>,
-    flat: Scopes,
-    tree: Scopes,
+    flat: ScopeSet,
+    tree: ScopeSet,
     paths: Vec<Path>,
 }
 
@@ -64,7 +64,7 @@ impl Read {
         let (flat, tree, paths) = match witness {
             None => {
                 let (tree, _, paths) = strand.unit_paths();
-                (Scopes::fit(&ids, &spans, &|id| prior.p(&strand.vocab[id as usize])), tree, paths)
+                (ScopeSet::fit(&ids, &spans, &|id| prior.p(&strand.vocab[id as usize])), tree, paths)
             }
             Some(w) => {
                 let wt: Vec<(usize, Option<u32>, f64)> = w.iter().map(|(p, x)| (*p, strand.index.get(x).copied(), prior.p(x))).collect();
@@ -74,7 +74,7 @@ impl Read {
                     let rows: Vec<(Option<u32>, f64)> = wt.iter().filter(|x| x.0 >= sp.start && x.0 < sp.end).map(|x| (x.1, x.2)).collect();
                     tree.path(*u, &rows, false)
                 });
-                (Scopes::fit_witnessed(&ids, &spans, &wt), tree.clone(), paths.collect())
+                (ScopeSet::fit_witnessed(&ids, &spans, &wt), tree.clone(), paths.collect())
             }
         };
         Read { strand, units, flat, tree, paths }
@@ -113,7 +113,7 @@ pub fn text(tokens: &[String], truth: &[usize], prior: &Prior, folds: usize) -> 
         let mut spans = vec![(0, n, None)];
         spans.extend(bounds.windows(2).map(|w| (w[0], w[1], Some(0))));
         let pr = |id: u32| prior.p(&all.strand.vocab[id as usize]);
-        let (whole, labels) = (Scopes::fit(&ids, &spans[..1], &pr), Scopes::fit(&ids, &spans, &pr));
+        let (whole, labels) = (ScopeSet::fit(&ids, &spans[..1], &pr), ScopeSet::fit(&ids, &spans, &pr));
         let label_paths: Vec<Path> = (1..spans.len()).map(|j| labels.path(j, &ids[spans[j].0..spans[j].1].iter().map(|id| (Some(*id), pr(*id))).collect::<Vec<_>>(), true)).collect();
         for &i in &held {
             let w = &tokens[i];

@@ -28,7 +28,7 @@ fn test_seeds_do_not_cluster_by_spelling_prefix() {
     }
 }
 
-/// Seeds must spread, not merely differ.
+/// Seeding must spread, not merely differ.
 ///
 /// Pairwise resonance over a sample of words should look like the mean of 64
 /// independent cosines: centred on zero with a small spread. A distribution

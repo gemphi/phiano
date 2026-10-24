@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-impl RelationTypes {
+impl KindTable {
 
     /// Does held-out structure keep improving as types are added?
     ///
@@ -29,7 +29,7 @@ impl RelationTypes {
             .collect()
     }
 
-    /// One point of [`RelationTypes::saturation`].
+    /// One point of [`KindTable::saturation`].
     ///
     /// Split out so a caller sweeping a long list of `k` can print each row as
     /// it lands. A sweep that speaks only once every value has finished gives no
@@ -44,7 +44,7 @@ impl RelationTypes {
         Self::saturation_at_with(facet, pairs, k, rounds, OffsetEstimator::Raw)
     }
 
-    /// [`RelationTypes::saturation_at`] under a chosen offset estimator.
+    /// [`KindTable::saturation_at`] under a chosen offset estimator.
     ///
     /// The estimator is applied to the null exactly as to the signal. That is
     /// what makes the comparison legitimate: centering mechanically reduces head
@@ -110,7 +110,7 @@ impl RelationTypes {
 
     /// Deliberately clusters *uncapped*.
     ///
-    /// [`RelationTypes::discover`] clamps to [`MAX_RELATION_TYPES`], which is
+    /// [`KindTable::discover`] clamps to [`MAX_RELATION_TYPES`], which is
     /// right for the type — its handles have to fit — and fatal here. A sweep
     /// that silently repeats k=64 for every k above it cannot find the cap too
     /// small; it would report a flat curve past the cap and call that

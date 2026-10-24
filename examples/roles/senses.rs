@@ -40,7 +40,7 @@ pub(super) fn load_senses(chunks_path: &str) -> Senses {
     Senses { counts, glosses }
 }
 
-/// Relations named by the language itself, extracted per sense.
+/// Register named by the language itself, extracted per sense.
 pub(super) fn lexical_rules(facet: &Facet, sense_glosses: &HashMap<String, Vec<String>>) -> LexicalRules {
     let known: std::collections::HashSet<&str> = facet.lexicon.keys().map(|s| s.as_str()).collect();
     let is_content = |w: &str| w.len() > 2 && !is_function_word(w) && !is_modifier(w) && known.contains(w);

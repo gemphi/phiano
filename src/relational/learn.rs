@@ -2,7 +2,7 @@
 use super::*;
 
 impl RelationVocab {
-    /// Counts what appears between word pairs and gives the commonest their own
+    /// Tally what appears between word pairs and gives the commonest their own
     /// channels.
     ///
     /// # Why the gap is not fixed at one word

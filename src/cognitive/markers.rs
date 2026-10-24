@@ -68,7 +68,7 @@ impl SearleMarkers {
         markers.iter().any(|m| p.starts_with(m.as_str()))
     }
 
-    /// Counts how many markers from a list appear in text.
+    /// Tally how many markers from a list appear in text.
     pub fn count_matches(text: &str, markers: &[String]) -> usize {
         let p = text.to_lowercase();
         markers.iter().filter(|m| p.contains(m.as_str())).count()

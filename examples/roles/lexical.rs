@@ -9,7 +9,7 @@ use super::*;
 /// prepositions, so this asks the language for the inventory instead of
 /// declaring one.
 ///
-/// Two numbers decide it. **Relations per head** — the mechanism needs several
+/// Two numbers decide it. **Register per head** — the mechanism needs several
 /// per word or it has nothing to disambiguate. And **per-role coherence** — if
 /// `for` pairs agree on an offset better than the mixed `genus` bucket did, the
 /// prepositions are naming real relations rather than slicing noise.

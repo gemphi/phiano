@@ -11,7 +11,7 @@ impl OffsetTable {
     /// context class predicts these labels on held-out pairs, the context carries
     /// information about which relation holds.
     pub fn modes(&self) -> Vec<usize> {
-        let basis = RelationTypes::harmonic();
+        let basis = KindTable::harmonic();
         (0..self.len())
             .map(|i| self.best_match(i, &basis.rotations).map(|(m, _)| m).unwrap_or(0))
             .collect()
@@ -27,7 +27,7 @@ impl OffsetTable {
     /// The diagnostic the whole context question turns on: 59.8% against a 9.1%
     /// chance level means the offset is carrying the head rather than the step.
     pub fn head_domination(&self) -> f64 {
-        let basis = RelationTypes::harmonic();
+        let basis = KindTable::harmonic();
         let mut by_mode: HashMap<usize, HashMap<&str, usize>> = HashMap::new();
         let mut total = 0usize;
         for i in 0..self.len() {

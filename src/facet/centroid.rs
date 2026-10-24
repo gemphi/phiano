@@ -89,7 +89,7 @@ impl Facet {
         }
     }
 
-    /// Counts for one bigram continuation, or `None` if the context is unseen.
+    /// Tally for one bigram continuation, or `None` if the context is unseen.
     pub fn bigram_stats(&self, word_a: &str, word_b: &str) -> Option<NgramStats> {
         let a = self.vocab.id(word_a)?;
         let list = self.bigrams.get(&a)?;
@@ -101,7 +101,7 @@ impl Facet {
         })
     }
 
-    /// Counts for one trigram continuation, or `None` if the context is unseen.
+    /// Tally for one trigram continuation, or `None` if the context is unseen.
     pub fn trigram_stats(&self, word_a: &str, word_b: &str, word_c: &str) -> Option<NgramStats> {
         let key = (self.vocab.id(word_a)?, self.vocab.id(word_b)?);
         let list = self.trigrams.get(&key)?;

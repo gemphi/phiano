@@ -5,7 +5,7 @@
 //! holds the token before it. Each reader is run under two rules, which
 //! differ only in how much a scope trusts its own counts: Witten–Bell to
 //! the scope's parent (the code the strand divides with), and the weight the
-//! text counts itself by leaving each token out (`strand::Scopes`). The
+//! text counts itself by leaving each token out (`strand::ScopeSet`). The
 //! readers differ only in their scopes:
 //!
 //! - `prior`: English alone (*Emma*), the text unread;
@@ -20,7 +20,7 @@
 //! does best at can be set beside the level the strand says the text supports.
 
 use phistd::codon::CODONS;
-use phiplm::prose::strand::{Prior, Scopes, Strand};
+use phiplm::prose::strand::{Prior, ScopeSet, Strand};
 use std::collections::HashMap;
 
 pub const READERS: [&str; 7] = ["prior", "whole", "labels", "equal parts", "strand flat", "strand at k", "strand"];
@@ -84,7 +84,7 @@ pub fn text(tokens: &[String], truth: &[usize], prior: &Prior, folds: usize) -> 
             b.push(n);
             let mut spans = vec![(0, n, None)];
             spans.extend(b.windows(2).map(|w| (w[0], w[1], Some(0))));
-            Scopes::fit(&ids, &spans, &|id| s.prior.p(&s.vocab[id as usize]))
+            ScopeSet::fit(&ids, &spans, &|id| s.prior.p(&s.vocab[id as usize]))
         };
         let sup_cuts: Vec<usize> = sup.iter().map(|x| s.cut.spans[*x].start).collect();
         let (c_lab, c_eq, c_flat, tree) = (under(&labels), under(&eq_cuts), under(&sup_cuts), s.scopes());

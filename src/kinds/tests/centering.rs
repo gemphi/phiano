@@ -47,7 +47,7 @@ fn test_double_centering_annihilates_a_pure_main_effect_table() {
 /// is geometry rather than a choice.
 #[test]
 fn test_the_harmonic_basis_has_exactly_channel_count_distinct_modes() {
-    let basis = RelationTypes::harmonic();
+    let basis = KindTable::harmonic();
     assert_eq!(basis.len(), PHASE_CHANNELS);
 
     // Every mode is distinct from every other.
@@ -73,7 +73,7 @@ fn test_the_harmonic_basis_has_exactly_channel_count_distinct_modes() {
 /// fitted.
 #[test]
 fn test_a_pair_built_on_a_mode_is_read_back_as_that_mode() {
-    let basis = RelationTypes::harmonic();
+    let basis = KindTable::harmonic();
     let mut f = Facet::new();
     f.get_or_init("head");
     let base: Vec<f64> = (0..PHASE_CHANNELS).map(|k| f.lexicon["head"].theta(k)).collect();
