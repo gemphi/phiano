@@ -28,7 +28,7 @@ impl Driver {
     /// Parses a command name string into a Driver variant.
     ///
     /// Returns None if the string is not a driver command.
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn from_name(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "ingest" => Some(Self::Ingest),
             "ingest-json" => Some(Self::IngestJson),
@@ -62,7 +62,7 @@ impl Driver {
     /// Returns Some(true/false) if handled, None if not a driver command.
     pub fn try_dispatch<'a>(line: &'a str, ctx: &mut Context<'a>) -> Option<bool> {
         let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
-        let driver = Self::from_str(parts[0])?;
+        let driver = Self::from_name(parts[0])?;
         ctx.arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
         Some(Self::dispatch(driver, ctx))
     }

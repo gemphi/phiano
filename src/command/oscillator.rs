@@ -106,7 +106,7 @@ impl OscillatorCmd {
 
     fn train(&self, ctx: &mut Context, rest: &str) -> bool {
         let parts: Vec<&str> = rest.splitn(2, char::is_whitespace).collect();
-        let text = Parser::strip_quotes(parts.get(0).map(|s| *s).unwrap_or(""));
+        let text = Parser::strip_quotes(parts.first().copied().unwrap_or(""));
         if text.is_empty() {
             println!("  Usage: oscillator train \"text\" [epochs]");
             return true;

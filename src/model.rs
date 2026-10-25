@@ -1,3 +1,10 @@
+mod run;
+mod iterate;
+#[allow(unused_imports)]
+use run::*;
+#[allow(unused_imports)]
+use iterate::*;
+
 use crate::chunker::ChunkStore;
 use crate::command::{Context, Dispatcher};
 use crate::config;
@@ -23,6 +30,8 @@ use std::fs;
 /// doesn't know, applies training, evaluates understanding, iterates
 /// on gaps, and scales by persisting knowledge.
 pub struct Model {
+    /// Turns since the last automatic checkpoint.
+    pub(super) turns_since_save: usize,
     /// The facet - lexicon of words mapped to complex phasors.
     pub facet: Facet,
     /// The trainer - Kuramoto phase attraction learning engine.
@@ -35,185 +44,10 @@ pub struct Model {
     pub context_buffer: crate::generate::ContextWaveBuffer,
     /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: CognitiveCore,
-}
-
-impl Model {
-    /// Creates a new model, loading the facet and memory from disk if available.
-    ///
-    /// If no saved data exists, starts with an empty facet and memory.
-    pub fn new() -> Self {
-        let mut facet = match Storage::load(config::CHROMA_FILE) {
-            Ok(m) => {
-                println!("  [loaded] {} words", m.vocabulary_size());
-                m
-            }
-            Err(_) => {
-                let _ = fs::create_dir_all("data");
-                Facet::new()
-            }
-        };
-
-        // Bootstrap bigrams from chunk data if empty (legacy model compat)
-        match facet.bigrams.is_empty() && !facet.lexicon.is_empty() {
-            true => Self::bootstrap_bigrams(&mut facet),
-            false => {}
-        }
-
-        // Definition-grounded phase re-seeding
-        // Replaces word.len()*PHI with definition centroid phases
-        match !facet.lexicon.is_empty() {
-            true => {
-                DefinitionGrounder::ground_phases(&mut facet, &ChunkStore::new("data/chunks"));
-            }
-            false => {}
-        }
-
-        let cognitive_core = CognitiveCore::new(ChunkStore::new("data/chunks"));
-
-        let memo = Memo::load_from_file(config::MEMORY_FILE)
-            .unwrap_or_else(|_| Memo::new());
-
-        Self {
-            facet,
-            trainer: Trainer::new(config::LEARNING_RATE),
-            memo,
-            world: World::new(),
-            context_buffer: crate::generate::ContextWaveBuffer::new(4096),
-            cognitive_core,
-        }
-    }
-
-    /// Bootstraps bigram co-occurrence counts from chunk dictionary data.
-    /// Only records word-pair adjacencies - does NOT retrain phases.
-    /// This is fast (~2-5 seconds) and populates the transition model
-    /// for generation and composition.
-    fn bootstrap_bigrams(facet: &mut Facet) {
-        use std::time::Instant;
-        let start = Instant::now();
-        let chunk_store = crate::chunker::ChunkStore::new("data/chunks");
-        let entries = chunk_store.load_all();
-        match entries.is_empty() {
-            true => return,
-            false => {}
-        }
-
-        println!("  [bigram] Bootstrapping from {} definitions...", entries.len());
-        let mut count = 0usize;
-        for (_word, def) in &entries {
-            let tokens = Tokenizer::tokenize(def);
-            for window in tokens.windows(2) {
-                // Only record if both words are already in the lexicon
-                match facet.lexicon.contains_key(&window[0]) && facet.lexicon.contains_key(&window[1]) {
-                    true => {
-                        facet.record_bigram(&window[0], &window[1]);
-                        count += 1;
-                    }
-                    false => {}
-                }
-            }
-        }
-
-        println!(
-            "  [bigram] {} co-occurrences recorded in {:?}",
-            count,
-            start.elapsed()
-        );
-    }
-
-    /// Runs the REPL loop - each input is one iteration of the cycle.
-    ///
-    /// Reads lines from stdin until the user types `exit` or `quit`.
-    /// Each line is processed through the `iterate` method.
-    pub fn run(&mut self) {
-        let mut rl = Editor::<(), DefaultHistory>::new()
-            .expect("Failed to init readline");
-
-        loop {
-            match rl.readline("phiano> ") {
-                Ok(raw) => {
-                    let line = raw.trim().to_string();
-                    match line.is_empty() {
-                        true => continue,
-                        false => {}
-                    }
-                    let _ = rl.add_history_entry(&line);
-                    self.iterate(&line);
-                    match line.eq_ignore_ascii_case("exit") || line.eq_ignore_ascii_case("quit") {
-                        true => break,
-                        false => {}
-                    }
-                }
-                Err(_) => break,
-            }
-        }
-    }
-
-    /// One full cycle: envision → apply → eval → iterate → scale.
-    ///
-    /// Parses the command, creates a context, dispatches to the appropriate
-    /// command handler, then runs the envision phase to detect gaps.
-    fn iterate(&mut self, line: &str) {
-        let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
-        let cmd = parts[0].to_lowercase();
-
-        match cmd == "exit" || cmd == "quit" {
-            true => {
-                self.scale();
-                return;
-            }
-            false => {}
-        }
-
-        let arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
-        let mut ctx = Context {
-            manifold: &mut self.facet,
-            trainer: &self.trainer,
-            memory: &mut self.memo,
-            world: &mut self.world,
-            context_buffer: &mut self.context_buffer,
-            cognitive_core: &self.cognitive_core,
-            arg,
-            line,
-        };
-
-        match Dispatcher::dispatch(line, &mut ctx) {
-            true => {}
-            false => return,
-        }
-
-        let wave = crate::wave::Wave::text(&self.facet, line);
-        self.memo.record((wave.re, wave.im), line);
-
-        self.envision(line);
-    }
-
-    /// Envision phase: detect knowledge gaps and project what to learn next.
-    ///
-    /// After each command, checks for unknown words in the input and
-    /// suggests related known words that might help define them.
-    fn envision(&self, text: &str) {
-        match Envision::new().detect_gaps(&self.facet, text) {
-            Some(v) => println!("{}", v),
-            None => {}
-        }
-    }
-
-    /// Scale phase: persist the facet and memory to disk.
-    ///
-    /// Called on exit to ensure all learned knowledge is saved.
-    pub fn scale(&self) {
-        let _ = Storage::save(&self.facet, config::CHROMA_FILE);
-        let _ = self.memo.save_to_file(config::MEMORY_FILE);
-        println!(
-            "  [saved] {} ({} words)",
-            config::CHROMA_FILE,
-            self.facet.vocabulary_size(),
-        );
-    }
-}
-
-impl Default for Model {
-    fn default() -> Self {
-        Self::new()
-    }
+    /// Journal of taught corrections, replayed after grounding.
+    pub corrections: crate::correction::CorrectionLog,
+    /// Gap detection, carrying its ledger across turns.
+    pub envisioner: Envision,
+    /// Local dictionary, consulted before the user is asked about a gap.
+    pub chunk_store: ChunkStore,
 }

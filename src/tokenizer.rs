@@ -49,7 +49,7 @@ impl Tokenizer {
     ///
     /// Empty sentences are filtered out.
     pub fn split_sentences(text: &str) -> Vec<String> {
-        text.split(|c| c == '.' || c == '!' || c == '?')
+        text.split(['.', '!', '?'])
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()

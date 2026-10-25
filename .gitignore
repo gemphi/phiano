@@ -84,3 +84,18 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# build sync tarball used by the remote toolchain
+.sync/
+data/evaluation.json
+*.chroma.tmp
+
+_to_delete/
+
+# generated lexical data (reproduce with scripts/export_*.py)
+data/lex/near.tsv
+data/lex/pos.tsv
+data/lex/sense.tsv
+data/lex/freq.tsv
+data/lex/dict.jsonl
+data/

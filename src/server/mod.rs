@@ -1,15 +1,7 @@
 pub mod api;
 pub mod types;
-pub mod routes_core;
-pub mod routes_oscillator;
-pub mod routes_infinity;
-pub mod routes_wiki;
-pub mod routes_cognitive;
-pub mod routes_chat;
-pub mod routes_flow;
-pub mod routes_stream;
-pub mod routes_reasoning;
-pub mod chat_intent;
+pub mod routes;
+pub mod intent;
 
 use crate::model::Model;
 use std::sync::Arc;

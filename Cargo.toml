@@ -2,6 +2,8 @@
 name = "phiano"
 version = "0.2.0"
 edition = "2021"
+# Every binary is declared below; a stale file under src/bin/ is not a target.
+autobins = false
 
 [lib]
 name = "phiano"
@@ -13,18 +15,31 @@ path = "src/main.rs"
 
 [[bin]]
 name = "train_rust_book"
-path = "src/bin/train_rust_book.rs"
+path = "src/bin/rust/book.rs"
 
-[[bin]]
-name = "train_rust_book_lite"
-path = "src/bin/train_rust_book_lite.rs"
+[features]
+default = []
+# The Gen-0 "phinum" model (I Ching hexagrams over a syntax parser): kept
+# only for the `riley` (In C) experiment and its juncture test (docs/163).
+phinum = []
 
 [dependencies]
 num-complex = "0.4"
+phistd = { path = "../phistd" }
+phiton = { path = "../phiton" }
+phical = { path = "../phical" }
+phifno = { path = "../phifno" }
+phiplm = { path = "../phiplm" }
+phikit = { path = "../phikit" }
+phiecs = { path = "../phiecs" }
+phicpl = { path = "../phicpl" }
+phioml = { path = "../phioml" }
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 bincode = "1.3"
+syn = { version = "2", features = ["full", "visit"] }
+proc-macro2 = "1"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 rustyline = "12.0"
 axum = "0.7"
@@ -34,15 +49,49 @@ tower-http = { version = "0.5", features = ["cors", "fs"] }
 
 [[bin]]
 name = "bootstrap_facet"
-path = "src/bin/bootstrap_facet.rs"
+path = "src/bin/bootstrap/facet.rs"
 
 [[bin]]
-name = "bench"
-path = "src/bin/bench.rs"
+name = "evaluate"
+path = "src/bin/evaluate.rs"
+
+[[bin]]
+name = "prepare_prose"
+path = "src/bin/prepare/prose.rs"
 
 [[bin]]
 name = "ingest"
 path = "src/bin/ingest.rs"
 
-[profile.release]
-opt-level = 3
+[[bin]]
+name = "word_json"
+path = "src/bin/word/json.rs"
+
+[[bin]]
+name = "bpe_check"
+path = "src/bin/bpe/check.rs"
+
+[[bin]]
+name = "bpe_lexicon"
+path = "src/bin/bpe/lexicon.rs"
+
+[[bin]]
+name = "persona"
+path = "src/bin/persona/main.rs"
+
+[[bin]]
+name = "quest"
+path = "src/bin/quest/main.rs"
+
+[[bin]]
+name = "relate"
+path = "src/bin/relate/main.rs"
+
+[[bin]]
+name = "helix"
+path = "src/bin/helix/main.rs"
+
+[[example]]
+name = "riley"
+path = "examples/riley/main.rs"
+required-features = ["phinum"]

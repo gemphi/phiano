@@ -1,0 +1,20 @@
+676 files · 33037 relation sightings · 20886 distinct relations → code_s8.tsv
+by kind: calls 12954 · has 1708 · holds 845 · implements 69 · part-of 1539 · returns 1300 · takes 2471
+
+R = 64 · 16734 told · 4152 held out · pool 2835
+movement (the kind's count × the name's function): held out MRR 0.151 · hit@5 24.6% · within kind 0.153 · under the type law 0.152
+held out MRR 0.097 (prior 0.157) · hit@5 15.6% · within kind 0.133 (prior 0.157) · under the type law 0.126 (prior 0.157)
+  ⟨holds⟩        173 held out · MRR 0.150 · within kind 0.273 (prior 0.368)
+  ⟨has⟩          335 held out · MRR 0.023 · within kind 0.031 (prior 0.027)
+  ⟨implements⟩    14 held out · MRR 0.121 · within kind 0.487 (prior 0.461)
+  ⟨calls⟩       2593 held out · MRR 0.076 · within kind 0.081 (prior 0.115)
+  ⟨part-of⟩      317 held out · MRR 0.043 · within kind 0.127 (prior 0.099)
+  ⟨takes⟩        469 held out · MRR 0.194 · within kind 0.303 (prior 0.339)
+  ⟨returns⟩      251 held out · MRR 0.266 · within kind 0.376 (prior 0.345)
+
+RelationModel · has ⇒ joint (0.58), names (0.53), rows (0.37), other (0.35), value (0.32)
+train · calls ⇒ exit (0.58), and_modify (0.56), partition (0.56), lr_at_step (0.55), pools (0.48)
+Episode · has ⇒ composites_at (0.41), action (0.38), message (0.35), trigrams (0.31), names (0.31)
+score · returns ⇒ f64 (0.56), Vec (0.42), Option (0.42), HashMap (0.37), usize (0.31)
+Counts · implements ⇒ Learner (0.62), Default (0.18), Aspect (0.10), Oracle (0.10), Module (0.02)
+saved code_s8.relate (ask it: relate_ask code_s8.relate <name> <kind>)

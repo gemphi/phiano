@@ -17,18 +17,19 @@
 
 pub mod pathfinding;
 pub mod analogy;
-pub mod program_analogy;
+pub mod program;
+pub use self::program as program_analogy;
 pub mod hybrid;
 pub mod sorting;
 pub mod planning;
 pub mod abstraction;
 pub mod counterfactual;
 pub mod diagnostics;
-pub mod multi_path;
+pub mod paths;
 pub mod comparison;
 
 pub use pathfinding::{ReasoningEngine, ReasoningChain};
 pub use hybrid::HybridReasoner;
-pub use multi_path::MultiPath;
+pub use paths::MultiPath;
 pub use comparison::ReasoningComparison;
-pub use diagnostics::Diagnostics;
+pub use diagnostics::Diagnostic;

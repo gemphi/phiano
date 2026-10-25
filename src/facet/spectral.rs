@@ -1,8 +1,8 @@
-/// Spectral methods for Facet — physics-derived color, distance, and identity.
-///
-/// These methods use the gemgum binding layer to map words through the
-/// phiton/chiton 2-in-1 light architecture, providing physics-based
-/// alternatives to the raw phase-delta similarity used in the base model.
+//! Spectral methods for Facet — physics-derived color, distance, and identity.
+//!
+//! These methods use the gemgum binding layer to map words through the
+//! phiton/chiton 2-in-1 light architecture, providing physics-based
+//! alternatives to the raw phase-delta similarity used in the base model.
 
 use super::Facet;
 use crate::gemgum::{Gemgum, SpectralIdentity};
@@ -15,7 +15,7 @@ impl Facet {
     /// the phiton spectral domain to a [`PhitonColor`].
     #[allow(dead_code)]
     pub fn word_color(&self, word: &str) -> Option<PhitonColor> {
-        self.lexicon.get(word).map(|p| Gemgum::phasor_to_color(p))
+        self.lexicon.get(word).map(Gemgum::phasor_to_color)
     }
 
     /// Computes the golden-ratio-weighted semantic distance between two words.
@@ -49,6 +49,16 @@ impl Facet {
     /// phiton (particle) + chiton (wave) + color representation.
     #[allow(dead_code)]
     pub fn spectral_identity(&self, word: &str) -> Option<SpectralIdentity> {
-        self.lexicon.get(word).map(|p| Gemgum::spectral_identity(p))
+        self.lexicon.get(word).map(Gemgum::spectral_identity)
+    }
+}
+
+impl Facet {
+    /// A word's facet angles as a function on the 64 base channels, for
+    /// the relation operator's table to start from (`RelationModel::new`'s
+    /// `seeds`): amplitude one, the angle kept; `None` for a word the facet
+    /// does not have.
+    pub fn operator_seeds(&self) -> impl Fn(&str) -> Option<phistd::Function> + '_ {
+        |w: &str| self.lexicon.get(w).map(|p| (0..crate::config::PHASE_CHANNELS).map(|k| phistd::c64::from_polar(1.0, p.theta(k))).collect())
     }
 }

@@ -40,7 +40,7 @@ impl Compose {
 
         for part in &parts[1..] {
             if let Ok(n) = part.parse::<usize>() {
-                max_rounds = n.max(1).min(20);
+                max_rounds = n.clamp(1, 20);
             } else {
                 examples.push(part.clone());
             }

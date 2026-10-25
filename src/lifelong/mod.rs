@@ -28,7 +28,8 @@ pub mod monitor;
 use crate::eval::Evaluator;
 use crate::facet::Facet;
 use crate::synthesis::library::ComponentLibrary;
-use crate::trainer::Trainer;
+use crate::tokenizer::Tokenizer;
+use crate::trainer::{wrap_signed, Trainer};
 pub use history::{BenchmarkEntry, BenchmarkHistory};
 pub use meta::{MetaLearner, MetaModel};
 pub use monitor::{Alert, ModelMonitor};
@@ -42,8 +43,14 @@ pub struct LearnResult {
     pub task: String,
     /// Whether an existing component from the library was reused.
     pub reused_component: Option<String>,
-    /// Coherence score after learning.
+    /// Coherence score after learning. Never read alone: it is the Kuramoto
+    /// order parameter, which rises as the manifold collapses.
     pub coherence: f64,
+    /// Phase dispersion after learning, reported beside coherence so the two
+    /// can be read together.
+    pub dispersion: f64,
+    /// Word positions warm-started from the reused component.
+    pub warm_started: usize,
     /// Number of training iterations performed.
     pub iterations: usize,
 }
@@ -79,51 +86,74 @@ impl LifelongLearner {
         trainer: &Trainer,
         task: &str,
     ) -> LearnResult {
-        // 1. Check library for reusable component
-        let reused_name = if let Some(comp) = self.library.find_reusable(facet, task) {
-            let name = comp.name.clone();
-            self.library.mark_used(&name);
-            Some(name)
-        } else {
-            None
-        };
+        // 1. Look for a component whose phase shape matches this task.
+        let matched: Option<(String, Vec<(String, f64)>)> = self
+            .library
+            .find_reusable(facet, task)
+            .map(|c| (c.name.clone(), c.word_phases.clone()));
 
-        // 2. Online training on task sentences
-        let iterations = if reused_name.is_some() { 4 } else { 16 };
+        // 2. Warm-start from it.
+        //
+        // Reuse previously only lowered the iteration count from 16 to 4: the
+        // matched component's program was never executed and its positions were
+        // never applied, so nothing was transferred and the saving was asserted
+        // rather than earned. Here the component's learned positions are pulled
+        // into the facet first, which is what makes fewer iterations sufficient.
+        let mut warm_started = 0usize;
+        if let Some((name, word_phases)) = &matched {
+            for (word, target) in word_phases {
+                if let Some(p) = facet.lexicon.get_mut(word) {
+                    let d = wrap_signed(target - p.theta(0));
+                    p.nudge(0, 0.3 * d);
+                    p.sync_phase();
+                    warm_started += 1;
+                }
+            }
+            self.library.mark_used(name);
+        }
+
+        // 3. Online training on the task.
+        let iterations = match matched.is_some() {
+            true => 4,
+            false => 16,
+        };
         for _ in 0..iterations {
             trainer.train_sentence(facet, task);
         }
 
         let evaluator = Evaluator::new();
-        let coherence = evaluator.eval(facet, task).coherence;
-
         LearnResult {
             task: task.to_string(),
-            reused_component: reused_name,
-            coherence,
+            reused_component: matched.map(|(n, _)| n),
+            coherence: evaluator.eval(facet, task).coherence,
+            dispersion: facet.phase_dispersion(),
+            warm_started,
             iterations,
         }
     }
 
-    /// Transfers extracted phase features from a source domain to a target domain.
+    /// Transfers the relational structure of a source domain onto a target.
+    ///
+    /// `features_transferred` now counts **words actually moved**. It previously
+    /// counted extracted feature sets while the apply step created one synthetic
+    /// `meta_sector_N` token per set and overwrote it in a loop — so the number
+    /// reported a transfer that had not happened.
     pub fn transfer_knowledge(
         &mut self,
         facet: &mut Facet,
         source_label: &str,
         target_label: &str,
     ) -> TransferResult {
-        let features = FeatureReuse::extract(facet);
-        let n_features = features.len();
-        FeatureReuse::apply(facet, &features);
+        let source: Vec<String> = Tokenizer::content_words(source_label);
+        let target: Vec<String> = Tokenizer::content_words(target_label);
+        let moved = FeatureReuse::apply_relational(facet, &source, &target, 0.4);
 
         let evaluator = Evaluator::new();
-        let eval = evaluator.eval(facet, target_label);
-
         TransferResult {
             source_label: source_label.to_string(),
             target_label: target_label.to_string(),
-            features_transferred: n_features,
-            post_transfer_coherence: eval.coherence,
+            features_transferred: moved,
+            post_transfer_coherence: evaluator.eval(facet, target_label).coherence,
         }
     }
 }

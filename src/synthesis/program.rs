@@ -1,4 +1,4 @@
-/// Program representation and synthesis core.
+//! Program representation and synthesis core.
 
 use crate::facet::Facet;
 use crate::tokenizer::Tokenizer;
@@ -44,7 +44,7 @@ impl Program {
                     tokens.iter().rev().cloned().collect()
                 }
                 ProgramOp::Identity => tokens.clone(),
-                ProgramOp::Map(_) => tokens.iter().cloned().collect(),
+                ProgramOp::Map(_) => tokens.to_vec(),
                 ProgramOp::Filter(word) => {
                     tokens.iter().filter(|t| *t != word).cloned().collect()
                 }
@@ -66,7 +66,6 @@ impl ProgramSynthesizer {
         }
 
         let candidates = super::search::ProgramSearch::candidates(3);
-        let best = super::search::ProgramSearch::best(&candidates, facet, examples);
-        best
+        super::search::ProgramSearch::best(&candidates, facet, examples)
     }
 }

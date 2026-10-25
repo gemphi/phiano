@@ -1,224 +1,106 @@
+mod vocab;
+mod learn;
+mod fit;
+mod under;
+mod rebuild;
+mod centroid;
+mod pmi;
+#[allow(unused_imports)]
+use vocab::*;
+#[allow(unused_imports)]
+use learn::*;
+#[allow(unused_imports)]
+use fit::*;
+#[allow(unused_imports)]
+use under::*;
+pub use under::Reading;
+#[allow(unused_imports)]
+use rebuild::*;
+#[allow(unused_imports)]
+use centroid::*;
+#[allow(unused_imports)]
+use pmi::*;
+
 mod spectral;
 
 #[cfg(test)]
 mod tests;
 
+use crate::config::PHASE_CHANNELS;
 use crate::phasor::SpectralPhasor;
+use crate::relational::RelationVocab;
 use crate::wave::{c64, Wave};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Facet - the core lexicon mapping words to complex phasors.
+/// A word's interned identifier.
+pub type WordId = u32;
+
+/// String-to-id interner for the n-gram tables.
 ///
-/// Each word in the facet has a `SpectralPhasor` representing its position
-/// in a continuous 2*pi phase space. Semantic similarity between words is
-/// measured by destructive interference (energy delta) between their
-/// complex wave representations.
+/// The tables previously keyed on owned `String`s: every bigram follower stored
+/// a full copy of the word, every trigram key stored two, and `phase_lags`
+/// duplicated the whole bigram key set a third time. On a real model that was
+/// the overwhelming majority of a 92 MB artifact, against a documented 2–12 MB
+/// target — and `trigram_candidates` allocated a fresh `format!("{} {}", a, b)`
+/// on every *lookup*, once per candidate per generated token.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct Vocab {
+    pub(super) ids: HashMap<String, WordId>,
+    pub(super) words: Vec<String>,
+}
+
+/// Tally needed to score one n-gram continuation.
+#[derive(Debug, Clone, Copy)]
+pub struct NgramStat {
+    /// Times this exact continuation was seen.
+    pub count: u32,
+    /// Times the context was seen at all.
+    pub total: u32,
+    /// Distinct continuations observed for the context.
+    pub types: u32,
+}
+
+/// Sorted association list of `(id, count)`.
+///
+/// A sorted `Vec` with binary search costs 8 bytes per entry against roughly a
+/// hundred for a nested `HashMap<String, u32>` entry, and it has no per-context
+/// hash-table allocation.
+type Followers = Vec<(WordId, u32)>;
+
+/// Facet - the core lexicon mapping words to complex phasors.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Facet {
     /// The word-to-phasor lexicon.
     pub lexicon: HashMap<String, SpectralPhasor>,
-    /// Bigram transition counts: word_a -> {word_b -> count}.
+    /// Interner shared by every n-gram table.
     #[serde(default)]
-    pub bigrams: HashMap<String, HashMap<String, u32>>,
-    /// Trigram transition counts: "word_a word_b" -> {word_c -> count}.
-    /// Key is two words joined by a space for O(1) lookup.
+    pub vocab: Vocab,
+    /// Bigram transitions: id(a) → sorted [(id(b), count)].
     #[serde(default)]
-    pub trigrams: HashMap<String, HashMap<String, u32>>,
-    /// Learned Kuramoto-Sakaguchi phase lags β_ij for word_a → word_b.
+    pub bigrams: HashMap<WordId, Followers>,
+    /// Trigram transitions: (id(a), id(b)) → sorted [(id(c), count)].
     #[serde(default)]
-    pub phase_lags: HashMap<String, HashMap<String, f64>>,
-}
-
-impl Facet {
-    /// Creates an empty facet with no words.
-    pub fn new() -> Self {
-        Self {
-            lexicon: HashMap::new(),
-            bigrams: HashMap::new(),
-            trigrams: HashMap::new(),
-            phase_lags: HashMap::new(),
-        }
-    }
-
-    /// Returns the number of words in the lexicon.
-    pub fn vocabulary_size(&self) -> usize {
-        self.lexicon.len()
-    }
-
-    /// Returns true if the facet contains the given word.
-    pub fn contains_word(&self, word: &str) -> bool {
-        self.lexicon.contains_key(word)
-    }
-
-    /// Returns a reference to the phasor for the given word, if it exists.
-    pub fn get_phasor(&self, word: &str) -> Option<&SpectralPhasor> {
-        self.lexicon.get(word)
-    }
-
-    /// Gets or initializes a phasor for a word at a deterministic seed phase.
-    pub fn get_or_init(&mut self, word: &str) -> &mut SpectralPhasor {
-        self.lexicon.entry(word.to_string()).or_insert_with(|| {
-            let seed_phase = (word.len() as f64 * crate::config::PHI) % (2.0 * std::f64::consts::PI);
-            SpectralPhasor::new(seed_phase, crate::config::AMPLITUDE_INITIAL, crate::config::BAND_N_INITIAL)
-        })
-    }
-
-    /// Computes the average amplitude across all phasors in the lexicon.
+    pub trigrams: HashMap<(WordId, WordId), Followers>,
+    /// Learned Kuramoto-Sakaguchi phase lags β_ij for a → b.
+    #[serde(default)]
+    pub phase_lags: HashMap<(WordId, WordId), f32>,
+    /// Version of the definition-grounding pass already applied to this facet.
+    #[serde(default)]
+    pub grounded_version: u32,
+    /// Which channel each observable relation occupies.
     ///
-    /// Returns 0.0 if the lexicon is empty.
-    pub fn average_amplitude(&self) -> f64 {
-        match self.lexicon.is_empty() {
-            true => return 0.0,
-            false => {}
-        }
-        let total: f64 = self.lexicon.values().map(|p| p.amplitude).sum();
-        total / self.lexicon.len() as f64
-    }
-
-    /// Returns the most common band level (n) across all phasors.
-    ///
-    /// This indicates the dominant energy sub-band in the facet.
-    /// Returns 1 if the lexicon is empty.
-    pub fn dominant_band(&self) -> u32 {
-        let mut counts: HashMap<u32, u32> = HashMap::new();
-        for phasor in self.lexicon.values() {
-            *counts.entry(phasor.band_n).or_insert(0) += 1;
-        }
-        counts
-            .into_iter()
-            .max_by_key(|(_, count)| *count)
-            .map(|(band, _)| band)
-            .unwrap_or(1)
-    }
-
-    /// Computes the centroid wave - the sum of all phasor complex representations.
-    ///
-    /// The centroid represents the "center of mass" of the facet's semantic space.
-    /// Returns zero if the lexicon is empty.
-    pub fn centroid(&self) -> c64 {
-        match self.lexicon.is_empty() {
-            true => return Wave::zero(),
-            false => {}
-        }
-        Wave::from_sum(self.lexicon.values().map(|p| p.to_complex()))
-    }
-
-    /// Records a bigram (word_a, word_b) co-occurrence, incrementing its count.
-    pub fn record_bigram(&mut self, word_a: &str, word_b: &str) {
-        match word_a == word_b {
-            true => return,
-            false => {}
-        }
-        *self.bigrams
-            .entry(word_a.to_string())
-            .or_default()
-            .entry(word_b.to_string())
-            .or_insert(0) += 1;
-    }
-
-    /// Returns candidate next words given a current word, sorted by transition count (descending).
-    /// Only returns words that exist in the lexicon.
-    pub fn next_word_candidates(&self, current: &str) -> Vec<(String, u32)> {
-        match self.bigrams.get(current) {
-            Some(followers) => followers
-                .iter()
-                .filter(|(w, _)| self.lexicon.contains_key(*w))
-                .map(|(w, c)| (w.clone(), *c))
-                .collect(),
-            None => Vec::new(),
-        }
-    }
-
-    /// Records a trigram (word_a, word_b, word_c) co-occurrence.
-    pub fn record_trigram(&mut self, word_a: &str, word_b: &str, word_c: &str) {
-        match word_a == word_c || word_b == word_c {
-            true => return,
-            false => {}
-        }
-        let key = format!("{} {}", word_a, word_b);
-        *self.trigrams
-            .entry(key)
-            .or_default()
-            .entry(word_c.to_string())
-            .or_insert(0) += 1;
-    }
-
-    /// Returns candidate next words given two preceding words, sorted by count.
-    pub fn trigram_candidates(&self, word_a: &str, word_b: &str) -> Vec<(String, u32)> {
-        let key = format!("{} {}", word_a, word_b);
-        match self.trigrams.get(&key) {
-            Some(followers) => followers
-                .iter()
-                .filter(|(w, _)| self.lexicon.contains_key(*w))
-                .map(|(w, c)| (w.clone(), *c))
-                .collect(),
-            None => Vec::new(),
-        }
-    }
-
-    /// Returns the transition probability for a trigram.
-    #[allow(dead_code)]
-    pub fn trigram_probability(&self, word_a: &str, word_b: &str, word_c: &str) -> f64 {
-        let key = format!("{} {}", word_a, word_b);
-        match self.trigrams.get(&key) {
-            Some(followers) => {
-                let total: u32 = followers.values().sum();
-                match total == 0 {
-                    true => 0.0,
-                    false => followers.get(word_c).map(|c| *c as f64 / total as f64).unwrap_or(0.0),
-                }
-            }
-            None => 0.0,
-        }
-    }
-
-    /// Returns the transition probability from word_a to word_b.
-    /// Returns 0.0 if no bigram exists.
-    pub fn bigram_probability(&self, word_a: &str, word_b: &str) -> f64 {
-        match self.bigrams.get(word_a) {
-            Some(followers) => {
-                let total: u32 = followers.values().sum();
-                match total == 0 {
-                    true => 0.0,
-                    false => followers
-                        .get(word_b)
-                        .map(|c| *c as f64 / total as f64)
-                        .unwrap_or(0.0),
-                }
-            }
-            None => 0.0,
-        }
-    }
-
-    /// Records an observed word-order lag and blends it into β_ij.
-    pub fn record_phase_lag(&mut self, word_a: &str, word_b: &str, observed: f64) {
-        match word_a == word_b {
-            true => return,
-            false => {}
-        }
-        let entry = self
-            .phase_lags
-            .entry(word_a.to_string())
-            .or_default()
-            .entry(word_b.to_string())
-            .or_insert(crate::config::SYNTACTIC_LAG_BETA);
-        let rate = crate::config::SYNTAX_LAG_LEARN_RATE;
-        *entry = (*entry * (1.0 - rate) + observed * rate).rem_euclid(crate::config::TWO_PI);
-    }
-
-    /// Returns the learned syntactic lag β_ij, or the default subject→verb lag.
-    pub fn phase_lag(&self, word_a: &str, word_b: &str) -> f64 {
-        self.phase_lags
-            .get(word_a)
-            .and_then(|m| m.get(word_b))
-            .copied()
-            .unwrap_or(crate::config::SYNTACTIC_LAG_BETA)
-    }
-}
-
-impl Default for Facet {
-    fn default() -> Self {
-        Self::new()
-    }
+    /// Offsets 1..=8 always have channels 0..8; the marker channels above them
+    /// are filled by [`Facet::learn_relations`] from the corpus. Until that runs
+    /// only adjacency deposits evidence, which is the one relation always
+    /// available.
+    #[serde(default)]
+    pub relations: RelationVocab,
+    /// Flat vocabulary list used for frequency-biased negative sampling.
+    #[serde(skip)]
+    pub sample_pool: Vec<String>,
+    /// Negatives for the relation step, drawn in proportion to count^0.75
+    /// with no cap: the words that meet the most partners must also be the
+    /// ones most often pushed apart (Mikolov et al. 2013).
+    pub relation_pool: Vec<String>,
 }

@@ -7,10 +7,14 @@
     "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "noUnusedLocals": false,
-    "outDir": "dist",
-    "rootDir": "src"
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["vite/client", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "vite.config.ts", "phidoc.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

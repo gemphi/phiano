@@ -1,43 +1,43 @@
-/// Cognitive core - Searle-inspired 16-agent cognitive architecture.
-///
-/// Module structure:
-/// - types.rs: Core data structures (IntentionalState, FelicityConditions, etc.)
-/// - markers.rs: Data-driven Searle markers (loaded from JSON, cached)
-/// - intentionality.rs: Intentionality, Aboutness, Background agents
-/// - speech_acts.rs: SpeechAct agent (illocutionary force, felicity conditions)
-/// - dof.rs: DirectionOfFit + Satisfaction agents
-/// - reference.rs: Reference, Network, TruthCondition agents
-/// - semantics.rs: Semantics, Syntax, Awareness agents
-/// - social.rs: SocialOntology, ObserverRelativity, CollectiveIntention agents
-/// - synthesis.rs: MentalCausation agent (intentional states -> output)
-/// - word_selection.rs: word selection + synthesis templates
-/// - reasoning.rs: multi-step reasoning chain
-/// - grounding.rs: definition-grounded phase initialization
-/// - mod.rs: CognitiveCore coordinator
+//! Cognitive core - Searle-inspired 16-agent cognitive architecture.
+//!
+//! Module structure:
+//! - types.rs: Core data structures (IntentionalState, FelicityCondition, etc.)
+//! - markers.rs: Data-driven Searle markers (loaded from JSON, cached)
+//! - intentionality.rs: Intentionality, Aboutness, Background agents
+//! - speech_acts.rs: SpeechAct agent (illocutionary force, felicity conditions)
+//! - dof.rs: DirectionOfFit + Satisfaction agents
+//! - reference.rs: Reference, Network, TruthCondition agents
+//! - semantics.rs: Semantics, Syntax, Awareness agents
+//! - social.rs: SocialOntology, ObserverRelativity, CollectiveIntention agents
+//! - synthesis.rs: MentalCausation agent (intentional states -> output)
+//! - word_selection.rs: word selection + synthesis templates
+//! - reasoning.rs: multi-step reasoning chain
+//! - grounding.rs: definition-grounded phase initialization
+//! - mod.rs: CognitiveCore coordinator
 
 pub mod types;
 pub mod markers;
 pub mod intentionality;
-pub mod speech_acts;
+pub mod speech;
 pub mod dof;
 pub mod reference;
 pub mod semantics;
 pub mod social;
 pub mod synthesis;
-pub mod word_selection;
+pub mod selection;
 pub mod reasoning;
 pub mod grounding;
 
 #[allow(unused_imports)]
-pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityConditions};
+pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCondition};
 #[allow(unused_imports)]
 pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
-pub use speech_acts::SpeechActAgent;
+pub use speech::SpeechActAgent;
 #[allow(unused_imports)]
 pub use reasoning::{ReasoningResult, ReasoningStep, ReasoningChain};
 pub use grounding::DefinitionGrounder;
 #[allow(unused_imports)]
-pub use word_selection::WordSelector;
+pub use selection::WordSelector;
 
 use crate::chunker::ChunkStore;
 use crate::facet::Facet;
@@ -66,7 +66,7 @@ impl CognitiveCore {
         let a3 = reference::ReferenceAgent::process(facet, prompt, &self.chunk_store);
 
         // Agents 4-6: Speech act cluster
-        let a4 = speech_acts::SpeechActAgent::process(prompt);
+        let a4 = speech::SpeechActAgent::process(prompt);
         let a5 = dof::DirectionOfFitAgent::process(prompt);
         let a6 = dof::SatisfactionAgent::process(facet, prompt);
 

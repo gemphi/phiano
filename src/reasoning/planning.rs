@@ -1,5 +1,5 @@
-/// Multi-step planning: uses phase-space traversal to plan sub-goals.
-/// Each step moves the context wave toward the goal phase.
+//! Multi-step planning: uses phase-space traversal to plan sub-goals.
+//! Each step moves the context wave toward the goal phase.
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;

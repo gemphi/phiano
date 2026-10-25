@@ -1,5 +1,5 @@
-/// Counterfactual reasoning: swaps a key word's phase and re-evaluates.
-/// Implements Ch 14.2's reasoning about hypothetical situations.
+//! Counterfactual reasoning: swaps a key word's phase and re-evaluates.
+//! Implements Ch 14.2's reasoning about hypothetical situations.
 
 use crate::config::TWO_PI;
 use crate::eval::Evaluator;
@@ -35,7 +35,7 @@ impl Counterfactual {
         let delta = perturbed_eval.coherence - baseline_coh;
 
         if delta.abs() < 0.01 {
-            format!("Counterfactual had minimal effect: the model is robust to this swap.")
+            "Counterfactual had minimal effect: the model is robust to this swap.".to_string()
         } else if delta > 0.0 {
             format!("Counterfactual improved coherence by {:.4}: {} → {} suggests the original word was suboptimal.",
                 delta, premise, counterfactual)

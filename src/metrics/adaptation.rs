@@ -1,5 +1,5 @@
-/// Adaptation efficiency: measures how many examples the model needs
-/// to reach a competence threshold (Ch 14.3's efficiency metric).
+//! Adaptation efficiency: measures how many examples the model needs
+//! to reach a competence threshold (Ch 14.3's efficiency metric).
 
 use crate::eval::Evaluator;
 use crate::facet::Facet;

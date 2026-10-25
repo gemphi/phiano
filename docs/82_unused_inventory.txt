@@ -1,0 +1,277 @@
+== never referenced anywhere ==
+src/attention.rs                                     fn      method top_attended
+src/bpe/mod.rs                                       fn      method piece_text
+src/compose/better/sector_score.rs                   fn      method better_than
+src/compose/worse/discarder.rs                       fn      method reinforce_trajectory
+src/config/constants/novelty_scale.rs                const   item   CORRECTION_JOURNAL_MAX
+src/config/constants/novelty_scale.rs                const   item   META_LR_MULT_MAX
+src/config/constants/novelty_scale.rs                const   item   META_LR_MULT_MIN
+src/config/constants/novelty_scale.rs                const   item   META_MIX_MAX
+src/config/constants/novelty_scale.rs                const   item   META_MIX_MIN
+src/config/constants/novelty_scale.rs                const   item   NEGATIVE_REPULSION
+src/config/constants/novelty_scale.rs                const   item   NEGATIVE_SAMPLES_K
+src/config/constants/novelty_scale.rs                const   item   PASSAGE_MEMO_WINDOW
+src/config/constants/novelty_scale.rs                const   item   PASSAGE_SENTENCES_DEFAULT
+src/config/constants/novelty_scale.rs                const   item   PASSAGE_TOKENS_PER_SENTENCE
+src/config/constants/novelty_scale.rs                const   item   RECALL_BOOST
+src/config/constants/novelty_scale.rs                const   item   RECALL_PHASE_BIAS
+src/config/constants/novelty_scale.rs                const   item   RECALL_TOP_K
+src/config/constants/novelty_scale.rs                const   item   ROTOR_DIMS
+src/config/constants/novelty_scale.rs                const   item   ROTOR_DIM_WEIGHT
+src/config/constants/novelty_scale.rs                const   item   STUDY_BUDGET_DEFAULT
+src/config/constants/novelty_scale.rs                const   item   SYNTAX_LAG_DEFAULT
+src/config/constants/novelty_scale.rs                const   item   VERIFY_REINFORCE_PULL
+src/config/constants/novelty_scale.rs                const   item   VERIFY_REPULSE
+src/config/constants/novelty_scale.rs                const   item   VERIFY_SUPPORT_BIGRAM_P
+src/config/constants/novelty_scale.rs                const   item   VERIFY_SUPPORT_RESONANCE
+src/config/constants/types.rs                        const   item   ANTI_PHASE_PULSE
+src/config/constants/types.rs                        const   item   IMPERSONATE_ADJACENT_FIT_FACTOR
+src/config/constants/types.rs                        const   item   IMPERSONATE_CONVERGENCE_DELTA
+src/config/constants/types.rs                        const   item   IMPERSONATE_QUALITY_COVERAGE
+src/config/constants/types.rs                        const   item   IMPERSONATE_QUALITY_DIVERSITY
+src/config/constants/types.rs                        const   item   IMPERSONATE_QUALITY_LENGTH
+src/config/constants/types.rs                        const   item   IMPERSONATE_QUALITY_OVERALL
+src/data/preprocess.rs                               fn      method normalize_wave
+src/data/preprocess.rs                               fn      method wave_phase
+src/data/splits.rs                                   fn      method test_iter
+src/data/splits.rs                                   fn      method train_iter
+src/data/splits.rs                                   fn      method val_iter
+src/data/splits.rs                                   fn      method with_ratios
+src/eval/verdict.rs                                  fn      method eval_with_memory
+src/facet/facet_centroid.rs                          fn      method trigram_probability
+src/facet/spectral.rs                                fn      method word_color
+src/gemgum.rs                                        fn      method binding_strength
+src/gemgum.rs                                        fn      method color_name
+src/generate/beam.rs                                 fn      method decode_beam
+src/generate/context.rs                              fn      method reset_state
+src/instruction/instruction_engine.rs                fn      method format_template
+src/instruction/instruction_engine.rs                fn      method templated_output
+src/lifelong/history.rs                              fn      method dispersion_trend
+src/lifelong/monitor.rs                              fn      method check_drift
+src/memory/memo_consolidate.rs                       fn      method consolidate
+src/metrics/adaptation.rs                            fn      method examples_to_competence
+src/metrics/baseline.rs                              fn      method suite_from_disk
+src/metrics/distribution_shift.rs                    fn      method shift_score
+src/metrics/eval_split.rs                            fn      method full_pipeline
+src/metrics/harness/harness.rs                       fn      method language_model
+src/metrics/harness/phiano_lm.rs                     fn      method clear_readout
+src/metrics/ood_detection.rs                         fn      method is_ood
+src/metrics/ood_detection.rs                         fn      method unknown_fraction
+src/metrics/regularization.rs                        fn      method phase_jitter
+src/metrics/regularization.rs                        fn      method prune_low_amplitude
+src/persona/store.rs                                 fn      method lexicon_of
+src/phase_flow/phase_flow_record_step.rs             fn      method collective_wave
+src/phase_flow/phase_flow_record_step.rs             fn      method hebbian_update
+src/phase_flow/phase_flow_record_step.rs             fn      method hebbian_update_phical
+src/phasor/spectral_phasor.rs                        fn      method sides_equal
+src/phasor/spectral_phasor_harmonic_spectrum.rs      fn      method harmonic_spectrum
+src/phasor/spectral_phasor_harmonic_spectrum.rs      fn      method to_light_quantum
+src/phasor/spectral_phasor_nudge.rs                  fn      method rotate_all
+src/phasor/spectral_phasor_nudge.rs                  fn      method to_complex_ch
+src/phasor/spectral_phasor_set_evidence_count.rs     fn      method clear_evidence
+src/phical/evaluate.rs                               fn      method concept_density
+src/phical/evaluate.rs                               fn      method evaluate_concept
+src/phical/evaluate.rs                               fn      method evaluate_phrase
+src/phical/evaluate.rs                               fn      method evaluate_sentence
+src/phical/evaluate.rs                               fn      method evaluate_story
+src/phical/evaluate.rs                               fn      method evaluate_word
+src/phical/evaluate.rs                               fn      method layer_relation
+src/phical/evaluate.rs                               fn      method story_complexity
+src/phical/manifold.rs                               fn      method sector_to_point
+src/phical/operators.rs                              fn      method spectral_convolution
+src/phical/operators.rs                              fn      method temporal_project
+src/phical/phical.rs                                 const   method COUPLING
+src/phical/phical.rs                                 const   method NATURAL_RATIO
+src/phical/phical.rs                                 fn      method phase_to_frequency_thz
+src/phinum/iching/mod.rs                             fn      method unicode_char
+src/phinum/iching/trigram.rs                         fn      method name_pinyin
+src/phinum/lexicon.rs                                fn      method link_strength
+src/phinum/lexicon.rs                                fn      method process_sentence
+src/phinum/searle.rs                                 fn      method classify_full
+src/phinum/syntax/parser.rs                          fn      method parse_many
+src/phinum/syntax/parser.rs                          fn      method variation_16
+src/phinum/syntax/parser.rs                          fn      method variation_32
+src/phinum/syntax/parser.rs                          fn      method variation_64
+src/phiton/bands.rs                                  fn      method center_nm
+src/phiton/chiton.rs                                 fn      method standing_wave_amplitude
+src/phiton/chiton.rs                                 fn      method to_quantum
+src/phiton/chiton.rs                                 fn      method wave_number
+src/phiton/spectrum.rs                               fn      method antipodal_color
+src/phiton/spectrum.rs                               fn      method band_colors
+src/phiton/spectrum.rs                               fn      method spectral_distance
+src/reasoning/analogy.rs                             fn      method light_centric
+src/reasoning/counterfactual.rs                      fn      method what_if
+src/reasoning/multi_path/multi_path.rs               fn      method solve_with_depth
+src/reasoning/program_analogy.rs                     fn      method shares_structure
+src/reasoning/sorting.rs                             fn      method by_amplitude
+src/reasoning/sorting.rs                             fn      method by_sector
+src/relation_type/relation_types.rs                  fn      method harmonic_mode
+src/server/routes_cognitive.rs                       fn      item   run_curriculum
+src/synthesis/heuristic.rs                           fn      method suggest_structure
+src/trainer/trainer_record_ngrams.rs                 fn      method train_corpus_ranking
+src/wave/wave.rs                                     fn      method sentence_compound
+src/wave/wave_words_in_sector.rs                     fn      method words_in_sector
+
+== public but used only inside its own module (162) ==
+src/attention.rs                                     const   item   NUM_HEADS (6)
+src/attention.rs                                     fn      method self_attend (1)
+src/attention.rs                                     struct  item   AttentionOutput (2)
+src/attention_cross.rs                               struct  item   CrossAttention (3)
+src/command/persona/chat.rs                          struct  item   PersonaChatLoop (4)
+src/compose/flow/compose.rs                          const   item   GOAL_PULL (1)
+src/compose/flow/compose.rs                          const   item   SEGMENT_CONTEXT (1)
+src/compose/flow/compose.rs                          const   item   SEGMENT_TOKENS (1)
+src/compose/worse.rs                                 struct  item   DiscardResult (4)
+src/conception.rs                                    const   item   KERNEL_STEP (1)
+src/conception.rs                                    struct  item   CompositionReport (6)
+src/config/constants/types.rs                        const   item   PHI_SQUARED (1)
+src/config/functions/phi_config.rs                   fn      method compose_variations (1)
+src/config/functions/phi_config.rs                   fn      method sector_exponent (1)
+src/config/functions/phi_config.rs                   fn      method sectors_per_color (1)
+src/config/functions/phi_config.rs                   fn      method stop_word_count (1)
+src/curriculum.rs                                    struct  item   CurriculumFile (2)
+src/curriculum.rs                                    struct  item   CurriculumStageDef (2)
+src/curriculum.rs                                    struct  item   StageDetail (2)
+src/envision.rs                                      struct  item   Vision (4)
+src/eval.rs                                          enum    item   Verdict (8)
+src/eval/verdict.rs                                  fn      method from_scores (2)
+src/facet/facet_centroid.rs                          fn      method trigram_discounted (1)
+src/facet/facet_pmi.rs                               fn      method order_asymmetry (1)
+src/facet/mod.rs                                     struct  item   NgramStats (4)
+src/frames.rs                                        const   item   MIN_CLASS (1)
+src/generate/context.rs                              fn      method push_token (1)
+src/generate/guide.rs                                const   item   OPERATOR_ANCHOR (2)
+src/generate/mod.rs                                  struct  item   Hypothesis (4)
+src/generate/persona.rs                              fn      method ngram_bonus (1)
+src/instruction.rs                                   enum    item   InstructionKind (29)
+src/layers.rs                                        const   item   LAYER_SECTORS (4)
+src/layers.rs                                        const   item   PHASE_LAYERS (1)
+src/layers.rs                                        struct  item   ClusterNode (4)
+src/layers.rs                                        struct  item   PhaseLayer (4)
+src/lifelong/history.rs                              fn      method trend (2)
+src/lifelong/meta.rs                                 fn      method adapt (4)
+src/lifelong/meta.rs                                 fn      method circular_mean (2)
+src/lifelong/mod.rs                                  struct  item   LearnResult (2)
+src/lifelong/mod.rs                                  struct  item   TransferResult (3)
+src/lifelong/monitor.rs                              fn      method check_collapse (1)
+src/lifelong/monitor.rs                              fn      method check_regression (1)
+src/memory/memo.rs                                   fn      method record_at (1)
+src/memory/mod.rs                                    struct  item   ContextWaveEntry (9)
+src/metrics/adversarial.rs                           fn      method perturbation_test (1)
+src/metrics/arc.rs                                   struct  item   ArcTaskResult (2)
+src/metrics/capacity.rs                              struct  item   CapacityConfig (4)
+src/metrics/capacity.rs                              struct  item   CapacityTuner (1)
+src/metrics/distribution_shift.rs                    fn      method n_updates (8)
+src/metrics/distribution_shift.rs                    struct  item   DistributionTracker (2)
+src/metrics/eval_split.rs                            fn      method on_split (3)
+src/metrics/eval_split.rs                            struct  item   EvalSummary (7)
+src/metrics/eval_split.rs                            struct  item   SplitEvaluator (1)
+src/metrics/harness.rs                               const   item   GAMMA_GRID (9)
+src/metrics/harness.rs                               struct  item   EpochMetrics (3)
+src/metrics/harness.rs                               struct  item   HarnessReport (2)
+src/metrics/harness/phiano_lm.rs                     fn      method fit_readout_shaped (1)
+src/metrics/novelty_benchmark.rs                     struct  item   NovelTaskReport (2)
+src/metrics/regularization.rs                        fn      method amplitude_decay (1)
+src/metrics/regularization.rs                        fn      method band_regularization (1)
+src/metrics/regularization.rs                        struct  item   Regularization (4)
+src/metrics/relation.rs                              struct  item   FamilyResult (6)
+src/metrics/relation.rs                              struct  item   RelationPair (5)
+src/metrics/sentence.rs                              enum    item   SentenceEncoding (15)
+src/metrics/sentence.rs                              struct  item   ScorerResult (3)
+src/metrics/sentence.rs                              struct  item   SentenceReport (2)
+src/oscillator/mod.rs                                fn      method from_phasor (1)
+src/oscillator/mod.rs                                fn      method hue (3)
+src/oscillator/mod.rs                                fn      method visibility (2)
+src/oscillator/mod.rs                                fn      method visible_longitude (3)
+src/oscillator/train.rs                              struct  item   OscillatorTrainResult (3)
+src/persona/dialog.rs                                const   item   DIALOG_CANDIDATES (1)
+src/persona/dialog.rs                                const   item   DIALOG_GOAL_PULL (1)
+src/persona/dialog.rs                                const   item   DIALOG_POOL (1)
+src/persona/dialog.rs                                const   item   DIALOG_REPEAT_COST (1)
+src/persona/dialog.rs                                const   item   DIALOG_REPEAT_MAX (1)
+src/persona/dialog.rs                                const   item   DIALOG_SEED (1)
+src/persona/dialog.rs                                const   item   DIALOG_TOKENS (1)
+src/persona/impersonate/mod.rs                       const   item   IMPERSONATE_CANDIDATES (1)
+src/persona/impersonate/mod.rs                       const   item   IMPERSONATE_TOKENS (1)
+src/persona/mod.rs                                   fn      method similarity_to (1)
+src/persona/world.rs                                 struct  item   MatchResult (6)
+src/persona/world.rs                                 struct  item   PersonaComparison (4)
+src/phical/manifold.rs                               fn      method curvature (3)
+src/phical/manifold.rs                               fn      method is_standing_wave_node (2)
+src/phinet/compose/mod.rs                            const   item   MAX_FILLERS (3)
+src/phinet/compose/mod.rs                            const   item   MIN_FILLERS (2)
+src/phinet/reader.rs                                 enum    item   ModelKind (7)
+src/phinet/reader.rs                                 struct  item   ModelReport (3)
+src/phinet/space/encode.rs                           fn      item   encode_both (1)
+src/phinum/iching/mod.rs                             fn      method archetype_name (3)
+src/phinum/lexicon.rs                                fn      method from_pos (1)
+src/phinum/lexicon.rs                                struct  item   WordEntry (4)
+src/phinum/searle.rs                                 fn      method sub16 (1)
+src/phinum/searle.rs                                 fn      method sub32 (1)
+src/phinum/searle.rs                                 fn      method sub64 (1)
+src/phinum/searle.rs                                 struct  item   SearleClassification (2)
+src/phinum/syntax/dictionary.rs                      fn      method register_batch (9)
+src/phiton/mod.rs                                    const   method VISIBLE_MAX_NM (4)
+src/phiton/mod.rs                                    const   method VISIBLE_MIN_NM (6)
+src/phiton/mod.rs                                    fn      method wavelength_to_phase (1)
+src/phiton/spectrum.rs                               fn      method sector_to_color (1)
+src/readout.rs                                       const   item   READOUT_FEATURES (6)
+src/readout.rs                                       const   item   WEIGHT_MAX (3)
+src/readout.rs                                       const   item   WEIGHT_MIN (3)
+src/readout.rs                                       struct  item   ReadoutState (6)
+src/reasoning/abstraction.rs                         struct  item   AbstractionExtractor (1)
+src/reasoning/analogy.rs                             struct  item   AnalogyResult (2)
+src/reasoning/comparison.rs                          struct  item   StepTemplate (1)
+src/reasoning/counterfactual.rs                      struct  item   Counterfactual (5)
+src/reasoning/diagnostics.rs                         enum    item   ConvergenceMode (13)
+src/reasoning/diagnostics.rs                         fn      method diagnose (2)
+src/reasoning/multi_path.rs                          enum    item   EffortLevel (12)
+src/reasoning/pathfinding.rs                         const   item   REASONING_CONVERGENCE (1)
+src/reasoning/planning.rs                            fn      method plan (1)
+src/reasoning/planning.rs                            struct  item   Plan (2)
+src/reasoning/planning.rs                            struct  item   PlanStep (2)
+src/reasoning/planning.rs                            struct  item   Planner (1)
+src/reasoning/program_analogy.rs                     fn      method extract_structure (4)
+src/reasoning/program_analogy.rs                     struct  item   PhaseRelation (2)
+src/reasoning/program_analogy.rs                     struct  item   ProgramAnalogyResult (3)
+src/reasoning/sorting.rs                             fn      method by_phase (2)
+src/reasoning/sorting.rs                             struct  item   SortingTest (2)
+src/relation_type/relation_types_saturation.rs       fn      method saturation_at (2)
+src/relational.rs                                    const   item   CHANNEL_DISPERSION_FLOOR (1)
+src/relational.rs                                    const   item   GUARD_MIN_VOCAB (1)
+src/server/mod.rs                                    struct  item   PhianoServer (3)
+src/server/mod.rs                                    type    item   SharedModel (46)
+src/server/routes_flow.rs                            struct  item   FlowRequest (1)
+src/server/routes_flow.rs                            struct  item   FlowResponse (2)
+src/server/routes_infinity.rs                        struct  item   ComplexDetail (4)
+src/server/routes_infinity.rs                        struct  item   InfinityResponse (2)
+src/server/routes_infinity.rs                        struct  item   InfinityTrainResponse (2)
+src/server/routes_infinity.rs                        struct  item   VariationDetail (2)
+src/server/routes_infinity.rs                        struct  item   WordPhasorDetail (2)
+src/server/routes_infinity.rs                        struct  item   WordShiftDetail (2)
+src/server/routes_oscillator.rs                      struct  item   ComposeResponse (2)
+src/server/routes_oscillator.rs                      struct  item   OscillatorEvalResponse (2)
+src/server/routes_oscillator.rs                      struct  item   OscillatorTrainResponse (2)
+src/server/routes_reasoning.rs                       struct  item   CompareReasonRequest (1)
+src/server/routes_reasoning.rs                       struct  item   HybridReasonRequest (1)
+src/server/routes_reasoning.rs                       struct  item   HybridReasonResponse (2)
+src/server/routes_reasoning.rs                       struct  item   MultiPathRequest (1)
+src/server/routes_reasoning.rs                       struct  item   MultiPathResponse (2)
+src/sources/dialogue.rs                              fn      method built_in_dialogues (3)
+src/sources/dialogue.rs                              fn      method load_turns (1)
+src/sources/dialogue.rs                              struct  item   DialogueTurn (9)
+src/sources/local.rs                                 fn      method parse_file (2)
+src/sources/phi4.rs                                  struct  item   Phi4LearnSummary (3)
+src/synthesis/heuristic.rs                           struct  item   SynthesisHeuristic (1)
+src/synthesis/program.rs                             struct  item   ProgramSynthesizer (1)
+src/synthetic.rs                                     fn      method generate_synthetic_sentence (1)
+src/synthetic.rs                                     struct  item   ContrastPair (4)
+src/topdown.rs                                       const   item   CONTRAST_MIN (1)
+src/topdown.rs                                       const   item   DEFAULT_CONCENTRATION (1)
+src/topdown.rs                                       const   item   RAYLEIGH_C (1)
+src/trainer/metrics.rs                               fn      method words_per_sec (2)
+src/wave.rs                                          struct  item   SectorIndex (2)
+src/wave/wave.rs                                     const   method RETRIEVAL_COUNT_FLOOR (2)
+src/wave/wave.rs                                     fn      method sentence_bound (2)
+src/wiki_bulk.rs                                     const   item   CURRICULUM_TOPICS (2)
+src/wiki_bulk.rs                                     struct  item   IngestionResult (2)

@@ -1,21 +1,21 @@
-/// Searle's speech act classification — 16/32/64 variants.
-///
-/// John Searle's taxonomy of illocutionary acts provides the framework
-/// for classifying *what a sentence does* (not just what it says).
-///
-/// # Base 5 Categories (Searle)
-///
-/// 1. **Assertive** — stating facts, claiming truth
-/// 2. **Directive** — requesting, commanding, asking
-/// 3. **Commissive** — promising, committing, obligating
-/// 4. **Expressive** — expressing feelings, attitudes
-/// 5. **Declaration** — bringing about a state by uttering
-///
-/// # Phinum Expansion
-///
-/// - **Phinum16**: 16 sub-categories (5 base × ~3 sub-types each)
-/// - **Phinum32**: 32 sub-categories (16 × 2 further refinements)
-/// - **Phinum64**: 64 sub-categories (32 × 2, full granularity)
+//! Searle's speech act classification — 16/32/64 variants.
+//!
+//! John Searle's taxonomy of illocutionary acts provides the framework
+//! for classifying *what a sentence does* (not just what it says).
+//!
+//! # Base 5 Categories (Searle)
+//!
+//! 1. **Assertive** — stating facts, claiming truth
+//! 2. **Directive** — requesting, commanding, asking
+//! 3. **Commissive** — promising, committing, obligating
+//! 4. **Expressive** — expressing feelings, attitudes
+//! 5. **Declaration** — bringing about a state by uttering
+//!
+//! # Phinum Expansion
+//!
+//! - **Phinum16**: 16 sub-categories (5 base × ~3 sub-types each)
+//! - **Phinum32**: 32 sub-categories (16 × 2 further refinements)
+//! - **Phinum64**: 64 sub-categories (32 × 2, full granularity)
 
 use super::config::PhinumConfig;
 use super::syntax::SyntaxKey;

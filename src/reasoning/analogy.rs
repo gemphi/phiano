@@ -1,10 +1,10 @@
-/// Value-centric analogy: compares words by continuous phase similarity.
-/// This is the kind of abstraction deep learning already handles well (Ch 14.4).
+//! Value-centric analogy: compares words by continuous phase similarity.
+//! This is the kind of abstraction deep learning already handles well (Ch 14.4).
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;
-use crate::phical::PhicalOps;
-use crate::reasoning::program_analogy::ProgramAnalogy;
+use crate::physics::PhicalOp;
+use crate::reasoning::program::ProgramAnalogy;
 use serde::Serialize;
 use std::f64::consts::PI;
 
@@ -83,12 +83,12 @@ impl Analogy {
     pub fn light_centric(facet: &Facet, source: &str, target: &str) -> f64 {
         match (facet.lexicon.get(source), facet.lexicon.get(target)) {
             (Some(p1), Some(p2)) => {
-                let interference = PhicalOps::interference(
+                let interference = PhicalOp::interference(
                     p1.phase, p1.band_n,
                     p2.phase, p2.band_n,
                 );
                 let coupling = facet.word_coupling(source, target);
-                (interference * coupling).max(0.0).min(1.0)
+                (interference * coupling).clamp(0.0, 1.0)
             }
             _ => 0.0,
         }

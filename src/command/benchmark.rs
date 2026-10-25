@@ -1,8 +1,8 @@
-/// Benchmark command: runs all metrics and prints a comprehensive report.
+//! Benchmark command: runs all metrics and prints a comprehensive report.
 
 use crate::command::Context;
-use crate::metrics::benchmark_runner::BenchmarkRunner;
-use crate::metrics::benchmark_runner::BenchmarkReport;
+use crate::metrics::benchmark::runner::BenchmarkRunner;
+use crate::metrics::benchmark::runner::BenchmarkReport;
 use crate::lifelong::history::BenchmarkHistory;
 
 pub struct Benchmark;

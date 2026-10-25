@@ -76,7 +76,7 @@ impl Learn {
         let eval = Evaluator::new().eval(ctx.manifold, ctx.line);
         println!("{}", eval);
 
-        if let Some(v) = Envision::new().detect_gaps(ctx.manifold, ctx.line) {
+        if let Some(v) = Envision::new().detect_gaps(ctx.manifold, None, ctx.line) {
             println!("{}", v);
         }
         true

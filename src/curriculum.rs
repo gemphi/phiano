@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-/// Child-Like Learning Curriculum - progressive knowledge acquisition.
-/// Loads stage definitions from data/curriculum.json (no hardcoded words).
+//! Child-Like Learning Curriculum - progressive knowledge acquisition.
+//! Loads stage definitions from data/curriculum.json (no hardcoded words).
 
 use crate::chunker::ChunkStore;
 use crate::cognitive::DefinitionGrounder;
@@ -45,6 +45,12 @@ pub struct StageDetail {
 
 pub struct ChildCurriculum {
     pub stages: Vec<CurriculumStageDef>,
+}
+
+impl Default for ChildCurriculum {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ChildCurriculum {
@@ -106,10 +112,7 @@ impl ChildCurriculum {
                 }
             }
 
-            let bigrams_after = facet.bigrams.values()
-                .map(|m| m.values().sum::<u32>())
-                .sum::<u32>();
-            bigrams_recorded = bigrams_after as usize;
+            bigrams_recorded = facet.ngram_entries();
 
             words_learned += stage_words;
             sentences_trained += stage_sentences;

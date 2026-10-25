@@ -5,7 +5,7 @@ pub mod table;
 mod tests;
 pub mod trigram;
 
-pub use table::{archetype_name, KING_WEN_MAP};
+pub use table::KING_WEN_MAP;
 pub use trigram::Trigram;
 
 use super::searle::SpeechAct;
@@ -52,9 +52,14 @@ impl Hexagram {
         Self::from_id(id)
     }
 
-    /// Returns the central phase angle $\theta_k = \frac{2\pi k}{64}$.
+    /// Returns the central phase angle $\theta_k = \frac{2\pi (k + \tfrac12)}{64}$.
+    ///
+    /// The half-step centres the lift in its sector, so the round trip
+    /// `from_phase(h.phase_angle()) == h` holds and the quantisation error
+    /// of `lift(quantise(θ))` is at most π/64 rather than 2π/64. This is the
+    /// Q64 → C64 side of the juncture (Phical 3, §2).
     pub fn phase_angle(self) -> f64 {
-        (self.id as f64 / 64.0) * TWO_PI
+        ((self.id as f64 + 0.5) / 64.0) * TWO_PI
     }
 
     /// Spins the hexagram by a continuous phase delta $\Delta\theta$.

@@ -23,7 +23,9 @@ impl Eval {
         let eval = Evaluator::new().eval(ctx.manifold, &text);
         println!("{}", eval);
 
-        if let Some(v) = Envision::new().detect_gaps(ctx.manifold, &text) {
+        // No dictionary escalation here: the model-level envision pass runs after
+        // every input and owns both the chunk store and the persistent gap ledger.
+        if let Some(v) = Envision::new().detect_gaps(ctx.manifold, None, &text) {
             println!("{}", v);
         }
         true

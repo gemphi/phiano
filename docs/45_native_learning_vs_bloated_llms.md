@@ -1,5 +1,20 @@
 # Document 45: Native Continuous Learning vs. Bloated Static LLMs
 
+> **Measured-results notice.** This document was written before the project had
+> a measurement harness. Several claims below are now testable, and some did not
+> survive. Read [`how/RESULTS.md`](how/RESULTS.md) alongside it.
+>
+> | claim here | measured |
+> |:---|:---|
+> | "Catastrophic Forgetting: **Zero**" | **93-98% retention**, +18.7% degradation on the prior domain (RESULTS §3f). Strong, but not zero. |
+> | "~39 MB RAM" / README's 2-12 MB | **59.2 MB** on disk at 124k vocabulary (§3d) |
+> | Complex manifold as the representational advantage | The manifold's optimal mixing weight against a unigram back-off is **0** (§3). It recovers 24.3% of the signal word frequency provides. |
+> | Comparison against Phi-4 / GLM / GPT-4 | **No head-to-head measurement exists.** The only baseline actually run is a Kneser-Ney trigram, which the n-gram layer beats 124.66 to 131.02. |
+>
+> The properties that *do* survive measurement are microsecond online learning,
+> targeted durable unlearning, collapse resistance under contrastive training,
+> and full interpretability.
+
 ## Executive Summary
 
 Contemporary Large Language Models (e.g., Microsoft **Phi-4**, **GLM-5.2**, **Gemini**, **GPT-4**) rely on dense or mixture-of-experts (MoE) real-valued weight tensors ($\mathbb{R}^{D_1 \times D_2}$) optimized via offline backpropagation across trillions of tokens. While capable of fluent surface generation, these architectures are fundamentally **static**: their parameters are frozen post-training, context windows require gigabytes of KV-cache memory, and online interactive learning without catastrophic forgetting is mathematically impossible.
@@ -18,7 +33,7 @@ This whitepaper formalizes the mathematical comparison between Phiano and state-
 | **Representational Space** | Real Vector Space $\mathbb{R}^{3072}$ (40 Layers) | Sparse Transformer Attention + DSA (1M Context) | **Complex Phase Manifold $\mathbb{C}^{32}$ on Torus $\mathbb{T}^{32}$** |
 | **Context Retention** | 16K KV-Cache (~8 GB VRAM per stream) | IndexShare across 4 sparse attention layers | **$\mathcal{O}(1)$ Multi-Turn Superposition Wave Buffer** |
 | **Learning Mechanism** | Offline SGD/Adam via Backpropagation | Multi-Token Prediction (MTP) + Offline SFT/PPO | **Online Kuramoto Phase Coupling ($\Delta t \le 1\text{ ms}$)** |
-| **Catastrophic Forgetting** | Severe without continuous replay buffers | High (requires full LoRA/RL re-checkpointing) | **Zero (New concepts = new harmonic frequencies)** |
+| **Catastrophic Forgetting** | Severe without continuous replay buffers | High (requires full LoRA/RL re-checkpointing) | **93-98% retention measured** (RESULTS §3f) - strong, not zero |
 | **Inference Hardware** | Multi-GPU cluster (1920 H100s for training) | High-end datacenter multi-GPU server | **Sub-millisecond on standard laptop CPU** |
 | **Semantic Distance** | Cosine Similarity / Dot Product $Q K^T / \sqrt{d}$ | Sparse Index Matching | **Destructive Wave Interference $\Delta = \alpha \|\mathbf{Z}_1 - \mathbf{Z}_2\|^2$** |
 

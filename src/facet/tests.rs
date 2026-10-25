@@ -1,4 +1,5 @@
 use super::*;
+use crate::config::TWO_PI;
 
 #[test]
 fn test_empty_facet() {
@@ -34,4 +35,124 @@ fn test_dominant_band() {
     f.lexicon.insert("b".into(), SpectralPhasor::new(0.0, 1.0, 3));
     f.lexicon.insert("c".into(), SpectralPhasor::new(0.0, 1.0, 3));
     assert_eq!(f.dominant_band(), 3);
+}
+
+#[test]
+fn test_smoothed_bigram_never_zero_for_known_context() {
+    let mut f = Facet::new();
+    for _ in 0..3 {
+        f.record_bigram("the", "cat");
+    }
+    // Raw MLE gives an unseen continuation exactly zero, which makes held-out
+    // likelihood infinite; the discounted estimator leaves back-off mass.
+    assert_eq!(f.bigram_probability("the", "zebra"), 0.0);
+    let (p, backoff) = f.bigram_discounted("the", "zebra");
+    assert_eq!(p, 0.0);
+    assert!(backoff > 0.0, "unseen continuations must retain back-off mass");
+
+    let (p_seen, _) = f.bigram_discounted("the", "cat");
+    assert!(p_seen > 0.0 && p_seen < 1.0);
+}
+
+#[test]
+fn test_prune_singletons_halves_a_sparse_table() {
+    let mut f = Facet::new();
+    for _ in 0..5 {
+        f.record_bigram("the", "cat");
+    }
+    for i in 0..20 {
+        f.record_bigram("the", &format!("rare{}", i));
+    }
+    let before = f.ngram_entries();
+    let (bi, _tri) = f.prune_singletons();
+    assert_eq!(bi, 20, "every singleton should go");
+    assert!(f.ngram_entries() < before / 2);
+    // The frequent transition survives.
+    assert!(f.bigram_probability("the", "cat") > 0.0);
+}
+
+/// The failure the collapse guard exists to detect, and the reason the global
+/// figure could not see it.
+///
+/// A long-tailed lexicon: 100 frequent words collapsed onto a single angle, and
+/// 3,000 rare words spread uniformly. Every task the model is scored on draws
+/// its candidates from the frequent band, so this manifold is useless — and
+/// `phase_dispersion` reads above 0.95, well clear of the 0.40 floor. The band
+/// measure reads it as the collapse it is.
+#[test]
+fn test_global_dispersion_is_blind_to_a_collapsed_frequent_band() {
+    let mut f = Facet::new();
+
+    const FREQUENT: usize = 100;
+    const RARE: usize = 3_000;
+
+    for i in 0..FREQUENT {
+        let mut p = SpectralPhasor::new(1.234, 1.0, 1);
+        p.count = 1_000;
+        f.lexicon.insert(format!("frequent_{i}"), p);
+    }
+    for i in 0..RARE {
+        let theta = TWO_PI * i as f64 / RARE as f64;
+        let mut p = SpectralPhasor::new(theta, 1.0, 1);
+        p.count = 1;
+        f.lexicon.insert(format!("rare_{i}"), p);
+    }
+
+    let global = f.phase_dispersion();
+    let band = f.dispersion_top(FREQUENT);
+
+    assert!(
+        global > 0.95,
+        "global dispersion should be dominated by the tail, got {global:.4}"
+    );
+    assert!(
+        band < 0.01,
+        "the frequent band is one angle; dispersion should be ~0, got {band:.4}"
+    );
+    assert!(
+        global >= crate::cognitive::grounding::DISPERSION_FLOOR
+            && band < crate::cognitive::grounding::DISPERSION_FLOOR,
+        "this is the blind spot: the global figure passes the floor ({global:.4}) \
+         while the band fails it ({band:.4})"
+    );
+}
+
+#[test]
+fn test_dispersion_above_and_top_agree_with_the_global_form_on_a_flat_lexicon() {
+    let mut f = Facet::new();
+    for i in 0..64 {
+        let mut p = SpectralPhasor::new(TWO_PI * i as f64 / 64.0, 1.0, 1);
+        p.count = 7;
+        f.lexicon.insert(format!("w{i}"), p);
+    }
+    let global = f.phase_dispersion();
+    assert!((f.dispersion_above(7) - global).abs() < 1e-12);
+    assert!((f.dispersion_above(0) - global).abs() < 1e-12);
+    // Asking for more words than exist is the whole lexicon.
+    assert!((f.dispersion_top(1_000) - global).abs() < 1e-12);
+    // Every count is equal, so any rank cut admits every word.
+    assert!((f.dispersion_top(8) - global).abs() < 1e-12);
+    // A floor above every count leaves nothing to measure; report no collapse
+    // rather than a false one.
+    assert_eq!(f.dispersion_above(8), 1.0);
+}
+
+#[test]
+fn relational_fit_at_the_last_position_is_relational_score() {
+    use crate::tokenizer::Tokenizer;
+    let mut facet = Facet::new();
+    let t = crate::trainer::Trainer::new(0.05);
+    for s in ["the dog sat down", "the cat sat down", "a bird sat down", "the dog ran off"] {
+        t.train(&mut facet, s);
+    }
+    let toks = Tokenizer::tokenize("the dog sat");
+    let (a, na) = facet.relational_score(&toks[..2], "sat");
+    let (b, nb) = facet.relational_fit(&toks, 2, "sat");
+    assert_eq!(na, nb, "the same pairs are read");
+    assert!((a - b).abs() < 1e-12, "the Liskov reading at the end is the next-word reading");
+    // In the middle, neighbours on both sides are read; a word with no lexicon entry has no fit.
+    let (_, n_mid) = facet.relational_fit(&toks, 1, "cat");
+    assert!(n_mid >= 1);
+    assert_eq!(facet.relational_fit(&toks, 1, "zebra"), (0.0, 0));
+    assert_eq!(facet.calls_for("zebra", "sat"), 0.0);
 }

@@ -12,9 +12,24 @@ impl GenerateCmd {
         }
 
         let prompt = crate::command::Parser::strip_quotes(ctx.arg);
-        let generator = Generator::new(32, 0.15);
+        let mut generator = Generator::new(32, 0.15);
+        let mut guided = false;
+        if std::path::Path::new(crate::config::OPERATOR_FILE).exists() {
+            match crate::generate::OperatorGuide::load(
+                crate::config::OPERATOR_FILE,
+                ctx.manifold,
+                crate::phinet::space::Sides::Directed,
+                6,
+            ) {
+                Ok(guide) => {
+                    generator = generator.with_operator(guide);
+                    guided = true;
+                }
+                Err(e) => println!("  [operator] {e}; generating unguided"),
+            }
+        }
 
-        println!("  ── phase-guided sequence generation ──");
+        println!("  ── phase-guided sequence generation{} ──", if guided { " · operator" } else { "" });
         println!("  prompt: \"{}\"", prompt);
 
         let generated = generator.generate(ctx.manifold, ctx.context_buffer, &prompt);

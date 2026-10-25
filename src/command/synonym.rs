@@ -16,12 +16,8 @@ impl Synonym {
             return true;
         }
 
-        let parts: Vec<&str> = ctx.arg.split_whitespace().collect();
-        let word = parts[0].to_lowercase();
-        let count: usize = parts
-            .get(1)
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(5);
+        let (raw, count) = crate::command::Parser::text_and_count(ctx.arg, 5);
+        let word = raw.to_lowercase();
 
         if !ctx.manifold.contains_word(&word) {
             println!("  I don't know '{}' yet. Try: define {}", word, word);

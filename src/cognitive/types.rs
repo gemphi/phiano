@@ -1,10 +1,10 @@
-/// Core types for the cognitive system - Searle's intentional state model.
-///
-/// Searle's key insight: mental states have:
-/// - Content (what they're about - the propositional content)
-/// - Direction of fit (mind→world or world→mind)
-/// - Satisfaction conditions (when the state is fulfilled)
-/// - Psychological mode (belief, desire, intention, fear, hope, etc.)
+//! Core types for the cognitive system - Searle's intentional state model.
+//!
+//! Searle's key insight: mental states have:
+//! - Content (what they're about - the propositional content)
+//! - Direction of fit (mind→world or world→mind)
+//! - Satisfaction conditions (when the state is fulfilled)
+//! - Psychological mode (belief, desire, intention, fear, hope, etc.)
 
 use serde::Serialize;
 
@@ -30,7 +30,7 @@ pub struct CognitiveResult {
     pub direction_of_fit: String,
     pub satisfaction: f64,
     pub intentional_states: Vec<IntentionalState>,
-    pub felicity_conditions: FelicityConditions,
+    pub felicity_conditions: FelicityCondition,
     pub perlocutionary_effect: String,
     pub propositional_content: String,
     pub speaker_meaning: String,
@@ -109,7 +109,7 @@ impl DirectionOfFit {
 /// Searle's felicity conditions for speech acts.
 /// For an illocutionary act to be successful, these must be met.
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct FelicityConditions {
+pub struct FelicityCondition {
     /// The propositional content must be appropriate for the act type.
     /// E.g., promises require a future act; assertions require a proposition.
     pub propositional_content_rule: String,

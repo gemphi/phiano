@@ -1,14 +1,14 @@
-/// Searle markers loaded from data/searle_markers.json.
-/// No hardcoded word lists - all markers are data-driven.
+//! Searle markers loaded from data/searle_markers.json.
+//! No hardcoded word lists - all markers are data-driven.
 
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-static MARKERS: OnceLock<SearleMarkers> = OnceLock::new();
+static MARKERS: OnceLock<SearleMarker> = OnceLock::new();
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct SearleMarkers {
+pub struct SearleMarker {
     pub indirect_patterns: Vec<String>,
     pub commissive_markers: Vec<String>,
     pub expressive_markers: Vec<String>,
@@ -22,19 +22,19 @@ pub struct SearleMarkers {
     pub observer_relative_markers: Vec<String>,
 }
 
-impl SearleMarkers {
+impl SearleMarker {
     /// Loads from data/searle_markers.json (cached via OnceLock).
-    pub fn load() -> &'static SearleMarkers {
+    pub fn load() -> &'static SearleMarker {
         MARKERS.get_or_init(|| {
             let path = std::path::Path::new("data/searle_markers.json");
             match std::fs::read_to_string(path) {
                 Ok(content) => serde_json::from_str(&content).unwrap_or_else(|e| {
                     eprintln!("[searle] Failed to parse markers JSON: {}", e);
-                    SearleMarkers::default_inner()
+                    SearleMarker::default_inner()
                 }),
                 Err(e) => {
                     eprintln!("[searle] Could not load data/searle_markers.json: {}", e);
-                    SearleMarkers::default_inner()
+                    SearleMarker::default_inner()
                 }
             }
         })
@@ -68,7 +68,7 @@ impl SearleMarkers {
         markers.iter().any(|m| p.starts_with(m.as_str()))
     }
 
-    /// Counts how many markers from a list appear in text.
+    /// Tally how many markers from a list appear in text.
     pub fn count_matches(text: &str, markers: &[String]) -> usize {
         let p = text.to_lowercase();
         markers.iter().filter(|m| p.contains(m.as_str())).count()

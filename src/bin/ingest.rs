@@ -9,7 +9,7 @@ use phiano::sources::phi4::Phi4Source;
 use phiano::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;
-use phiano::wiki_bulk;
+use phiano::wiki;
 
 fn load_or_new(path: &str) -> Facet {
     match Storage::load(path) {
@@ -31,7 +31,8 @@ fn train_file_sentences(facet: &mut Facet, trainer: &Trainer, path: &str, max_li
         Err(_) => return 0,
     };
     let mut n = 0usize;
-    for line in std::io::BufReader::new(file).lines().flatten() {
+    for line in std::io::BufReader::new(file).lines() {
+        let Ok(line) = line else { continue };
         for sentence in Tokenizer::split_sentences(&line) {
             if Tokenizer::tokenize(&sentence).len() >= 4 {
                 trainer.train_sentence(facet, &sentence);
@@ -100,7 +101,7 @@ fn main() {
 
     if !skip_wiki && wiki_topics > 0 {
         let rt = tokio::runtime::Runtime::new().expect("tokio");
-        let result = rt.block_on(wiki_bulk::WikiBulk::bulk_ingest(
+        let result = rt.block_on(wiki::WikiBulk::bulk_ingest(
             &mut facet,
             &trainer,
             &chunks,

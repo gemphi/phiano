@@ -1,4 +1,4 @@
-/// OscillatorTrainer - oscillator-based training inspired by Phi-4.
+//! OscillatorTrainer - oscillator-based training inspired by Phi-4.
 
 use super::OscillatorField;
 use crate::config;
@@ -110,8 +110,8 @@ impl OscillatorTrainer {
             epochs: epochs_done,
             coherence_before: coh_before,
             coherence_after: coh_after,
-            sync_before: sync_before,
-            sync_after: sync_after,
+            sync_before,
+            sync_after,
             converged,
         }
     }

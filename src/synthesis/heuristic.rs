@@ -1,5 +1,5 @@
-/// Learned heuristics: uses facet phases to guide program synthesis search.
-/// Deep learning guides the discrete program search (Ch 14.5).
+//! Learned heuristics: uses facet phases to guide program synthesis search.
+//! Deep learning guides the discrete program search (Ch 14.5).
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;

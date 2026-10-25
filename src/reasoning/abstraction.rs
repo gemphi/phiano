@@ -1,5 +1,5 @@
-/// Abstraction extraction: finds common phase patterns across examples.
-/// Implements Ch 14.4's abstraction through analogy-making.
+//! Abstraction extraction: finds common phase patterns across examples.
+//! Implements Ch 14.4's abstraction through analogy-making.
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;

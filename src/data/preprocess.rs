@@ -1,5 +1,5 @@
-/// Data preprocessing: tokenization, vectorization, and normalization.
-/// Reuses existing Tokenizer and Facet infrastructure.
+//! Data preprocessing: tokenization, vectorization, and normalization.
+//! Reuses existing Tokenizer and Facet infrastructure.
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;

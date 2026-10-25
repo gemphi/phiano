@@ -1,12 +1,12 @@
-/// Semantics agents - the syntax/semantics distinction (Chinese Room argument).
-///
-/// Searle's Chinese Room: a system can manipulate symbols according to rules
-/// (syntax) without understanding what they mean (semantics).
-/// This is the core argument against strong AI - mere symbol manipulation
-/// is not sufficient for understanding.
-///
-/// These agents model the gap between syntactic processing (bigram ordering,
-/// phase matching) and semantic understanding (definition grounding, coherence).
+//! Semantics agents - the syntax/semantics distinction (Chinese Room argument).
+//!
+//! Searle's Chinese Room: a system can manipulate symbols according to rules
+//! (syntax) without understanding what they mean (semantics).
+//! This is the core argument against strong AI - mere symbol manipulation
+//! is not sufficient for understanding.
+//!
+//! These agents model the gap between syntactic processing (bigram ordering,
+//! phase matching) and semantic understanding (definition grounding, coherence).
 
 use super::types::*;
 use crate::eval::Evaluator;
@@ -15,6 +15,7 @@ use crate::tokenizer::Tokenizer;
 use std::f64::consts::PI;
 
 /// 10. SemanticsAgent - maps phase relationships to meaning relations.
+///
 /// Models the semantic level: synonymy, antonymy, relatedness.
 /// This is distinct from syntax (word ordering) - it's about *meaning*.
 pub struct SemanticsAgent;
@@ -26,17 +27,14 @@ impl SemanticsAgent {
             .filter(|t| facet.lexicon.contains_key(*t))
             .collect();
 
-        match known.len() < 2 {
-            true => {
-                return AgentContribution {
-                    agent_name: "Semantics",
-                    agent_role: "Phase-to-meaning mapping (semantic relations)",
-                    confidence: 0.0,
-                    output: "Insufficient known words for semantic analysis".to_string(),
-                    phase_contribution: 0.0,
-                };
-            }
-            false => {}
+        if known.len() < 2 {
+            return AgentContribution {
+                agent_name: "Semantics",
+                agent_role: "Phase-to-meaning mapping (semantic relations)",
+                confidence: 0.0,
+                output: "Insufficient known words for semantic analysis".to_string(),
+                phase_contribution: 0.0,
+            };
         }
 
         let mut relationships = Vec::new();
@@ -45,9 +43,8 @@ impl SemanticsAgent {
                 let p1 = &facet.lexicon[known[i]];
                 let p2 = &facet.lexicon[known[j]];
                 let mut diff = (p1.phase - p2.phase).abs();
-                match diff > PI {
-                    true => diff = 2.0 * PI - diff,
-                    false => {}
+                if diff > PI {
+                    diff = 2.0 * PI - diff;
                 }
                 let relation = match diff {
                     d if d < 0.3 => "synonym (same meaning)",
@@ -70,6 +67,7 @@ impl SemanticsAgent {
 }
 
 /// 11. SyntaxAgent - handles word ordering via bigram transitions.
+///
 /// This is the *syntactic* level - Searle's Chinese Room shows that syntax
 /// alone is insufficient for understanding. But syntax is necessary for
 /// producing well-formed output.
@@ -82,59 +80,38 @@ impl SyntaxAgent {
         let mut current: Option<&str> = None;
 
         for token in &tokens {
-            match facet.lexicon.contains_key(token) {
-                true => {
-                    match current {
-                        Some(prev) => {
-                            let prob = facet.bigram_probability(prev, token);
-                            match prob > 0.0 {
-                                true => ordered.push(format!("{}→{} ({:.2})", prev, token, prob)),
-                                false => {}
-                            }
-                        }
-                        None => {}
+            if facet.lexicon.contains_key(token) {
+                if let Some(prev) = current {
+                    let prob = facet.bigram_probability(prev, token);
+                    if prob > 0.0 {
+                        ordered.push(format!("{}→{} ({:.2})", prev, token, prob));
                     }
-                    current = Some(token);
                 }
-                false => {}
+                current = Some(token);
             }
         }
 
         // Generate a bigram-ordered sequence from prompt words
         let mut seq = Vec::new();
-        match tokens.first() {
-            Some(first) => {
-                match facet.lexicon.contains_key(first) {
-                    true => {
-                        seq.push(first.clone());
-                        let mut last = first.clone();
-                        for _ in 0..8 {
-                            let candidates = facet.next_word_candidates(&last);
-                            match candidates.is_empty() {
-                                true => break,
-                                false => {}
-                            }
-                            let best = candidates.iter()
-                                .max_by_key(|(_, c)| *c)
-                                .map(|(w, _)| w.clone());
-                            match best {
-                                Some(w) => {
-                                    match !seq.contains(&w) {
-                                        true => {
-                                            seq.push(w.clone());
-                                            last = w;
-                                        }
-                                        false => break,
-                                    }
-                                }
-                                None => break,
-                            }
-                        }
+        if let Some(first) = tokens.first().filter(|f| facet.lexicon.contains_key(*f)) {
+            seq.push(first.clone());
+            let mut last = first.clone();
+            for _ in 0..8 {
+                let candidates = facet.next_word_candidates(&last);
+                if candidates.is_empty() {
+                    break;
+                }
+                let best = candidates.iter()
+                    .max_by_key(|(_, c)| *c)
+                    .map(|(w, _)| w.clone());
+                match best {
+                    Some(w) if !seq.contains(&w) => {
+                        seq.push(w.clone());
+                        last = w;
                     }
-                    false => {}
+                    _ => break,
                 }
             }
-            None => {}
         }
 
         let output = match seq.is_empty() {
@@ -156,6 +133,7 @@ impl SyntaxAgent {
 }
 
 /// 12. AwarenessAgent - evaluates qualitative coherence.
+///
 /// Searle argues consciousness is a biological phenomenon with qualitative,
 /// subjective character. Here we model the *qualitative* aspect as the
 /// coherence/novelty/resonance of the phase state - a proxy for the

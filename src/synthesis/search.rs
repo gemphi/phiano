@@ -1,4 +1,4 @@
-/// Program search space: enumerates candidate programs and evaluates them.
+//! Program search space: enumerates candidate programs and evaluates them.
 
 use super::program::{Program, ProgramOp};
 use crate::facet::Facet;

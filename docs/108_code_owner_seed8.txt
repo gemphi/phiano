@@ -1,0 +1,33 @@
+677 files · 33153 relation sightings · 20943 distinct relations → owner_s8.tsv
+by kind: calls 13001 · has 1708 · holds 845 · implements 69 · part-of 1539 · returns 1302 · takes 2479
+
+R = 64 · 16782 told · 4161 held out · pool 2837
+movement (the kind's count × the name's function): held out MRR 0.155 · hit@5 24.8% · within kind 0.157 · under the type law 0.156
+held out MRR 0.105 (prior 0.151) · hit@5 16.0% · within kind 0.138 (prior 0.152) · under the type law 0.131 (prior 0.151)
+  ⟨holds⟩        173 held out · MRR 0.176 · within kind 0.275 (prior 0.368)
+  ⟨has⟩          335 held out · MRR 0.022 · within kind 0.030 (prior 0.027)
+  ⟨implements⟩    14 held out · MRR 0.065 · within kind 0.663 (prior 0.461)
+  ⟨calls⟩       2600 held out · MRR 0.077 · within kind 0.081 (prior 0.106)
+  ⟨part-of⟩      317 held out · MRR 0.040 · within kind 0.142 (prior 0.099)
+  ⟨takes⟩        471 held out · MRR 0.253 · within kind 0.333 (prior 0.338)
+  ⟨returns⟩      251 held out · MRR 0.273 · within kind 0.374 (prior 0.345)
+
+RelationModel · has ⇒ joint (0.55), names (0.47), value (0.30), n (0.30), models (0.28)
+train · calls ⇒ and_modify (0.55), pools (0.54), as_str (0.48), partition (0.48), to_string (0.48)
+Episode · has ⇒ action (0.58), composites_at (0.41), words (0.34), text (0.28), count (0.25)
+score · returns ⇒ f64 (0.55), Vec (0.51), String (0.37), Option (0.37), usize (0.37)
+Counts · implements ⇒ Learner (0.42), DictionarySource (0.16), Oracle (0.13), Default (0.07), PhinumEngine (0.04)
+
+Under the owner (19718 owner rows from the told rows):
+  prior (with owner rows): held out MRR 0.155 · hit@5 24.9% · within kind 0.155
+  counts under the owner (siblings', then the kind's): held out MRR 0.143 · hit@5 23.7% · within kind 0.143
+  phinet, inheriting along part-of: held out MRR 0.129 · hit@5 20.2% · within kind 0.129
+    counts · ⟨holds⟩        173 · MRR 0.360 · within 0.361
+    counts · ⟨has⟩          335 · MRR 0.027 · within 0.027
+    counts · ⟨implements⟩    14 · MRR 0.494 · within 0.509
+    counts · ⟨calls⟩       2600 · MRR 0.095 · within 0.095
+    counts · ⟨part-of⟩      317 · MRR 0.099 · within 0.099
+    counts · ⟨takes⟩        471 · MRR 0.328 · within 0.328
+    counts · ⟨returns⟩      251 · MRR 0.330 · within 0.330
+
+saved owner_s8.relate (ask it: relate_ask owner_s8.relate <name> <kind>)

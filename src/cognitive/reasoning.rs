@@ -65,15 +65,8 @@ impl ReasoningChain {
             let result = cognitive_core.process(facet, context_buffer, &current_prompt);
 
             // Check if we've converged (output repeats)
-            match step_num > 0 {
-                true => {
-                    let prev_output = &steps[step_num - 1].output;
-                    match prev_output == &result.synthesized_output {
-                        true => break,
-                        false => {}
-                    }
-                }
-                false => {}
+            if step_num > 0 && steps[step_num - 1].output == result.synthesized_output {
+                break;
             }
 
             steps.push(ReasoningStep {
@@ -88,9 +81,8 @@ impl ReasoningChain {
             current_prompt = format!("{} relates to what?", result.synthesized_output);
 
             // Stop if coherence is high enough (we're confident)
-            match result.coherence > 0.85 && step_num >= 1 {
-                true => break,
-                false => {}
+            if result.coherence > 0.85 && step_num >= 1 {
+                break;
             }
         }
 

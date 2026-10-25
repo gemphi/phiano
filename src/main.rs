@@ -1,48 +1,16 @@
-mod attention;
-mod chunker;
-mod cognitive;
-mod command;
-mod compose;
-mod config;
-mod curriculum;
-mod data;
-mod drivers;
-mod envision;
-mod eval;
-mod facet;
-#[allow(dead_code)]
-mod gemgum;
-mod generate;
-mod instruction;
-mod layers;
-mod lifelong;
-mod memory;
-mod metrics;
-mod model;
-mod oscillator;
-mod phase_flow;
-mod persona;
-mod phasor;
-#[allow(dead_code)]
-mod phical;
-#[allow(dead_code)]
-mod phinum;
-#[allow(dead_code)]
-mod phiton;
-mod reasoning;
-mod server;
-mod sources;
-mod storage;
-mod synthesis;
-mod synthetic;
-mod tokenizer;
-mod trainer;
-mod wave;
-mod wiki_bulk;
+//! The REPL binary.
+//!
+//! This file used to re-declare all forty-five modules with `mod`, which meant
+//! the whole crate compiled twice — once as the library every experiment binary
+//! links against, and again inside this binary, where the REPL touches maybe a
+//! third of it. The second copy produced a hundred and seven dead-code warnings
+//! for code that is very much alive on the library side, and those drowned the
+//! real ones. It now links the library like every other binary does.
 
-use command::help::Help;
-use command::Context;
-use model::Model;
+use phiano::command::help::Help;
+use phiano::command::Context;
+use phiano::model::Model;
+use phiano::server;
 
 /// Entry point - initializes the model, prints help, and runs the REPL.
 ///
@@ -81,6 +49,8 @@ fn main() {
         world: &mut model.world,
         context_buffer: &mut model.context_buffer,
         cognitive_core: &model.cognitive_core,
+        corrections: &mut model.corrections,
+        gaps: Some(&model.envisioner.ledger),
         arg: "",
         line: "",
     });
