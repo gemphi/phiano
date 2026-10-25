@@ -12,7 +12,7 @@
 
 use phiano::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator};
-use phiano::learn::GenWeights;
+use phiano::learn::GenWeight;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::storage::Storage;
@@ -92,7 +92,7 @@ fn main() {
     let mrr_fit_n = mrr(&|t, i| rank_by(t, i, &|w| { let (m, n) = facet.relational_fit(t, i, w); m * (n as f64).ln_1p() }));
     // The learned scorer's own trade between the store (count) and the
     // Difference-Engine reading (relational), reused as fit: w[0]·ln count + w[6]·fit.
-    let lw = GenWeights::load("data/learned_austen.json").map(|w| w.w).unwrap_or([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    let lw = GenWeight::load("data/learned_austen.json").map(|w| w.w).unwrap_or([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
     let mrr_mix = mrr(&|t, i| rank_by(t, i, &|w| lw[0] * (facet.lexicon[w].count as f64).ln() + lw[6] * facet.relational_fit(t, i, w).0));
     writeln!(md, "**Cloze** — recover a masked content word from a pool of {} (seen ≥ 40 times), {} held-out positions, chance MRR {:.4}:\n", pool.len(), positions.len(), chance).unwrap();
     writeln!(md, "| reading | MRR | × chance |\n|---|---|---|").unwrap();
@@ -130,7 +130,7 @@ fn main() {
     writeln!(md, "{}\n", examples.join("\n")).unwrap();
 
     // ── 2. endgame ──
-    let learned = GenWeights::load("data/learned_austen.json").map(|w| w.for_decoding());
+    let learned = GenWeight::load("data/learned_austen.json").map(|w| w.for_decoding());
     let mut games: Vec<(String, String)> = Vec::new();
     for s in &split.test {
         let t = Tokenizer::tokenize(s);

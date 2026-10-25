@@ -1,13 +1,13 @@
 use crate::command::Context;
 use crate::memory::{MemoryBand, MEMORY_LAYERS};
 
-/// Stats - displays facet and memory statistics.
+/// Stat - displays facet and memory statistics.
 ///
 /// Shows vocabulary size, average amplitude, dominant band, centroid wave,
 /// and memory layer counts organized by band.
-pub struct Stats;
+pub struct Stat;
 
-impl Stats {
+impl Stat {
     /// Prints facet and memory statistics to stdout.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         crate::config::PhiConfig::print_summary();

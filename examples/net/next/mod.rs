@@ -51,7 +51,7 @@ use phiano::phinet::{Adam, Fno, FnoConfig};
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;
 
-pub fn run(a: Vec<String>) {
+pub fn run(_a: Vec<String>) {
     let Setup { epochs, split, facet } = setup();
 
     // ── 1. operator in the LM path ──────────────────────────────────────

@@ -13,9 +13,9 @@ use crate::phiton::chiton::Chiton;
 use crate::phiton::types::LightQuantum;
 
 /// Phical mathematical operators.
-pub struct PhicalOps;
+pub struct PhicalOp;
 
-impl PhicalOps {
+impl PhicalOp {
     /// Relaxes a word's phase toward a target using manifold gradient flow.
     ///
     /// This is the Kuramoto update rule applied on the color-space-time manifold:

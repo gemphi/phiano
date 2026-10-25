@@ -18,6 +18,8 @@ use count::*;
 #[allow(unused_imports)]
 use nudge::*;
 pub use dither::Rounding;
+// The dithered quantiser itself, for the extension channels (docs/90).
+pub(crate) use dither::quantise;
 #[allow(unused_imports)]
 use spectrum::*;
 

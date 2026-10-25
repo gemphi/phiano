@@ -21,7 +21,7 @@ impl SectorScore {
     }
 }
 
-impl KillerWords {
+impl KillerWord {
     pub fn new() -> Self {
         Self::default()
     }

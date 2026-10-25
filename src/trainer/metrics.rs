@@ -3,13 +3,13 @@ use std::time::Duration;
 
 /// Training metrics - tracks throughput and progress during ingestion.
 #[derive(Debug, Clone, Default)]
-pub struct TrainingMetrics {
+pub struct TrainingMetric {
     pub epochs_completed: usize,
     pub words_learned: usize,
     pub total_time: Duration,
 }
 
-impl TrainingMetrics {
+impl TrainingMetric {
     pub fn empty() -> Self {
         Self::default()
     }
@@ -34,7 +34,7 @@ impl TrainingMetrics {
     }
 }
 
-impl fmt::Display for TrainingMetrics {
+impl fmt::Display for TrainingMetric {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

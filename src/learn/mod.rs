@@ -19,13 +19,13 @@ pub mod features;
 use crate::config::LEARNED_FILE;
 use serde::{Deserialize, Serialize};
 
-pub use features::{CandidateFeatures, FEATURE_NAMES, N_FEATURES};
+pub use features::{CandidateFeature, FEATURE_NAMES, N_FEATURES};
 
 /// Learned weights for the generator's log-linear candidate scorer.
 ///
 /// `score = Σ_f w_f · x_f`; the candidate distribution is `softmax(score)`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct GenWeights {
+pub struct GenWeight {
     pub w: [f64; N_FEATURES],
     /// Held-out NLL per position when these weights were fit, for the record.
     pub heldout_nll: f64,
@@ -35,7 +35,7 @@ pub struct GenWeights {
     pub positions: usize,
 }
 
-impl GenWeights {
+impl GenWeight {
     /// The hand-tuned scorer, expressed in the log-linear form as closely as
     /// it can be: `ln count` term at 1, everything else at its old
     /// multiplicative log. This is what "no learning" means here.
@@ -60,7 +60,7 @@ impl GenWeights {
     }
 
     #[inline]
-    pub fn score(&self, x: &CandidateFeatures) -> f64 {
+    pub fn score(&self, x: &CandidateFeature) -> f64 {
         self.w.iter().zip(&x.0).map(|(w, x)| w * x).sum()
     }
 

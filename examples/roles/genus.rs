@@ -32,11 +32,11 @@ pub(super) fn genus_experiment(
         };
         usable += 1;
 
-        let id = match Roles::identity(facet, rules, specific) {
+        let id = match RoleTable::identity(facet, rules, specific) {
             Some(i) => i,
             None => continue,
         };
-        let by_role: Vec<String> = Roles::query(facet, &id, Role::Genus, &[specific], 5)
+        let by_role: Vec<String> = RoleTable::query(facet, &id, Role::Genus, &[specific], 5)
             .into_iter()
             .map(|(w, _)| w)
             .collect();

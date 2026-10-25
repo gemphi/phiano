@@ -3,7 +3,7 @@
 use phiano::eval::Evaluator;
 use phiano::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Decode, Generator, OperatorGuide};
-use phiano::learn::GenWeights;
+use phiano::learn::GenWeight;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::phinet::space::Sides;
@@ -22,7 +22,7 @@ fn main() {
     let facet: Facet = Storage::load("data/austen_voice.chroma").expect("run bin/austen first");
     let kn = KneserNey::train(&split.train);
     let ev = Evaluator::new();
-    let learned = GenWeights::load("data/learned_austen.json").map(|w| w.for_decoding());
+    let learned = GenWeight::load("data/learned_austen.json").map(|w| w.for_decoding());
     let prompts: Vec<String> = split.test.iter().filter(|s| Tokenizer::tokenize(s).len() >= 8).take(40).map(|s| Tokenizer::tokenize(s)[..3].join(" ")).collect();
     let lambda: f64 = std::env::var("PHIANO_FORCING").ok().and_then(|v| v.parse().ok()).unwrap_or(1.0);
     let arms: Vec<(&str, Decode)> = vec![

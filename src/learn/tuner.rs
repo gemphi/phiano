@@ -2,14 +2,14 @@
 
 use super::features::N_FEATURES;
 use super::positions::Position;
-use super::GenWeights;
+use super::GenWeight;
 
 /// Index of the `repeat` feature: fit in the tuner but *not* applied at
 /// decode time, where repetition is a sampling constraint instead. Real text
 /// repeats function words, so the fitted weight is positive (+0.55 on the
 /// Rust Book); a low-temperature sampler exploits that into loops ("the
 /// type of the type of…", distinct-token ratio 0.97 → 0.66). The weight is
-/// reported for what it is; `GenWeights::for_decoding` removes it.
+/// reported for what it is; `GenWeight::for_decoding` removes it.
 pub const REPEAT_FEATURE: usize = 4;
 
 /// Decode-time logit penalty for a word emitted in the last twelve tokens —
@@ -72,7 +72,7 @@ impl Tuner {
 
     /// Fits from `init`, early-stopping on `heldout`. Returns the weights and
     /// the held-out NLL per epoch.
-    pub fn fit(&self, init: [f64; N_FEATURES], train: &[Position], heldout: &[Position]) -> (GenWeights, Vec<f64>) {
+    pub fn fit(&self, init: [f64; N_FEATURES], train: &[Position], heldout: &[Position]) -> (GenWeight, Vec<f64>) {
         let mut w = init;
         let (mut m, mut v) = ([0.0; N_FEATURES], [0.0; N_FEATURES]);
         let (b1, b2, eps) = (0.9, 0.999, 1e-8);
@@ -97,10 +97,10 @@ impl Tuner {
             }
         }
         (
-            GenWeights {
+            GenWeight {
                 w: best.1,
                 heldout_nll: best.0,
-                baseline_nll: Self::nll(&GenWeights::counts_only().w, heldout),
+                baseline_nll: Self::nll(&GenWeight::counts_only().w, heldout),
                 positions: train.len(),
             },
             trace,

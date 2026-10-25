@@ -3,7 +3,7 @@
 //! Uses match-based dispatch, not if-else chains.
 
 use super::types::*;
-use super::markers::SearleMarkers;
+use super::markers::SearleMarker;
 use crate::tokenizer::Tokenizer;
 
 /// 4. SpeechActAgent - classifies illocutionary force with felicity conditions.
@@ -12,15 +12,15 @@ pub struct SpeechActAgent;
 impl SpeechActAgent {
     /// Data-driven classification using loaded markers.
     pub fn classify(prompt: &str) -> SpeechActType {
-        let markers = SearleMarkers::load();
+        let markers = SearleMarker::load();
         Self::classify_with_markers(prompt, markers)
     }
 
     /// Classification with injected markers.
-    fn classify_with_markers(prompt: &str, m: &SearleMarkers) -> SpeechActType {
+    fn classify_with_markers(prompt: &str, m: &SearleMarker) -> SpeechActType {
         // Indirect speech acts: "Can you X?" is literally a question,
         // but functions as a request (Searle 1975).
-        if SearleMarkers::starts_with_any(prompt, &m.indirect_patterns) {
+        if SearleMarker::starts_with_any(prompt, &m.indirect_patterns) {
             return SpeechActType::Directive;
         }
 
@@ -28,18 +28,18 @@ impl SpeechActAgent {
         // Commissive/expressive/declarative checked before directive because
         // "i will explain" is commissive, not directive.
         match () {
-            _ if SearleMarkers::contains_any(prompt, &m.commissive_markers) => SpeechActType::Commissive,
-            _ if SearleMarkers::contains_any(prompt, &m.expressive_markers) => SpeechActType::Expressive,
-            _ if SearleMarkers::contains_any(prompt, &m.declarative_markers) => SpeechActType::Declarative,
-            _ if SearleMarkers::contains_any(prompt, &m.directive_question_markers) => SpeechActType::Directive,
-            _ if SearleMarkers::contains_any(prompt, &m.directive_command_markers) => SpeechActType::Directive,
+            _ if SearleMarker::contains_any(prompt, &m.commissive_markers) => SpeechActType::Commissive,
+            _ if SearleMarker::contains_any(prompt, &m.expressive_markers) => SpeechActType::Expressive,
+            _ if SearleMarker::contains_any(prompt, &m.declarative_markers) => SpeechActType::Declarative,
+            _ if SearleMarker::contains_any(prompt, &m.directive_question_markers) => SpeechActType::Directive,
+            _ if SearleMarker::contains_any(prompt, &m.directive_command_markers) => SpeechActType::Directive,
             _ => SpeechActType::Assertive,
         }
     }
 
     /// Extracts propositional content separately from illocutionary force.
     pub fn extract_propositional_content(prompt: &str) -> String {
-        let markers = SearleMarkers::load();
+        let markers = SearleMarker::load();
         let p = prompt.to_lowercase();
         let tokens = Tokenizer::tokenize(prompt);
 
@@ -72,37 +72,37 @@ impl SpeechActAgent {
     }
 
     /// Felicity conditions per speech act type (Searle's conditions).
-    pub fn felicity_conditions(act: SpeechActType, _prompt: &str) -> FelicityConditions {
+    pub fn felicity_conditions(act: SpeechActType, _prompt: &str) -> FelicityCondition {
         match act {
-            SpeechActType::Assertive => FelicityConditions {
+            SpeechActType::Assertive => FelicityCondition {
                 propositional_content_rule: "Must express a proposition that can be true or false".into(),
                 preparatory_condition: "Speaker has evidence for the truth of P".into(),
                 sincerity_condition: "Speaker believes P is true".into(),
                 essential_condition: "Tally as an undertaking that P represents an actual state of affairs".into(),
                 satisfied: true,
             },
-            SpeechActType::Directive => FelicityConditions {
+            SpeechActType::Directive => FelicityCondition {
                 propositional_content_rule: "Must express a future act A of the hearer".into(),
                 preparatory_condition: "Hearer is able to do A; speaker has authority to request".into(),
                 sincerity_condition: "Speaker wants hearer to do A".into(),
                 essential_condition: "Tally as an attempt to get hearer to do A".into(),
                 satisfied: true,
             },
-            SpeechActType::Commissive => FelicityConditions {
+            SpeechActType::Commissive => FelicityCondition {
                 propositional_content_rule: "Must express a future act A of the speaker".into(),
                 preparatory_condition: "Speaker is able to do A".into(),
                 sincerity_condition: "Speaker intends to do A".into(),
                 essential_condition: "Tally as an undertaking of an obligation to do A".into(),
                 satisfied: true,
             },
-            SpeechActType::Expressive => FelicityConditions {
+            SpeechActType::Expressive => FelicityCondition {
                 propositional_content_rule: "Expresses a psychological state about a state of affairs".into(),
                 preparatory_condition: "The state of affairs must be relevant to speaker and hearer".into(),
                 sincerity_condition: "Speaker genuinely has the expressed psychological state".into(),
                 essential_condition: "Tally as an expression of the psychological state".into(),
                 satisfied: true,
             },
-            SpeechActType::Declarative => FelicityConditions {
+            SpeechActType::Declarative => FelicityCondition {
                 propositional_content_rule: "Must express a state of affairs S that the declaration brings about".into(),
                 preparatory_condition: "Speaker must have the institutional authority to bring about S".into(),
                 sincerity_condition: "Speaker intends to bring about S".into(),
@@ -125,15 +125,15 @@ impl SpeechActAgent {
 
     /// Detects literal vs speaker meaning divergence.
     pub fn speaker_vs_literal_meaning(prompt: &str) -> (String, String) {
-        let markers = SearleMarkers::load();
+        let markers = SearleMarker::load();
         let literal = prompt.to_string();
 
-        if SearleMarkers::starts_with_any(prompt, &markers.indirect_patterns) {
+        if SearleMarker::starts_with_any(prompt, &markers.indirect_patterns) {
             let speaker = format!("Do the requested action (indirect request): {}", prompt);
             return (literal, speaker);
         }
 
-        if SearleMarkers::contains_any(prompt, &markers.rhetorical_markers) {
+        if SearleMarker::contains_any(prompt, &markers.rhetorical_markers) {
             let speaker = format!("Nobody knows/cares - rhetorical (not a real question): {}", prompt);
             return (literal, speaker);
         }

@@ -26,7 +26,7 @@
 //! intelligence plausible" — words follow the physics of light.
 
 use crate::config::{ALPHA, PHI, PHI_CONJUGATE, TWO_PI};
-use crate::physics::{ColorSpaceTimePoint, Phical, PhicalOps};
+use crate::physics::{ColorSpaceTimePoint, Phical, PhicalOp};
 use crate::phiton::chiton::Chiton;
 use crate::phiton::types::LightQuantum;
 use crate::phiton::{Phiton, PhitonColor, PhitonSpectrum};
@@ -52,7 +52,7 @@ impl Gemgum {
     /// A word is strongly bound when its phase aligns with a golden-ratio
     /// node on the manifold. Binding strength ∈ [0, 1].
     pub fn binding_strength(phasor: &SpectralPhasor) -> f64 {
-        let node_phase = PhicalOps::bind_to_node(phasor.phase, phasor.band_n);
+        let node_phase = PhicalOp::bind_to_node(phasor.phase, phasor.band_n);
         let eff_phase = Phical::effective_phase(phasor.phase, phasor.band_n);
 
         let mut delta = (eff_phase - node_phase).abs();
@@ -133,7 +133,7 @@ impl Gemgum {
         let ca = Chiton::from_quantum(&qa);
         let cb = Chiton::from_quantum(&qb);
 
-        let interference = PhicalOps::interference(a.phase, a.band_n, b.phase, b.band_n);
+        let interference = PhicalOp::interference(a.phase, a.band_n, b.phase, b.band_n);
         let wave_resonance = ca.resonance(&cb);
         let spectral_coupling = PhitonSpectrum::coupling(&qa, &qb);
 

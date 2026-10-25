@@ -14,7 +14,7 @@ use super::*;
 /// `for` pairs agree on an offset better than the mixed `genus` bucket did, the
 /// prepositions are naming real relations rather than slicing noise.
 pub(super) fn lexical_experiment(facet: &Facet, glosses: &[(String, String)]) {
-    use phiano::roles::{Coherence, LexicalRules};
+    use phiano::roles::{Coherence, LexicalRule};
 
     let known: std::collections::HashSet<&str> =
         facet.lexicon.keys().map(|s| s.as_str()).collect();
@@ -22,7 +22,7 @@ pub(super) fn lexical_experiment(facet: &Facet, glosses: &[(String, String)]) {
         w.len() > 2 && !is_function_word(w) && !is_modifier(w) && known.contains(w)
     };
 
-    let mut lex = LexicalRules::new();
+    let mut lex = LexicalRule::new();
     for (head, gloss) in glosses {
         if facet.lexicon.contains_key(head) {
             lex.extract(head, gloss, is_content);

@@ -66,7 +66,7 @@ pub const CHROMA_FILE: &str = "data/manifold.chroma";
 /// (`Generator::with_operator`, `OperatorGuide::load`). Absent = unguided.
 pub const OPERATOR_FILE: &str = "data/phinet_generate.fno";
 
-/// Learned generator weights (`learn::GenWeights`), fit by `bin/learn` from
+/// Learned generator weights (`learn::GenWeight`), fit by `bin/learn` from
 /// held-out text. When present the generator scores candidates with them
 /// instead of the hand-tuned constants.
 pub const LEARNED_FILE: &str = "data/learned.json";

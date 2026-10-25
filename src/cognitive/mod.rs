@@ -1,7 +1,7 @@
 //! Cognitive core - Searle-inspired 16-agent cognitive architecture.
 //!
 //! Module structure:
-//! - types.rs: Core data structures (IntentionalState, FelicityConditions, etc.)
+//! - types.rs: Core data structures (IntentionalState, FelicityCondition, etc.)
 //! - markers.rs: Data-driven Searle markers (loaded from JSON, cached)
 //! - intentionality.rs: Intentionality, Aboutness, Background agents
 //! - speech_acts.rs: SpeechAct agent (illocutionary force, felicity conditions)
@@ -29,7 +29,7 @@ pub mod reasoning;
 pub mod grounding;
 
 #[allow(unused_imports)]
-pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityConditions};
+pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCondition};
 #[allow(unused_imports)]
 pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
 pub use speech::SpeechActAgent;

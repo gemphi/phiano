@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-impl Roles {
+impl RoleTable {
     /// Binds a filler into a role: rotate the filler's phases by the role's.
     ///
     /// Phase addition is circular convolution in this representation, so

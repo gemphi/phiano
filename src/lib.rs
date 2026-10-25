@@ -1,3 +1,6 @@
+pub mod extension;
+pub mod arena;
+pub mod scribe;
 pub mod attention;
 #[path = "bpe/mod.rs"]
 pub mod bpe;

@@ -56,7 +56,7 @@ try {
     foreach ($s in 7, 8, 9, 10) {
         $env:PHIANO_SEED = "$s"
         Stamp "kind_operator seed $s"
-        cargo run --release --example kind_operator -- $all 60 fno,fno+closure 2>&1 | Tee-Object -FilePath (Join-Path $night "operator_seed$s.txt")
+        cargo run --release --bin kind_operator -- $all 60 fno,fno+closure 2>&1 | Tee-Object -FilePath (Join-Path $night "operator_seed$s.txt")
     }
     $lines = Get-ChildItem (Join-Path $night "operator_seed*.txt") | ForEach-Object {
         "== $($_.Name)"

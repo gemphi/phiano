@@ -3,7 +3,7 @@
 use phiano::eval::Evaluator;
 use phiano::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator, OperatorGuide};
-use phiano::learn::GenWeights;
+use phiano::learn::GenWeight;
 use phiano::metrics::harness::Split;
 use phiano::persona::World;
 use phiano::metrics::baseline::kn::KneserNey;
@@ -17,7 +17,7 @@ use std::fmt::Write as _;
 type Arm = (&'static str, bool, Option<(u8, usize)>);
 
 /// §6 — short and long compositions under three arms, judged by Kneser-Ney.
-pub fn compositions(md: &mut String, voice: &Facet, learned: &GenWeights, kn: &KneserNey, split: &Split) {
+pub fn compositions(md: &mut String, voice: &Facet, learned: &GenWeight, kn: &KneserNey, split: &Split) {
     let prompts = [
         "It is a truth universally",
         "Emma Woodhouse handsome clever and rich",
@@ -81,7 +81,7 @@ pub fn compositions(md: &mut String, voice: &Facet, learned: &GenWeights, kn: &K
 /// §7 — hexagram readings of a few of her words.
 pub fn operations(md: &mut String, space: &FunctionSpace, novelty_hex: u8) {
     writeln!(md, "## 7. The sixty-four operations\n").unwrap();
-    writeln!(md, "`phistd::hexagram`: a hexagram's six lines gate the six octaves of a function's spectrum — line *j* yang passes octave *j*. ䷀ (111111) is the identity, ䷁ (000000) keeps only the mean; `changing_lines` walks between them. The hexagram a word *is* is its centroid sector (Q64). Readings of five of Austen's words (octave energy, bottom line first):\n").unwrap();
+    writeln!(md, "`phistd::hexagram`: a hexagram's six lines gate the six octaves of a function's spectrum — line *j* yang passes octave *j*. ䷀ (111111) is the identity, ䷁ (000000) keeps only the mean; `changing_lines` walks between them. The hexagram a word *is* is its centroid sector (Q64). ReadingSet of five of Austen's words (octave energy, bottom line first):\n").unwrap();
     writeln!(md, "| word | Q64 id | King Wen | lines (octaves 0–5) | novelty of ䷘ |\n|---|---|---|---|---|").unwrap();
     for w in ["elinor", "emma", "love", "marriage", "said", "the"] {
         if let Some(&i) = space.index.get(w) {

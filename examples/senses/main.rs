@@ -118,9 +118,9 @@ fn main() {
     let train: Vec<Vec<String>> = split.train.iter().map(|s| Tokenizer::tokenize(s)).collect();
     let held: Vec<Vec<String>> = split.valid.iter().map(|s| Tokenizer::tokenize(s)).collect();
 
-    // Roles are learned on the training half only. Learning them on everything
+    // RoleTable are learned on the training half only. Learning them on everything
     // would let the held-out sentences choose their own conditioning.
-    let roles = Roles::learn(&facet, &train);
+    let roles = RoleTable::learn(&facet, &train);
     let vocab = facet.vocabulary_size();
 
     println!(

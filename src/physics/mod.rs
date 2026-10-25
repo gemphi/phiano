@@ -51,7 +51,7 @@ pub use phistd::phasor as ranges;
 #[allow(unused_imports)]
 pub use evaluate::Topology;
 pub use manifold::ColorSpaceTimeManifold;
-pub use operators::PhicalOps;
+pub use operators::PhicalOp;
 #[allow(unused_imports)]
 pub use topology::{Edge, Path, Region, Surface, Vertex};
 

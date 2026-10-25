@@ -113,16 +113,16 @@ impl ChunkStore {
         manifold: &mut crate::facet::Facet,
         trainer: &crate::trainer::Trainer,
         epochs: usize,
-    ) -> crate::trainer::TrainingMetrics {
+    ) -> crate::trainer::TrainingMetric {
         let start = Instant::now();
         let entries = self.load_all();
         if entries.is_empty() {
             eprintln!("  [error] No chunks found in {}", self.root);
-            return crate::trainer::TrainingMetrics::empty();
+            return crate::trainer::TrainingMetric::empty();
         }
 
         println!("  [ingest] {} entries, {} epochs", entries.len(), epochs);
-        let mut metrics = crate::trainer::TrainingMetrics::empty();
+        let mut metrics = crate::trainer::TrainingMetric::empty();
 
         for epoch in 0..epochs {
             let epoch_start = Instant::now();

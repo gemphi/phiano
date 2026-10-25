@@ -8,7 +8,7 @@
 //! `data/learned.json` for the generator to pick up.
 
 use phiano::config::{LEARNED_FILE, LEARNING_RATE, OPERATOR_FILE};
-use phiano::learn::{corpus_positions, GenWeights, Tuner, FEATURE_NAMES};
+use phiano::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phiano::metrics::harness::Harness;
 use phiano::phinet::space::Sides;
 use phiano::tokenizer::Tokenizer;
@@ -49,8 +49,8 @@ fn main() {
         train.len(), seen_t, 100.0 * cov_t as f64 / seen_t.max(1) as f64, held.len(), seen_h, 100.0 * cov_h as f64 / seen_h.max(1) as f64, t0.elapsed().as_secs_f64()
     );
 
-    let counts = GenWeights::counts_only();
-    let hand = GenWeights::hand();
+    let counts = GenWeight::counts_only();
+    let hand = GenWeight::hand();
     println!("\n  {:<24} held-out NLL {:>7.4}   ppl among candidates {:>7.2}", "counts only", Tuner::nll(&counts.w, &held), Tuner::nll(&counts.w, &held).exp());
     println!("  {:<24} held-out NLL {:>7.4}   ppl among candidates {:>7.2}", "hand-tuned (as shipped)", Tuner::nll(&hand.w, &held), Tuner::nll(&hand.w, &held).exp());
     let (learned, trace) = Tuner::default().fit(counts.w, &train, &held);

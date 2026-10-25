@@ -35,7 +35,7 @@ pub struct RuleSet {
 }
 
 /// Binding and unbinding by role.
-pub struct Roles;
+pub struct RoleTable;
 
 /// A relation type **discovered from use**, not declared.
 ///
@@ -107,7 +107,7 @@ pub struct Coherence;
 /// cooking* is Searle's context C, and no regex for `function` was ever going to
 /// find it.
 #[derive(Debug, Clone, Default)]
-pub struct LexicalRules {
+pub struct LexicalRule {
     pub(super) triples: Vec<(String, String, String)>,
     pub(super) by_role: HashMap<String, Vec<usize>>,
     pub(super) by_head: HashMap<String, Vec<usize>>,

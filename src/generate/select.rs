@@ -108,7 +108,7 @@ impl Generator {
                 if !Self::speakable(word) {
                     continue;
                 }
-                let x = crate::learn::CandidateFeatures::build(
+                let x = crate::learn::CandidateFeature::build(
                     facet,
                     word,
                     *count,

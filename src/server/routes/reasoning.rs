@@ -66,7 +66,7 @@ pub async fn multi_path_reason(
     let mut best_idx = 0;
     let mut best_conf = 0.0;
     for (i, path) in paths.iter().enumerate() {
-        let conf = reasoning::Diagnostics::confidence(path);
+        let conf = reasoning::Diagnostic::confidence(path);
         if conf > best_conf {
             best_conf = conf;
             best_idx = i;

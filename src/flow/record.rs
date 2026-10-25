@@ -33,14 +33,14 @@ impl PhaseFlow {
 
     /// Physics-aware Hebbian update using the color-space-time manifold gradient.
     ///
-    /// Instead of raw sin(Δφ), this uses [`PhicalOps::relax_phase`] which
+    /// Instead of raw sin(Δφ), this uses [`PhicalOp::relax_phase`] which
     /// computes the geodesic gradient on the T² manifold — accounting for
     /// the fine-structure sub-band spacing and golden-ratio weighting.
     /// This produces more natural phase convergence than the raw Kuramoto rule.
     pub fn hebbian_update_phical(&self, facet: &mut Facet) {
         for node in &self.nodes {
             if let Some(phasor) = facet.lexicon.get_mut(&node.word) {
-                phasor.phase = PhicalOps::relax_phase(
+                phasor.phase = PhicalOp::relax_phase(
                     phasor.phase,
                     phasor.band_n,
                     self.collective_phase,

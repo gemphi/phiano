@@ -31,7 +31,7 @@ pub struct ArcTask {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ArcResults {
+pub struct ArcResult {
     pub total: usize,
     /// Every expected token recovered.
     pub exact: usize,
@@ -102,7 +102,7 @@ impl ArcBenchmark {
     }
 
     /// Trains on each task's demonstration pairs, then predicts the held-out input.
-    pub fn evaluate(facet: &mut Facet, trainer: &Trainer, tasks: &[ArcTask]) -> ArcResults {
+    pub fn evaluate(facet: &mut Facet, trainer: &Trainer, tasks: &[ArcTask]) -> ArcResult {
         let mut details = Vec::new();
         let (mut exact, mut partial) = (0usize, 0usize);
         let mut f1_sum = 0.0f64;
@@ -134,7 +134,7 @@ impl ArcBenchmark {
         }
 
         let total = tasks.len();
-        ArcResults {
+        ArcResult {
             total,
             exact,
             partial,

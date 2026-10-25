@@ -67,7 +67,7 @@ use phiano::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::RelationBenchmark;
 use phiano::phasor::SpectralPhasor;
-use phiano::roles::{Role, RuleSet, Roles};
+use phiano::roles::{Role, RuleSet, RoleTable};
 use phiano::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;
@@ -96,7 +96,7 @@ fn main() {
     // Hierarchy, as a demonstration rather than a metric.
     println!("\n--- genus chains ---");
     for w in ["cow", "dog", "oak", "money", "salmon"] {
-        let path = Roles::ascend(&rules, w, Role::Genus, 5);
+        let path = RoleTable::ascend(&rules, w, Role::Genus, 5);
         if path.len() > 1 {
             println!("  {}", path.join(" → "));
         }

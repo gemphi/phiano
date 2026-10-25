@@ -18,7 +18,7 @@ mod operator;
 mod waves;
 
 use phiano::prose::{heldout, Knowing};
-use phical::conjugate::{Mirror, Moments, Told};
+use phical::conjugate::{Mirror, Moment, Told};
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
@@ -83,7 +83,7 @@ fn main() {
     let mut pool: Vec<usize> = rows.iter().map(|r| r.other).collect();
     pool.sort_unstable();
     pool.dedup();
-    let mut mo = Moments::new(&m);
+    let mut mo = Moment::new(&m);
     match from {
         0 => log(&out, &format!("# Mirror run: R = {modes}, {epochs} epochs, a measurement every {every}, words up to {ahead} ahead\n\n{} told rows · {} words · {} held-out paragraphs · seed {seed} · the mixture fitted on {} rows {}\n", rows.len(), m.names.len(), story.held.len(), fit.len(), if dev > share { "the mirror never saw" } else { "it trained on" })),
         e => log(&out, &format!("\n_resumed from epoch {e}_\n")),

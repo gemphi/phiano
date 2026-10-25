@@ -8,7 +8,7 @@ pub(super) const SPLIT_FLOOR: u32 = 60;
 /// Tokens either side of an occurrence that describe it.
 pub(super) const WINDOW: usize = 3;
 
-/// Roles per word, overridable from the command line.
+/// RoleTable per word, overridable from the command line.
 ///
 /// Bounded, in the spirit of the rest of the project — and small, because the
 /// evidence per role falls as it rises and the split has to pay for itself.
@@ -18,7 +18,7 @@ pub(super) static VARIANTS_CELL: std::sync::OnceLock<usize> = std::sync::OnceLoc
 pub(super) const ALPHA: f64 = 0.1;
 
 /// Per-word role centroids, learned from the training half only.
-pub(super) struct Roles {
+pub(super) struct RoleTable {
     pub(super) centroids: HashMap<String, Vec<Vec<f64>>>,
 }
 

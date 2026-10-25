@@ -20,7 +20,7 @@ $phiano = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 # phiano is a member of the phinet workspace: its binaries land in the workspace's target directory.
 $target = (cargo metadata --no-deps --format-version 1 --manifest-path (Join-Path $phiano "Cargo.toml") | ConvertFrom-Json).target_directory
 Set-Location $phiano
-cargo build --release --example story --example context --example code_student 2>&1 | Select-Object -Last 1
+cargo build --release --bin story --bin context --bin code_student 2>&1 | Select-Object -Last 1
 $story = Join-Path $target "release\story.exe"
 $context = Join-Path $target "release\context.exe"
 $student = Join-Path $target "release\code_student.exe"

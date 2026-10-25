@@ -13,10 +13,10 @@ pub struct Generator {
     /// Optional Phinet operator. `RefCell` because decoding takes `&self`
     /// and the operator's tape is mutable.
     pub operator: Option<std::cell::RefCell<OperatorGuide>>,
-    /// Learned log-linear candidate weights (`learn::GenWeights`). When set,
+    /// Learned log-linear candidate weights (`learn::GenWeight`). When set,
     /// candidate scores are logits `w·x` and sampling is a softmax over them;
     /// when not, the hand-tuned multiplicative scorer is used.
-    pub weights: Option<crate::learn::GenWeights>,
+    pub weights: Option<crate::learn::GenWeight>,
     /// The endgame: a word the composition is to reach, and how hard to pull
     /// toward it. Every candidate's score gains `weight · calls_for(cand, goal)`
     /// until the goal has been emitted. `None` composes freely.
@@ -75,7 +75,7 @@ impl Generator {
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_nanos() as u64)
             .unwrap_or(0x9E3779B97F4A7C15);
-        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1), operator: None, weights: crate::learn::GenWeights::load_default().map(|w| w.for_decoding()), ctx: std::cell::RefCell::new(Vec::new()), relational_proposals: RELATIONAL_PROPOSALS, goal: None, decode: Decode::Trigram, persona: None, reading: crate::facet::Reading::from_env() }
+        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1), operator: None, weights: crate::learn::GenWeight::load_default().map(|w| w.for_decoding()), ctx: std::cell::RefCell::new(Vec::new()), relational_proposals: RELATIONAL_PROPOSALS, goal: None, decode: Decode::Trigram, persona: None, reading: crate::facet::Reading::from_env() }
     }
 
     /// Creates a generator with a fixed seed, for reproducible output. Does
@@ -85,7 +85,7 @@ impl Generator {
     }
 
     /// Scores candidates with learned weights (or `None` for the hand scorer).
-    pub fn with_weights(mut self, weights: Option<crate::learn::GenWeights>) -> Self {
+    pub fn with_weights(mut self, weights: Option<crate::learn::GenWeight>) -> Self {
         self.weights = weights.map(|w| w.for_decoding());
         self
     }

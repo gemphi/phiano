@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::roles::LexicalRules;
+use phiano::roles::LexicalRule;
 use phiano::sources::definition_senses;
 
 /// Sense counts straight from the dictionary's own numbering, and the
@@ -41,11 +41,11 @@ pub(super) fn load_senses(chunks_path: &str) -> Senses {
 }
 
 /// Register named by the language itself, extracted per sense.
-pub(super) fn lexical_rules(facet: &Facet, sense_glosses: &HashMap<String, Vec<String>>) -> LexicalRules {
+pub(super) fn lexical_rules(facet: &Facet, sense_glosses: &HashMap<String, Vec<String>>) -> LexicalRule {
     let known: std::collections::HashSet<&str> = facet.lexicon.keys().map(|s| s.as_str()).collect();
     let is_content = |w: &str| w.len() > 2 && !is_function_word(w) && !is_modifier(w) && known.contains(w);
 
-    let mut lex = LexicalRules::new();
+    let mut lex = LexicalRule::new();
     for (w, gs) in sense_glosses {
         if facet.lexicon.contains_key(w) {
             for g in gs {

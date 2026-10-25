@@ -14,9 +14,9 @@ pub enum ConvergenceMode {
 }
 
 #[derive(Debug, Default)]
-pub struct Diagnostics;
+pub struct Diagnostic;
 
-impl Diagnostics {
+impl Diagnostic {
     /// Diagnoses the convergence mode of a reasoning chain.
     pub fn diagnose(chain: &ReasoningChain) -> ConvergenceMode {
         if chain.converged {
@@ -111,7 +111,7 @@ mod tests {
         facet.get_or_init("b");
         let engine = ReasoningEngine;
         let chain = engine.solve(&facet, "a b");
-        let mode = Diagnostics::diagnose(&chain);
+        let mode = Diagnostic::diagnose(&chain);
         assert!(mode == ConvergenceMode::Converged || mode == ConvergenceMode::Stuck);
     }
 }

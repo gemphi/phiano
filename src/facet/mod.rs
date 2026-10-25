@@ -52,7 +52,7 @@ pub struct Vocab {
 
 /// Tally needed to score one n-gram continuation.
 #[derive(Debug, Clone, Copy)]
-pub struct NgramStats {
+pub struct NgramStat {
     /// Times this exact continuation was seen.
     pub count: u32,
     /// Times the context was seen at all.

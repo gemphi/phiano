@@ -49,6 +49,6 @@ pub struct SectorScore {
 /// produced a better position elsewhere in the search. Still standard in
 /// alpha-beta engines nearly sixty years later.
 #[derive(Debug, Default, Clone)]
-pub struct KillerWords {
+pub struct KillerWord {
     pub(super) hits: HashMap<String, u32>,
 }

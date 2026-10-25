@@ -55,7 +55,7 @@ pub fn rank_of(pool: &[String], other: &str, score: impl Fn(&str) -> f64) -> usi
 ///   scores as well as `kind`, the channels carry adjacency, not kinds.
 /// - `offset`: [`Facet::calls_for`], the offset channels only — what the
 ///   dialogue reads today, which never saw a kind.
-pub struct Readings {
+pub struct ReadingSet {
     pub kind: Score,
     pub within: Score,
     pub wrong: Score,
@@ -63,12 +63,12 @@ pub struct Readings {
     pub per_kind: Vec<(String, Score, Score)>,
 }
 
-pub fn measure(facet: &Facet, rows: &[Row]) -> Readings {
+pub fn measure(facet: &Facet, rows: &[Row]) -> ReadingSet {
     let pool = target_pool(rows);
     let kinds = kinds(rows);
     let channel: Vec<Option<usize>> = kinds.iter().map(|k| facet.marker_channel(k)).collect();
     let pools: Vec<Vec<String>> = kinds.iter().map(|k| kind_pool(rows, k)).collect();
-    let mut r = Readings {
+    let mut r = ReadingSet {
         kind: Score::default(),
         within: Score::default(),
         wrong: Score::default(),

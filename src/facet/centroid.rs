@@ -90,11 +90,11 @@ impl Facet {
     }
 
     /// Tally for one bigram continuation, or `None` if the context is unseen.
-    pub fn bigram_stats(&self, word_a: &str, word_b: &str) -> Option<NgramStats> {
+    pub fn bigram_stats(&self, word_a: &str, word_b: &str) -> Option<NgramStat> {
         let a = self.vocab.id(word_a)?;
         let list = self.bigrams.get(&a)?;
         let b = self.vocab.id(word_b);
-        Some(NgramStats {
+        Some(NgramStat {
             count: b.map(|b| lookup(list, b)).unwrap_or(0),
             total: total_of(list),
             types: list.len() as u32,
@@ -102,11 +102,11 @@ impl Facet {
     }
 
     /// Tally for one trigram continuation, or `None` if the context is unseen.
-    pub fn trigram_stats(&self, word_a: &str, word_b: &str, word_c: &str) -> Option<NgramStats> {
+    pub fn trigram_stats(&self, word_a: &str, word_b: &str, word_c: &str) -> Option<NgramStat> {
         let key = (self.vocab.id(word_a)?, self.vocab.id(word_b)?);
         let list = self.trigrams.get(&key)?;
         let c = self.vocab.id(word_c);
-        Some(NgramStats {
+        Some(NgramStat {
             count: c.map(|c| lookup(list, c)).unwrap_or(0),
             total: total_of(list),
             types: list.len() as u32,

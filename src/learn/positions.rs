@@ -1,6 +1,6 @@
 //! Turning a corpus into scored positions: every candidate's features at every step.
 
-use super::features::CandidateFeatures;
+use super::features::CandidateFeature;
 
 /// Candidates kept per position when building training positions.
 pub const CANDIDATES: usize = 64;
@@ -46,7 +46,7 @@ pub fn corpus_positions(
                 .iter()
                 .map(|(w, c)| {
                     let op = guide.as_mut().and_then(|g| g.cosine_of(w)).unwrap_or(0.0);
-                    CandidateFeatures::build(facet, w, *c, target_phase, flow.collective_phase, recent.contains(w), op, ctx)
+                    CandidateFeature::build(facet, w, *c, target_phase, flow.collective_phase, recent.contains(w), op, ctx)
                 })
                 .collect();
             out.push(Position { feats, truth });
@@ -61,6 +61,6 @@ pub fn corpus_positions(
 
 /// One training position: the candidates' features and which one is true.
 pub struct Position {
-    pub feats: Vec<CandidateFeatures>,
+    pub feats: Vec<CandidateFeature>,
     pub truth: usize,
 }

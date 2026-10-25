@@ -80,7 +80,7 @@ impl Evaluator {
         &self,
         facet: &Facet,
         flows: &[RiverFlow],
-        killers: &KillerWords,
+        killers: &KillerWord,
     ) -> Vec<SectorScore> {
         let mut scores = Vec::with_capacity(flows.len());
         let prompt = flows.first().map(|f| f.prompt.as_str()).unwrap_or("");

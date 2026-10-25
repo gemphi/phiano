@@ -13,7 +13,7 @@
 use phiano::config::LEARNING_RATE;
 use phiano::facet::Facet;
 use phiano::generate::OperatorGuide;
-use phiano::learn::{corpus_positions, GenWeights, Tuner, FEATURE_NAMES};
+use phiano::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phiano::metrics::harness::{Harness, Split};
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::persona::World;
@@ -165,10 +165,10 @@ fn main() {
     let mut guide_opt = OperatorGuide::load("data/austen_operator.fno", &voice, Sides::Directed, 6).ok();
     let (fit, _, _) = corpus_positions(&voice, &split.valid, 30_000, &mut guide_opt);
     let (held, _, _) = corpus_positions(&voice, &split.test, 30_000, &mut guide_opt);
-    let (learned, _) = Tuner::default().fit(GenWeights::counts_only().w, &fit, &held);
+    let (learned, _) = Tuner::default().fit(GenWeight::counts_only().w, &fit, &held);
     learned.save("data/learned_austen.json").expect("write learned");
     writeln!(md, "## 5. The learning machine, on Austen\n").unwrap();
-    writeln!(md, "The generator's candidate scorer fit to Austen (validation split), evaluated on her test split: perplexity among the n-gram's candidates — counts only **{:.2}**, learned **{:.2}**. The weights are the value audit for this author:\n", Tuner::nll(&GenWeights::counts_only().w, &held).exp(), learned.heldout_nll.exp()).unwrap();
+    writeln!(md, "The generator's candidate scorer fit to Austen (validation split), evaluated on her test split: perplexity among the n-gram's candidates — counts only **{:.2}**, learned **{:.2}**. The weights are the value audit for this author:\n", Tuner::nll(&GenWeight::counts_only().w, &held).exp(), learned.heldout_nll.exp()).unwrap();
     writeln!(md, "| feature | weight |\n|---|---|").unwrap();
     for (n, w) in FEATURE_NAMES.iter().zip(&learned.w) {
         writeln!(md, "| {n} | {w:+.3} |").unwrap();

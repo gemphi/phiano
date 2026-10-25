@@ -68,10 +68,10 @@ impl ColorSpaceTimeManifold {
         // The previous version sampled the standing wave at x = 0, t = 0,
         // where cos(0)·cos(0) = 1 for every wavelength, so every point was a
         // node. A node of the *manifold* is a phase that lands on the golden-
-        // angle lattice `PhicalOps::bind_to_node` snaps to: the point is a
+        // angle lattice `PhicalOp::bind_to_node` snaps to: the point is a
         // node when snapping does not move it by more than one channel
         // quantum (2π/256).
-        let snapped = super::PhicalOps::bind_to_node(point.effective_phase, point.band_n);
+        let snapped = super::PhicalOp::bind_to_node(point.effective_phase, point.band_n);
         let mut d = (snapped - point.effective_phase).abs();
         if d > PI {
             d = TWO_PI - d;

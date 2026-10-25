@@ -4,8 +4,8 @@ use crate::facet::Facet;
 use crate::metrics::{
     adaptation::Adaptation,
     adversarial::Adversarial,
-    arc::{ArcBenchmark, ArcResults},
-    baseline::{BaselineScores, Baselines},
+    arc::{ArcBenchmark, ArcResult},
+    baseline::{BaselineScore, BaselineSet},
     generalization::{Generalization, GeneralizationReport},
     benchmark::novelty::NoveltyBenchmark,
     detection::ood::OodDetector,
@@ -18,13 +18,13 @@ use serde::{Deserialize, Serialize};
 pub struct BenchmarkReport {
     /// Held-out perplexity of every baseline. `None` when no evaluation corpus
     /// is on disk — reported as absent rather than filled with a placeholder.
-    pub baselines: Option<BaselineScores>,
+    pub baselines: Option<BaselineScore>,
     pub brittleness: f64,
     pub ood_score: f64,
     pub adaptation_efficiency: f64,
     pub novel_task_score: f64,
     pub generalization: GeneralizationReport,
-    pub arc_results: Option<ArcResults>,
+    pub arc_results: Option<ArcResult>,
     pub shortcut_warnings: Vec<crate::metrics::detection::shortcut::ShortcutWarning>,
     /// 1.0 = phases spread uniformly, 0.0 = every word at one angle.
     /// Logged beside every score because coherence rises as this falls.
@@ -51,9 +51,9 @@ impl BenchmarkRunner {
     /// Runs all benchmarks and returns a comprehensive report.
     pub fn run_all(facet: &mut Facet, trainer: &Trainer) -> BenchmarkReport {
         let prompt = "rust ownership borrowing lifetime";
-        let split = Baselines::load_split();
+        let split = BaselineSet::load_split();
 
-        let baselines = split.as_ref().map(|s| Baselines::suite(facet, s));
+        let baselines = split.as_ref().map(|s| BaselineSet::suite(facet, s));
         let generalization = match &split {
             Some(s) => Generalization::assess(facet, &s.valid),
             None => GeneralizationReport::default(),

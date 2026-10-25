@@ -16,8 +16,8 @@
         let mut make = |n: usize| -> Vec<Position> {
             (0..n)
                 .map(|_| {
-                    let feats: Vec<CandidateFeatures> = (0..8)
-                        .map(|_| CandidateFeatures([rnd() * 3.0, rnd(), rnd() * 2.0 - 1.0, rnd().round(), rnd().round(), 0.0, rnd() * 2.0 - 1.0, 0.0]))
+                    let feats: Vec<CandidateFeature> = (0..8)
+                        .map(|_| CandidateFeature([rnd() * 3.0, rnd(), rnd() * 2.0 - 1.0, rnd().round(), rnd().round(), 0.0, rnd() * 2.0 - 1.0, 0.0]))
                         .collect();
                     let scores: Vec<f64> = feats.iter().map(|x| planted.iter().zip(&x.0).map(|(a, b)| a * b).sum::<f64>()).collect();
                     let max = scores.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
@@ -38,7 +38,7 @@
         };
         let train = make(4000);
         let held = make(1000);
-        let (w, trace) = Tuner { lr: 0.05, epochs: 400, l2: 0.0 }.fit(GenWeights::counts_only().w, &train, &held);
+        let (w, trace) = Tuner { lr: 0.05, epochs: 400, l2: 0.0 }.fit(GenWeight::counts_only().w, &train, &held);
         assert!(trace.last().unwrap() < &trace[0], "held-out NLL falls");
         for f in [0usize, 1, 2, 3, 4, 6] {
             assert!((w.w[f] - planted[f]).abs() < 0.25, "weight {f}: {} vs planted {}", w.w[f], planted[f]);

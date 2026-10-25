@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-impl LexicalRules {
+impl LexicalRule {
     pub fn new() -> Self {
         Self::default()
     }

@@ -12,7 +12,7 @@ use record::*;
 
 use crate::config::{LEARNING_RATE, SYNTACTIC_MOMENTUM_DEFAULT, TWO_PI};
 use crate::facet::Facet;
-use crate::physics::PhicalOps;
+use crate::physics::PhicalOp;
 use crate::phasor::SpectralPhasor;
 use crate::relational::{RelationVocab, RelationalFacet, WINDOW};
 use crate::tokenizer::Tokenizer;

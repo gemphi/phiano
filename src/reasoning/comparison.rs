@@ -2,7 +2,7 @@
 //! Provides readable step output and side-by-side comparison of reasoning methods.
 
 use crate::facet::Facet;
-use crate::reasoning::diagnostics::Diagnostics;
+use crate::reasoning::diagnostics::Diagnostic;
 use crate::reasoning::hybrid::{HybridReasoner, HybridResult};
 use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine, ReasoningStep};
 use serde::Serialize;
@@ -65,7 +65,7 @@ impl ReasoningComparison {
         let hybrid_reasoner = HybridReasoner::new();
         let hybrid = hybrid_reasoner.solve_hybrid(facet, problem);
 
-        let pf_confidence = Diagnostics::confidence(&pathfinding);
+        let pf_confidence = Diagnostic::confidence(&pathfinding);
         let hybrid_confidence = hybrid.confidence;
 
         let best_method = if hybrid_confidence > pf_confidence {

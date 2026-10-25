@@ -26,7 +26,7 @@ use serde::{Deserialize, Serialize};
 
 /// Held-out perplexity of every baseline. Lower is better throughout.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
-pub struct BaselineScores {
+pub struct BaselineScore {
     pub n_heldout: usize,
     pub uniform_ppl: f64,
     pub unigram_ppl: f64,
@@ -37,7 +37,7 @@ pub struct BaselineScores {
     pub phiano_phase_ppl: f64,
 }
 
-impl BaselineScores {
+impl BaselineScore {
     /// True when the model beats the standard smoothed n-gram baseline.
     pub fn beats_kn(&self) -> bool {
         self.phiano_counts_ppl.min(self.phiano_phase_ppl) < self.kn_trigram_ppl
@@ -63,9 +63,9 @@ impl BaselineScores {
 }
 
 #[derive(Debug, Default)]
-pub struct Baselines;
+pub struct BaselineSet;
 
-impl Baselines {
+impl BaselineSet {
     /// Default held-out corpus path.
     pub const CORPUS: &'static str = "data/rust_book_corpus.txt";
 
@@ -112,8 +112,8 @@ impl Baselines {
     }
 
     /// Scores every baseline against a held-out split.
-    pub fn suite(facet: &Facet, split: &Split) -> BaselineScores {
-        BaselineScores {
+    pub fn suite(facet: &Facet, split: &Split) -> BaselineScore {
+        BaselineScore {
             n_heldout: split.valid.len(),
             uniform_ppl: Self::fixed_ppl(facet, &split.valid, true),
             unigram_ppl: Self::fixed_ppl(facet, &split.valid, false),
@@ -125,7 +125,7 @@ impl Baselines {
 
     /// Scores every baseline, loading the corpus from disk.
     /// Returns `None` when no evaluation corpus is available.
-    pub fn suite_from_disk(facet: &Facet) -> Option<BaselineScores> {
+    pub fn suite_from_disk(facet: &Facet) -> Option<BaselineScore> {
         Self::load_split().map(|split| Self::suite(facet, &split))
     }
 }
@@ -156,7 +156,7 @@ mod tests {
     #[test]
     fn test_baselines_are_finite_and_ordered() {
         let (facet, split) = toy();
-        let b = Baselines::suite(&facet, &split);
+        let b = BaselineSet::suite(&facet, &split);
         for x in [b.uniform_ppl, b.unigram_ppl, b.kn_trigram_ppl, b.phiano_counts_ppl] {
             assert!(x.is_finite() && x > 0.0, "non-finite baseline: {}", x);
         }
@@ -170,8 +170,8 @@ mod tests {
         // must score worse than a trained one.
         let (trained, split) = toy();
         let untrained = Facet::new();
-        let a = Baselines::suite(&trained, &split);
-        let b = Baselines::suite(&untrained, &split);
+        let a = BaselineSet::suite(&trained, &split);
+        let b = BaselineSet::suite(&untrained, &split);
         assert!(
             a.phiano_counts_ppl < b.phiano_counts_ppl,
             "trained {} should beat untrained {}",

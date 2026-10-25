@@ -11,9 +11,9 @@ pub const FEATURE_NAMES: [&str; N_FEATURES] =
 
 /// Feature vector of one candidate.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct CandidateFeatures(pub [f64; N_FEATURES]);
+pub struct CandidateFeature(pub [f64; N_FEATURES]);
 
-impl CandidateFeatures {
+impl CandidateFeature {
     /// `count`: the n-gram count. `target_phase`: the phase the decoder is
     /// steering toward. `collective_phase`: the flow's collective phase.
     /// `recent`: whether the word was emitted recently. `operator_cos`:

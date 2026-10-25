@@ -19,7 +19,7 @@ use ngrams::*;
 use chain::*;
 
 pub mod metrics;
-pub use metrics::{TrainingMetrics, MultiEpochResult};
+pub use metrics::{TrainingMetric, MultiEpochResult};
 
 use crate::config::{
     TWO_PI, PHASE_REPULSION,

@@ -80,7 +80,7 @@ pub enum Command {
     Wave,
     Save,
     Load,
-    Stats,
+    Stat,
     Benchmark,
     Exit,
     Unknown,

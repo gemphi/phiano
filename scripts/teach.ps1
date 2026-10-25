@@ -30,7 +30,7 @@ Add-Type -Namespace Phi -Name Power -MemberDefinition '[DllImport("kernel32.dll"
 [Phi.Power]::SetThreadExecutionState([uint32]"0x80000001") | Out-Null
 try {
     Set-Location $phiano
-    cargo build --release --example story --example code_student --example code_quest --example context
+    cargo build --release --bin story --bin code_student --bin code_quest --bin context
     $story = Join-Path $target "release\story.exe"
     $student = Join-Path $target "release\code_student.exe"
     $quest = Join-Path $target "release\code_quest.exe"

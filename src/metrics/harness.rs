@@ -45,7 +45,7 @@ pub struct Split {
 
 /// Per-epoch record. Written to `data/evaluation.json`.
 #[derive(Debug, Clone, Serialize)]
-pub struct EpochMetrics {
+pub struct EpochMetric {
     pub epoch: usize,
     pub train_ppl: f64,
     /// The number that matters: perplexity on text never trained on.
@@ -85,7 +85,7 @@ pub struct HarnessReport {
     pub gamma_sweep_predictive: Vec<(f64, f64)>,
     pub best_gamma_predictive: f64,
     pub verdict: String,
-    pub epochs: Vec<EpochMetrics>,
+    pub epochs: Vec<EpochMetric>,
 }
 
 pub struct Harness;

@@ -29,7 +29,7 @@ Add-Type -Namespace Phi -Name Power -MemberDefinition '[DllImport("kernel32.dll"
 [Phi.Power]::SetThreadExecutionState([uint32]"0x80000001") | Out-Null
 try {
     Set-Location $phiano
-    cargo build --release --example language_game
+    cargo build --release --bin language_game
     $exe = Join-Path $target "release\language_game.exe"
     & $exe sepia-ask $out $N --parallel $Parallel --seed $Seed ollama run phi4-builder
     foreach ($b in $Between) {

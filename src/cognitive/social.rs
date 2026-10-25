@@ -2,7 +2,7 @@
 //! All markers loaded from data/searle_markers.json (no hardcoded arrays).
 
 use super::types::*;
-use super::markers::SearleMarkers;
+use super::markers::SearleMarker;
 use crate::facet::Facet;
 
 /// 13. SocialOntologyAgent - classifies brute vs institutional facts.
@@ -10,7 +10,7 @@ pub struct SocialOntologyAgent;
 
 impl SocialOntologyAgent {
     /// Applies constitutive rules: "X counts as Y in context C".
-    pub fn counts_as_rules(prompt: &str, markers: &SearleMarkers) -> Vec<String> {
+    pub fn counts_as_rules(prompt: &str, markers: &SearleMarker) -> Vec<String> {
         let p = prompt.to_lowercase();
         markers.counts_as_rules.iter()
             .filter(|(k, _)| p.contains(k.as_str()))
@@ -19,9 +19,9 @@ impl SocialOntologyAgent {
     }
 
     pub fn process(prompt: &str) -> AgentContribution {
-        let markers = SearleMarkers::load();
-        let institutional = SearleMarkers::count_matches(prompt, &markers.institutional_markers);
-        let brute = SearleMarkers::count_matches(prompt, &markers.brute_markers);
+        let markers = SearleMarker::load();
+        let institutional = SearleMarker::count_matches(prompt, &markers.institutional_markers);
+        let brute = SearleMarker::count_matches(prompt, &markers.brute_markers);
 
         let (category, confidence) = match (institutional > brute, brute > institutional) {
             (true, _) => ("institutional fact (exists by collective acceptance)", 0.85),
@@ -50,7 +50,7 @@ pub struct ObserverRelativityAgent;
 
 impl ObserverRelativityAgent {
     pub fn process(_facet: &Facet, prompt: &str) -> AgentContribution {
-        let markers = SearleMarkers::load();
+        let markers = SearleMarker::load();
         let p = prompt.to_lowercase();
         let perspectives = [
             ("first_person (I)", &["i", "me", "my", "mine", "myself"][..]),
@@ -70,7 +70,7 @@ impl ObserverRelativityAgent {
             }
         }
 
-        let observer_relative = SearleMarkers::contains_any(prompt, &markers.observer_relative_markers);
+        let observer_relative = SearleMarker::contains_any(prompt, &markers.observer_relative_markers);
         let observer_note = match observer_relative {
             true => " - contains observer-relative features (good/bad/useful depend on perspective)",
             false => "",

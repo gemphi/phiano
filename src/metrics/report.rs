@@ -11,7 +11,7 @@ impl fmt::Display for BenchmarkReport {
         match &self.baselines {
             None => {
                 writeln!(f, "  Held-out perplexity: no evaluation corpus found")?;
-                writeln!(f, "    (expected at {})", super::baseline::Baselines::CORPUS)?;
+                writeln!(f, "    (expected at {})", super::baseline::BaselineSet::CORPUS)?;
             }
             Some(b) => {
                 writeln!(f, "  Held-out perplexity ({} sentences, lower is better):", b.n_heldout)?;

@@ -33,7 +33,7 @@ pub struct CognitiveResponse {
     pub agent_outputs: Vec<CognitiveAgentOutput>,
     pub vocabulary: usize,
     pub intentional_states: Vec<crate::cognitive::IntentionalState>,
-    pub felicity_conditions: crate::cognitive::FelicityConditions,
+    pub felicity_conditions: crate::cognitive::FelicityCondition,
     pub perlocutionary_effect: String,
     pub propositional_content: String,
     pub speaker_meaning: String,

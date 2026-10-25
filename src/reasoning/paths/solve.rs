@@ -37,8 +37,8 @@ impl MultiPath {
     /// Returns the best path by confidence score.
     pub fn best_path(paths: &[ReasoningChain]) -> Option<&ReasoningChain> {
         paths.iter().max_by(|a, b| {
-            let ca = Diagnostics::confidence(a);
-            let cb = Diagnostics::confidence(b);
+            let ca = Diagnostic::confidence(a);
+            let cb = Diagnostic::confidence(b);
             ca.partial_cmp(&cb).unwrap_or(std::cmp::Ordering::Equal)
         })
     }

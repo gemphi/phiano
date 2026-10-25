@@ -20,7 +20,7 @@ path = "src/bin/rust/book.rs"
 [features]
 default = []
 # The Gen-0 "phinum" model (I Ching hexagrams over a syntax parser): kept
-# only for the `in_c` experiment and its juncture test (docs/163).
+# only for the `riley` (In C) experiment and its juncture test (docs/163).
 phinum = []
 
 [dependencies]
@@ -32,6 +32,8 @@ phifno = { path = "../phifno" }
 phiplm = { path = "../phiplm" }
 phikit = { path = "../phikit" }
 phiecs = { path = "../phiecs" }
+phicpl = { path = "../phicpl" }
+phioml = { path = "../phioml" }
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -74,34 +76,22 @@ name = "bpe_lexicon"
 path = "src/bin/bpe/lexicon.rs"
 
 [[bin]]
-name = "persona_ingest"
-path = "src/bin/persona_ingest/main.rs"
+name = "persona"
+path = "src/bin/persona/main.rs"
 
 [[bin]]
-name = "persona_chat"
-path = "src/bin/persona_chat/main.rs"
+name = "quest"
+path = "src/bin/quest/main.rs"
 
 [[bin]]
-name = "quest_ingest"
-path = "src/bin/quest_ingest/main.rs"
-
-[[bin]]
-name = "quest_ask"
-path = "src/bin/quest_ask/main.rs"
-
-[[bin]]
-name = "relate_ask"
-path = "src/bin/relate_ask/main.rs"
-
-[[bin]]
-name = "persona_from_quest"
-path = "src/bin/persona_from_quest/main.rs"
+name = "relate"
+path = "src/bin/relate/main.rs"
 
 [[bin]]
 name = "helix"
 path = "src/bin/helix/main.rs"
 
 [[example]]
-name = "in_c"
-path = "examples/in_c/main.rs"
+name = "riley"
+path = "examples/riley/main.rs"
 required-features = ["phinum"]

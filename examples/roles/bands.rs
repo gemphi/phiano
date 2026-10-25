@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::roles::{Coherence, LexicalRules};
+use phiano::roles::{Coherence, LexicalRule};
 
 /// Coherence of `n` random pairs from the same vocabulary: the floor each band
 /// is read against.
@@ -22,7 +22,7 @@ pub(super) fn shuffled_null(facet: &Facet, n: usize, salt: u64) -> f64 {
 /// Register, grouped by how polysemous their head is.
 pub(super) fn sense_bands(
     facet: &Facet,
-    lex: &LexicalRules,
+    lex: &LexicalRule,
     senses: &HashMap<String, usize>,
 ) -> Vec<(usize, f64)> {
     println!(
@@ -82,7 +82,7 @@ pub(super) fn sense_bands(
 /// are shaped by the objective while a hapax's phases are still essentially
 /// its hash seed. Binning by frequency instead of by sense count separates
 /// the two explanations, and only one of them is actionable.
-pub(super) fn frequency_bands(facet: &Facet, lex: &LexicalRules) -> Vec<f64> {
+pub(super) fn frequency_bands(facet: &Facet, lex: &LexicalRule) -> Vec<f64> {
     println!(
         "\n  {:<22} {:>8} {:>11} {:>10} {:>8}",
         "head frequency band", "pairs", "coherence", "shuffled", "ratio"

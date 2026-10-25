@@ -30,7 +30,15 @@ fn russell_on_the_machine() {
     // Whitehead is told the syllogism, and only then holds it.
     assert_eq!(m.run("(count (held whitehead is-a))").unwrap(), Value::Num(0.0));
     assert_eq!(m.run("(tell whitehead (difference (closure (held russell is-a)) (held russell is-a)) is-a)").unwrap(), Value::Num(1.0));
-    assert_eq!(m.run("(ask whitehead socrates is-a)").unwrap(), Value::List(vec![Value::List(vec![Value::Str("mortal".into()), Value::Num(1.0)])]));
+    // Read from the phasors (docs/187): the answer is the word one turn
+    // past socrates on is-a; its score is agreement × amplitude, not a count.
+    match m.run("(ask whitehead socrates is-a)").unwrap() {
+        Value::List(answers) => match answers.first() {
+            Some(Value::List(pair)) => assert_eq!(pair[0], Value::Str("mortal".into())),
+            other => panic!("no answer: {other:?}"),
+        },
+        other => panic!("not a list: {other}"),
+    }
 }
 
 #[test]

@@ -64,7 +64,7 @@ fn main() {
         "data/phinet_untrained.fno"
     };
 
-    let learned = phiano::learn::GenWeights::load_default();
+    let learned = phiano::learn::GenWeight::load_default();
     println!("learned weights: {}", if learned.is_some() { "data/learned.json" } else { "none (run bin/learn)" });
     let arms: [Arm; 8] = [
         ("hand scorer, unguided", None, 0.0, 0, 0, false, 0),

@@ -110,7 +110,7 @@ impl Harness {
         trainer: &Trainer,
         epochs: usize,
         predictive: bool,
-    ) -> (Facet, Vec<EpochMetrics>) {
+    ) -> (Facet, Vec<EpochMetric>) {
         let mut facet = Facet::new();
         let mut log = Vec::with_capacity(epochs);
 
@@ -122,7 +122,7 @@ impl Harness {
                 }
             }
 
-            log.push(EpochMetrics {
+            log.push(EpochMetric {
                 epoch,
                 train_ppl: Self::perplexity(&facet, &split.train),
                 valid_ppl: Self::perplexity(&facet, &split.valid),

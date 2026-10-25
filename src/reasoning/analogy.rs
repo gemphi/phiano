@@ -3,7 +3,7 @@
 
 use crate::config::TWO_PI;
 use crate::facet::Facet;
-use crate::physics::PhicalOps;
+use crate::physics::PhicalOp;
 use crate::reasoning::program::ProgramAnalogy;
 use serde::Serialize;
 use std::f64::consts::PI;
@@ -83,7 +83,7 @@ impl Analogy {
     pub fn light_centric(facet: &Facet, source: &str, target: &str) -> f64 {
         match (facet.lexicon.get(source), facet.lexicon.get(target)) {
             (Some(p1), Some(p2)) => {
-                let interference = PhicalOps::interference(
+                let interference = PhicalOp::interference(
                     p1.phase, p1.band_n,
                     p2.phase, p2.band_n,
                 );

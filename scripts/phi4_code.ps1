@@ -30,7 +30,7 @@ Add-Type -Namespace Phi -Name Power -MemberDefinition '[DllImport("kernel32.dll"
 [Phi.Power]::SetThreadExecutionState([uint32]"0x80000001") | Out-Null
 try {
     Set-Location $phiano
-    cargo build --release --example code_quest --example code_student --example code_relations
+    cargo build --release --bin code_quest --bin code_student --bin code_relations
     $quest = Join-Path $target "release\code_quest.exe"
     $student = Join-Path $target "release\code_student.exe"
     & $quest $out --parallel $Parallel ollama run phi4-builder

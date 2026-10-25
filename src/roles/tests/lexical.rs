@@ -15,7 +15,7 @@ fn content(w: &str) -> bool {
 /// different relations for the same head.
 #[test]
 fn test_prepositions_name_distinct_relations() {
-    let mut r = LexicalRules::new();
+    let mut r = LexicalRule::new();
     r.extract("hammer", "an instrument for driving nails made of iron", content);
     r.extract("pneumonia", "a disease of the lungs", content);
     r.extract("pot", "a vessel used in cooking", content);
@@ -46,7 +46,7 @@ fn test_prepositions_name_distinct_relations() {
 /// enum extractor averaged 1.06 per head and left the mechanism idle.
 #[test]
 fn test_one_gloss_yields_several_relations() {
-    let mut r = LexicalRules::new();
+    let mut r = LexicalRule::new();
     r.extract(
         "hammer",
         "an instrument for driving nails with a head of iron used by a smith",
@@ -63,7 +63,7 @@ fn test_one_gloss_yields_several_relations() {
 /// A head must never be its own filler, and empty roles must be refused.
 #[test]
 fn test_degenerate_triples_are_refused() {
-    let mut r = LexicalRules::new();
+    let mut r = LexicalRule::new();
     r.add("cat", "of", "cat");
     r.add("cat", "", "animal");
     assert!(r.is_empty());

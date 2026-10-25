@@ -37,7 +37,9 @@ pub trait Agent {
     fn ask(&self, word: &str, kind: &str) -> Vec<(String, f64)> {
         let w = self.world();
         let (Some(word), Some(kind)) = (w.lexicon.get(word), w.relations.get(kind)) else { return Vec::new() };
-        let mut out: Vec<(String, f64)> = w.calls_for(word, kind).into_iter().map(|(o, wt)| (w.spelling(o).to_string(), wt)).collect();
+        // Read from the phasors — the difference under the kind — not from
+        // the edge counts (docs/187: nothing learns from counts).
+        let mut out: Vec<(String, f64)> = w.reads(word, kind).into_iter().map(|(o, wt)| (w.spelling(o).to_string(), wt)).collect();
         out.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         out
     }

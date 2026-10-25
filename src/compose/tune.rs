@@ -1,4 +1,4 @@
-use crate::compose::better::{Evaluator as ComposerEvaluator, KillerWords, SectorScore};
+use crate::compose::better::{Evaluator as ComposerEvaluator, KillerWord, SectorScore};
 use crate::compose::flow::RiverFlow;
 use crate::compose::worse::Discarder;
 use crate::compose::{SectorPalette, Composition};
@@ -37,7 +37,7 @@ pub struct CompositionTuner {
     /// The discarder (worse.rs).
     pub discarder: Discarder,
     /// Cross-round memory of words from winning sectors (Huberman's killer heuristic).
-    pub killers: KillerWords,
+    pub killers: KillerWord,
     /// Reject a round whose winner does not beat the previous round's under a
     /// frozen referee (Samuel's Alpha/Beta). Rounds rejected so far.
     pub rejected_rounds: usize,
@@ -53,7 +53,7 @@ impl CompositionTuner {
             depth: 8,
             evaluator: ComposerEvaluator::new(),
             discarder: Discarder::new(),
-            killers: KillerWords::new(),
+            killers: KillerWord::new(),
             rejected_rounds: 0,
         }
     }

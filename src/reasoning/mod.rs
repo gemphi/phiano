@@ -32,4 +32,4 @@ pub use pathfinding::{ReasoningEngine, ReasoningChain};
 pub use hybrid::HybridReasoner;
 pub use paths::MultiPath;
 pub use comparison::ReasoningComparison;
-pub use diagnostics::Diagnostics;
+pub use diagnostics::Diagnostic;

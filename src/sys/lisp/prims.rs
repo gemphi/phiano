@@ -5,10 +5,10 @@ use super::{Machine, Value};
 use crate::sys::set::{self as s, Class, Relation};
 use crate::sys::{Agent, Row};
 
-pub const NAMES: [&str; 46] = [
+pub const NAMES: [&str; 47] = [
     "union", "meet", "difference", "compose", "converse", "closure", "ancestral", "power", "domain", "range", "field", "image",
     "relata", "referents", "restrict-domain", "restrict-range", "product", "identity", "included?", "transitive?", "symmetric?",
-    "reflexive?", "count", "pairs", "class", "members", "next", "says", "scopes", "held", "ask", "tell", "told", "beings", "list",
+    "reflexive?", "count", "pairs", "class", "members", "next", "says", "scopes", "held", "ask", "tell", "told", "beings", "list", "judge",
     "car", "cdr", "cons", "length", "=", "<", "+", "-", "*", "print", "str",
 ];
 
@@ -114,6 +114,18 @@ pub fn call(m: &mut Machine, name: &'static str, a: Vec<Value>) -> Result<Value,
             Value::Num(rows.len() as f64)
         }
         "told" => Value::Num(being(m, arg(&a, 0, name)?, name)?.told() as f64),
+        // Execution is the judge (docs/169 §4, docs/178): `(judge "src")`
+        // compiles and runs BCPL on phicpl's machine; the verdict comes
+        // back as rows — (name kind other) — for any being to be told.
+        "judge" => {
+            let v = phicpl::judge(&t(0)?, 1_000_000);
+            Value::List(
+                v.rows("judged")
+                    .into_iter()
+                    .map(|r| Value::List(vec![Value::Str(r.about), Value::Str(r.kind), Value::Str(r.other)]))
+                    .collect(),
+            )
+        }
         "beings" => Value::List(m.beings.keys().map(|k| Value::Sym(k.clone())).collect()),
         "list" => Value::List(a),
         "car" => match arg(&a, 0, name)? {

@@ -15,7 +15,7 @@ pub(super) fn facet_of(words: &[&str]) -> Facet {
 fn test_bind_unbind_is_exact() {
     let p = SpectralPhasor::seeded("currency", 1.0, 1);
     for role in Role::ALL {
-        let back = Roles::unbind(&Roles::bind(&p, role), role);
+        let back = RoleTable::unbind(&RoleTable::bind(&p, role), role);
         for k in 0..PHASE_CHANNELS {
             let d = (back.theta(k) - p.theta(k)).abs();
             // Phases are byte-quantised, so equality is to one quantum.
@@ -31,13 +31,13 @@ fn test_bind_unbind_is_exact() {
     }
 }
 
-/// Roles must be distinguishable, or every relation is the same relation.
+/// RoleTable must be distinguishable, or every relation is the same relation.
 #[test]
 fn test_roles_are_near_orthogonal() {
     let p = SpectralPhasor::seeded("currency", 1.0, 1);
     for a in Role::ALL {
         for b in Role::ALL {
-            let r = Roles::bind(&p, a).resonance(&Roles::bind(&p, b));
+            let r = RoleTable::bind(&p, a).resonance(&RoleTable::bind(&p, b));
             match a == b {
                 true => assert!(r > 0.99, "{} vs itself: {}", a.name(), r),
                 false => assert!(
@@ -75,9 +75,9 @@ fn test_identity_answers_role_queries() {
     for (head, genus, function) in
         [("money", "currency", "transaction"), ("cow", "animal", "milk"), ("tree", "plant", "shade")]
     {
-        let id = Roles::identity(&f, &rules, head).expect("composed");
-        let g = Roles::query(&f, &id, Role::Genus, &[head], 3);
-        let fun = Roles::query(&f, &id, Role::Function, &[head], 3);
+        let id = RoleTable::identity(&f, &rules, head).expect("composed");
+        let g = RoleTable::query(&f, &id, Role::Genus, &[head], 3);
+        let fun = RoleTable::query(&f, &id, Role::Function, &[head], 3);
 
         assert!(
             g.iter().any(|(w, _)| w == genus),
@@ -111,7 +111,7 @@ fn test_genus_chain_ascends() {
     rules.add("animal", Role::Genus, "organism");
     rules.add("organism", Role::Genus, "thing");
 
-    let path = Roles::ascend(&rules, "bessie", Role::Genus, 5);
+    let path = RoleTable::ascend(&rules, "bessie", Role::Genus, 5);
     assert_eq!(path, vec!["bessie", "cow", "animal", "organism", "thing"]);
 }
 
@@ -121,7 +121,7 @@ fn test_cyclic_chain_terminates() {
     let mut rules = RuleSet::new();
     rules.add("tree", Role::Genus, "plant");
     rules.add("plant", Role::Genus, "tree");
-    let path = Roles::ascend(&rules, "tree", Role::Genus, 10);
+    let path = RoleTable::ascend(&rules, "tree", Role::Genus, 10);
     assert_eq!(path, vec!["tree", "plant"]);
 }
 

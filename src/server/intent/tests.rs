@@ -14,7 +14,7 @@ fn mock_cog(speech_act: &str) -> CognitiveResult {
         direction_of_fit: "mind->world".to_string(),
         satisfaction: 0.9,
         intentional_states: Vec::new(),
-        felicity_conditions: crate::cognitive::FelicityConditions {
+        felicity_conditions: crate::cognitive::FelicityCondition {
             propositional_content_rule: "".to_string(),
             preparatory_condition: "".to_string(),
             sincerity_condition: "".to_string(),

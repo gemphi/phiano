@@ -29,7 +29,7 @@ pub(super) fn agree(a: &[f64], b: &[f64]) -> f64 {
     a.iter().zip(b.iter()).map(|(x, y)| (x - y).cos()).sum::<f64>() / PHASE_CHANNELS as f64
 }
 
-impl Roles {
+impl RoleTable {
     /// Clusters each frequent word's occurrences by their window state.
     ///
     /// Deterministic throughout: farthest-point seeding, fixed rounds, words
@@ -122,7 +122,7 @@ impl Roles {
     }
 }
 
-pub(super) fn key(scheme: Scheme, roles: &Roles, facet: &Facet, toks: &[String], at: usize) -> String {
+pub(super) fn key(scheme: Scheme, roles: &RoleTable, facet: &Facet, toks: &[String], at: usize) -> String {
     let w = &toks[at];
     match scheme {
         Scheme::Unsplit => w.clone(),
@@ -145,7 +145,7 @@ pub(super) fn key(scheme: Scheme, roles: &Roles, facet: &Facet, toks: &[String],
 /// Held-out log-loss of the next *surface* word, in nats.
 pub(super) fn next_word_loss(
     scheme: Scheme,
-    roles: &Roles,
+    roles: &RoleTable,
     facet: &Facet,
     train: &[Vec<String>],
     held: &[Vec<String>],
