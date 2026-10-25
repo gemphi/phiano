@@ -61,7 +61,7 @@ fn main() {
 
     writeln!(md, "---\nid: jane-austen-persona\ntitle: \"A Persona Called Jane Austen\"\ndescription: What the engine learns from three novels, and what it can compose in her voice — short and long, measured.\nsidebar_position: 15\nbadge: report\n---\n").unwrap();
     writeln!(md, "# A Persona Called Jane Austen\n\n**Phiano Project** · `bin/austen` · generated {}\n", chrono_free_date()).unwrap();
-    writeln!(md, "> **The paradigm.** In Phient's world, a word *w* is nothing but what it relates to, under what conditions *c*. A persona is which conditions a writer puts words under, aggregated — and Jane Austen is three novels' worth of those conditions.\n").unwrap();
+    writeln!(md, "> **The paradigm.** In Phient's world, a word *w* is a seed: what it relates to, under what conditions *c*, grows from it. A persona is which conditions a writer puts words under, aggregated — and Jane Austen is three novels' worth of those conditions.\n").unwrap();
     writeln!(md, "## 1. The corpus\n").unwrap();
     writeln!(md, "| text | sentences (4–60 words) | words |\n|---|---|---|").unwrap();
     for (n, s) in &austen {

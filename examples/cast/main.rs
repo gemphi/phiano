@@ -11,10 +11,10 @@
 //!
 //! cargo run --release --bin cast_vs_flat -- <bcpl-dir>
 
-use phiplm::code::bcpl::{self, learn::Grammar, role};
-use phiplm::relate::{Tally, levels::SCOPE};
-use phiplm::study::Study;
-use phiplm::prose::tokens;
+use phient::code::bcpl::{self, learn::Grammar, role};
+use phient::relate::{Tally, levels::SCOPE};
+use phient::study::Study;
+use phient::prose::tokens;
 use phiecs::quest::Row;
 use std::path::Path;
 

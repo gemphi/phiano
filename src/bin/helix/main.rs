@@ -1,6 +1,6 @@
 //! Write a `.chroma` as a helix tree, or read one back.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). The helix is the lexicon as a Linux directory tree coded
 //! like DNA — 64 codons per word, two strands, a position for every code —
 //! so that `ls`, `grep` and `cat` are the query language (`phiano::helix`).

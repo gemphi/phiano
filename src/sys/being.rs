@@ -17,7 +17,7 @@ impl Being {
     /// `<root>/<slug>/<seed>/relations.tsv`, as `persona_quest` writes them.
     /// With no folders yet it is `new`, and `told()` says so with 0.
     pub fn from_quests(root: &Path, persona: Persona) -> Self {
-        let (rows, _) = phiplm::relate::read_quests(&root.join(persona.slug()));
+        let (rows, _) = phient::relate::read_quests(&root.join(persona.slug()));
         let mut being = Self::new(persona);
         being.tell(&rows);
         // A persona's `sources` are also told: a directory of `.b` files is
@@ -29,7 +29,7 @@ impl Being {
                 // The coarse grain: what each function declares, gets and
                 // calls. The prose reader's occurrence rows are a corpus's
                 // grain, not a persona's.
-                being.tell(&phiplm::code::bcpl::read_coarse(dir));
+                being.tell(&phient::code::bcpl::read_coarse(dir));
             }
         }
         being

@@ -8,8 +8,8 @@
 //! tokens shuffled, which has no structure to find.
 
 use super::score::{equal, f1, pk, Rng};
-use phiplm::prose::strand::{Prior, Strand};
-use phiplm::prose::tokens;
+use phient::prose::strand::{Prior, Strand};
+use phient::prose::tokens;
 use std::fmt::Write;
 use std::path::Path;
 

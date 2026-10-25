@@ -1,6 +1,6 @@
 //! A dialogue with a persona.
 //!
-//! In Phient's world a word is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions — so answering is not retrieval. The user's turn names a
 //! condition; the persona's manifold says what that condition calls for
 //! (`Facet::calls_for`, X ⇒ Y); and the reply is generated toward that word,

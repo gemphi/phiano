@@ -1,4 +1,4 @@
-//! The body as a tree of words (phikit, docs/140–141): the face's shapes,
+//! The body as a tree of words (phiecs::kit, docs/140–141): the face's shapes,
 //! the pose's and the skeleton's joints, the hand's, tracking's anchors and
 //! sessions, the device's registry — every type and case a thing whose
 //! words are the path it lies on. Nothing is read from a file: the kit is
@@ -6,14 +6,15 @@
 //!
 //! `cargo run --release --bin anatomy -- [--ask "left elbow"] [--rows out.tsv] [--show N]`
 
-use phikit::Kit;
-use phiplm::relate::{Tally, ScopeTree};
+use phiecs::kit::Kit;
+use phient::relate::{kit::said_by, Casting};
+use phient::relate::{Tally, ScopeTree};
 
 use phiano::lab::flag;
 
 fn print_tree(tree: &ScopeTree, counts: &Tally, scope: &str, depth: usize, max_depth: usize, width: usize) {
     let children = tree.children(scope);
-    let words = Kit::said_by(counts, scope);
+    let words = said_by(counts, scope);
     let name = scope.rsplit('/').next().unwrap_or(scope);
     println!("{}{name}  ({} below, {} words)", "  ".repeat(depth), children.len(), words.len());
     if depth < max_depth {
@@ -50,7 +51,7 @@ fn main() {
         print_tree(&tree, &counts, r, 0, 2, show);
     }
     if let Some(q) = ask {
-        let conds: Vec<String> = phiplm::prose::tokens(&q);
+        let conds: Vec<String> = phient::prose::tokens(&q);
         let found = tree.cast(&counts, &conds, f64::MIN, 3);
         println!("\n\"{q}\" is drawn into:");
         for c in found.iter().take(8) {

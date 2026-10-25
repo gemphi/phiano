@@ -5,8 +5,8 @@
 //! count should come near the truth.
 
 use super::score::{f1, pk, Rng};
-use phiplm::prose::strand::{Prior, Strand};
-use phiplm::prose::tokens;
+use phient::prose::strand::{Prior, Strand};
+use phient::prose::tokens;
 use std::path::Path;
 
 fn files(dir: &Path, ext: &str, out: &mut Vec<std::path::PathBuf>) {
@@ -25,7 +25,7 @@ fn files(dir: &Path, ext: &str, out: &mut Vec<std::path::PathBuf>) {
 fn pool(root: &Path) -> Vec<(usize, Option<usize>, Vec<String>)> {
     let paras = |t: &str| t.split("\n\n").map(|p| p.trim().to_string()).filter(|p| tokens(p).len() >= 4).collect::<Vec<_>>();
     let mut out = Vec::new();
-    let sources = [("crates/phiano/data/text/emma", "txt"), ("crates/phiano/docs", "md"), ("crates/phiano/data/talks", "txt"), ("crates/phiplm/src", "rs")];
+    let sources = [("crates/phiano/data/text/emma", "txt"), ("crates/phiano/docs", "md"), ("crates/phiano/data/talks", "txt"), ("crates/phient/src", "rs")];
     for (kind, (dir, ext)) in sources.iter().enumerate() {
         let mut fs = Vec::new();
         files(&root.join(dir), ext, &mut fs);

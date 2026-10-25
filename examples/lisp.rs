@@ -30,10 +30,10 @@ fn main() {
     let mut m = Machine::new();
     let mut tree = Vec::new();
     if let Some(t) = &text {
-        tree.extend(phiplm::prose::read_tree(&PathBuf::from(t)));
+        tree.extend(phient::prose::read_tree(&PathBuf::from(t)));
     }
     if let Some(b) = &bcpl {
-        tree.extend(phiplm::code::bcpl::read_tree(&PathBuf::from(b)));
+        tree.extend(phient::code::bcpl::read_tree(&PathBuf::from(b)));
     }
     if !tree.is_empty() {
         m = m.with_scopes(trace::scopes_of(&tree));

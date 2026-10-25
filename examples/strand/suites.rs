@@ -5,8 +5,8 @@
 //! not move the draws of the suites after it.
 
 use super::{bench, cross, score, synth};
-use phiplm::prose::strand::Prior;
-use phiplm::prose::tokens;
+use phient::prose::strand::Prior;
+use phient::prose::tokens;
 
 /// One text: its tokens, where its true segments begin, the prior it is read against.
 pub type Text = (Vec<String>, Vec<usize>, Prior);

@@ -1,4 +1,4 @@
-//! A story rewritten as a strand of sixty-four levels (phiplm::prose::strand,
+//! A story rewritten as a strand of sixty-four levels (phient::prose::strand,
 //! docs/142): `TTT` the whole story, `AAA` the word, and between them the
 //! levels the story's own information divides it into — each level the story
 //! told again in fewer, larger beats, each beat in the words it says beyond
@@ -27,7 +27,7 @@ mod suites;
 mod synth;
 
 use phistd::codon::{codon, codon_index, hexagram_glyph, CODONS};
-use phiplm::prose::strand::{Prior, Strand};
+use phient::prose::strand::{Prior, Strand};
 use std::fmt::Write;
 use std::path::PathBuf;
 

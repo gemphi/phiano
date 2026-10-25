@@ -6,7 +6,7 @@
 //! the new one in such words is said again with each word's token exchanged
 //! for the other's (`count_above`'s `y > x` becomes `count_below`'s `y < x`).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): a gloss is one relation of the word, taught by Phi-4, under
 //! the condition "in code".
 

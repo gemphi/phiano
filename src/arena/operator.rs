@@ -5,7 +5,7 @@
 //!
 //! It cannot guess-then-learn position by position: an operator is trained
 //! by epochs over examples, not incremented by a count. So it enters the
-//! arena through [`phiplm::study::Arena::read_split`] — told the stream's
+//! arena through [`phient::study::Arena::read_split`] — told the stream's
 //! first half, trained once at the end of it, then scored on the second
 //! half at the same positions as the online readers. Being trained on a
 //! batch the counters only ever saw once is an advantage, and it is stated
@@ -13,8 +13,8 @@
 
 use phical::{Adam, FnoConfig};
 use phiecs::Row;
-use phiplm::operator::RelationModel;
-use phiplm::study::Reader;
+use phient::operator::RelationModel;
+use phient::study::Reader;
 
 pub struct Operator {
     row: Vec<Row>,
@@ -44,7 +44,7 @@ impl Operator {
             .collect();
         let kinds = m.kinds.clone();
         self.pool = (0..m.names.len())
-            .filter(|&i| !kinds.iter().any(|k| m.names[i] == phiplm::operator::kind_token(k)))
+            .filter(|&i| !kinds.iter().any(|k| m.names[i] == phient::operator::kind_token(k)))
             .collect();
         let lr = m.joint.fno.config.lr;
         let (mut op, mut tab) = (Adam::new(lr), Adam::new(lr * 0.5));

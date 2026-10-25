@@ -2,7 +2,7 @@
 //!
 //! A programming language is also a person: the difference is KINDS only —
 //! the rest is the same, doing things with words. Here the words are BCPL,
-//! the doing is `phicpl::judge`, and the felicity condition is execution.
+//! the doing is `phiclm::judge`, and the felicity condition is execution.
 //! Three arms, one table, same rounds, same alphabet, same judge:
 //!
 //! - **soup** — no learning: the floor.
@@ -23,14 +23,14 @@
 
 use phiano::scribe::{coin, Memory, Scribe};
 use phiano::sys::{Agent, Being, Persona};
-use phicpl::token::{lex, Token};
-use phiplm::study::Study;
+use phiclm::token::{lex, Token};
+use phient::study::Study;
 
 const SHOWN: &str = "LET f(n) = n = 0 -> 1, n * f(n - 1)\nLET start() = f(3)";
 const ALSO: &str = "LET start() = VALOF $( LET x = 0 FOR n = 1 TO 9 DO x := x + n RESULTIS x $)";
 
 fn alphabet() -> Vec<String> {
-    let mut v: Vec<String> = phicpl::token::KEYWORDS.iter().map(|k| k.to_string()).collect();
+    let mut v: Vec<String> = phiclm::token::KEYWORDS.iter().map(|k| k.to_string()).collect();
     for p in ["(", ")", "=", ",", "+", "-", "*", "/", "!", "$(", "$)", ":=", "<", ">", "->"] {
         v.push(p.into());
     }
@@ -98,7 +98,7 @@ fn arm(mode: &str, rounds: usize, seed: u64) -> (Study, Study, Vec<String>, usiz
                 .unwrap_or_else(|| scribe.memory.write(&vocab, &mut rng, 0.08, 60)),
         };
         let source = render(&tok);
-        let v = phicpl::judge(&source, 20_000);
+        let v = phiclm::judge(&source, 20_000);
         let ran = v.compiled && v.error.is_none();
         rate.tick(i, rounds, ran);
         // The interest rule one level up (docs/184): a success is NOVEL
@@ -155,7 +155,7 @@ fn main() {
     // The person the language is: its deeds told as rows, asked like anyone.
     let mut being = Being::new(Persona::from_md("---\nname: Scribe\nseeds: program\nkinds: compiled, returned, wrote, failed\n---\n").expect("persona"));
     for (i, src) in molded.iter().rev().take(8).enumerate() {
-        being.tell(&phicpl::judge(src, 20_000).rows(&format!("p{i}")));
+        being.tell(&phiclm::judge(src, 20_000).rows(&format!("p{i}")));
     }
     let answer = being.ask("p0", "returned");
     println!("---\ntold {} rows of its own deeds; (ask scribe p0 returned) → {:?}", being.told(), answer.first().map(|(w, _)| w.as_str()).unwrap_or("—"));

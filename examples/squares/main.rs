@@ -1,7 +1,7 @@
 //! Descriptive Logic II, §§46–64 in action: the squares game of §48 with
 //! the composite names of §64, and four learners (docs/104, paper 20).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). Here the condition of a word is where the words before it
 //! left the reader. Training sentences use at most one composite name, and
 //! never at a held-out place; the tests ask for new places and for several

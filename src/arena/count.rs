@@ -2,7 +2,7 @@
 //! before it, counted. Nothing is a baseline unless it is honest, so this
 //! is the same reader the hierarchy is measured against (docs/175).
 
-use phiplm::study::Reader;
+use phient::study::Reader;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -34,7 +34,7 @@ pub fn top(m: &HashMap<String, u32>) -> Option<&String> {
 
 impl Reader for Count {
     fn name(&self) -> &str {
-        "phiplm counts (the word before)"
+        "phient counts (the word before)"
     }
 
     fn guess(&mut self, said: &[String]) -> Option<String> {

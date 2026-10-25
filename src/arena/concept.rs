@@ -6,7 +6,7 @@
 //! failing to do.
 
 use super::count::top;
-use phiplm::study::Reader;
+use phient::study::Reader;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -53,7 +53,7 @@ impl Concept {
 
 impl Reader for Concept {
     fn name(&self) -> &str {
-        "phiplm concepts (the family, backing off)"
+        "phient concepts (the family, backing off)"
     }
 
     fn guess(&mut self, said: &[String]) -> Option<String> {

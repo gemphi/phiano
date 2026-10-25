@@ -13,7 +13,7 @@
 use super::Concept;
 use crate::sys::{Agent, Being, Persona};
 use phiecs::Row;
-use phiplm::study::Reader;
+use phient::study::Reader;
 
 /// Family channels opened at most — a rail far above any corpus here.
 pub const FAMILIES: usize = 60_000;

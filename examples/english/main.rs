@@ -13,8 +13,8 @@
 //! cargo run --release --bin english -- grammar/present-continuous
 //! ```
 
-use phiplm::prose::{paragraph, tokens, Knowing};
-use phiplm::relate::scopes;
+use phient::prose::{paragraph, tokens, Knowing};
+use phient::relate::scopes;
 use std::io::{self, BufRead, Write};
 
 const UNITS: &[(&str, &[&str])] = &[

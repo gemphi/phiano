@@ -5,7 +5,7 @@
 //! teaching in its prompt — the group pointed at, told as a scene, and what
 //! A said — and the same orders.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): one pointing gives a word its first relation.
 
 use super::follow;

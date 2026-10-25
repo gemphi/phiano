@@ -5,7 +5,7 @@
 //! (`syn`), for the 4-gram and for 4-gram ⊕ movement with learned weights
 //! (docs/110). Literals come out as their class: ⟨num⟩ as `1`, ⟨str⟩ as `""`.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): here the conditions are the tokens before, and writing is
 //! going on from them.
 //!

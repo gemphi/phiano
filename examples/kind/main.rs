@@ -1,7 +1,7 @@
 //! One operator for every relation kind, and the laws the kinds obey —
 //! phiecs's quest table, phinet's operator, phiano's names (docs/92–93).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). A word is a learned function on the circle, a kind a row
 //! of the same table, and one shared operator maps `unit(word + kind)` to the
 //! answer. A fifth of the rows is held out by hash and read back three ways:

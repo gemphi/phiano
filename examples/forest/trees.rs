@@ -20,7 +20,7 @@ const TREES: [[&str; 6]; 16] = [
         "a scope: a text, a chapter, a paragraph — a word too, since a kind and a condition are words",
         "told by a `within` row; a scope says everything its subtree says",
         "a few words and their pairs, cast from the roots down, entering only children that say them more than the whole tree does",
-        "phiplm::relate::tree (ScopeTree::cast_under, Cast)",
+        "phient::relate::tree (ScopeTree::cast_under, Cast)",
         "the one the BVH analogy is written for: the volume is the scope's distribution over what it says, the hit test is D4's movement in nats, the pruning is the beam",
     ],
     [
@@ -28,7 +28,7 @@ const TREES: [[&str; 6]; 16] = [
         "a directory, a `.txt` file, a blank-line paragraph",
         "the file system's own nesting; a paragraph is a leaf",
         "reading a text builds it; nothing is queried, it is the tree the scope tree is told from",
-        "phiplm::prose::read_tree / for_each_paragraph",
+        "phient::prose::read_tree / for_each_paragraph",
         "the scene graph the volumes are fitted to — the authored hierarchy before any query",
     ],
     [
@@ -36,7 +36,7 @@ const TREES: [[&str; 6]; 16] = [
         "a span of tokens, `start..end`",
         "the division that gains the most nats against the parent's distribution, taken first",
         "none: the tree is built once, then read at sixty-four resolutions",
-        "phiplm::prose::strand::cut (Cut::divide, Span)",
+        "phient::prose::strand::cut (Cut::divide, Span)",
         "the BVH *builder*: a top-down split that minimises a cost, the way SAH splits a scene",
     ],
     [
@@ -44,7 +44,7 @@ const TREES: [[&str; 6]; 16] = [
         "a unit of one level, `AAA` (the word) to `TTT` (the whole story)",
         "the cut tree pruned to `m(k)` units, the counts spaced geometrically",
         "a word asked at a level reads the unit holding it",
-        "phiplm::prose::strand (Strand::units, level, unit_of)",
+        "phient::prose::strand (Strand::units, level, unit_of)",
         "the BVH's levels of detail: one tree read at the resolution the query can afford",
     ],
     [
@@ -52,7 +52,7 @@ const TREES: [[&str; 6]; 16] = [
         "a unit on the path from the word up to the whole story",
         "the unit's parent in the cut tree",
         "the word being read; its ancestors are mixed, weights counted for it",
-        "phiplm::prose::strand::path (Path, ScopeSet::path)",
+        "phient::prose::strand::path (Path, ScopeSet::path)",
         "the node stack a ray traversal keeps — here the whole stack is read, not just the leaf",
     ],
     [
@@ -60,7 +60,7 @@ const TREES: [[&str; 6]; 16] = [
         "a condition: a scope, the last word, the last pair, or a word under a scope",
         "finer than its parent; the path's scopes, then the word, then the pair",
         "the words said so far; what the levels give is the next word's distribution",
-        "phiplm::relate::levels, relate::path (Weighting::Path)",
+        "phient::relate::levels, relate::path (Weighting::Path)",
         "the traversal's result turned into an answer: every node on the path contributes, by a counted weight",
     ],
     [
@@ -84,7 +84,7 @@ const TREES: [[&str; 6]; 16] = [
         "a crate, a module, a function, a token of its body",
         "the compiler's own nesting, read as `within` rows",
         "a function's words, cast to find where a new function belongs",
-        "phiplm::code",
+        "phient::code",
         "the same scope tree over a different text; the grammar fits the volumes exactly",
     ],
     [
@@ -92,7 +92,7 @@ const TREES: [[&str; 6]; 16] = [
         "a word",
         "not nesting but neighbourhood: the words with the closest left and right company",
         "a word never told after the last one; its kin answer in its place",
-        "phiplm::relate::kin (Tally::kin, kin_base)",
+        "phient::relate::kin (Tally::kin, kin_base)",
         "the fallback when a ray misses every volume: ask what lies near instead",
     ],
     [
@@ -140,7 +140,7 @@ const TREES: [[&str; 6]; 16] = [
         "a whole told text with its own root",
         "the roots standing beside each other under no parent",
         "a story cast into every root at once; the one that says it most holds it",
-        "phiplm::relate::tree (ScopeTree::roots), this binary",
+        "phient::relate::tree (ScopeTree::roots), this binary",
         "the top-level acceleration structure over several scenes — a BVH of BVHs, which is what this story in Emma is",
     ],
 ];

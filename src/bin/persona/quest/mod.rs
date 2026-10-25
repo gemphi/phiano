@@ -2,7 +2,7 @@
 //! persona `bin/persona_chat` can talk as, and a relation model it answers
 //! from.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). A persona file (phiace `personas/*.md`, phiecs
 //! `persona::Persona`) plans a quest; `cargo run -p phiecs --example persona_quest` runs it into
 //! `<root>/<slug>/<seed>/{relations.tsv,sentences.tsv}`. This reads those:

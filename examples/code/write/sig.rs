@@ -5,7 +5,7 @@
 //! Phi-4's answers in training. A name relates to a method (`sum` ⇒ `sum`,
 //! `max` ⇒ `max`), `Option` to `Some` and `None`, a parameter to itself.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): here c is "in the signature", and the movement is
 //! ln P(v in body | w in signature) − ln P(v in body).
 

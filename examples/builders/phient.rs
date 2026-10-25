@@ -1,4 +1,4 @@
-//! The Phient learner: a token is nothing but what it relates to, under
+//! The Phient learner: a token is a seed — what it relates to, under
 //! what conditions. Every `(token, aspect|game) ⇒ value` the episodes tell
 //! is one relation, kept once with its count (relations, not data); phinet's
 //! one operator learns them all as functions on the circle. To act, each

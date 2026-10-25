@@ -5,7 +5,7 @@
 //! `max_f64` bodies is the edit `i32 → f64` makes. The edit most names
 //! agree on is applied to the target's sibling in the source type.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): here the type is the condition, and the edit is what the
 //! same word does under it.
 

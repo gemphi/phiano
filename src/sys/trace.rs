@@ -7,7 +7,7 @@
 //! and the set algebra of [`super::sets`] runs on any two scopes in it.
 
 use super::Row;
-use phiplm::relate::scopes;
+use phient::relate::scopes;
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -111,8 +111,8 @@ mod tests {
     #[test]
     fn a_story_is_its_sets_at_every_scope() {
         let tree = vec![
-            ("text/tale/ch1/p1".to_string(), phiplm::prose::paragraph("text/tale/ch1/p1", &["the cat sat".to_string()])),
-            ("text/tale/ch1/p2".to_string(), phiplm::prose::paragraph("text/tale/ch1/p2", &["the cat ran".to_string()])),
+            ("text/tale/ch1/p1".to_string(), phient::prose::paragraph("text/tale/ch1/p1", &["the cat sat".to_string()])),
+            ("text/tale/ch1/p2".to_string(), phient::prose::paragraph("text/tale/ch1/p2", &["the cat ran".to_string()])),
         ];
         let sc = scopes_of(&tree);
         assert_eq!(sc.len(), 5, "text, tale, ch1, p1, p2");

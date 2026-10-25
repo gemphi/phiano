@@ -2,7 +2,7 @@
 //!
 //! Separate runs cannot be compared. This reads ONE stream and asks every
 //! model the same question at the same position before any of them is told
-//! it ([`phiplm::study::Arena`]): phiplm's counts, phiplm's concepts (the
+//! it ([`phient::study::Arena`]): phient's counts, phient's concepts (the
 //! construction family, backing off), phiecs's rows into a `World`, and
 //! phical's conjugate (the relation as a filter on the circle). The table
 //! says which model is learning better, on the same positions.
@@ -17,8 +17,8 @@
 //! ```
 
 use phiano::arena::{Concept, Count, Ecs, Mirror, Operator};
-use phiplm::prose::tokens;
-use phiplm::study::{Arena, Reader};
+use phient::prose::tokens;
+use phient::study::{Arena, Reader};
 
 /// Sentences from every `.txt` under `dir`, split on full stops.
 fn stream(dir: &str, lines: usize) -> Vec<Vec<String>> {

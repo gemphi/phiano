@@ -5,7 +5,7 @@
 //! followed — the same counting, one level up.
 
 use crate::arena::Count;
-use phiplm::study::Reader;
+use phient::study::Reader;
 
 /// The end-of-program word the scribe learns and stops on.
 pub const END: &str = "⟨end⟩";

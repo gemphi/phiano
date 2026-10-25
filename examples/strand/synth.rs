@@ -8,7 +8,7 @@
 //! a chapter does.
 
 use super::score::{f1, Rng};
-use phiplm::prose::strand::{Prior, Strand};
+use phient::prose::strand::{Prior, Strand};
 
 /// One synthetic text: `(words, where segments 1… begin)`.
 pub fn draw(vocab: &[(String, f64)], rng: &mut Rng, lambda: f64, len: usize) -> (Vec<String>, Vec<usize>) {

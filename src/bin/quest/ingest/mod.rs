@@ -1,6 +1,6 @@
 //! Ingest a phiecs quest into a phiano facet, and measure what came through.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). A quest (phiecs) is a table of exactly that — `about`,
 //! `kind`, `other`, `weight` — asked of an oracle one word at a time. This
 //! binary is the bridge back: every row becomes the document `about kind

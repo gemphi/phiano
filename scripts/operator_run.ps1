@@ -27,7 +27,7 @@ Add-Type -Namespace Phi -Name Power -MemberDefinition '[DllImport("kernel32.dll"
 [Phi.Power]::SetThreadExecutionState([uint32]"0x80000001") | Out-Null
 try {
     Set-Location $phiano
-    cargo build --release --bin operator_run
+    cargo build --release --example operator_run
     $run = Join-Path $target "release\operator_run.exe"
     & $run data\text --in text\emma --held-out 0.05 --seed $Seed --r $R --epochs $Epochs --every $Every --ahead $Ahead --out $out 2>&1 | Tee-Object -FilePath (Join-Path $out "console.txt") -Append
 }

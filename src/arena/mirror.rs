@@ -7,7 +7,7 @@
 //! has been told so far and never on what it is about to be asked.
 
 use phical::conjugate::{Moment, Told};
-use phiplm::study::Reader;
+use phient::study::Reader;
 
 pub struct Mirror {
     inner: phical::conjugate::Mirror,

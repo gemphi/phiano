@@ -1,11 +1,12 @@
 pub mod extension;
 pub mod arena;
+pub mod seam;
 pub mod scribe;
 pub mod attention;
 #[path = "bpe/mod.rs"]
 pub mod bpe;
 pub mod chunker;
-pub use phiplm::code;
+pub use phient::code;
 pub mod helix;
 pub mod cognitive;
 pub mod command;
@@ -43,13 +44,13 @@ pub mod phinet;
 #[allow(dead_code)]
 #[cfg(feature = "phinum")]
 pub mod phinum;
-pub use phiplm::prose;
+pub use phient::prose;
 #[allow(dead_code)]
 /// PhiTon lives in its own crate (`gemphi/phiton`); re-exported so every
 /// `crate::phiton::…` path keeps working.
 pub use ::phiton;
-pub use phiplm::operator;
-pub use phiplm::relate;
+pub use phient::operator;
+pub use phient::relate;
 pub mod relational;
 pub mod roles;
 pub mod sys;

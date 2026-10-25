@@ -29,10 +29,9 @@ phistd = { path = "../phistd" }
 phiton = { path = "../phiton" }
 phical = { path = "../phical" }
 phifno = { path = "../phifno" }
-phiplm = { path = "../phiplm" }
-phikit = { path = "../phikit" }
+phient = { path = "../phient" }
 phiecs = { path = "../phiecs" }
-phicpl = { path = "../phicpl" }
+phiclm = { path = "../phiclm" }
 phioml = { path = "../phioml" }
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }

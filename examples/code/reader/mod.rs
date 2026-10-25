@@ -6,7 +6,7 @@
 //! a fifth of the training files is a development set, where the movement's
 //! weight α and window K are chosen; the test files are read once.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). Here c is "d tokens before".
 //!
 //! docs/110 adds the calibration: a weight per condition kind, learned on

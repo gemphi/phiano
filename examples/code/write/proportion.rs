@@ -5,7 +5,7 @@
 //! new name that differs from a learned one in the same word gets the
 //! learned body with the edit made.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): here `odd` is what it changes, against `even`, under the
 //! condition of a body otherwise the same.
 

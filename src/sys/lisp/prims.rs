@@ -115,10 +115,10 @@ pub fn call(m: &mut Machine, name: &'static str, a: Vec<Value>) -> Result<Value,
         }
         "told" => Value::Num(being(m, arg(&a, 0, name)?, name)?.told() as f64),
         // Execution is the judge (docs/169 §4, docs/178): `(judge "src")`
-        // compiles and runs BCPL on phicpl's machine; the verdict comes
+        // compiles and runs BCPL on phiclm's machine; the verdict comes
         // back as rows — (name kind other) — for any being to be told.
         "judge" => {
-            let v = phicpl::judge(&t(0)?, 1_000_000);
+            let v = phiclm::judge(&t(0)?, 1_000_000);
             Value::List(
                 v.rows("judged")
                     .into_iter()

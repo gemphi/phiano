@@ -4,7 +4,7 @@
 //! `code reader <out> --by-dir` reads Phi-4's code with whole families held
 //! out.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): a token, under "d tokens before", in Phi-4's own code.
 //!
 //! `cargo run --release -p phiano --example code -- quest -- <out_dir> [--parallel 3] ollama run phi4-builder`

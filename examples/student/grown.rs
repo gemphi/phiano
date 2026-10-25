@@ -12,8 +12,8 @@
 //! two or more families, so the concept has something to choose between.
 //! The subset is computed from what was told, never from the answer.
 
-use phiplm::prose::{tokens, Knowing};
-use phiplm::study::Study;
+use phient::prose::{tokens, Knowing};
+use phient::study::Study;
 
 /// The cues a concept could act on: last words shown by ≥2 families.
 fn ambiguous(k: &Knowing, at_least: usize) -> std::collections::HashSet<String> {
@@ -43,7 +43,7 @@ pub fn compare(k: &Knowing, held: &[&str], at_least: usize) -> [Study; 4] {
     // a lookup rather than a scan of everything told.
     let known = deep.known_words(at_least);
     let paths: std::collections::HashSet<String> =
-        deep.families(at_least).into_iter().map(|(pr, _)| phiplm::prose::family_path(&pr)).collect();
+        deep.families(at_least).into_iter().map(|(pr, _)| phient::prose::family_path(&pr)).collect();
 
     for (i, line) in held.iter().enumerate() {
         let w = tokens(line);
@@ -52,7 +52,7 @@ pub fn compare(k: &Knowing, held: &[&str], at_least: usize) -> [Study; 4] {
             shallow.within = Vec::new();
             let f = shallow.next(said).1.first().is_some_and(|(x, _)| *x == w[j]);
             deep.within = match deep.scope_said_with(said, &known, &paths) {
-                Some(p) => phiplm::relate::scopes(&p, 0),
+                Some(p) => phient::relate::scopes(&p, 0),
                 None => Vec::new(),
             };
             let u = deep.next(said).1.first().is_some_and(|(x, _)| *x == w[j]);
@@ -114,7 +114,7 @@ pub fn at_scale(dir: &str, train: usize, held: usize, at_least: usize) {
     let mut k = Knowing::fresh();
     for (i, line) in sentences[..train].iter().enumerate() {
         let path = format!("read/e{i}");
-        k.tell(&path, &phiplm::prose::paragraph(&path, &[line.clone()]));
+        k.tell(&path, &phient::prose::paragraph(&path, &[line.clone()]));
     }
     let fams = k.families(at_least);
     println!("## at scale — {train} sentences told, {} families found (largest {} members)",

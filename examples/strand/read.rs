@@ -20,7 +20,7 @@
 //! does best at can be set beside the level the strand says the text supports.
 
 use phistd::codon::CODONS;
-use phiplm::prose::strand::{Prior, ScopeSet, Strand};
+use phient::prose::strand::{Prior, ScopeSet, Strand};
 use std::collections::HashMap;
 
 pub const READERS: [&str; 7] = ["prior", "whole", "labels", "equal parts", "strand flat", "strand at k", "strand"];

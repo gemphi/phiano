@@ -16,7 +16,7 @@
 //!    the name by the name;
 //! 3. *worse* — a body that does not compile is not said.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): `below` is the exchange of `>` for `<` under `count`.
 
 use super::rows::{given, join_ops, rows_of};

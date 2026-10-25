@@ -12,8 +12,8 @@
 //! ```
 
 use phiano::arena::Ecs;
-use phiplm::prose::tokens;
-use phiplm::study::Reader;
+use phient::prose::tokens;
+use phient::study::Reader;
 
 fn sentences(path: &str) -> Vec<Vec<String>> {
     std::fs::read_to_string(path)

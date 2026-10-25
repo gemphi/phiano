@@ -7,7 +7,7 @@
 //! expression replaced by the new one's, the variables aligned to the body's
 //! own (`x` to the closure's `x`, `y` to the function's second parameter).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): the expression is the word's relation under "in code",
 //! at the size the word has.
 

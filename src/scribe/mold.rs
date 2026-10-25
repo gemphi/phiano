@@ -31,7 +31,7 @@ fn of(tok: &[String]) -> Vec<Slot> {
                 Slot::Figure
             } else if t != "start"
                 && t.chars().next().is_some_and(|c| c.is_alphabetic())
-                && !phicpl::token::KEYWORDS.contains(&t.as_str())
+                && !phiclm::token::KEYWORDS.contains(&t.as_str())
             {
                 let n = class.len();
                 Slot::Hole(*class.entry(t).or_insert(n))

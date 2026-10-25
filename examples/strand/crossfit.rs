@@ -12,7 +12,7 @@
 //! The path reading (`strand::Path`) counts each unit's weights over its
 //! whole path for that unit alone.
 
-use phiplm::prose::strand::{Path, Prior, ScopeSet, Strand};
+use phient::prose::strand::{Path, Prior, ScopeSet, Strand};
 
 pub const READERS: [&str; 12] = [
     "whole, left out",

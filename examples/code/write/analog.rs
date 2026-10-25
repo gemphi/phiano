@@ -7,7 +7,7 @@
 //! the relation "said in the signature ⇒ said again in the body" (sig.rs),
 //! carried by a whole answer instead of token by token.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): `sum` stands where `product` stood, under the same
 //! signature.
 

@@ -2,7 +2,7 @@
 //! §§1–32, played, and five ways of learning it measured side by side
 //! (docs/102, papers/paper_6_descriptive_logic.md).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). Here that is taken literally: a learner sees only who
 //! said what, in which game, and what followed. It is then asked to act.
 //!

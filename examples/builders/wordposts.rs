@@ -8,7 +8,7 @@
 //! rarely keeps D2 exactly, and while such a word holds a post in the
 //! utterance, the whole aspect is read by D2. The condition keeps weight 1 (D4).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c); the slow speed lets how much it counts be one of them.
 
 use super::compose::POST;

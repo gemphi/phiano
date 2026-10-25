@@ -3,7 +3,7 @@
 //! with wrapped lines joined. The Key is never told to the student; it is
 //! what the student is graded against.
 
-use phiplm::prose::tokens;
+use phient::prose::tokens;
 
 /// One answer: unit, exercise, item, and its alternatives as tokens.
 pub struct Answer {

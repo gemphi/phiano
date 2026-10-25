@@ -16,7 +16,7 @@ fn main() {
         eprintln!("usage: sets <text root> <out dir> [--show scope:path]");
         std::process::exit(2);
     };
-    let tree = phiplm::prose::read_tree(&root);
+    let tree = phient::prose::read_tree(&root);
     let scopes = trace::scopes_of(&tree);
     let n = trace::write(&out, &scopes).unwrap_or_else(|e| panic!("cannot write {}: {e}", out.display()));
     let top = scopes.keys().filter(|k| k.matches('/').count() == 1).cloned().collect::<Vec<_>>();

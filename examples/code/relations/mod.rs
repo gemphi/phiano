@@ -5,7 +5,7 @@
 //! against the prior, and again under the compiler's law for type slots
 //! (the answer to `takes`, `returns`, `holds`, `implements` must be a type).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). In code the conditions are exact: the grammar says them.
 //!
 //! `cargo run --release --bin code_relations -- <dir>… [--out rows.tsv] [--r 64] [--epochs 30] [--seed 7]`

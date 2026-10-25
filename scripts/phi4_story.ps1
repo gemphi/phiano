@@ -24,7 +24,7 @@ Add-Type -Namespace Phi -Name Power -MemberDefinition '[DllImport("kernel32.dll"
 [Phi.Power]::SetThreadExecutionState([uint32]"0x80000001") | Out-Null
 try {
     Set-Location $phiano
-    cargo build --release --bin story
+    cargo build --release --example story
     $story = Join-Path $target "release\story.exe"
     $out = Join-Path $text "story_go.md"
     "# The story going on, before and after asking (docs/130)`n`n## Before`n" | Set-Content $out -Encoding utf8

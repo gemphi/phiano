@@ -1,6 +1,6 @@
 //! Channels past the base 64.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). Every token has the 64 base channels phiano has always had
 //! — 8 offsets for word order, the rest for the first relation kinds — packed
 //! densely in its [`SpectralPhasor`](crate::phasor::SpectralPhasor). Past them

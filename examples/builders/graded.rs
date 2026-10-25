@@ -7,7 +7,7 @@
 //! does. Here τ is swept on Phi-4's own actions, with the same five folds
 //! by call as `follow::student`.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c): how strongly it must relate before it is heard is itself
 //! a condition, and a teacher who teaches by tendency sets it lower (§§88, 107).
 

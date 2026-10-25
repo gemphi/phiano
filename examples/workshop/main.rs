@@ -4,7 +4,7 @@
 //! BEFORE it is told them — what it brought — then told them (on the fly),
 //! then names the constructions it is unsure of (the quest's prompts), the
 //! unit's exercises become the workshop prompts for a teacher, and one task
-//! that is logic rather than memory is handed to the compiler: phicpl
+//! that is logic rather than memory is handed to the compiler: phiclm
 //! counts, the judge verifies. Every page is written as it is played.
 //!
 //! Since docs/194 the KEY at the back of the book grades the student: the
@@ -19,8 +19,8 @@
 mod key;
 
 use phiano::arena::{Count, Ecs};
-use phiplm::prose::{family_prompt, paragraph, tokens, Knowing};
-use phiplm::study::Reader;
+use phient::prose::{family_prompt, paragraph, tokens, Knowing};
+use phient::study::Reader;
 use std::fmt::Write as _;
 
 struct Unit {
@@ -81,8 +81,8 @@ fn score(student: &mut Ecs, sents: &[Vec<String>]) -> (usize, usize) {
 }
 
 /// The compiler's task for a page: logic, not memory — count the negatives
-/// among the unit's sentences from flags the student read, judged by phicpl.
-fn counted(flags: &[bool]) -> (String, phicpl::Verdict) {
+/// among the unit's sentences from flags the student read, judged by phiclm.
+fn counted(flags: &[bool]) -> (String, phiclm::Verdict) {
     let vec: Vec<String> = flags.iter().map(|f| if *f { "1".into() } else { "0".into() }).collect();
     let src = format!(
         "LET start() = VALOF $( LET v = VEC {n} AND s = 0\n{fill}\nFOR i = 0 TO {last} DO s := s + v!i\nRESULTIS s $)",
@@ -90,7 +90,7 @@ fn counted(flags: &[bool]) -> (String, phicpl::Verdict) {
         last = flags.len().saturating_sub(1),
         fill = vec.iter().enumerate().map(|(i, f)| format!("v!{i} := {f}")).collect::<Vec<_>>().join("\n")
     );
-    let v = phicpl::judge(&src, 200_000);
+    let v = phiclm::judge(&src, 200_000);
     (src, v)
 }
 
@@ -177,7 +177,7 @@ fn main() {
             for e in &exercises {
                 let _ = writeln!(doc, "- {e}");
             }
-            let _ = writeln!(doc, "\nCompiler task: count the negatives the student read among the {} sentences — phicpl ran {} O-code steps and returned **{}** ({}); the student's own count is {}.", sents.len(), v.steps, v.result, if v.compiled && v.error.is_none() { "judged" } else { "failed" }, negatives.iter().filter(|b| **b).count());
+            let _ = writeln!(doc, "\nCompiler task: count the negatives the student read among the {} sentences — phiclm ran {} O-code steps and returned **{}** ({}); the student's own count is {}.", sents.len(), v.steps, v.result, if v.compiled && v.error.is_none() { "judged" } else { "failed" }, negatives.iter().filter(|b| **b).count());
             let _ = writeln!(doc, "\n```text\n{}\n```", src.lines().take(2).chain(src.lines().skip(src.lines().count().saturating_sub(2))).collect::<Vec<_>>().join("\n… \n"));
         }
     }

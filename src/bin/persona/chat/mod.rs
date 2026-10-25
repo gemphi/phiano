@@ -1,6 +1,6 @@
 //! A dialogue with an ingested persona.
 //!
-//! In Phient's world a word is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions. A question names a condition; the persona's manifold says what
 //! that condition calls for (X ⇒ Y); the reply is generated toward it, by a
 //! generator conditioned on that writer's sector histogram and pair evidence,

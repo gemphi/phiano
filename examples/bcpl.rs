@@ -1,7 +1,7 @@
 //! How learnable is BCPL, against English (docs/166)? The same reader on
-//! both: every line is a sentence, `phiplm::prose::tokens` cuts it, one
+//! both: every line is a sentence, `phient::prose::tokens` cuts it, one
 //! tenth is held out by hash, and two numbers are read on the held-out
-//! part — the interpolated Kneser-Ney perplexity (`phiplm::baseline`) and
+//! part — the interpolated Kneser-Ney perplexity (`phient::baseline`) and
 //! the top-1 next-token hit rate of the plain bigram count (what the
 //! ladder's rung 2 is). Lower perplexity and a higher hit rate mean a
 //! language whose next word follows more from its last.
@@ -11,8 +11,8 @@
 //! ```
 
 use phiano::lab::flag;
-use phiplm::baseline::KneserNey;
-use phiplm::prose::tokens;
+use phient::baseline::KneserNey;
+use phient::prose::tokens;
 use std::collections::HashMap;
 use std::path::Path;
 

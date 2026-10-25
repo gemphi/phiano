@@ -1,7 +1,7 @@
 //! `student` — one student, every method, one honest protocol (docs/172).
 //!
 //! Replaces `learn_grammar`, `learn_person`, `learn_bcpl`: the step-by-step
-//! method is shared ([`phiplm::study::Study`] — predict first, learn after,
+//! method is shared ([`phient::study::Study`] — predict first, learn after,
 //! a curve over the stream) and the student takes three lessons with it:
 //!
 //! 1. **grammar** — Murphy's units as a concept tree: [`paragraph`] rows
@@ -19,9 +19,9 @@
 
 use phiano::sys::{Agent, Being, Persona};
 use phiecs::Row;
-use phiplm::prose::{paragraph, tokens, Knowing};
-use phiplm::relate::scopes;
-use phiplm::study::Study;
+use phient::prose::{paragraph, tokens, Knowing};
+use phient::relate::scopes;
+use phient::study::Study;
 
 mod book;
 mod grown;
@@ -162,11 +162,11 @@ fn main() {
     }
 
     let root = std::env::args().nth(1).unwrap_or_else(|| "../ext/bcpl/cintcode/com".into());
-    let bodies = phiplm::code::bcpl::read_bodies(std::path::Path::new(&root));
+    let bodies = phient::code::bcpl::read_bodies(std::path::Path::new(&root));
     if bodies.is_empty() {
         println!("## code — skipped: no BCPL at {root}");
     } else {
-        let r = phiplm::code::bcpl::learn::continuous(&bodies, 16, 10);
+        let r = phient::code::bcpl::learn::continuous(&bodies, 16, 10);
         println!("{}", r.study.report());
         println!("({} functions; nesting max {} mean {:.1} — buildings, not leaves)", r.functions, r.max_depth, r.mean_depth);
     }

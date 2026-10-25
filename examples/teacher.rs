@@ -18,8 +18,8 @@
 
 use phiano::arena::{Count, Ecs};
 use phiecs::quest::{Oracle, OracleError, Spawned};
-use phiplm::prose::{family_prompt, paragraph, tokens, Knowing};
-use phiplm::study::{Reader, Study};
+use phient::prose::{family_prompt, paragraph, tokens, Knowing};
+use phient::study::{Reader, Study};
 
 /// The reserve as a teacher: answers a family prompt with up to three of
 /// its own sentences that use the pair adjacently.

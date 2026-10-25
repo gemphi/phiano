@@ -18,8 +18,8 @@
 //! ```
 
 use phiano::arena::{Concept, Count, Ecs};
-use phiplm::prose::tokens;
-use phiplm::study::{Reader, Study};
+use phient::prose::tokens;
+use phient::study::{Reader, Study};
 
 /// Sentences from a file or every .txt under a directory.
 fn sentences(path: &str) -> Vec<Vec<String>> {

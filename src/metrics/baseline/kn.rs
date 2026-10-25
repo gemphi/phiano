@@ -1,12 +1,12 @@
 //! The Kneser-Ney baseline, cut with phiano's own [`Tokenizer`] so its
 //! perplexity is on the same tokens the facet reads. The counting is
-//! [`phiplm::baseline::KneserNey`] (docs/159).
+//! [`phient::baseline::KneserNey`] (docs/159).
 
 use crate::tokenizer::Tokenizer;
 
 /// Interpolated Kneser-Ney trigram model over phiano-tokenized sentences.
 #[derive(Debug, Default)]
-pub struct KneserNey(phiplm::baseline::KneserNey);
+pub struct KneserNey(phient::baseline::KneserNey);
 
 fn cut(corpus: &[String]) -> Vec<Vec<String>> {
     corpus.iter().map(|s| Tokenizer::tokenize(s)).collect()
@@ -15,7 +15,7 @@ fn cut(corpus: &[String]) -> Vec<Vec<String>> {
 impl KneserNey {
     /// Builds the model from a corpus of sentences.
     pub fn train(corpus: &[String]) -> Self {
-        Self(phiplm::baseline::KneserNey::train(&cut(corpus)))
+        Self(phient::baseline::KneserNey::train(&cut(corpus)))
     }
 
     /// Interpolated KN trigram probability, backing off to bigram then continuation.

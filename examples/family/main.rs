@@ -1,7 +1,7 @@
 //! Descriptive Logic III, §§65–88, read off Phi-4's own answers (docs/105,
 //! paper 21): family resemblance (§§65–67) and Moses (§79).
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). If that is so, a category should hold together by
 //! overlapping relations rather than one shared one, and a word should
 //! survive the loss of any one of its relations.

@@ -31,4 +31,5 @@ pub use being::{find, persona_files, Being};
 pub use phiecs::persona::Persona;
 pub use phiecs::world::World;
 pub use phiecs::Row;
-pub use phikit::Kit;
+pub use phiecs::kit::Kit;
+pub use phient::relate::Casting;

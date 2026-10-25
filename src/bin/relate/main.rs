@@ -1,7 +1,7 @@
 //! Ask a relation model (`.relate`, from `kind_operator` or
 //! `persona_from_quest`) what a word calls for under a kind.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). `word · kind · ?` is read by the model's operator for that
 //! kind, ranked over every word the model was told as an answer.
 //!

@@ -1,6 +1,6 @@
 //! Ask an ingested quest what a word calls for under a kind.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). `bin/quest_ingest` wrote a quest into a facet and saved it
 //! as `.chroma`; this opens that facet and puts the quest's own question back
 //! to it — `word · kind · ?` — reading the kind's marker channel

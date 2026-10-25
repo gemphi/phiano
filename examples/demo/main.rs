@@ -1,6 +1,6 @@
 //! The demo: one knob, and learning that keeps.
 //!
-//! In Phient's world, a word (w) is nothing but what it relates to, under what
+//! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). Two claims, measured on the personas' quest folders:
 //!
 //! 1. **One knob.** The number of relations a word holds — samples of its
