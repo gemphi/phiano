@@ -18,7 +18,7 @@
 
 pub mod kn;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::metrics::harness::{Harness, PhianoLM, Split};
 use crate::metrics::baseline::kn::KneserNey;
 use crate::tokenizer::Tokenizer;

@@ -10,5 +10,5 @@ fn test_same_length_words_diverge() {
     t.train_sentence(&mut f, "cat dog war");
     let c = f.lexicon.get("cat").unwrap().phase;
     let d = f.lexicon.get("dog").unwrap().phase;
-    assert!(wrap_signed(c - d).abs() > 0.01, "identity seeding must separate same-length words");
+    assert!(phistd::wrap(c - d).abs() > 0.01, "identity seeding must separate same-length words");
 }

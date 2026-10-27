@@ -1,23 +1,12 @@
-//! `arena` — the lineup (docs/176): one reader per model, so one run says
-//! which of Phient's models is learning better. Every reader answers the
-//! same question at the same position before any of them is told it
-//! ([`phient::study::Arena`]); the table at the end is the leaderboard.
+//! `arena` — phiano's own reader for the arena (docs/176): the words told as
+//! rows into a persona's `World`, read by what the last word calls for. The
+//! other readers — counts, concepts, the mirror, the operator and the
+//! learner — need nothing of phiano's and live in [`phient::lineup`].
 //!
 //! | reader | the model it stands for |
 //! |---|---|
-//! | [`count::Count`] | phient's counts: the word before, nothing else (the line to beat) |
-//! | [`concept::Concept`] | phient's concepts: the construction family the words said show, backing off onto the counts (docs/174–175) |
 //! | [`ecs::Ecs`] | phiecs: the words told as rows into a `World`, read by what the last word calls for |
-//! | [`mirror::Mirror`] | phical's conjugate: the relation as an all-pass filter on the circle, read by correlation |
 
-pub mod concept;
-pub mod count;
 pub mod ecs;
-pub mod mirror;
-pub mod operator;
 
-pub use concept::Concept;
-pub use count::Count;
 pub use ecs::Ecs;
-pub use mirror::Mirror;
-pub use operator::Operator;

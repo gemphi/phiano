@@ -47,7 +47,7 @@ pub(super) fn setup() -> Run {
         shipped.vocabulary_size(),
         rel.len(),
         vocab.markers(),
-        phiano::relational::OFFSET_CHANNELS
+        phiecs::relation::OFFSET_CHANNELS
     );
     println!("  {} of {} channels survived the per-channel collapse guard", rel.live, PHASE_CHANNELS);
     println!(

@@ -6,10 +6,10 @@
 //! (class, mode) costs a finite amount — and two copies of it would drift.
 
 use crate::config::PHASE_CHANNELS;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::{fnv1a, mix64};
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use std::collections::HashMap;
 
 /// Classes with fewer members than this cannot support a mean, and centering

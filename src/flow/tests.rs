@@ -75,7 +75,8 @@ fn test_resonance_with_known_word() {
 /// vocabulary gave `eats` — not merely that *some* extra edge appeared.
 #[test]
 fn test_a_relation_edge_names_the_word_between_its_endpoints() {
-    use crate::relational::{RelationVocab, RelationalFacet};
+    use phiecs::relation::RelationVocab;
+    use crate::relational::RelationalFacet;
 
     // A corpus, not four sentences. The rule that picks the marker compares
     // how often each candidate links, so it needs a text where the

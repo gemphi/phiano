@@ -99,9 +99,9 @@ use cycle::*;
 use votes::*;
 
 use crate::config::{PHASE_CHANNELS, TWO_PI};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::SpectralPhasor;
-use crate::wave::c64;
+use phistd::c64;
 use std::collections::HashMap;
 
 /// Fraction of the way to its target a word moves per round.

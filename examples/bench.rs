@@ -1,6 +1,6 @@
 use phiano::config::CHROMA_FILE;
 use phiano::eval::Evaluator;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator};
 use phiano::storage::Storage;
 use phiano::trainer::Trainer;

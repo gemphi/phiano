@@ -20,7 +20,7 @@ pub(super) fn sweep(facet: &Facet, descended: &Facet, pairs: &[(String, String)]
     // rows that already landed.
     let args: Vec<String> = std::env::args().collect();
     let only = args.get(3).cloned().unwrap_or_else(|| "both".to_string());
-    let arms: Vec<(&str, &phiano::facet::Facet)> = match only.as_str() {
+    let arms: Vec<(&str, &phiecs::phasor::facet::Facet)> = match only.as_str() {
         "base" => vec![("bottom-up", facet)],
         "descent" => vec![("after descent", descended)],
         // The fixed basis costs nothing to evaluate, so it can be run on its own

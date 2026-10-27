@@ -33,7 +33,7 @@
 //!
 //! # Where the bands come from, and the two controls
 //!
-//! Not from `phinum::PosDictionary`: it holds 238 words, covering 0.7% of the
+//! Not from `phiton::p64::PosDictionary`: it holds 238 words, covering 0.7% of the
 //! corpus's types. It has no entry for `female`, `male` or `cow`, so it cannot
 //! band content words at all.
 //!
@@ -120,7 +120,7 @@ use setup::*;
 use types::*;
 
 use phiano::config::{CHANNEL_PRIMES, LEARNING_RATE, PHASE_CHANNELS, TWO_PI};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::RelationBenchmark;
 use phiano::phasor::{fnv1a, mix64};

@@ -101,7 +101,7 @@ impl Diagnostic {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::facet::Facet;
+    use phiecs::phasor::facet::Facet;
     use crate::reasoning::pathfinding::ReasoningEngine;
 
     #[test]

@@ -13,9 +13,9 @@
 //! transcript can be read with its confidence beside it.
 
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Decode, Generator, PersonaPrior};
-use crate::persona::{Fingerprint, Persona};
+use crate::persona::{Fingerprint, Style};
 use crate::tokenizer::Tokenizer;
 use std::rc::Rc;
 
@@ -80,7 +80,7 @@ pub struct Dialogue {
 impl Dialogue {
     /// Opens a dialogue with an ingested persona against the lexicon it was
     /// ingested into.
-    pub fn open(facet: &Facet, persona: &Persona) -> Self {
+    pub fn open(facet: &Facet, persona: &Style) -> Self {
         let prior = PersonaPrior::new(facet, &persona.fingerprint, 0.0).with_examples(&persona.examples, 1.0);
         Self {
             name: persona.name.clone(),

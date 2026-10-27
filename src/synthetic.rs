@@ -1,5 +1,5 @@
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 use std::f64::consts::PI;
 

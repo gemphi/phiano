@@ -31,7 +31,7 @@ use verdict::*;
 use phiano::chunker::ChunkStore;
 use phiano::cognitive::DefinitionGrounder;
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::relation::{RelationBenchmark, RelationFamily, RelationReport};
 use phiano::trainer::Trainer;
 

@@ -4,7 +4,7 @@ use super::guide::OPERATOR_PROPOSAL_COUNT;
 use super::generator::RELATIONAL_WINDOW;
 use super::guide::OPERATOR_PROPOSAL_FLOOR;
 use super::Generator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 impl Generator {
     /// duplicates; n-gram counts win).

@@ -17,7 +17,7 @@ mod version;
 pub use version::*;
 
 use crate::config::PHASE_CHANNELS;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::memory::Memo;
 use crate::storage::Storage;
 use std::fs::File;

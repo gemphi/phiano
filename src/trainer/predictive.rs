@@ -25,7 +25,7 @@ impl Trainer {
         self.initialize_tokens(facet, &tokens);
         facet.rebuild_sample_pool();
 
-        let step_seed = fnv1a(text) ^ 0xA5A5_5A5A_A5A5_5A5A ^ splitmix(self.seed);
+        let step_seed = fnv1a(text) ^ 0xA5A5_5A5A_A5A5_5A5A ^ phistd::mix64(self.seed);
         let channels = self.update_channels(facet, step_seed);
 
         let mut violations = 0;
@@ -58,7 +58,7 @@ impl Trainer {
                 .collect();
 
             let pos_word = tokens[i].clone();
-            let r = splitmix(step_seed ^ (i as u64).wrapping_mul(0x9E3779B9));
+            let r = phistd::mix64(step_seed ^ (i as u64).wrapping_mul(0x9E3779B9));
             let neg_word = match facet.sample_negative(r) {
                 Some(w) if *w != pos_word && !tokens[..i].contains(w) => w.clone(),
                 _ => {

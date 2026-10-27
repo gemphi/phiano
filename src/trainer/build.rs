@@ -48,7 +48,7 @@ impl Trainer {
             facet.rebuild_sample_pool();
             facet.rebuild_relation_pool();
         }
-        let step_seed = fnv1a(&tokens.join(" ")) ^ splitmix(self.seed ^ 0x5EED_5EED);
+        let step_seed = fnv1a(&tokens.join(" ")) ^ phistd::mix64(self.seed ^ 0x5EED_5EED);
         let mut applied = 0usize;
         for i in 0..tokens.len() {
             for j in (i + 1)..(i + 1 + RELATION_WINDOW).min(tokens.len()) {
@@ -98,7 +98,7 @@ impl Trainer {
                 // pushed away from it here, which is the same contrastive rule
                 // the centroid objective uses, restricted to the channel.
                 if negatives {
-                    let r = splitmix(step_seed ^ ((i as u64) << 32) ^ ((j as u64) << 8));
+                    let r = phistd::mix64(step_seed ^ ((i as u64) << 32) ^ ((j as u64) << 8));
                     let neg = match facet.sample_relation_negative(r) {
                         Some(w) if !tokens.iter().any(|t| t == w) => w.clone(),
                         _ => continue,
@@ -142,7 +142,7 @@ impl Trainer {
             false => pool,
         };
         let n = CHANNELS_PER_UPDATE.min(pool.len());
-        let off = (splitmix(step_seed) as usize) % pool.len();
+        let off = (phistd::mix64(step_seed) as usize) % pool.len();
         (0..n).map(|i| pool[(off + i * 7) % pool.len()]).collect()
     }
 

@@ -2,19 +2,19 @@ use super::super::*;
 
 impl<'a> PhianoLM<'a> {
 
-    pub(in crate::metrics::harness) fn advance(&self, h: &mut [crate::wave::c64], token: &str) {
+    pub(in crate::metrics::harness) fn advance(&self, h: &mut [phistd::c64], token: &str) {
         for (k, z) in h.iter_mut().enumerate() {
             *z *= Self::kernel(k);
         }
         if let Some(p) = self.facet.lexicon.get(token) {
             for (k, z) in h.iter_mut().enumerate().take(LM_CHANNELS) {
-                *z += crate::wave::c64::from_polar(p.amplitude, p.theta(k));
+                *z += phistd::c64::from_polar(p.amplitude, p.theta(k));
             }
         }
     }
 
     /// Unit-normalises a recurrent state into a context vector.
-    pub(in crate::metrics::harness) fn state_to_ctx(h: &[crate::wave::c64]) -> Vec<f64> {
+    pub(in crate::metrics::harness) fn state_to_ctx(h: &[phistd::c64]) -> Vec<f64> {
         let mut out = vec![0.0f64; 2 * LM_CHANNELS];
         for k in 0..LM_CHANNELS {
             let n = h[k].norm();

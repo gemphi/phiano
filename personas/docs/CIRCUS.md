@@ -1,6 +1,6 @@
 # The circus — Bill Gates talks to Mark Zuckerberg
 
-In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle with a count; meaning is a side effect of pairs of words moving under a condition.
+In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle; meaning is a side effect of pairs of words moving under a condition, and they move by the error of what was expected — toward what came, away from what did not.
 
 Two personas talk. Nothing is generated: a line is a row the speaker's world was told, said under one of its **intents**, and the listener **hears** it — the row is told to the listener's world. So a conversation is a sequence of moves in a language game (Wittgenstein, *Investigations* §43: the meaning of a word is its use), and here use is counted.
 

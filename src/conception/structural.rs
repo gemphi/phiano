@@ -25,7 +25,7 @@ impl Conception {
     /// joins the sum. Rotation by an irrational multiple of a turn never
     /// repeats, so no two positions collide and the sum is invertible in
     /// principle rather than a bag of words. This is the same binding
-    /// [`crate::wave::Wave::sentence_channels`] applies to sentences, used here
+    /// [`phiecs::phasor::wave::Wave::sentence_channels`] applies to sentences, used here
     /// on the definition that *constitutes* the word.
     pub fn compose(facet: &Facet, definition: &str) -> Option<Vec<f64>> {
         Self::compose_with(facet, definition, true)

@@ -18,9 +18,9 @@ use load::*;
 use keyed::*;
 
 use crate::config::{ALPHA, FORMAT_VERSION};
-use crate::facet::{Facet, Vocab, WordId};
+use phiecs::phasor::facet::{Facet, Vocab, WordId};
 use crate::phasor::{widen_evidence, SpectralPhasor, EVIDENCE_WORDS, EVIDENCE_WORDS_V5};
-use crate::relational::RelationVocab;
+use phiecs::relation::RelationVocab;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;

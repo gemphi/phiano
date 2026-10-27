@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use super::*;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::phinet::space::{examples, FunctionSpace, Sides};
 use phiano::storage::Storage;

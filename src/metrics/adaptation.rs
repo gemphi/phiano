@@ -2,7 +2,7 @@
 //! to reach a competence threshold (Ch 14.3's efficiency metric).
 
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 
 #[derive(Debug, Default)]

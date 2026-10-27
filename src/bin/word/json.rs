@@ -1,7 +1,7 @@
 //! Exports a few words' two-sided phasors as JSON for the 3-D docs.
 //! `cargo run --release --bin word_json [lexicon] word...`
 use phiano::config::PHASE_CHANNELS;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::storage::Storage;
 
 fn main() {

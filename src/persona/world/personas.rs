@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-impl World {
+impl Styles {
     /// Creates an empty world.
     pub fn new() -> Self {
         Self {
@@ -19,7 +19,7 @@ impl World {
         facet: &mut Facet,
         trainer: &Trainer,
     ) {
-        let persona = Persona::from_examples(name, examples, facet, trainer);
+        let persona = Style::from_examples(name, examples, facet, trainer);
         println!(
             "  [world] added persona '{}' from {} examples",
             name,
@@ -29,12 +29,12 @@ impl World {
     }
 
     /// Returns a persona by name.
-    pub fn get(&self, name: &str) -> Option<&Persona> {
+    pub fn get(&self, name: &str) -> Option<&Style> {
         self.personas.get(name)
     }
 
     /// Lists all personas in the world.
-    pub fn list(&self) -> Vec<&Persona> {
+    pub fn list(&self) -> Vec<&Style> {
         self.personas.values().collect()
     }
 
@@ -118,7 +118,7 @@ impl World {
     }
 }
 
-impl Default for World {
+impl Default for Styles {
     fn default() -> Self {
         Self::new()
     }

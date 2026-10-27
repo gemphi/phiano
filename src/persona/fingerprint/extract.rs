@@ -12,8 +12,8 @@ impl Fingerprint {
     /// few sectors (45–49 on Austen, docs/74) and a histogram over them
     /// cannot tell authors apart. Centring is what a channel-balanced sector
     /// means: what this word does that the average word does not.
-    pub fn lexicon_mean(facet: &Facet) -> Vec<crate::wave::c64> {
-        let mut sum = vec![crate::wave::c64::new(0.0, 0.0); crate::config::PHASE_CHANNELS];
+    pub fn lexicon_mean(facet: &Facet) -> Vec<phistd::c64> {
+        let mut sum = vec![phistd::c64::new(0.0, 0.0); crate::config::PHASE_CHANNELS];
         let mut n = 0usize;
         for p in facet.lexicon.values() {
             if p.has_evidence() {
@@ -38,12 +38,12 @@ impl Fingerprint {
     /// otherwise. The single phase (channel 0, source side) collapsed for
     /// frequent words (docs/69) and every persona read the same four sectors
     /// from it; the uncentred centroid bunched into sectors 45–49 (docs/74).
-    pub fn relational_sector(facet: &Facet, word: &str, mean: &[crate::wave::c64]) -> Option<u16> {
+    pub fn relational_sector(facet: &Facet, word: &str, mean: &[phistd::c64]) -> Option<u16> {
         let p = facet.lexicon.get(word)?;
         if !p.has_evidence() {
             return Wave::word_sector(facet, word);
         }
-        let f: Vec<crate::wave::c64> = crate::phinet::space::encode_side(p, true).iter().zip(mean).map(|(a, m)| a - m).collect();
+        let f: Vec<phistd::c64> = crate::phinet::space::encode_side(p, true).iter().zip(mean).map(|(a, m)| a - m).collect();
         Some(phistd::hexagram::hexagram_of(&f) as u16)
     }
 
@@ -69,7 +69,7 @@ impl Fingerprint {
             // functions when evidenced, the legacy wave otherwise.
             let evidenced = sentence_tokens.iter().filter_map(|t| facet.lexicon.get(t)).any(|p| p.has_evidence());
             let sector = if evidenced {
-                let mut sum = vec![crate::wave::c64::new(0.0, 0.0); crate::config::PHASE_CHANNELS];
+                let mut sum = vec![phistd::c64::new(0.0, 0.0); crate::config::PHASE_CHANNELS];
                 for t in sentence_tokens {
                     if let Some(p) = facet.lexicon.get(t) {
                         if p.has_evidence() {
@@ -161,7 +161,7 @@ impl Fingerprint {
     /// attribution confidence on short texts is the persona's reach.
     pub fn overlap_after(&self, other: &Fingerprint, t: f64) -> f64 {
         let n = self.sector_histogram.len().min(other.sector_histogram.len());
-        crate::physics::exact::heat::overlap_after(&self.sector_histogram[..n], &other.sector_histogram[..n], t)
+        phical::heat::overlap_after(&self.sector_histogram[..n], &other.sector_histogram[..n], t)
     }
 
     /// The Q64 name of this fingerprint: the sector of its circular centroid.
@@ -173,6 +173,6 @@ impl Fingerprint {
             x += w * th.cos();
             y += w * th.sin();
         }
-        crate::physics::exact::q64::quantise(y.atan2(x))
+        phical::q64::quantise(y.atan2(x))
     }
 }

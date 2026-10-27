@@ -10,7 +10,7 @@
 //! `cargo run --release --bin quest_ask <quest.chroma> <word> <kind> [n]`
 //! `cargo run --release --bin quest_ask <quest.chroma>` reads `word kind`
 //! lines from stdin — `kinds` lists the kinds, `words` the words.
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::storage::Storage;
 use std::io::BufRead;
 

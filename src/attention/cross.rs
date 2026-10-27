@@ -22,7 +22,7 @@
 //!           Attention Matrix [prompt_i][gen_j]
 //! ```
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::SpectralPhasor;
 
 /// Cross-attention calculator operating over spectral phase coordinates.

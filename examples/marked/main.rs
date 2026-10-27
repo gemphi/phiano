@@ -104,9 +104,10 @@ use benchmark::*;
 use summary::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
-use phiano::relational::{RelationVocab, RelationalFacet, MARKER_MAX_GAP, OFFSET_CHANNELS};
+use phiecs::relation::{RelationVocab, MARKER_MAX_GAP, OFFSET_CHANNELS};
+use phiano::relational::RelationalFacet;
 use phiano::tokenizer::Tokenizer;
 use phiano::topdown::{Descent, Up};
 use phiano::trainer::Trainer;

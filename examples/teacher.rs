@@ -16,7 +16,8 @@
 //! cargo run --release -p phiano --example teacher -- <corpus> [--chunks 8] [--ask 24] [--oracle ollama:phi4]
 //! ```
 
-use phiano::arena::{Count, Ecs};
+use phiano::arena::Ecs;
+use phient::lineup::Count;
 use phiecs::quest::{Oracle, OracleError, Spawned};
 use phient::prose::{family_prompt, paragraph, tokens, Knowing};
 use phient::study::{Reader, Study};

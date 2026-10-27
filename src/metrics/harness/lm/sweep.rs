@@ -24,7 +24,7 @@ impl<'a> PhianoLM<'a> {
                     return (local, count);
                 }
 
-                let mut h = vec![crate::wave::c64::new(0.0, 0.0); LM_CHANNELS];
+                let mut h = vec![phistd::c64::new(0.0, 0.0); LM_CHANNELS];
                 if recurrent {
                     self.advance(&mut h, &toks[0]);
                     self.advance(&mut h, &toks[1]);

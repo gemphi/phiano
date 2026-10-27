@@ -1,11 +1,11 @@
 #[allow(unused_imports)]
 use super::*;
 
-impl World {
+impl Styles {
     /// Adds a persona without printing (the library path; `add_persona`
     /// announces itself, which a loader should not).
     pub fn add_persona_quiet(&mut self, name: &str, examples: &[String], facet: &mut Facet, trainer: &Trainer) {
-        let persona = Persona::from_examples(name, examples, facet, trainer);
+        let persona = Style::from_examples(name, examples, facet, trainer);
         self.personas.insert(name.to_string(), persona);
     }
 
@@ -13,7 +13,7 @@ impl World {
     /// lexicon that already carries this persona's ingestion.
     pub fn add_persona_read(&mut self, name: &str, examples: &[String], facet: &Facet) {
         let fingerprint = Fingerprint::extract(facet, examples);
-        self.personas.insert(name.to_string(), Persona { name: name.to_string(), fingerprint, examples: examples.to_vec() });
+        self.personas.insert(name.to_string(), Style { name: name.to_string(), fingerprint, examples: examples.to_vec() });
     }
 
     /// Every persona's fingerprint against the current lexicon, computed
@@ -26,7 +26,7 @@ impl World {
         v
     }
 
-    /// [`World::match_text`] against fingerprints already extracted.
+    /// [`Styles::match_text`] against fingerprints already extracted.
     pub fn match_text_with(&self, facet: &Facet, text: &str, fps: &[(String, Fingerprint)]) -> Option<MatchResult> {
         if fps.is_empty() {
             return None;

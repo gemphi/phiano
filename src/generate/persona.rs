@@ -11,7 +11,7 @@
 //! attribution judge then reads the text as that persona's.
 
 use super::generator::Generator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::persona::Fingerprint;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -27,7 +27,7 @@ pub struct PersonaPrior {
     /// How much of the score the persona decides (0 = off).
     pub weight: f64,
     /// The lexicon mean the fingerprint's sectors were centred on.
-    mean: Vec<crate::wave::c64>,
+    mean: Vec<phistd::c64>,
     /// A word's sector, memoised: the same word is scored thousands of times.
     sectors: RefCell<HashMap<String, Option<usize>>>,
     /// The persona's own bigram counts, from its example sentences: the

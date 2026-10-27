@@ -12,7 +12,7 @@ pub const CHANNELS_PER_UPDATE: usize = 16;
 pub const RELATION_RATE: f64 = 0.06;
 
 /// How far apart two words may stand and still be coupled as a pair.
-pub const RELATION_WINDOW: usize = 8;
+pub use phiecs::phasor::facet::RELATION_WINDOW;
 
 /// Marker channels the relation inventory may claim, above the 8 offsets.
 ///
@@ -22,7 +22,7 @@ pub const RELATION_WINDOW: usize = 8;
 /// relation and the ranking objective falls back to all 64, which is the
 /// arrangement `bin/promoted` first measured — both objectives fighting over
 /// the same angles. 24 leaves 32 channels to prediction.
-pub const MARKER_CHANNELS_MAX: usize = 24;
+pub use phiecs::relation::MARKER_CHANNELS_MAX;
 
 // ── CONTRASTIVE OBJECTIVE ──────────────────────────────────────────────────
 
@@ -44,9 +44,8 @@ pub const HINGE_MARGIN: f64 = 0.05;
 /// transitively couple the entire vocabulary and accelerate collapse.
 pub const FUNCTION_WORD_WEIGHT: f64 = 0.1;
 
-/// Log-frequency amplitude scale: A = 1 + ln(count) / AMPLITUDE_LOG_SCALE.
-/// ln(1e6)/14 ≈ 0.99, so a millionfold range maps into [1.0, 2.0].
-pub const AMPLITUDE_LOG_SCALE: f64 = 14.0;
+/// Log-frequency amplitude scale (the spectral phasor's, in phiecs).
+pub use phiecs::phasor::spectral::AMPLITUDE_LOG_SCALE;
 
 /// Highest band_n that contributes to effective phase. 2π/64 ÷ α = 13.45, so
 /// capping at 13 keeps the fine-structure correction inside one sector and

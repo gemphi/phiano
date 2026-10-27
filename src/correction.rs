@@ -9,7 +9,7 @@
 //! user-taught fix could not be replayed after a re-ingest, audited, or undone.
 //! This journal makes teaching durable.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 use serde::{Deserialize, Serialize};
 use std::io::Result;

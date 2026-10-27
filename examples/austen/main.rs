@@ -11,12 +11,12 @@
 //! saw. Everything is printed as Markdown so it can be set as a PDF.
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::generate::OperatorGuide;
 use phiano::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phiano::metrics::harness::{Harness, Split};
 use phiano::metrics::baseline::kn::KneserNey;
-use phiano::persona::World;
+use phiano::persona::Styles;
 use phiano::phinet::space::{examples, FunctionSpace, Sides, WordFunction};
 use phiano::phinet::{Adam, Fno, FnoConfig};
 use phistd::hexagram::KING_WEN_MAP;
@@ -75,7 +75,7 @@ fn main() {
     writeln!(md, "The markers the corpus chose as relation channels 8–31: {}.\n", (8..8 + facet.relations.markers()).map(|k| format!("*{}*", facet.relation_name(k))).collect::<Vec<_>>().join(", ")).unwrap();
 
     // ── personas ──
-    let mut world = World::new();
+    let mut world = Styles::new();
     let mut pfacet = facet.clone();
     let persona_trainer = Trainer::new(LEARNING_RATE).with_seed(1);
     let sample = |v: &[String], n: usize, seed: u64| -> Vec<String> {
@@ -105,7 +105,7 @@ fn main() {
         held_by_author.push(((*author).to_string(), sp.test.clone()));
     }
     writeln!(md, "## 2. The persona\n").unwrap();
-    writeln!(md, "`Persona::from_examples` on 600 sampled Austen sentences (and 600 each for the rival personas). A persona is a histogram over the 64 sectors of the relation circle; its entropy is its breadth; `PersonalityMapper` reads temperament off the colour bands; its Q64 name is the sector of its centroid.\n").unwrap();
+    writeln!(md, "`Style::from_examples` on 600 sampled Austen sentences (and 600 each for the rival personas). A persona is a histogram over the 64 sectors of the relation circle; its entropy is its breadth; `PersonalityMapper` reads temperament off the colour bands; its Q64 name is the sector of its centroid.\n").unwrap();
     writeln!(md, "| persona | samples | mean length | entropy | Q64 (King Wen) | temperament | dominant sectors |\n|---|---|---|---|---|---|---|").unwrap();
     let mut names: Vec<&String> = world.personas.keys().collect();
     names.sort();

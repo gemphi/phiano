@@ -21,7 +21,8 @@ mod tests;
 #[allow(unused_imports)]
 use default::*;
 
-use crate::wave::{c64, Wave};
+use phiecs::phasor::wave::Wave;
+use phistd::c64;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phiton::PhitonSpectrum;
 use std::collections::BTreeMap;
 use std::fmt::Write as _;

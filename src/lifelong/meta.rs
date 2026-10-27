@@ -9,9 +9,9 @@
 //! never read it: `adapt` used only the adaptation rates.
 
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::trainer::{wrap_signed, Trainer};
+use crate::trainer::Trainer;
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -81,7 +81,7 @@ impl MetaModel {
         let mut warmed = 0usize;
         for (word, target) in &self.prior {
             if let Some(p) = facet.lexicon.get_mut(word) {
-                let d = wrap_signed(target - p.theta(0));
+                let d = phistd::wrap(target - p.theta(0));
                 p.nudge(0, WARM_START_STRENGTH * d);
                 p.sync_phase();
                 warmed += 1;

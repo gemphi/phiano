@@ -2,7 +2,7 @@
 //! Implements Ch 14.4's abstraction through analogy-making.
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use serde::Serialize;
 use std::f64::consts::PI;

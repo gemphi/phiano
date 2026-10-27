@@ -1,5 +1,5 @@
 //! The phase-conjugate mirror trained on held-out *Emma*'s told rows and
-//! measured as a wave (docs/153). The mirror (`phical::conjugate`) reads a
+//! measured as a wave (docs/153). The mirror (`phiton::conjugate`) reads a
 //! relation as an all-pass filter on the circle: forward by `H`, backwards
 //! by the conjugate `H̄`, and `n` steps on by `Hⁿ`. The same rows, split,
 //! decoys and hinge as the Joint FNO's `operator_run`; the same tables.
@@ -18,7 +18,7 @@ mod operator;
 mod waves;
 
 use phiano::prose::{heldout, Knowing};
-use phical::conjugate::{Mirror, Moment, Told};
+use phiton::conjugate::{Mirror, Moment, Told};
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;

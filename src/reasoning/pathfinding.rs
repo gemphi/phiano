@@ -1,4 +1,5 @@
-use crate::facet::Facet;
+use crate::cognitive::Chain;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::tokenizer::Tokenizer;
 use std::f64::consts::PI;
@@ -16,13 +17,8 @@ pub struct ReasoningStep {
     pub sentence: String,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct ReasoningChain {
-    pub problem: String,
-    pub steps: Vec<ReasoningStep>,
-    pub converged: bool,
-    pub final_answer: String,
-}
+/// The pathfinding chain: the cognitive core's [`Chain`] of phase steps.
+pub type ReasoningChain = Chain<ReasoningStep>;
 
 #[derive(Debug, Default)]
 pub struct ReasoningEngine;

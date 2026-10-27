@@ -5,7 +5,7 @@ use discarder::*;
 use crate::compose::better::SectorScore;
 use crate::compose::SectorPalette;
 use crate::config;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
 

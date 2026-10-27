@@ -8,9 +8,9 @@ use display::*;
 use gaps::*;
 
 use crate::chunker::ChunkStore;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fmt;

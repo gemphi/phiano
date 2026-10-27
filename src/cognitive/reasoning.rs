@@ -2,7 +2,7 @@
 //!
 //! Evaluates the cognitive core across iterative steps, feeding each step's
 //! output as context into the next step to produce a chain-of-thought trace.
-//! All public operations are encapsulated in [`ReasoningChain`], following the
+//! All public operations are encapsulated in [`ChainOfThought`], following the
 //! Diem convention that all public symbols belong to named types.
 //!
 //! # Architecture
@@ -17,24 +17,27 @@
 //! Step 1: CognitiveCore::process() ──▶ Synthesis Step 1
 //!   │
 //!   ▼ (Check convergence / coherence > 0.85)
-//! ReasoningResult { steps, final_answer, converged }
+//! Chain<Thought> { problem, steps, final_answer, converged }
 //! ```
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use serde::Serialize;
 
-/// Result of multi-step reasoning.
+/// A chain of steps toward an answer, whatever one step records: the chain
+/// of thought here holds [`Thought`]s, `reasoning`'s pathfinding its phase
+/// steps (`reasoning::ReasoningChain`). One chain, two kinds of step.
 #[derive(Debug, Clone, Serialize)]
-pub struct ReasoningResult {
-    pub steps: Vec<ReasoningStep>,
-    pub final_answer: String,
+pub struct Chain<S> {
+    pub problem: String,
+    pub steps: Vec<S>,
     pub converged: bool,
+    pub final_answer: String,
 }
 
-/// An individual reasoning step in the cognitive chain.
+/// One step of the chain of thought: what was asked and what the core said.
 #[derive(Debug, Clone, Serialize)]
-pub struct ReasoningStep {
+pub struct Thought {
     pub step: usize,
     pub prompt: String,
     pub output: String,
@@ -43,13 +46,13 @@ pub struct ReasoningStep {
 }
 
 /// Engine for executing multi-step chain-of-thought cognitive reasoning.
-pub struct ReasoningChain;
+pub struct ChainOfThought;
 
-impl ReasoningChain {
+impl ChainOfThought {
     /// Runs the cognitive core multiple times, feeding each step's output
     /// as context into the next step.
     ///
-    /// Produces a structured [`ReasoningResult`] containing each intermediate
+    /// Produces a [`Chain`] of [`Thought`]s holding each intermediate
     /// reasoning step and a convergence indicator.
     pub fn reason_chain(
         cognitive_core: &super::CognitiveCore,
@@ -57,8 +60,8 @@ impl ReasoningChain {
         context_buffer: &mut ContextWaveBuffer,
         prompt: &str,
         max_steps: usize,
-    ) -> ReasoningResult {
-        let mut steps: Vec<ReasoningStep> = Vec::new();
+    ) -> Chain<Thought> {
+        let mut steps: Vec<Thought> = Vec::new();
         let mut current_prompt = prompt.to_string();
 
         for step_num in 0..max_steps {
@@ -69,7 +72,7 @@ impl ReasoningChain {
                 break;
             }
 
-            steps.push(ReasoningStep {
+            steps.push(Thought {
                 step: step_num,
                 prompt: current_prompt.clone(),
                 output: result.synthesized_output.clone(),
@@ -91,7 +94,8 @@ impl ReasoningChain {
             .unwrap_or_default();
         let converged = steps.len() < max_steps;
 
-        ReasoningResult {
+        Chain {
+            problem: prompt.to_string(),
             steps,
             final_answer,
             converged,

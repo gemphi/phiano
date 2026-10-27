@@ -1,7 +1,7 @@
 //! Does a persona condition composition? One shared lexicon (`data/austen.chroma`,
 //! three authors), three personas, the same held-out Austen prompts, and the
 //! generator run once per persona with `Generator::with_persona` at several
-//! weights. The judge is `World::match_text` — the attribution reader that
+//! weights. The judge is `Styles::match_text` — the attribution reader that
 //! scores held-out paragraphs at ~64–70% (docs/74–76) — applied to what was
 //! composed. Chance is one in three; a persona that conditions nothing reads
 //! the same author whatever it is asked for.
@@ -11,7 +11,7 @@
 use phiano::lab as util;
 mod world;
 
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Decode, Generator};
 use phiano::metrics::harness::Harness;
 use phiano::metrics::baseline::kn::KneserNey;
@@ -34,7 +34,7 @@ fn main() {
     let prompts: Vec<String> = world::held_prompts(&split, &contrast, n_prompts);
     let mut names: Vec<String> = world.personas.keys().cloned().collect();
     names.sort();
-    println!("shared lexicon {} words · {} personas · {} prompts (all three authors' held-out sentences) × {} tokens · judge: World::match_text (chance {:.0}%)\n", pfacet.vocabulary_size(), names.len(), prompts.len(), tokens, 100.0 / names.len() as f64);
+    println!("shared lexicon {} words · {} personas · {} prompts (all three authors' held-out sentences) × {} tokens · judge: Styles::match_text (chance {:.0}%)\n", pfacet.vocabulary_size(), names.len(), prompts.len(), tokens, 100.0 / names.len() as f64);
     println!("| asked for | weight | read as Austen | Chesterton | Carroll | as asked | KN (Austen) | distinct |\n|---|---|---|---|---|---|---|---|");
     let mut summary = Vec::new();
     println!("weights are (sector prior, persona bigram) — see `generate::persona`.\n");

@@ -14,7 +14,7 @@
 
 use super::space::{FunctionSpace, WordFunction};
 use crate::config::PHASE_CHANNELS;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 pub use phical::{IndexExample, Joint};
 
 /// Builds index examples with the same window and weighting as

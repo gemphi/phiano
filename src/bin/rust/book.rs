@@ -4,7 +4,7 @@ use std::time::Instant;
 
 use phiano::compose::Composition;
 use phiano::eval::Evaluator;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::trainer::Trainer;
 
 fn main() {

@@ -44,7 +44,7 @@ impl Model {
 
         // Record the interaction under its order-sensitive wave, so that recall
         // can tell "dog bites man" from "man bites dog".
-        let wave = crate::wave::Wave::text_bound(&self.facet, line);
+        let wave = phiecs::phasor::wave::Wave::text_bound(&self.facet, line);
         self.memo.record_grounded(&self.facet, (wave.re, wave.im), line);
 
         self.envision(line);
@@ -67,7 +67,7 @@ impl Model {
         if self.memo.is_empty() {
             return Vec::new();
         }
-        let q = crate::wave::Wave::text_bound(&self.facet, line);
+        let q = phiecs::phasor::wave::Wave::text_bound(&self.facet, line);
         self.memo
             .recall_weighted((q.re, q.im), config::RECALL_K, config::RECALL_HALF_LIFE_MS)
             .into_iter()

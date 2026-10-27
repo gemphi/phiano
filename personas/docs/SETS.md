@@ -1,6 +1,6 @@
 # Language as a set game — Russell and Whitehead think together
 
-In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle with a count; meaning is a side effect of pairs of words moving under a condition.
+In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle; meaning is a side effect of pairs of words moving under a condition, and they move by the error of what was expected — toward what came, away from what did not.
 
 What a persona holds under a kind is a **relation** in the sense of *Principia Mathematica*: a set of ordered pairs `(about, other)`. That is not a metaphor here — `sets::held(being, "is-a")` is literally the set of pairs its world was told under `is-a`. Two personas then think together by the algebra of relations, and nothing else:
 

@@ -1,6 +1,6 @@
 //! Deployment monitoring: detects drift, regression and manifold collapse.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::lifelong::history::BenchmarkHistory;
 use crate::metrics::benchmark::runner::BenchmarkReport;
 use crate::metrics::detection::ood::OodDetector;

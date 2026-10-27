@@ -1,6 +1,6 @@
 # What Meta did with Muse Spark — and the same, better, on an open model
 
-In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle with a count; meaning is a side effect of pairs of words moving under a condition.
+In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle; meaning is a side effect of pairs of words moving under a condition, and they move by the error of what was expected — toward what came, away from what did not.
 
 **Muse Spark** (Meta Superintelligence Labs, announced 8 April 2026) is the first model of Meta's Muse series: "small and fast by design", powering the Meta AI app and meta.ai, with a May 2026 update bringing voice, shopping and the glasses. Meta did not call it open-weight — it is in private preview via API to select partners, and Meta "hope[s] to open-source future versions". What the Meta AI app does with it, feature by feature, and what we give our users on an open model (Llama, phi-4 — any oracle), with the one thing we add: everything the persona knows is a row with a count you can read.
 

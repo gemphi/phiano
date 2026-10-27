@@ -56,7 +56,7 @@ use phiano::conception::{
     Conception, DefinitionGraph, ANCHOR, BETA_STRONG, BETA_WEAK, HEAD_STEP, REINFORCE,
 };
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{Harness, Split};
 use phiano::metrics::relation::RelationBenchmark;
 use phiano::sources::definition_core;

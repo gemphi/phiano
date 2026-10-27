@@ -1,7 +1,7 @@
 //! The generator: its knobs (weights, operator, decode mode, goal) and constructors.
 
 use super::guide::OperatorGuide;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 
 /// Generator - phase-guided sequence sampler.
@@ -34,7 +34,7 @@ pub struct Generator {
     /// (`with_persona`; see `generate::persona`).
     pub persona: Option<std::rc::Rc<super::persona::PersonaPrior>>,
     /// Which channels the goal's pull reads (`PHIANO_READING`).
-    pub reading: crate::facet::Reading,
+    pub reading: phiecs::phasor::facet::Reading,
 }
 
 /// Where a step's candidates come from.
@@ -75,13 +75,13 @@ impl Generator {
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_nanos() as u64)
             .unwrap_or(0x9E3779B97F4A7C15);
-        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1), operator: None, weights: crate::learn::GenWeight::load_default().map(|w| w.for_decoding()), ctx: std::cell::RefCell::new(Vec::new()), relational_proposals: RELATIONAL_PROPOSALS, goal: None, decode: Decode::Trigram, persona: None, reading: crate::facet::Reading::from_env() }
+        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1), operator: None, weights: crate::learn::GenWeight::load_default().map(|w| w.for_decoding()), ctx: std::cell::RefCell::new(Vec::new()), relational_proposals: RELATIONAL_PROPOSALS, goal: None, decode: Decode::Trigram, persona: None, reading: phiecs::phasor::facet::Reading::from_env() }
     }
 
     /// Creates a generator with a fixed seed, for reproducible output. Does
     /// not load learned weights; attach them with [`Self::with_weights`].
     pub fn deterministic(max_tokens: usize, temperature: f64, seed: u64) -> Self {
-        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1), operator: None, weights: None, ctx: std::cell::RefCell::new(Vec::new()), relational_proposals: RELATIONAL_PROPOSALS, goal: None, decode: Decode::Trigram, persona: None, reading: crate::facet::Reading::from_env() }
+        Self { max_tokens, temperature, rng: std::cell::Cell::new(seed | 1), operator: None, weights: None, ctx: std::cell::RefCell::new(Vec::new()), relational_proposals: RELATIONAL_PROPOSALS, goal: None, decode: Decode::Trigram, persona: None, reading: phiecs::phasor::facet::Reading::from_env() }
     }
 
     /// Scores candidates with learned weights (or `None` for the hand scorer).

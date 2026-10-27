@@ -10,9 +10,9 @@
 
 use super::types::*;
 use crate::chunker::ChunkStore;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 
 /// 7. ReferenceAgent - resolves definitions from the chunk store.
 ///

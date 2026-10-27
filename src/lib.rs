@@ -1,4 +1,3 @@
-pub mod extension;
 pub mod arena;
 pub mod seam;
 pub mod scribe;
@@ -19,10 +18,7 @@ pub mod data;
 pub mod drivers;
 pub mod envision;
 pub mod eval;
-pub mod facet;
 pub mod frames;
-#[allow(dead_code)]
-pub mod gemgum;
 #[path = "generate/mod.rs"]
 pub mod generate;
 pub mod instruction;
@@ -37,13 +33,16 @@ pub mod model;
 pub mod oscillator;
 pub mod flow;
 pub mod persona;
-pub mod phasor;
+/// The spectral phasor lives in phiecs, beside the world's `Phasor`;
+/// re-exported so every `crate::phasor::…` path keeps working.
+pub use phiecs::phasor::spectral as phasor;
+/// The lexicon lives in phiecs (`phiecs::phasor::facet`) and phiano reads it
+/// from there. Two read-only examples (`flow`, `meaning`) still name
+/// `phiano::facet::Facet`; this keeps them building until they can be edited.
+pub use phiecs::phasor::facet;
 #[allow(dead_code)]
-pub mod physics;
 pub mod phinet;
 #[allow(dead_code)]
-#[cfg(feature = "phinum")]
-pub mod phinum;
 pub use phient::prose;
 #[allow(dead_code)]
 /// PhiTon lives in its own crate (`gemphi/phiton`); re-exported so every
@@ -64,5 +63,4 @@ pub mod synthetic;
 pub mod tokenizer;
 pub mod topdown;
 pub mod trainer;
-pub mod wave;
 pub mod wiki;

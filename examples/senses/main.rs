@@ -18,7 +18,7 @@
 //!
 //! # Where Y comes from
 //!
-//! Not from a tag set. `phinum::PosDictionary` maps each word to a single
+//! Not from a tag set. `phiton::p64::PosDictionary` maps each word to a single
 //! `PartOfSpeech`, which is the same collapse one level up — it cannot say `cool`
 //! is an adjective here and a verb there. Y is discovered from use instead, which
 //! is what the CLU argument asks for: each occurrence of a word is described by
@@ -84,7 +84,7 @@ use types::*;
 use variants::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::phasor::{fnv1a, mix64};
 use phiano::tokenizer::Tokenizer;

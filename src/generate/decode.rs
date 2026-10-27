@@ -3,7 +3,7 @@
 use super::context::ContextWaveBuffer;
 use super::generator::{Generator, FUNCTION_STREAK_LIMIT};
 use crate::config::{PHI_CONJUGATE, SYNTACTIC_MOMENTUM_DEFAULT, TWO_PI};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::flow::PhaseFlow;
 use crate::tokenizer::Tokenizer;
 

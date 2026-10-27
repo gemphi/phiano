@@ -1,4 +1,4 @@
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::sources::DictionarySource;
 use crate::trainer::Trainer;
 use serde::Deserialize;

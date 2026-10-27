@@ -2,7 +2,7 @@
 //!
 //! In Phient's world, a word (w) is a seed: what it relates to, under what
 //! conditions (c). Phical stores no point: a word is 64 relations, each a
-//! phasor on a closed circle with a count. DNA stores no point either: a gene
+//! phasor on a closed circle. DNA stores no point either: a gene
 //! is 64 codons — three bases of four — and what a codon *means* is fixed by
 //! where it sits on a helix that puts every position in three-dimensional
 //! space. The correspondence is exact in number and, this module argues,

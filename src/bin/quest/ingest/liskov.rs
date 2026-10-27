@@ -12,7 +12,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::wave::c64;
+use phistd::c64;
 use phistd::hexagram::hexagram_of;
 
 pub const MARGIN: f64 = 0.1;

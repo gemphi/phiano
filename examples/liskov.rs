@@ -10,7 +10,7 @@
 //!
 //! `cargo run --release --bin liskov`
 
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator};
 use phiano::learn::GenWeight;
 use phiano::metrics::harness::Harness;

@@ -1,7 +1,7 @@
 //! Novel task benchmark: measures performance on tasks the model has never seen.
 
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 
 #[derive(Debug, Clone, serde::Serialize)]

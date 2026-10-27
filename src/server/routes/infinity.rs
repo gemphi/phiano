@@ -67,7 +67,7 @@ pub async fn infinity_visualize(
     };
     let prompt = &req.text;
 
-    let prompt_wave = crate::wave::Wave::text(&facet, prompt);
+    let prompt_wave = phiecs::phasor::wave::Wave::text(&facet, prompt);
     let prompt_wave_detail = ComplexDetail {
         re: prompt_wave.re,
         im: prompt_wave.im,
@@ -82,8 +82,8 @@ pub async fn infinity_visualize(
         let sector = flow.source_sector;
         let color = crate::compose::SectorPalette::color(sector);
         let text = flow.text;
-        let wave = crate::wave::Wave::text(&facet, &text);
-        let theta = (sector as f64) * 2.0 * std::f64::consts::PI / (crate::wave::Wave::sector_count() as f64);
+        let wave = phiecs::phasor::wave::Wave::text(&facet, &text);
+        let theta = (sector as f64) * 2.0 * std::f64::consts::PI / (phiecs::phasor::wave::Wave::sector_count() as f64);
         let diff = theta - wave.arg();
         let denom = 1.0 - 0.95 * diff.cos();
         let resonance = wave.norm() / denom;
@@ -97,7 +97,7 @@ pub async fn infinity_visualize(
         for token in tokens {
             if let Some(p) = facet.get_phasor(&token) {
                 let effective_phase = p.phase + (p.band_n as f64 * crate::config::ALPHA);
-                let word_sector = crate::wave::Wave::sector_of(effective_phase);
+                let word_sector = phiecs::phasor::wave::Wave::sector_of(effective_phase);
                 words.push(WordPhasorDetail {
                     word: token, phase: p.phase, amplitude: p.amplitude,
                     effective_phase, sector: word_sector,

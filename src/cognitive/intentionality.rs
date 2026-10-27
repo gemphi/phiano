@@ -6,10 +6,10 @@
 //! knowing *how* to do things, not knowing *that* things are the case.
 
 use super::types::*;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use std::f64::consts::PI;
 
 /// 1. IntentionalityAgent - determines what the utterance is *about*.

@@ -27,7 +27,7 @@ pub fn repeats(weight: f64) -> usize {
 
 /// Every row as the three-token document `about kind other`, repeated by
 /// weight. The kind word stands *between* the pair, which is exactly what
-/// [`phiano::relational::RelationVocab`] reads as a marker: the quest's kinds
+/// [`phiecs::relation::RelationVocab`] reads as a marker: the quest's kinds
 /// become marker channels without any mapping written here.
 pub fn documents(rows: &[Row]) -> Vec<Vec<String>> {
     let mut docs = Vec::new();

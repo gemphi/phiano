@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::SpectralPhasor;
 use crate::phasor::{EVIDENCE_WORDS, PACKED_WORDS};
 use std::io;
@@ -24,7 +24,7 @@ pub fn read(dir: &Path) -> io::Result<Facet> {
             entries.push((f[8].to_string(), k));
         }
     }
-    facet.relations = crate::relational::RelationVocab::from_entries(entries);
+    facet.relations = phiecs::relation::RelationVocab::from_entries(entries);
     let strands = dir.join("strands");
     let mut shards: Vec<_> = std::fs::read_dir(&strands)?.filter_map(Result::ok).collect();
     shards.sort_by_key(|e| e.file_name());

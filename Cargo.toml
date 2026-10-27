@@ -19,9 +19,6 @@ path = "src/bin/rust/book.rs"
 
 [features]
 default = []
-# The Gen-0 "phinum" model (I Ching hexagrams over a syntax parser): kept
-# only for the `riley` (In C) experiment and its juncture test (docs/163).
-phinum = []
 
 [dependencies]
 num-complex = "0.4"
@@ -32,7 +29,6 @@ phifno = { path = "../phifno" }
 phient = { path = "../phient" }
 phiecs = { path = "../phiecs" }
 phiclm = { path = "../phiclm" }
-phioml = { path = "../phioml" }
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -93,4 +89,3 @@ path = "src/bin/helix/main.rs"
 [[example]]
 name = "riley"
 path = "examples/riley/main.rs"
-required-features = ["phinum"]

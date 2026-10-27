@@ -17,9 +17,9 @@ use path::*;
 mod compose;
 
 use crate::config;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 
 pub struct RiverFlow {
     /// The prompt that seeded the flow.

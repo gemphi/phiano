@@ -3,7 +3,7 @@
 //! **Promoted.** What this module found is now in the lexicon type itself:
 //! [`crate::phasor::SpectralPhasor`] carries per-channel evidence
 //! (`evidence`, `deposit`, `similarity_with`, `on`, `shared_relation_with`),
-//! [`crate::facet::Facet`] carries the relation inventory (`relations`,
+//! [`phiecs::phasor::facet::Facet`] carries the relation inventory (`relations`,
 //! `learn_relations`, `channel_balance`) and
 //! [`crate::trainer::Trainer::couple_relations`] deposits evidence on the
 //! channel of the relation each pair was observed under, with a contrastive
@@ -103,25 +103,17 @@
 //! cover every pair.
 
 mod phasor;
-mod vocab;
-mod learn;
-mod store;
 mod facet;
 #[cfg(test)]
 mod tests;
 #[allow(unused_imports)]
 use phasor::*;
 #[allow(unused_imports)]
-use vocab::*;
-#[allow(unused_imports)]
 use facet::*;
 
 use crate::config::{PHASE_CHANNELS, TWO_PI};
-use phiecs::relation::Register;
+use phiecs::relation::RelationVocab;
 use std::collections::HashMap;
-
-/// Channels reserved for relative offset. The rest go to markers.
-pub const OFFSET_CHANNELS: usize = 8;
 
 /// How far apart two words may be and still count as related.
 pub const WINDOW: usize = 8;
@@ -138,13 +130,6 @@ pub const CHANNEL_DISPERSION_FLOOR: f64 = 0.35;
 /// Below this vocabulary the collapse guard does not run.
 pub const GUARD_MIN_VOCAB: usize = 200;
 
-/// The widest gap at which a word between a pair may still name their relation.
-///
-/// Three means at most two words stand between them, which covers `dog eats
-/// donut` and `a dog eats a donut` and stops well short of picking some rare
-/// word six positions away purely because it is rare.
-pub const MARKER_MAX_GAP: usize = 3;
-
 /// A word as 64 complex numbers: one per relation.
 #[derive(Debug, Clone)]
 pub struct RelationalPhasor {
@@ -154,23 +139,6 @@ pub struct RelationalPhasor {
     /// shipped representation it varies across channels — which is the only way
     /// a magnitude can survive normalisation and affect a comparison.
     pub mag: Vec<f64>,
-}
-
-/// Which channel each observable relation occupies.
-///
-/// Built from the corpus, capped at [`PHASE_CHANNELS`]: offsets first, then the
-/// most frequent between-word markers until the channels run out. The bound is
-/// the channel count, exactly as `kinds::MAX_RELATION_TYPES` is.
-///
-/// Since docs/159 this is a thin view over the one channel registry of the
-/// workspace, [`phiecs::relation::Register`]: the eight offset channels are
-/// declared first under the names `offset+1..=8`, and every marker after them
-/// in rank order, so a channel index means the same thing to a `Facet` here
-/// and to a `World` in phiecs. The public API and the `.chroma` entry format
-/// are unchanged.
-#[derive(Debug, Clone)]
-pub struct RelationVocab {
-    pub(super) inner: Register,
 }
 
 /// The manifold: one relational phasor per word.

@@ -10,7 +10,7 @@ use phiano::lab as util;
 mod world;
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::persona::Impersonator;

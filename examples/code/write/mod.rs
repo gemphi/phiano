@@ -41,12 +41,12 @@ mod model;
 mod proportion;
 mod routes;
 mod sig;
-mod tally;
+mod scoreboard;
 mod types;
 mod write;
 
 use model::Model;
-use tally::Tally;
+use scoreboard::Scoreboard;
 use write::{beam, compiles, render};
 
 pub fn run(a: Vec<String>) {
@@ -88,7 +88,7 @@ pub fn run(a: Vec<String>) {
     };
     let held = |p: &str, h: &str| if by_task { p.ends_with(&format!("/{h}.rs")) || p.ends_with(&format!("\\{h}.rs")) } else { family(p) == h };
     let names = ["4-gram, greedy", "4-gram ⊕ movement, greedy", "the same + signature as condition (relations, copy), greedy", "the same, beam 8, first that compiles", "family resemblance (a learned answer, words exchanged; first of 5 that compiles), else the beam", "proportion (as sum_even : sum_odd, so count_even : count_odd), else family resemblance, else the beam", "the same, with Phi-4's glosses of the words (above ⇒ >, below ⇒ <)", "the same, with Phi-4's expressions for the words (even ⇒ x % 2 == 0)"];
-    let mut tally = vec![Tally::default(); names.len()];
+    let mut board = vec![Scoreboard::default(); names.len()];
     let mut examples = String::new();
     let mut size = String::new();
     for h in &folds {
@@ -147,8 +147,8 @@ pub fn run(a: Vec<String>) {
                         eprintln!("== {} works={:?} compiles={builds}\n{text}", t.name, works);
                     }
                     let body_len = cands.first().map_or(0, |b| b.len());
-                    let said = truth.as_ref().zip(cands.first()).map(|(p, b)| tally::agree(&b[1..], &p[prompt.len().min(p.len())..]));
-                    tally[r].add(parses, builds, body_len, works, said);
+                    let said = truth.as_ref().zip(cands.first()).map(|(p, b)| scoreboard::agree(&b[1..], &p[prompt.len().min(p.len())..]));
+                    board[r].add(parses, builds, body_len, works, said);
                     if works == Some(true) && examples.matches(&format!("**{name}**")).count() < show {
                         examples += &format!("\n**{name}**, `{}` (works)\n\n```rust\n{text}```\n", t.name);
                     }
@@ -167,8 +167,8 @@ pub fn run(a: Vec<String>) {
                 let builds = parses && compiles(&text);
                 let body = &words[prompt.len()..];
                 let works = checks::works(t, &text);
-                let said = truth.as_ref().map(|p| tally::agree(body, &p[prompt.len().min(p.len())..]));
-                tally[r].add(parses, builds, body.len(), works, said);
+                let said = truth.as_ref().map(|p| scoreboard::agree(body, &p[prompt.len().min(p.len())..]));
+                board[r].add(parses, builds, body.len(), works, said);
                 if r >= 2 && builds && examples.matches("```rust").count() < 2 * show && !examples.contains(&format!("`{}`", t.name)) {
                     examples += &format!("\n**{name}**, `{}` (compiles)\n\n```rust\n{text}```\n", t.name);
                 }
@@ -177,7 +177,7 @@ pub fn run(a: Vec<String>) {
     }
     let mut md = format!("# The code reader writing\n\nTrained on {size} (last fold). Asked to write the body of {} function signatures from `code_quest`{}.\n\n| writer | parses as Rust | compiles (rustc) | works (family's asserts pass) | mean tokens written | Phi-4's body reproduced from its start |\n|---|---|---|---|---|---|\n", fns.len(), match (phi4_dir.is_some(), by_task) { (false, _) => "", (true, false) => ", each family held out in turn (Phi-4's answers to the other families in training)", (true, true) => ", each task held out alone (its type siblings and the other families in training)" });
     for (r, name) in names.iter().enumerate() {
-        md += &tally[r].row(name);
+        md += &board[r].row(name);
     }
     if phi4_dir.is_some() {
         md += &checks::teacher(&fns, &phi4.iter().map(|(p, _)| (family(p), p.clone())).collect::<Vec<_>>());

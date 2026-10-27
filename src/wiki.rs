@@ -8,7 +8,7 @@ mod extracts;
 use extracts::*;
 
 use crate::chunker::ChunkStore;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
 

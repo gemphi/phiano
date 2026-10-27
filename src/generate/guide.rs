@@ -1,6 +1,6 @@
 //! A trained Phinet operator as a guide to generation.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 mod read;
 
@@ -105,7 +105,7 @@ impl OperatorGuide {
             return;
         }
         let s = self.space.space();
-        let mut mean = vec![crate::wave::c64::new(0.0, 0.0); s];
+        let mut mean = vec![phistd::c64::new(0.0, 0.0); s];
         for f in &self.space.funcs {
             for (m, z) in mean.iter_mut().zip(f) {
                 *m += z;

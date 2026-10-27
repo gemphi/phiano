@@ -2,7 +2,7 @@
 
 mod buffer_tests {
     use super::super::*;
-    use crate::facet::Facet;
+    use phiecs::phasor::facet::Facet;
 
     #[test]
     fn test_context_wave_buffer() {
@@ -78,7 +78,7 @@ mod sampling_tests {
 #[cfg(test)]
 mod operator_guide_tests {
     use super::super::*;
-    use crate::facet::Facet;
+    use phiecs::phasor::facet::Facet;
     use crate::trainer::Trainer;
 
     /// A guide built from a fresh (untrained) operator changes candidate

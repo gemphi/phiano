@@ -97,7 +97,7 @@ impl Envision {
     /// Blends spelling similarity with context resonance.
     pub(super) fn suggest(
         facet: &Facet,
-        context: crate::wave::c64,
+        context: phistd::c64,
         word: &str,
     ) -> Vec<(String, f64, &'static str)> {
         let mut scored: HashMap<String, (f64, &'static str)> = HashMap::new();

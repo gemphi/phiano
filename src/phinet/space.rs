@@ -25,9 +25,9 @@ mod tests;
 pub use encode::*;
 
 use crate::config::PHASE_CHANNELS;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::{fnv1a, SpectralPhasor};
-use crate::wave::c64;
+use phistd::c64;
 pub use phistd::{cosine, normalise};
 pub use phical::Example;
 use std::collections::HashMap;

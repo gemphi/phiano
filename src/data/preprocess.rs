@@ -2,7 +2,7 @@
 //! Reuses existing Tokenizer and Facet infrastructure.
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
 #[derive(Debug, Default)]

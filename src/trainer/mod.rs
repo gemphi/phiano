@@ -1,4 +1,3 @@
-mod splitmix;
 mod build;
 mod sentence;
 mod predictive;
@@ -6,7 +5,6 @@ mod ngrams;
 mod chain;
 #[cfg(test)]
 mod tests;
-pub use splitmix::*;
 #[allow(unused_imports)]
 use build::*;
 #[allow(unused_imports)]
@@ -29,7 +27,7 @@ use crate::config::{
     HINGE_MARGIN, FUNCTION_WORD_WEIGHT,
     RELATION_RATE, RELATION_WINDOW,
 };
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::{fnv1a, SpectralPhasor};
 use crate::tokenizer::Tokenizer;
 

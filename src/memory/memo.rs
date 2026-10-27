@@ -114,7 +114,7 @@ impl Memo {
     /// Records an interaction, classifying it by *meaning* rather than shape.
     ///
     /// See [`Memo::classify_layer_semantic`].
-    pub fn record_grounded(&mut self, facet: &crate::facet::Facet, wave: (f64, f64), text: &str) {
+    pub fn record_grounded(&mut self, facet: &phiecs::phasor::facet::Facet, wave: (f64, f64), text: &str) {
         let layer = Self::classify_layer_semantic(facet, text);
         self.record_at(wave, text, layer);
     }
@@ -147,7 +147,7 @@ impl Memo {
     ///
     /// Band is now how many distinct phase sectors the content words span
     /// (conceptual breadth) and sub-layer is how tightly they cohere.
-    pub fn classify_layer_semantic(facet: &crate::facet::Facet, text: &str) -> usize {
+    pub fn classify_layer_semantic(facet: &phiecs::phasor::facet::Facet, text: &str) -> usize {
         let toks = crate::tokenizer::Tokenizer::content_words(text);
         if toks.is_empty() {
             return 0;
@@ -155,13 +155,13 @@ impl Memo {
 
         let mut sectors = std::collections::HashSet::new();
         for t in &toks {
-            if let Some(s) = crate::wave::Wave::word_sector(facet, t) {
+            if let Some(s) = phiecs::phasor::wave::Wave::word_sector(facet, t) {
                 sectors.insert(s);
             }
         }
 
         let known = toks.iter().filter(|t| facet.contains_word(t)).count();
-        let z = crate::wave::Wave::sentence(facet, &toks);
+        let z = phiecs::phasor::wave::Wave::sentence(facet, &toks);
         let coherence = match known {
             0 => 0.0,
             n => (z.norm() / n as f64).clamp(0.0, 1.0),

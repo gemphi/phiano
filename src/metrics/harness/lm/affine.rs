@@ -111,7 +111,7 @@ impl<'a> PhianoLM<'a> {
                 if toks.len() < 3 {
                     return (0.0f64, 0usize);
                 }
-                let mut h = vec![crate::wave::c64::new(0.0, 0.0); LM_CHANNELS];
+                let mut h = vec![phistd::c64::new(0.0, 0.0); LM_CHANNELS];
                 if kind.is_recurrent() {
                     self.advance(&mut h, &toks[0]);
                     self.advance(&mut h, &toks[1]);
@@ -165,7 +165,7 @@ impl<'a> PhianoLM<'a> {
     /// carries the whole prefix, with a per-channel timescale — information a
     /// trigram table structurally cannot have.
     #[inline]
-    pub(in crate::metrics::harness) fn kernel(k: usize) -> crate::wave::c64 {
+    pub(in crate::metrics::harness) fn kernel(k: usize) -> phistd::c64 {
         crate::config::channel_kernel(k, LM_CHANNELS)
     }
 }

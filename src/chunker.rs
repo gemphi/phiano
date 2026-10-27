@@ -110,7 +110,7 @@ impl ChunkStore {
     /// Ingest all chunks into the manifold with training metrics.
     pub fn ingest_parallel(
         &self,
-        manifold: &mut crate::facet::Facet,
+        manifold: &mut phiecs::phasor::facet::Facet,
         trainer: &crate::trainer::Trainer,
         epochs: usize,
     ) -> crate::trainer::TrainingMetric {

@@ -4,7 +4,7 @@
 //! field is told as rows. Seeing is telling, as watching the kit is.
 
 use super::{Agent, Row};
-use phioml::Flow;
+use phiecs::kit::eye::Flow;
 
 /// One twitch of the eye: `who` is told the scene under its own scope
 /// `sight` (narrowed by the persona's `context` exactly as the kit is).
@@ -24,13 +24,13 @@ pub fn see(who: &mut dyn Agent, flow: &Flow, angle: f64) -> usize {
 mod tests {
     use super::*;
     use crate::sys::{Being, Persona};
-    use phioml::Aoc;
+    use phiecs::kit::eye::Aoc;
 
     #[test]
     fn seeing_is_telling_and_asking_works_after() {
         let p = Persona::from_md("---\nname: Dancer\nseeds: step\nkinds: does, within, says\ncontext: sight\n---\n").unwrap();
         let mut b = Being::new(p);
-        let mut f = Flow::new(3);
+        let mut f = Flow::new();
         f.see("hand", Aoc::new(0.4, 3.0));
         f.see("table", Aoc::new(1.1, 1.0));
         f.see("wall", Aoc::new(2.0, 0.2));

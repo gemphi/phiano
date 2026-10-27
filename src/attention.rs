@@ -27,9 +27,9 @@
 //! Combined Phasor Output: c64
 //! ```
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::SpectralPhasor;
-use crate::wave::c64;
+use phistd::c64;
 use std::f64::consts::PI;
 
 /// Number of attention heads (corresponding to 8 primary phase sectors).

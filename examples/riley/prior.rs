@@ -81,14 +81,14 @@ pub(super) fn mode_prior_table(d: &Data) {
     let syn: Vec<u16> = kept
         .iter()
         .zip(ctx_for_kept.iter())
-        .map(|(_, g)| phiano::phinum::topology::SentenceType::classify(g).base as u16)
+        .map(|(_, g)| phiton::p64::topology::SentenceType::classify(g).base as u16)
         .collect();
     let (syn, used) = collapse_small(&syn);
     let real = predictive_gain(&syn, &modes);
     let shuffled = predictive_gain(&shuffle_classes(&syn, 0xC2B2_AE3D_27D4_EB4F), &modes);
     println!(
         "  {:<22} {:>8} {:>14.4} {:>+14.4} {:>+12.4}",
-        "syntactic (phinum)", used, real.0, real.1, real.1 - shuffled.1
+        "syntactic (p64)", used, real.0, real.1, real.1 - shuffled.1
     );
 
     println!(

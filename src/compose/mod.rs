@@ -3,7 +3,7 @@ pub mod better;
 pub mod worse;
 pub mod tune;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 use std::fmt;
 
@@ -18,18 +18,18 @@ pub struct SectorPalette;
 impl SectorPalette {
     /// Maps sector indices to physics-derived color names.
     ///
-    /// Delegates to [`crate::gemgum::Gemgum::sector_color_name`], which
+    /// Delegates to [`phiecs::phasor::gemgum::Gemgum::sector_color_name`], which
     /// maps the sector through the phiton spectral domain.
     pub fn color(sector: u16) -> String {
-        let n = crate::wave::Wave::sector_count();
-        crate::gemgum::Gemgum::sector_color_name(sector, n)
+        let n = phiecs::phasor::wave::Wave::sector_count();
+        phiecs::phasor::gemgum::Gemgum::sector_color_name(sector, n)
     }
 
     /// Maps sector indices to full [`crate::phiton::PhitonColor`] with RGB.
     #[allow(dead_code)]
     pub fn phiton_color(sector: u16) -> crate::phiton::PhitonColor {
-        let n = crate::wave::Wave::sector_count();
-        crate::gemgum::Gemgum::sector_color(sector, n)
+        let n = phiecs::phasor::wave::Wave::sector_count();
+        phiecs::phasor::gemgum::Gemgum::sector_color(sector, n)
     }
 }
 

@@ -23,7 +23,7 @@ mod relate;
 
 use phiano::config::LEARNING_RATE;
 use phiano::metrics::harness::{Harness, Split};
-use phiano::persona::{PersonaStore, World};
+use phiano::persona::{PersonaStore, Styles};
 use phiano::storage::Storage;
 use phiano::trainer::Trainer;
 use phiano::relate::read_quests;
@@ -65,7 +65,7 @@ pub fn run(a: Vec<String>) {
     let facet = Harness::train_ranking_only(&Split { train: docs, valid: Vec::new(), test: Vec::new() }, &Trainer::new(LEARNING_RATE).with_seed(0), 3);
     let lexicon = root.join("personas.chroma").to_string_lossy().to_string();
     let mut pfacet = facet;
-    let mut world = World::new();
+    let mut world = Styles::new();
     let trainer = Trainer::new(LEARNING_RATE).with_seed(1);
     for (p, rows, sentences) in &personas {
         if !sentences.is_empty() {

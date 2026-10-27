@@ -1,6 +1,6 @@
 # phiano — the instrument
 
-In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle with a count; meaning is a side effect of pairs of words moving under a condition.
+In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle; meaning is a side effect of pairs of words moving under a condition, and they move by the error of what was expected — toward what came, away from what did not.
 
 Phiano is where the models are played and measured. The arena (`src/arena/`) lines up one reader per model — counts (the line to beat), concepts, the phasor engine, phical's conjugate mirror, phifno's operator — and scores them on one stream, every next word predicted before it is told (the prequential protocol, no model ever scored on what it has seen). The scribe (`src/scribe/`) learns to WRITE programs against the [phiclm](https://github.com/gemphi/phiclm) judge with no model underneath. The prose tree (`phiplm::prose`, driven from here) discovers construction families by being curious — interest points at what is not yet known, and what recurs is what is real.
 

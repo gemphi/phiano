@@ -5,7 +5,7 @@
 //! compared with what the story actually says.
 
 use phiano::relate::{FnoWave, MirrorWave, RelationModel, Wave};
-use phical::conjugate::Mirror;
+use phiton::conjugate::Mirror;
 use serde_json::{json, Value};
 
 /// A reader's forward and backward reading at every position of the story.

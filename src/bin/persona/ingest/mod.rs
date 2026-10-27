@@ -20,9 +20,9 @@ use corpus::*;
 use measure::*;
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{Harness, Split};
-use phiano::persona::{PersonaStore, World};
+use phiano::persona::{PersonaStore, Styles};
 use phiano::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;
@@ -55,7 +55,7 @@ pub fn run(a: Vec<String>) {
     // ── the personas: the sampled baseline, then every sentence ──
     let trainer = Trainer::new(LEARNING_RATE).with_seed(1);
     let mut base_facet = facet.clone();
-    let mut base = World::new();
+    let mut base = Styles::new();
     for a in &authors {
         base.add_persona_quiet(&a.name, &sample(&a.split.train, baseline_n, 11), &mut base_facet, &trainer);
     }
@@ -63,7 +63,7 @@ pub fn run(a: Vec<String>) {
     drop(base_facet);
 
     let mut pfacet = facet.clone();
-    let mut world = World::new();
+    let mut world = Styles::new();
     for a in &authors {
         let t = std::time::Instant::now();
         world.add_persona_quiet(&a.name, &a.split.train, &mut pfacet, &trainer);

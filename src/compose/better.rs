@@ -9,11 +9,11 @@ use evaluator::*;
 use converged::*;
 
 use crate::config;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::compose::flow::RiverFlow;
 use crate::compose::SectorPalette;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use std::collections::{HashMap, HashSet};
 
 /// Evaluator — scores each of the 64 sector variations.

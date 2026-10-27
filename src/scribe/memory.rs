@@ -4,7 +4,7 @@
 //! (`"a b" "b c" …`), so its choices after "a b" are the pairs that
 //! followed — the same counting, one level up.
 
-use crate::arena::Count;
+use phient::lineup::Count;
 use phient::study::Reader;
 
 /// The end-of-program word the scribe learns and stops on.

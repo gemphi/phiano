@@ -23,7 +23,7 @@ mod score;
 
 use calibrate::{cache, mix, Weighting};
 use models::CountModel;
-use score::Tally;
+use phient::study::Score;
 use std::collections::HashMap;
 
 pub fn run(a: Vec<String>) {
@@ -118,8 +118,8 @@ pub fn run(a: Vec<String>) {
         format!("the same + cache, λ = {l_both}"),
         format!("{base}-gram ⊕ movement, two speeds: own weight after {own_n} sightings (docs/114)"),
     ];
-    let mut ts: Vec<Tally> = names.iter().map(|n| Tally::new(n)).collect();
-    let mut ids: Vec<Tally> = names.iter().map(|n| Tally::new(n)).collect();
+    let mut ts = vec![Score::default(); names.len()];
+    let mut ids = vec![Score::default(); names.len()];
     for (h, truth) in score::positions(&test, 8, sample) {
         let tri = c.ngram(h, 3, &uni);
         let conds = c.conditions(h, K, &posts);
@@ -141,9 +141,9 @@ pub fn run(a: Vec<String>) {
         ];
         let ident = score::is_identifier(&vocab[truth]);
         for (i, p) in ps.iter().enumerate() {
-            ts[i].add(p, truth);
+            score::add(&mut ts[i], p, truth);
             if ident {
-                ids[i].add(p, truth);
+                score::add(&mut ids[i], p, truth);
             }
         }
     }
@@ -156,14 +156,14 @@ pub fn run(a: Vec<String>) {
         test_files.len(),
         c.total,
         vocab.len(),
-        ts[0].n,
-        ids[0].n,
+        ts[0].asked,
+        ids[0].asked,
         if top == usize::MAX { "all".to_string() } else { top.to_string() }
     );
     println!("## All tokens\n\n| reader | top-1 | top-5 | MRR | perplexity |\n|---|---|---|---|---|");
-    ts.iter().for_each(|t| println!("{}", t.row()));
+    ts.iter().zip(&names).for_each(|(t, n)| println!("{}", score::row(n, t)));
     println!("\n## Identifiers only (names, not keywords or punctuation)\n\n| reader | top-1 | top-5 | MRR | perplexity |\n|---|---|---|---|---|");
-    ids.iter().for_each(|t| println!("{}", t.row()));
+    ids.iter().zip(&names).for_each(|(t, n)| println!("{}", score::row(n, t)));
     let rel: usize = posts.keys().map(|k| c.skip[k].len()).sum();
     let ctx = |n: usize| -> usize { c.ctx.iter().filter(|(h, _)| h.len() == n).map(|(_, m)| m.len()).sum() };
     println!("\n## Size\n\nRelations kept by the movement (posted (d, w) ⇒ next, with counts): {rel} across {} posted conditions, {:.1} per word per distance · n-gram entries: bigram {}, trigram {}, 4-gram {}", posts.len(), posts.len() as f64 / (vocab.len() * K) as f64, ctx(1), ctx(2), ctx(3));

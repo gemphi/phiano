@@ -45,7 +45,7 @@ impl Dialogue {
             if w == topic || said.iter().any(|s| s == w) {
                 continue;
             }
-            let score = facet.calls_for_with(w, topic, crate::facet::Reading::from_env());
+            let score = facet.calls_for_with(w, topic, phiecs::phasor::facet::Reading::from_env());
             if best.as_ref().is_none_or(|(_, s)| score > *s) {
                 best = Some((w.clone(), score));
             }

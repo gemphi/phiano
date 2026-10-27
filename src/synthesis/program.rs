@@ -1,6 +1,6 @@
 //! Program representation and synthesis core.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use serde::Serialize;
 

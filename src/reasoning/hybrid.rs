@@ -2,7 +2,7 @@
 //! Implements Ch 14.4's key lesson: combine geometric pattern recognition
 //! with discrete, program-like reasoning.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::reasoning::analogy::Analogy;
 use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine};
 use crate::tokenizer::Tokenizer;

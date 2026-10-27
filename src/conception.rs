@@ -44,7 +44,7 @@ use graph::*;
 use counts::*;
 
 use crate::config::{GOLDEN_ANGLE, PHASE_CHANNELS, TWO_PI};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::collections::HashMap;
 use std::f64::consts::PI;

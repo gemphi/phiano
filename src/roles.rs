@@ -63,6 +63,6 @@ use purity::*;
 use lexical::*;
 
 use crate::config::{PHASE_CHANNELS, TWO_PI};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::{fnv1a, SpectralPhasor};
 use std::collections::HashMap;

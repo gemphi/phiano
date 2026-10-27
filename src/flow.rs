@@ -11,12 +11,13 @@ use propagate::*;
 use record::*;
 
 use crate::config::{LEARNING_RATE, SYNTACTIC_MOMENTUM_DEFAULT, TWO_PI};
-use crate::facet::Facet;
-use crate::physics::PhicalOp;
+use phiecs::phasor::facet::Facet;
+use phiton::physics::PhysicsOp;
 use crate::phasor::SpectralPhasor;
-use crate::relational::{RelationVocab, RelationalFacet, WINDOW};
+use phiecs::relation::RelationVocab;
+use crate::relational::{RelationalFacet, WINDOW};
 use crate::tokenizer::Tokenizer;
-use crate::wave::c64;
+use phistd::c64;
 use serde::Serialize;
 
 /// What kind of coupling holds two flow nodes together.
@@ -32,7 +33,7 @@ use serde::Serialize;
 ///
 /// [`CouplingKind::Relation`] is that edge, and it carries the thing an enum
 /// variant could never carry: the **dimension** the coupling acts in.
-/// [`crate::relational::RelationVocab`] assigns every observable relation its
+/// [`phiecs::relation::RelationVocab`] assigns every observable relation its
 /// own channel out of the sixty-four, so `eats` is not just a label on the edge
 /// — it names which of the word's sixty-four complex components the coupling
 /// reads. Two words coupled by `eats` are compared on the `eats` channel and no

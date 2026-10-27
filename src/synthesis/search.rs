@@ -1,7 +1,7 @@
 //! Program search space: enumerates candidate programs and evaluates them.
 
 use super::program::{Program, ProgramOp};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 #[derive(Debug, Default)]
 pub struct ProgramSearch;

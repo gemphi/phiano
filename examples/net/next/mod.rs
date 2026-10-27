@@ -39,7 +39,7 @@ use sweep::*;
 use types::*;
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{Harness, PhianoLM, Split};
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::phinet::compose::Composition;

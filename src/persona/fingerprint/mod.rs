@@ -13,9 +13,9 @@ use likelihood::*;
 
 mod traits;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use std::fmt;
 
 pub struct Fingerprint {

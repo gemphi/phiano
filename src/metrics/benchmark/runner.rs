@@ -1,6 +1,6 @@
 //! Benchmark runner: runs all metrics and produces a comprehensive report.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::metrics::{
     adaptation::Adaptation,
     adversarial::Adversarial,

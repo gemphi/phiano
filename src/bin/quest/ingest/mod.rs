@@ -41,7 +41,7 @@ use measure::*;
 use rows::*;
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::phasor::Rounding;
 use phiano::storage::Storage;
 use phiano::trainer::Trainer;

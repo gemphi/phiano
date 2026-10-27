@@ -3,8 +3,8 @@
 use crate::config::TWO_PI;
 use crate::tokenizer::Tokenizer;
 use crate::config::{CONTEXT_LAMBDA, CONTEXT_OMEGA, DEFAULT_CONTEXT_WINDOW, PHASE_CHANNELS};
-use crate::facet::Facet;
-use crate::wave::c64;
+use phiecs::phasor::facet::Facet;
+use phistd::c64;
 use std::collections::VecDeque;
 
 pub const CONTEXT_WINDOW_SIZE: usize = DEFAULT_CONTEXT_WINDOW;

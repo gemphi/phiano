@@ -98,7 +98,7 @@ impl<'a> PhianoLM<'a> {
             if toks.len() < 3 {
                 continue;
             }
-            let mut h = vec![crate::wave::c64::new(0.0, 0.0); LM_CHANNELS];
+            let mut h = vec![phistd::c64::new(0.0, 0.0); LM_CHANNELS];
             if recurrent {
                 self.advance(&mut h, &toks[0]);
                 self.advance(&mut h, &toks[1]);

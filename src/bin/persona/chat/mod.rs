@@ -18,8 +18,8 @@ use judge::*;
 #[allow(unused_imports)]
 use script::*;
 
-use phiano::facet::Facet;
-use phiano::persona::{Dialogue, PersonaStore, Reply, World};
+use phiecs::phasor::facet::Facet;
+use phiano::persona::{Dialogue, PersonaStore, Reply, Styles};
 use phiano::storage::Storage;
 
 const LEXICON: &str = "data/personas.chroma";
@@ -34,7 +34,7 @@ pub fn run(a: Vec<String>) {
     let store = std::env::var("PHIANO_PERSONAS").unwrap_or_else(|_| STORE.to_string());
     let lexicon = PersonaStore::lexicon_of(&store).unwrap_or_else(|_| LEXICON.to_string());
     let facet: Facet = Storage::load(&lexicon).expect("run bin/persona_ingest (or persona_from_quest) first");
-    let world: World = PersonaStore::load(&store, &facet).expect("run bin/persona_ingest (or persona_from_quest) first");
+    let world: Styles = PersonaStore::load(&store, &facet).expect("run bin/persona_ingest (or persona_from_quest) first");
     let mut names: Vec<String> = world.personas.keys().cloned().collect();
     names.sort();
     let (asked, questions) = match args.first() {
@@ -107,5 +107,5 @@ pub fn run(a: Vec<String>) {
     }
     let pct = |k: usize| 100.0 * k as f64 / total.max(1) as f64;
     let (got, of) = reached.get();
-    println!("\n---\n\n{total} replies · read back as the persona who spoke: sector attribution {} ({:.0}%), Kneser-Ney panel {} ({:.0}%) · chance {:.0}% · reached the word the topic called for {got}/{of} · reading {:?}.", hit, pct(hit), kn_hit, pct(kn_hit), 100.0 / names.len() as f64, phiano::facet::Reading::from_env());
+    println!("\n---\n\n{total} replies · read back as the persona who spoke: sector attribution {} ({:.0}%), Kneser-Ney panel {} ({:.0}%) · chance {:.0}% · reached the word the topic called for {got}/{of} · reading {:?}.", hit, pct(hit), kn_hit, pct(kn_hit), 100.0 / names.len() as f64, phiecs::phasor::facet::Reading::from_env());
 }

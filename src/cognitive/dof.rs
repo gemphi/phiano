@@ -5,7 +5,7 @@
 
 use super::types::*;
 use super::speech::SpeechActAgent;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
 /// 5. DirectionOfFitAgent - maps speech act to mind-world alignment.

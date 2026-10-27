@@ -2,7 +2,7 @@
 //! Deep learning guides the discrete program search (Ch 14.5).
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::f64::consts::PI;
 

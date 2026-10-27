@@ -1,4 +1,4 @@
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::memory::Memo;
 use crate::trainer::Trainer;
 use serde::{Deserialize, Serialize};
@@ -126,8 +126,8 @@ impl DialogueSource {
             let prompt_tokens = crate::tokenizer::Tokenizer::tokenize(&turn.prompt);
             let resp_tokens = crate::tokenizer::Tokenizer::tokenize(&turn.response);
 
-            let prompt_wave = crate::wave::Wave::sentence(facet, &prompt_tokens);
-            let resp_wave = crate::wave::Wave::sentence(facet, &resp_tokens);
+            let prompt_wave = phiecs::phasor::wave::Wave::sentence(facet, &prompt_tokens);
+            let resp_wave = phiecs::phasor::wave::Wave::sentence(facet, &resp_tokens);
 
             // 3. Record into 16-layer memory hierarchy (Pattern Band: L4-L7)
             memo.record((prompt_wave.re, prompt_wave.im), &turn.prompt);

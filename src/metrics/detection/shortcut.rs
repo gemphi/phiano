@@ -1,7 +1,7 @@
 //! Shortcut detection: identifies when the model exploits surface features
 //! instead of semantic phase relationships (Ch 14.3's shortcut rule).
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use serde::{Deserialize, Serialize};
 

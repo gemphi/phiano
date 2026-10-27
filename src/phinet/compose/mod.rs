@@ -23,7 +23,7 @@
 use super::space::{cosine, FunctionSpace, WordFunction};
 use crate::config::PHASE_CHANNELS;
 use phical::Fno;
-pub use phistd::hrr::{bind, compose, unbind};
+pub use phiton::hrr::{bind, compose, unbind};
 use std::collections::HashMap;
 
 /// Number of offset roles in the offset-keyed composition (`PairKey::Offset`).
@@ -39,7 +39,7 @@ pub const MAX_FILLERS: usize = 4;
 /// key *is* the relation channel, so the role of "of" is the role of channel
 /// "of" everywhere in the engine.
 pub fn role(k: usize) -> WordFunction {
-    phistd::hrr::role(PHASE_CHANNELS, 0x0FF5E7 + k as u64)
+    phiton::hrr::role(PHASE_CHANNELS, 0x0FF5E7 + k as u64)
 }
 
 /// How a pair of words is keyed.
@@ -52,7 +52,7 @@ pub fn role(k: usize) -> WordFunction {
 #[derive(Clone, Copy)]
 pub enum PairKey<'a> {
     Offset,
-    Channel(&'a crate::relational::RelationVocab),
+    Channel(&'a phiecs::relation::RelationVocab),
 }
 
 /// The composable words and their fillers per key, from the corpus.

@@ -1,11 +1,11 @@
 //! Sections 6 and 7 of the report: what she composes, and the sixty-four operations.
 
 use phiano::eval::Evaluator;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator, OperatorGuide};
 use phiano::learn::GenWeight;
 use phiano::metrics::harness::Split;
-use phiano::persona::World;
+use phiano::persona::Styles;
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::phinet::space::{FunctionSpace, Sides};
 use phistd::hexagram::KING_WEN_MAP;
@@ -95,9 +95,9 @@ pub fn operations(md: &mut String, space: &FunctionSpace, novelty_hex: u8) {
 }
 
 /// §3 — attribution on held-out paragraphs of four sentences.
-pub fn attribution(md: &mut String, world: &World, pfacet: &Facet, held_by_author: &[(String, Vec<String>)]) {
+pub fn attribution(md: &mut String, world: &Styles, pfacet: &Facet, held_by_author: &[(String, Vec<String>)]) {
     writeln!(md, "\n## 3. Who wrote this? Attribution on held-out paragraphs\n").unwrap();
-    writeln!(md, "Held-out sentences grouped into paragraphs of four; `World::match_text` picks the persona with the highest likelihood. Chance is one in three.\n").unwrap();
+    writeln!(md, "Held-out sentences grouped into paragraphs of four; `Styles::match_text` picks the persona with the highest likelihood. Chance is one in three.\n").unwrap();
     writeln!(md, "| true author | paragraphs | picked Austen | picked Chesterton | picked Carroll | accuracy | mean confidence |\n|---|---|---|---|---|---|---|").unwrap();
     let mut total = (0usize, 0usize);
     for (author, held) in held_by_author {

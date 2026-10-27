@@ -34,13 +34,13 @@ pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCo
 pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
 pub use speech::SpeechActAgent;
 #[allow(unused_imports)]
-pub use reasoning::{ReasoningResult, ReasoningStep, ReasoningChain};
+pub use reasoning::{Chain, ChainOfThought, Thought};
 pub use grounding::DefinitionGrounder;
 #[allow(unused_imports)]
 pub use selection::WordSelector;
 
 use crate::chunker::ChunkStore;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 
 /// CognitiveCore - coordinates all 16 agents and synthesizes output.
@@ -138,7 +138,7 @@ impl CognitiveCore {
         context_buffer: &mut ContextWaveBuffer,
         prompt: &str,
         max_steps: usize,
-    ) -> ReasoningResult {
-        ReasoningChain::reason_chain(self, facet, context_buffer, prompt, max_steps)
+    ) -> Chain<Thought> {
+        ChainOfThought::reason_chain(self, facet, context_buffer, prompt, max_steps)
     }
 }

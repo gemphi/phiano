@@ -52,7 +52,7 @@ impl RiverFlow {
             in_sector.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
             words.extend(in_sector.into_iter().take(4).map(|(w, _)| w));
 
-            let n = crate::wave::Wave::sector_count();
+            let n = phiecs::phasor::wave::Wave::sector_count();
             let prev_s = if sector == 0 { n - 1 } else { sector - 1 };
             let next_s = (sector + 1) % n;
             let mut adj: Vec<(String, f64)> = resonant_pool

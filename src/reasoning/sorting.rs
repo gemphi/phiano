@@ -3,7 +3,7 @@
 //! Phiano's phase model should sort by phase angle reliably.
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 #[derive(Debug, Default)]
 pub struct SortingTest;

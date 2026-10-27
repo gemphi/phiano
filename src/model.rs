@@ -10,9 +10,9 @@ use crate::command::{Context, Dispatcher};
 use crate::config;
 use crate::cognitive::{CognitiveCore, DefinitionGrounder};
 use crate::envision::Envision;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::memory::Memo;
-use crate::persona::World;
+use crate::persona::Styles;
 use crate::storage::Storage;
 use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
@@ -39,7 +39,7 @@ pub struct Model {
     /// The memo - 16-layer memory log of all interactions.
     pub memo: Memo,
     /// The world - collection of personas for impersonation.
-    pub world: World,
+    pub world: Styles,
     /// The running multi-turn context wave buffer.
     pub context_buffer: crate::generate::ContextWaveBuffer,
     /// The cognitive core - 16 Searle-inspired agents.

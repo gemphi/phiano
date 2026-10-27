@@ -12,7 +12,7 @@ pub(super) fn mean_shift_table(d: &Data) {
 
     let syntactic: Vec<u16> = sources
         .iter()
-        .map(|g| phiano::phinum::topology::SentenceType::classify(g).base as u16)
+        .map(|g| phiton::p64::topology::SentenceType::classify(g).base as u16)
         .collect();
 
     let disc8 = discover_classes(facet, sources, 8, 8);
@@ -34,7 +34,7 @@ pub(super) fn mean_shift_table(d: &Data) {
 
     let rows: Vec<(&str, Vec<u16>)> = vec![
         ("none (every earlier run)", none),
-        ("syntactic (phinum)", syntactic),
+        ("syntactic (p64)", syntactic),
         ("discovered, K=8", disc8),
         ("discovered, K=64", disc64),
         ("one class per head", per_head_class),

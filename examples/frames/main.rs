@@ -96,7 +96,7 @@ use shift::*;
 use prior::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
 use phiano::metrics::harness::Harness;
 use phiano::kinds::{OffsetEstimator, OffsetTable};

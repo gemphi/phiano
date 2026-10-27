@@ -41,10 +41,11 @@ use benchmark::*;
 #[allow(unused_imports)]
 use state::*;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::fnv1a;
 use crate::tokenizer::Tokenizer;
-use crate::wave::{c64, Wave};
+use phiecs::phasor::wave::Wave;
+use phistd::c64;
 use rayon::prelude::*;
 use std::collections::HashSet;
 

@@ -26,10 +26,10 @@ pub mod reuse;
 pub mod monitor;
 
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::synthesis::library::ComponentLibrary;
 use crate::tokenizer::Tokenizer;
-use crate::trainer::{wrap_signed, Trainer};
+use crate::trainer::Trainer;
 pub use history::{BenchmarkEntry, BenchmarkHistory};
 pub use meta::{MetaLearner, MetaModel};
 pub use monitor::{Alert, ModelMonitor};
@@ -103,7 +103,7 @@ impl LifelongLearner {
         if let Some((name, word_phases)) = &matched {
             for (word, target) in word_phases {
                 if let Some(p) = facet.lexicon.get_mut(word) {
-                    let d = wrap_signed(target - p.theta(0));
+                    let d = phistd::wrap(target - p.theta(0));
                     p.nudge(0, 0.3 * d);
                     p.sync_phase();
                     warm_started += 1;

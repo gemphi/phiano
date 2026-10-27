@@ -36,7 +36,7 @@ use centroid::*;
 use crate::chunker::ChunkStore;
 use crate::conception::Conception;
 use crate::config::{GROUNDING_ROUNDS, TWO_PI};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::f64::consts::PI;
 

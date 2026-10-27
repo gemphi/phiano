@@ -68,7 +68,7 @@ impl Model {
             facet,
             trainer: Trainer::new(config::LEARNING_RATE),
             memo,
-            world: World::new(),
+            world: Styles::new(),
             context_buffer: crate::generate::ContextWaveBuffer::new(4096),
             cognitive_core,
         }

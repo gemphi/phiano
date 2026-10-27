@@ -1,7 +1,7 @@
 //! Decoding from the operator versus the trigram sampler, on Austen.
 //! `cargo run --release --bin decode_eval [tokens] [k]`
 use phiano::eval::Evaluator;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Decode, Generator, OperatorGuide};
 use phiano::learn::GenWeight;
 use phiano::metrics::harness::Harness;

@@ -24,7 +24,7 @@ use std::time::Instant;
 use phiano::config::{CHROMA_FILE, LEARNING_RATE};
 use phiano::curriculum::ChildCurriculum;
 use phiano::eval::Evaluator;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;

@@ -29,7 +29,7 @@ impl Stat {
         println!("  Phase dispersion: {:.4}  (1.0 spread, 0.0 collapsed)", dispersion);
         println!("  Sector Gini:      {:.4}  (0.0 even, 1.0 one sector holds all)", gini);
 
-        let hist = crate::wave::Wave::sector_histogram(ctx.manifold);
+        let hist = phiecs::phasor::wave::Wave::sector_histogram(ctx.manifold);
         let max = hist.iter().copied().max().unwrap_or(0);
         let occupied = hist.iter().filter(|c| **c > 0).count();
         println!("  Sectors occupied: {}/{}  (busiest holds {})", occupied, hist.len(), max);

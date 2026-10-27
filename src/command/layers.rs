@@ -1,7 +1,7 @@
 use crate::command::Context;
 use crate::layers::HierarchicalPhaseField;
 use crate::tokenizer::Tokenizer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 
 pub struct LayersCmd;
 

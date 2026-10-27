@@ -1,6 +1,6 @@
 use crate::command::Context;
 use crate::command::Parser;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 
 /// Resonance - finds words that resonate with a sentence wave.
 ///

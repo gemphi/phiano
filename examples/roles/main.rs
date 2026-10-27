@@ -63,7 +63,7 @@ use setup::*;
 
 use phiano::chunker::ChunkStore;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::RelationBenchmark;
 use phiano::phasor::SpectralPhasor;

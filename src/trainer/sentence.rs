@@ -24,7 +24,7 @@ impl Trainer {
         self.record_ngrams(facet, &tokens);
 
         let n_tokens = tokens.len();
-        let step_seed = fnv1a(text) ^ splitmix(self.seed);
+        let step_seed = fnv1a(text) ^ phistd::mix64(self.seed);
 
         // Which channels this step touches. Updating a rotating subset is
         // dropout-like regularisation and bounds the cost of a token update.
@@ -131,7 +131,7 @@ impl Trainer {
                 None => continue,
             };
             for j in 0..self.neg_samples {
-                let r = splitmix(step_seed ^ ((i as u64) << 32) ^ (j as u64).wrapping_mul(0x2545F491));
+                let r = phistd::mix64(step_seed ^ ((i as u64) << 32) ^ (j as u64).wrapping_mul(0x2545F491));
                 // Controlled negative sampling: when a definition graph is
                 // attached, never draw a word that is definitionally related to
                 // the anchor. A uniform draw will occasionally pick a word from
@@ -140,7 +140,7 @@ impl Trainer {
                 // training signal working against itself. Dict2vec (Tissier et
                 // al., EMNLP 2017) measures the filter firing on ~2% of draws.
                 let sampled = match &self.definitions {
-                    Some(g) => facet.sample_negative_controlled(r, token, g, 8),
+                    Some(g) => facet.sample_negative_controlled(r, token, |a, b| g.is_related(a, b), 8),
                     None => facet.sample_negative(r),
                 };
                 let neg = match sampled {

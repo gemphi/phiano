@@ -27,14 +27,14 @@ pub const RAY_CAST_DEFAULT_K: usize = 16;
 // ── GENERATIVE & TORUS CONSTANTS ───────────────────────────────────────────
 
 /// Number of discrete harmonics evaluated on the multi-frequency torus (T^D).
-pub const TORUS_HARMONICS_COUNT: usize = 32;
+pub use phiecs::phasor::spectral::TORUS_HARMONICS_COUNT;
 
 /// Default subject→verb syntactic phase lag (β_ij).
 #[allow(dead_code)]
 pub const SYNTAX_LAG_DEFAULT: f64 = SYNTACTIC_LAG_BETA;
 
 /// EMA rate for learning pairwise phase lags from word order.
-pub const SYNTAX_LAG_LEARN_RATE: f64 = 0.08;
+pub use phiecs::phasor::facet::SYNTAX_LAG_LEARN_RATE;
 
 /// Anti-phase pulse applied to a misunderstood concept (π radians).
 pub const PHASE_REPULSION: f64 = std::f64::consts::PI;
@@ -168,13 +168,6 @@ pub const VERIFY_REPULSE: f64 = 0.02;
 
 // ── MULTI-CHANNEL PHASE REPRESENTATION (D-dimensional torus) ───────────────
 
-/// Number of independent phase channels per word (D).
-///
-/// A single angle gives S^1: at 64-sector resolution that is 64 distinguishable
-/// states for the whole vocabulary. D independent channels give a representation
-/// on the torus T^D, where similarity is mean phase coherence across channels.
-/// 64 channels at one byte each costs 64 bytes/word.
-pub const PHASE_CHANNELS: usize = 64;
-
-/// Quantisation of each channel: theta_k = phases[k] * 2π / CHANNEL_QUANTA.
-pub const CHANNEL_QUANTA: f64 = 256.0;
+/// The channels per word and their quantisation: the spectral phasor's
+/// geometry, which lives with it in phiecs.
+pub use phiecs::phasor::spectral::{CHANNEL_QUANTA, PHASE_CHANNELS};

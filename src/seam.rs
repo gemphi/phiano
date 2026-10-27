@@ -5,8 +5,9 @@
 //! conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and
 //! composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical
 //! stores no point: a word is 32–64 relations, each a complex phasor on a
-//! closed circle with a count; meaning is a side effect of pairs of words
-//! moving under a condition.
+//! closed circle; meaning is a side effect of pairs of words moving under a
+//! condition, and they move by the error of what was expected — toward what
+//! came, away from what did not.
 //!
 //! Phient is the model those crates add up to: a phasor student
 //! ([`crate::arena::Ecs`]) that learns a voice ON THE FLY from what it is

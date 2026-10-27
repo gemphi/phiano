@@ -31,12 +31,12 @@ use engine::*;
 #[allow(unused_imports)]
 
 use crate::cognitive::CognitiveCore;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Generator};
 use crate::layers::HierarchicalPhaseField;
 use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use std::fmt;
 
 /// InstructionKind - type of instruction issued by user.

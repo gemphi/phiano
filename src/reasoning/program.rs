@@ -2,7 +2,7 @@
 //! Supports reasoning, planning, formal manipulation (Ch 14.4).
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use serde::Serialize;
 use std::f64::consts::PI;

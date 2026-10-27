@@ -2,7 +2,7 @@
 //! Each step moves the context wave toward the goal phase.
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::tokenizer::Tokenizer;
 use serde::Serialize;

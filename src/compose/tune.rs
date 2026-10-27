@@ -3,7 +3,7 @@ use crate::compose::flow::RiverFlow;
 use crate::compose::worse::Discarder;
 use crate::compose::{SectorPalette, Composition};
 use crate::config;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 
 /// CompositionTuner - the "Monitor" in the Flower-Hayes model.

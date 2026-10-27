@@ -2,8 +2,8 @@
 //! This is the kind of abstraction deep learning already handles well (Ch 14.4).
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
-use crate::physics::PhicalOp;
+use phiecs::phasor::facet::Facet;
+use phiton::physics::PhysicsOp;
 use crate::reasoning::program::ProgramAnalogy;
 use serde::Serialize;
 use std::f64::consts::PI;
@@ -83,7 +83,7 @@ impl Analogy {
     pub fn light_centric(facet: &Facet, source: &str, target: &str) -> f64 {
         match (facet.lexicon.get(source), facet.lexicon.get(target)) {
             (Some(p1), Some(p2)) => {
-                let interference = PhicalOp::interference(
+                let interference = PhysicsOp::interference(
                     p1.phase, p1.band_n,
                     p2.phase, p2.band_n,
                 );

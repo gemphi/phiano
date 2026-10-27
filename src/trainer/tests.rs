@@ -91,13 +91,13 @@ fn test_relation_coupling_moves_one_channel() {
     let before_a = facet.lexicon["alpha"];
     let before_b = facet.lexicon["beta"];
     // Directed: alpha's source side meets beta's target side.
-    let d0 = wrap_signed(before_b.theta_target(0) - before_a.theta(0)).abs();
+    let d0 = phistd::wrap(before_b.theta_target(0) - before_a.theta(0)).abs();
     for _ in 0..200 {
         t.couple_relations(&mut facet, &["alpha".into(), "beta".into()]);
     }
     let a = facet.lexicon["alpha"];
     let b = facet.lexicon["beta"];
-    let d0_after = wrap_signed(b.theta_target(0) - a.theta(0)).abs();
+    let d0_after = phistd::wrap(b.theta_target(0) - a.theta(0)).abs();
     assert!(d0_after < d0 * 0.5 || d0_after < 0.1, "channel 0 converged: {d0} -> {d0_after}");
     for k in 1..PHASE_CHANNELS {
         assert!((a.theta(k) - before_a.theta(k)).abs() < 1e-9, "channel {k} untouched");
@@ -151,7 +151,7 @@ fn test_correction_spares_shared_function_words() {
     t.correct_mistake(&mut f, "rust is slow", "rust is fast");
     let after = f.lexicon.get("is").map(|p| p.phase).unwrap();
     // "is" appears in both phrases, so it must not have taken a π pulse
-    let moved = wrap_signed(after - before).abs();
+    let moved = phistd::wrap(after - before).abs();
     assert!(moved < 1.0, "shared word moved {} rad", moved);
 }
 
@@ -171,3 +171,5 @@ fn test_predictive_training_runs_and_is_bounded() {
 
 #[cfg(test)]
 mod core;
+#[cfg(test)]
+mod facet;

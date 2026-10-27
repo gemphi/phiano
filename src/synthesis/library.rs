@@ -11,7 +11,7 @@
 
 use super::program::Program;
 use crate::config::{SECTOR_RESOLUTION, TWO_PI};
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use serde::Serialize;
 

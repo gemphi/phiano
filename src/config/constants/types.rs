@@ -6,10 +6,8 @@ use super::*;
 /// Fine-structure constant (α) and the golden ratio (φ): one source,
 /// phiton's units (docs/159). The physics tests used to assert these were
 /// equal to phiton's; now they are phiton's.
-pub use phiton::units::{ALPHA, PHI};
-
-/// Golden ratio conjugate / inverse (1/φ) - 0.6180339887498948...
-pub const PHI_CONJUGATE: f64 = 1.0 / PHI;
+/// The golden ratio's conjugate (1/φ = 0.618...) is phiton's too.
+pub use phiton::units::{ALPHA, PHI, PHI_CONJUGATE};
 
 /// Golden ratio squared (φ²) - 2.6180339887498948...
 pub const PHI_SQUARED: f64 = PHI * PHI;
@@ -48,10 +46,10 @@ pub const PRIME_1024: u64 = 1031;
 
 /// Sector resolution - number of sectors dividing the 2π phase circle.
 /// Must be a power of 2 with exponent ≥ 6 (64, 128, 256, 512, 1024).
-pub const SECTOR_RESOLUTION: u16 = 64;
+pub use phiecs::phasor::facet::SECTOR_RESOLUTION;
 
 /// Minimum sector resolution exponent (2⁶ = 64).
-pub const SECTOR_EXPONENT_MIN: u32 = 6;
+pub use phiecs::phasor::facet::SECTOR_EXPONENT_MIN;
 
 /// Number of color bands in the sector color wheel (always 16).
 pub const COLOR_BANDS: u16 = 16;
@@ -64,7 +62,7 @@ pub const LEARNING_RATE: f64 = 0.05;
 
 /// Kuramoto-Sakaguchi asymmetric syntax phase lag (β = π/16).
 /// Enforces time-ordered syntactic flow in sequences.
-pub const SYNTACTIC_LAG_BETA: f64 = PI_CONST / 16.0;
+pub use phiecs::phasor::facet::SYNTACTIC_LAG_BETA;
 
 /// Instantaneous anti-phase pulse (π rad = 180°) for live negative feedback and self-correction.
 #[allow(dead_code)]
@@ -77,14 +75,14 @@ pub const CONVERGENCE_THRESHOLD: f64 = 0.0005;
 /// Amplitude increment per learning epoch (familiarity growth).
 pub const AMPLITUDE_INCREMENT: f64 = 0.001;
 
-/// Maximum amplitude - the familiarity ceiling.
-pub const AMPLITUDE_MAX: f64 = 2.0;
+/// Maximum amplitude - the familiarity ceiling (the spectral phasor's, in phiecs).
+pub use phiecs::phasor::spectral::AMPLITUDE_MAX;
 
 /// Initial amplitude for new words.
-pub const AMPLITUDE_INITIAL: f64 = 1.0;
+pub use phiecs::phasor::facet::AMPLITUDE_INITIAL;
 
 /// Initial band_n for new words.
-pub const BAND_N_INITIAL: u32 = 1;
+pub use phiecs::phasor::facet::BAND_N_INITIAL;
 
 /// Default number of epochs for bulk ingestion.
 pub const INGEST_EPOCHS: usize = 64;

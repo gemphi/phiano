@@ -2,9 +2,9 @@
 //! training sentences each, seeds 11/13, persona trainer seed 1) on a clone of
 //! the shared lexicon.
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{Harness, Split};
-use phiano::persona::World;
+use phiano::persona::Styles;
 use phiano::trainer::Trainer;
 
 fn sample(v: &[String], n: usize, seed: u64) -> Vec<String> {
@@ -20,8 +20,8 @@ fn sample(v: &[String], n: usize, seed: u64) -> Vec<String> {
     idx.into_iter().take(n).map(|i| v[i].clone()).collect()
 }
 
-pub fn build(facet: &Facet, split: &Split, contrast: &[(String, Vec<String>)]) -> (World, Facet) {
-    let mut world = World::new();
+pub fn build(facet: &Facet, split: &Split, contrast: &[(String, Vec<String>)]) -> (Styles, Facet) {
+    let mut world = Styles::new();
     let mut pfacet = facet.clone();
     let trainer = Trainer::new(LEARNING_RATE).with_seed(1);
     world.add_persona("Jane Austen", &sample(&split.train, 600, 11), &mut pfacet, &trainer);

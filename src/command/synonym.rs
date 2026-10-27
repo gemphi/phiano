@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 
 /// Synonym - finds the nearest resonant words for a given word.
 ///

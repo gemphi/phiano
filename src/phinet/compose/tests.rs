@@ -7,7 +7,7 @@
     /// the same number for the same pair.
     #[test]
     fn pair_key_is_one_definition() {
-        use crate::facet::Facet;
+        use phiecs::phasor::facet::Facet;
         use crate::tokenizer::Tokenizer;
         let mut facet = Facet::new();
         let docs: Vec<Vec<String>> = ["bread of wheat", "king of realm", "loaf of rye", "the dog sat", "a cat sat", "the bird sat"]

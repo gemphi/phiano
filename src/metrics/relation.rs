@@ -24,7 +24,7 @@ mod tests;
 #[allow(unused_imports)]
 use benchmark::*;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use rayon::prelude::*;
 use crate::phasor::{fnv1a, SpectralPhasor};
 use serde::{Deserialize, Serialize};

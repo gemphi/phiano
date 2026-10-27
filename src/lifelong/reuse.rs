@@ -11,8 +11,7 @@
 //! `TransferResult.features_transferred` counted the feature sets anyway.
 
 use crate::config::{SECTOR_RESOLUTION, TWO_PI};
-use crate::facet::Facet;
-use crate::trainer::wrap_signed;
+use phiecs::phasor::facet::Facet;
 use serde::Serialize;
 
 /// A group of words and the shape of their arrangement.
@@ -51,7 +50,7 @@ impl FeatureReuse {
                 let centroid = Self::centroid(facet, &words)?;
                 let offsets = words
                     .iter()
-                    .filter_map(|w| facet.lexicon.get(w).map(|p| wrap_signed(p.theta(0) - centroid)))
+                    .filter_map(|w| facet.lexicon.get(w).map(|p| phistd::wrap(p.theta(0) - centroid)))
                     .collect();
                 Some(FeatureSet { label: format!("sector_{}", idx), words, offsets, centroid })
             })
@@ -85,7 +84,7 @@ impl FeatureReuse {
             for (w, off) in fs.words.iter().zip(&fs.offsets) {
                 let target = fs.centroid + off;
                 if let Some(p) = facet.lexicon.get_mut(w) {
-                    let d = wrap_signed(target - p.theta(0));
+                    let d = phistd::wrap(target - p.theta(0));
                     p.nudge(0, strength * d);
                     p.sync_phase();
                     moved += 1;
@@ -114,7 +113,7 @@ impl FeatureReuse {
             (Some(a), Some(b)) => (a, b),
             _ => return 0,
         };
-        let shift = wrap_signed(dst_c - src_c);
+        let shift = phistd::wrap(dst_c - src_c);
 
         let mut moved = 0;
         for (s, d) in source.iter().zip(target) {
@@ -123,7 +122,7 @@ impl FeatureReuse {
                 None => continue,
             };
             if let Some(p) = facet.lexicon.get_mut(d) {
-                let diff = wrap_signed(want - p.theta(0));
+                let diff = phistd::wrap(want - p.theta(0));
                 p.nudge(0, strength * diff);
                 p.sync_phase();
                 moved += 1;

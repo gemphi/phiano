@@ -1,8 +1,8 @@
 //! OscillatorField - a collection of oscillators built from the facet.
 
 use super::Oscillator;
-use crate::facet::Facet;
-use crate::wave::c64;
+use phiecs::phasor::facet::Facet;
+use phistd::c64;
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::f64::consts::PI;

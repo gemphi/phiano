@@ -11,7 +11,7 @@
 //! different quantities, neither of which can be improved by synchronising the
 //! lexicon.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::metrics::harness::PhianoLM;
 use crate::tokenizer::Tokenizer;
 use serde::{Deserialize, Serialize};

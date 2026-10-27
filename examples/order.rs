@@ -24,7 +24,7 @@
 //! construction claims), and what it is worth in held-out perplexity.
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{ContextKind, Harness, PhianoLM, Split, SweepRow};
 use phiano::metrics::baseline::kn::KneserNey;
 use phiano::tokenizer::Tokenizer;

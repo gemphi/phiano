@@ -3,7 +3,7 @@
 
 use super::types::*;
 use super::markers::SearleMarker;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 /// 13. SocialOntologyAgent - classifies brute vs institutional facts.
 pub struct SocialOntologyAgent;

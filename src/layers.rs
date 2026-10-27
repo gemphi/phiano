@@ -5,7 +5,7 @@ mod tests;
 use phase::*;
 #[allow(unused_imports)]
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::SpectralPhasor;
 use std::collections::HashMap;
 use std::f64::consts::PI;

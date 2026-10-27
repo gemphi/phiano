@@ -5,7 +5,7 @@
 
 use crate::chunker::ChunkStore;
 use crate::cognitive::DefinitionGrounder;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 use serde::Deserialize;
 use std::time::Instant;

@@ -4,10 +4,11 @@ use crate::config::TWO_PI;
 use super::generator::Generator;
 use crate::attention;
 use crate::config::TORUS_DECODE_POOL;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::flow::PhaseFlow;
 use crate::phasor::{SpectralPhasor, TorusPhasor};
-use crate::wave::{c64, Wave};
+use phiecs::phasor::wave::Wave;
+use phistd::c64;
 
 impl Generator {
     #[allow(dead_code)]

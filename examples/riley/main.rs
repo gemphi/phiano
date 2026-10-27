@@ -21,7 +21,7 @@
 //! # Four sources of C, and the one that decides it
 //!
 //! * **none** — the baseline, what every earlier measurement used.
-//! * **syntactic** — `phinum::SentenceType`, the Searle speech-act classifier
+//! * **syntactic** — `phiton::p64::SentenceType`, the Searle speech-act classifier
 //!   already in this repo. Advertised as 16/32/64 variations; on the dictionary
 //!   corpus it produces **five** distinct classes, because `v16`, `v32` and `v64`
 //!   are pure hashes of the base type and add no information to it. Included at
@@ -44,7 +44,7 @@
 //! ```text
 //! context C                  classes   agreement   head-dom   vs shuffled
 //! none (every earlier run)         1      0.2717      65.5%       +0.0000
-//! syntactic (phinum)               5      0.2704      65.4%       -0.0011
+//! syntactic (p64)                  5      0.2704      65.4%       -0.0011
 //! discovered, K=8                  7      0.2761      65.6%       +0.0047
 //! discovered, K=64                40      0.2784      66.2%       +0.0076
 //! one class per head            2418      0.6333      86.5%       +0.2971
@@ -91,7 +91,7 @@
 //! context C              classes   log-loss   vs marginal   vs shuffled
 //! discovered, K=8              8     3.1845       +0.0077       +0.0177
 //! discovered, K=64            27     3.1747       +0.0020       +0.0320
-//! syntactic (phinum)           5     3.1589       -0.0014       +0.0089
+//! syntactic (p64)              5     3.1589       -0.0014       +0.0089
 //! uniform chance = ln(64) = 4.1589
 //! ```
 //!
@@ -107,7 +107,7 @@
 //! degrades faster than the real one improves. The honest column is "vs
 //! marginal", which *shrinks* over the same range, +0.0077 to +0.0020.
 //!
-//! And `phinum` is negative against the marginal again (-0.0014), for the second
+//! And `p64` is negative against the marginal again (-0.0014), for the second
 //! time on a different test. This repo's Searle speech-act classifier carries no
 //! information about which relation a pair stands in, under either reading of C.
 //!
@@ -136,7 +136,7 @@ use chance::*;
 
 use phiano::chunker::ChunkStore;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
 use phiano::phasor::{fnv1a, mix64};

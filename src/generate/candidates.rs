@@ -3,7 +3,7 @@
 
 use super::generator::{Decode, Generator};
 use super::guide::OPERATOR_PROPOSAL_FLOOR;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 
 impl Generator {
     /// The operator's nearest `k` pool words, each with the n-gram count the

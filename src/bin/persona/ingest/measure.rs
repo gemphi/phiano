@@ -4,7 +4,7 @@ use super::*;
 /// Attribution on held-out paragraphs: four consecutive held-out sentences,
 /// the persona with the highest likelihood wins. Fingerprints are extracted
 /// once against `facet` rather than per paragraph.
-pub(crate) fn attribution(world: &World, facet: &Facet, authors: &[Author], paragraphs: usize) -> (f64, Vec<(String, usize, usize, f64)>) {
+pub(crate) fn attribution(world: &Styles, facet: &Facet, authors: &[Author], paragraphs: usize) -> (f64, Vec<(String, usize, usize, f64)>) {
     let fps = world.fingerprints(facet);
     let mut rows = Vec::new();
     let (mut ok_all, mut n_all) = (0usize, 0usize);

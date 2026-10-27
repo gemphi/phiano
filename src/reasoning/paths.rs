@@ -9,7 +9,7 @@ use effort::*;
 use solve::*;
 
 use crate::config::TWO_PI;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::reasoning::diagnostics::Diagnostic;
 use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine, ReasoningStep, REASONING_MAX_STEPS};

@@ -47,7 +47,7 @@ use setup::*;
 use types::*;
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::{CountFloor, RelationBenchmark};
 use phiano::metrics::sentence::SentenceBenchmark;

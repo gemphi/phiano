@@ -14,7 +14,8 @@ pub use types::*;
 use estimator::*;
 #[allow(unused_imports)]
 use table::*;
-pub use modes::*;
+/// The standing-wave modes relations are read as: phiton's (Bentov).
+pub use phiton::physics::standing::harmonic_rotation;
 #[allow(unused_imports)]
 use relation::*;
 #[allow(unused_imports)]
@@ -22,9 +23,9 @@ use saturation::*;
 #[allow(unused_imports)]
 use permute::*;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::SpectralPhasor;
 use crate::roles::RoleDiscovery;
 use crate::config::PHASE_CHANNELS;
-use crate::wave::c64;
+use phistd::c64;
 use std::collections::HashMap;

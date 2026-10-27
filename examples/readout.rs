@@ -18,7 +18,7 @@
 //! the text it is scored against measures memorisation.
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{Harness, PhianoLM, Split, SweepRow};
 use phiano::tokenizer::Tokenizer;
 use phiano::trainer::Trainer;

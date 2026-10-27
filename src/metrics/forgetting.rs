@@ -35,7 +35,7 @@ mod tests;
 #[allow(unused_imports)]
 use benchmark::*;
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::metrics::harness::PhianoLM;
 use crate::trainer::Trainer;
 use serde::Serialize;

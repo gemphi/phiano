@@ -1,39 +1,22 @@
 //! Scoring and small helpers for the code reader.
 
 use super::models::{CountModel, POST};
+use phient::study::Score;
 use std::collections::HashMap;
 
 pub use phiano::lab::flag;
 
-pub struct Tally {
-    pub name: String,
-    pub n: f64,
-    top1: f64,
-    top5: f64,
-    rr: f64,
-    nll: f64,
+/// One position of a model's distribution `p`, scored into phient's `Score`:
+/// the truth's rank among the probabilities, and its probability.
+pub fn add(s: &mut Score, p: &[f64], truth: usize) {
+    let t = p[truth];
+    s.rank(Some(1 + p.iter().filter(|&&x| x > t).count()));
+    s.prob(-t.max(1e-12).ln());
 }
 
-impl Tally {
-    pub fn new(name: &str) -> Self {
-        Tally { name: name.to_string(), n: 0.0, top1: 0.0, top5: 0.0, rr: 0.0, nll: 0.0 }
-    }
-    pub fn add(&mut self, p: &[f64], truth: usize) {
-        let t = p[truth];
-        let above = p.iter().filter(|&&x| x > t).count();
-        self.n += 1.0;
-        self.top1 += (above == 0) as usize as f64;
-        self.top5 += (above < 5) as usize as f64;
-        self.rr += 1.0 / (above + 1) as f64;
-        self.nll -= t.max(1e-12).ln();
-    }
-    pub fn ppl(&self) -> f64 {
-        (self.nll / self.n.max(1.0)).exp()
-    }
-    pub fn row(&self) -> String {
-        let n = self.n.max(1.0);
-        format!("| {} | {:.1}% | {:.1}% | {:.3} | {:.1} |", self.name, 100.0 * self.top1 / n, 100.0 * self.top5 / n, self.rr / n, self.ppl())
-    }
+/// `| name | top-1 | top-5 | MRR | perplexity |`
+pub fn row(name: &str, s: &Score) -> String {
+    format!("| {name} | {:.1}% | {:.1}% | {:.3} | {:.1} |", s.top1(), s.top5(), s.mrr(), s.perplexity())
 }
 
 pub fn encode(vocab: &[String], files: &[&(String, Vec<String>)]) -> Vec<Vec<u32>> {

@@ -22,7 +22,7 @@
 //! ```
 
 use super::types::*;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::phasor::{SpectralPhasor, TorusPhasor};
 use crate::tokenizer::Tokenizer;
 

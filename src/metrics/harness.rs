@@ -27,7 +27,7 @@ use run::*;
 use lm::*;
 
 use crate::eval::Evaluator;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::metrics::baseline::kn::KneserNey;
 use crate::phasor::fnv1a;
 use crate::tokenizer::Tokenizer;

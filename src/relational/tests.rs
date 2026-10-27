@@ -117,18 +117,3 @@ fn test_per_channel_magnitude_changes_the_similarity() {
     // A per-word scalar could not do this: it cancels in the normalisation.
     assert!(spread < 0.0 && concentrated > 0.0, "the sign should flip");
 }
-
-#[test]
-fn test_relation_vocab_is_bounded_and_reproducible() {
-    let d = docs(&[
-        "a of b", "c of d", "e in f", "g in h", "i on j", "k at l", "m of n",
-    ]);
-    let v1 = RelationVocab::learn(&d);
-    let v2 = RelationVocab::learn(&d);
-    assert!(v1.markers() + OFFSET_CHANNELS <= PHASE_CHANNELS);
-    for k in 0..PHASE_CHANNELS {
-        assert_eq!(v1.name(k), v2.name(k), "channel {k} assignment is not stable");
-    }
-    // Offsets own the low channels.
-    assert_eq!(v1.name(0), "offset+1");
-}

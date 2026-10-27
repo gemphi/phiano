@@ -26,10 +26,10 @@ pub mod synonym;
 pub mod wave;
 
 use crate::cognitive::CognitiveCore;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::memory::Memo;
-use crate::persona::World;
+use crate::persona::Styles;
 use crate::trainer::Trainer;
 
 /// Shared context passed to every command handler.
@@ -43,7 +43,7 @@ pub struct Context<'a> {
     /// The memo - mutable so commands can record interactions.
     pub memory: &'a mut Memo,
     /// The world - mutable so persona commands can add/modify personas.
-    pub world: &'a mut World,
+    pub world: &'a mut Styles,
     /// Multi-turn context wave buffer for conversational continuity.
     pub context_buffer: &'a mut ContextWaveBuffer,
     /// The cognitive core - 16 Searle-inspired agents.

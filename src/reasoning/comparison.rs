@@ -1,7 +1,7 @@
 //! Reasoning comparison and step templating.
 //! Provides readable step output and side-by-side comparison of reasoning methods.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::reasoning::diagnostics::Diagnostic;
 use crate::reasoning::hybrid::{HybridReasoner, HybridResult};
 use crate::reasoning::pathfinding::{ReasoningChain, ReasoningEngine, ReasoningStep};

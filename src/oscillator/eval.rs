@@ -1,7 +1,7 @@
 //! OscillatorEval and ComparisonResult - evaluation results.
 
 use super::OscillatorField;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::fmt;
 

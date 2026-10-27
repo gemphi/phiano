@@ -15,7 +15,7 @@ pub use view::SphereView;
 pub use train::OscillatorTrainer;
 
 use crate::config::{ALPHA, OSCILLATOR_FREQ_SCALE, OSCILLATOR_FREQ_TOLERANCE, OSCILLATOR_LAT_SCALE};
-use crate::wave::c64;
+use phistd::c64;
 use std::f64::consts::PI;
 
 #[derive(Debug, Clone, Copy)]

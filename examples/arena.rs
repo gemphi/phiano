@@ -8,7 +8,8 @@
 //! says which model is learning better, on the same positions.
 //!
 //! A model that must be TRAINED before it can read at all — phifno's Joint
-//! operator — enters through the arena's split lane (docs/177): told the
+//! operator, and the error-driven learner's epochs (docs/203) — enters
+//! through the arena's split lane (docs/177): told the
 //! stream's first half, trained once, then scored on the second half at the
 //! same positions as the online readers, so the table stays one comparison.
 //!
@@ -16,7 +17,8 @@
 //! cargo run --release -p phiano --example arena -- <dir of .txt> [--lines 1500] [--epochs 4]
 //! ```
 
-use phiano::arena::{Concept, Count, Ecs, Mirror, Operator};
+use phiano::arena::Ecs;
+use phient::lineup::{Concept, Count, Learner, Mirror, Operator};
 use phient::prose::tokens;
 use phient::study::{Arena, Reader};
 
@@ -64,6 +66,9 @@ fn main() {
         Box::new(Ecs::new()),
         Box::new(Mirror::new(vocab.clone(), 64, 7)),
         Box::new(Operator::new(epochs, 7)),
+        // Corrected on the fly as it is told, then given the same epochs on
+        // the told half as the operator (docs/203).
+        Box::new(Learner::new(phient::lineup::learner::Config { epochs, ..Default::default() })),
     ];
     let mut arena = Arena::new(readers, 5, floor);
     let t0 = std::time::Instant::now();

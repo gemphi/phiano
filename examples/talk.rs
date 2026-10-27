@@ -28,7 +28,7 @@ fn sentences(path: &str) -> Vec<Vec<String>> {
 /// The answer: go on from the end of the question for `words` words,
 /// stopping when the voice starts repeating itself; if the person has
 /// nothing after the question's last words, back off to earlier ones.
-fn answer(person: &mut Ecs, question: &str, words: usize) -> String {
+fn answer(person: &mut Ecs, question: &str, words: usize, tau: f64) -> String {
     let q = tokens(question);
     let q: Vec<String> = q.into_iter().filter(|t| t.chars().any(char::is_alphanumeric)).collect();
     let mut from = q.len();
@@ -46,7 +46,14 @@ fn answer(person: &mut Ecs, question: &str, words: usize) -> String {
     let start = said.len();
     let mut seen: Vec<(String, String)> = Vec::new();
     while said.len() < start + words {
-        let Some(next) = person.guess(&said) else { break };
+        let read = person.ranked(&said);
+        // Speak only where the difference is REAL. A crowded word reads as
+        // a near-tie, the condition does not determine what follows, and a
+        // voice that speaks anyway drifts into the crowd (docs/198).
+        if Ecs::clearance(&read) < tau {
+            break;
+        }
+        let Some((next, _)) = read.first().cloned() else { break };
         let pair = (said.last().cloned().unwrap_or_default(), next.clone());
         if seen.contains(&pair) {
             break;
@@ -64,9 +71,11 @@ fn main() {
         eprintln!("which corpus?");
         return;
     };
+    let tau: f64 = a.iter().position(|x| x == "--clear").and_then(|i| a.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(0.0);
     let words = a.iter().position(|x| x == "--words").and_then(|i| a.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(12usize);
-    let questions: Vec<&String> = a.iter().skip(1).filter(|x| !x.starts_with("--") && x.parse::<usize>().is_err()).collect();
+    let questions: Vec<&String> = a.iter().skip(1).filter(|x| !x.starts_with("--") && x.parse::<f64>().is_err()).collect();
 
+    let dump = a.iter().position(|x| x == "--read").and_then(|i| a.get(i + 1)).cloned();
     let lines = sentences(&path);
     let t0 = std::time::Instant::now();
     let mut person = Ecs::new();
@@ -75,7 +84,18 @@ fn main() {
     }
     println!("# Talking to {path}\n");
     println!("{} sentences told to the phasors in {:.1} s — on the fly, nothing retrained.\n", lines.len(), t0.elapsed().as_secs_f64());
+    if let Some(d) = dump {
+        // The read itself, for a condition: what the phasors actually say,
+        // and by how much — the difference, laid out.
+        let said: Vec<String> = tokens(&d).into_iter().filter(|t| t.chars().any(char::is_alphanumeric)).collect();
+        let read = person.ranked(&said);
+        println!("read after [{}] — {} answers, clearance {:.4}", said.join(" "), read.len(), Ecs::clearance(&read));
+        for (w, s) in read.iter().take(10) {
+            println!("  {s:>10.5}  {w}");
+        }
+        return;
+    }
     for q in questions {
-        println!("Q: {q}\nA: {}\n", answer(&mut person, q, words));
+        println!("Q: {q}\nA: {}\n", answer(&mut person, q, words, tau));
     }
 }

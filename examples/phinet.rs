@@ -25,7 +25,7 @@
 //!    function space trained on the corpus with relation coupling.
 
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::phinet::reader;
 use phiano::phinet::space::{examples, Example, FunctionSpace, Sides, WordFunction};

@@ -50,7 +50,7 @@ impl<'a> PhianoLM<'a> {
     /// relative to the target, so the encoding does not drift with sentence
     /// length.
     ///
-    /// This is the same construction [`crate::wave::Wave::sentence_channels`]
+    /// This is the same construction [`phiecs::phasor::wave::Wave::sentence_channels`]
     /// uses with `bound = true`. It was in the codebase and not in the scoring
     /// path.
     pub(in crate::metrics::harness) fn context_vec_bound(&self, a: &str, b: &str) -> Option<Vec<f64>> {

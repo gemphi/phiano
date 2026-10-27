@@ -18,7 +18,7 @@ pub use result::ImpersonationResult;
 
 use crate::compose::SectorPalette;
 use crate::config;
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Decode, Generator};
 use crate::persona::Fingerprint;
 use crate::trainer::Trainer;

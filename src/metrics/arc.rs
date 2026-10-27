@@ -15,10 +15,10 @@
 //! token overlap against the expected answer. The number will be low. It will
 //! also be real, and it can go down.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use crate::trainer::Trainer;
-use crate::wave::Wave;
+use phiecs::phasor::wave::Wave;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 

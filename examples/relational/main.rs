@@ -104,12 +104,13 @@ use coupling::*;
 use closing::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::Harness;
 use phiano::metrics::relation::{RelationBenchmark, RelationFamily};
 use phiano::phasor::fnv1a;
 use phiano::flow::PhaseFlow;
-use phiano::relational::{RelationVocab, RelationalFacet, WINDOW};
+use phiecs::relation::RelationVocab;
+use phiano::relational::{RelationalFacet, WINDOW};
 use std::collections::HashMap;
 use phiano::tokenizer::Tokenizer;
 use phiano::topdown::{Descent, Up};

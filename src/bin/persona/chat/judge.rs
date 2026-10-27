@@ -7,7 +7,7 @@ use phiano::metrics::baseline::kn::KneserNey;
 /// that writer's own sentences. The reply is read by all of them and the one
 /// least surprised by it wins.
 ///
-/// The sector-histogram reader (`World::match_text`) is the engine's own
+/// The sector-histogram reader (`Styles::match_text`) is the engine's own
 /// attribution and it leans toward the writer with the most text (docs/79
 /// §3); a per-writer language model is the standard outside check, and the
 /// two disagreeing is worth seeing.
@@ -16,7 +16,7 @@ pub(crate) struct Panel {
 }
 
 impl Panel {
-    pub fn train(world: &World) -> Self {
+    pub fn train(world: &Styles) -> Self {
         let mut names: Vec<&String> = world.personas.keys().collect();
         names.sort();
         let models = names.into_iter().map(|n| (n.clone(), KneserNey::train(&world.personas[n].examples))).collect();

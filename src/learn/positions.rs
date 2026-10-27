@@ -11,7 +11,7 @@ pub const WINDOW: usize = 6;
 /// n-gram's top-`CANDIDATES` continuations with their features, if the true
 /// word is among them. Returns `(positions, positions seen, positions covered)`.
 pub fn corpus_positions(
-    facet: &crate::facet::Facet,
+    facet: &phiecs::phasor::facet::Facet,
     sentences: &[String],
     cap: usize,
     guide: &mut Option<crate::generate::OperatorGuide>,
@@ -35,7 +35,7 @@ pub fn corpus_positions(
             covered += 1;
             let start = i.saturating_sub(WINDOW);
             let ctx = &toks[start..i];
-            let target_phase = crate::wave::Wave::sentence(facet, ctx).arg().rem_euclid(std::f64::consts::TAU);
+            let target_phase = phiecs::phasor::wave::Wave::sentence(facet, ctx).arg().rem_euclid(std::f64::consts::TAU);
             let mut flow = crate::flow::PhaseFlow::build(facet, &ctx.join(" "));
             flow.propagate(2);
             let recent: std::collections::HashSet<&String> = toks[i.saturating_sub(12)..i].iter().collect();

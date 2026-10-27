@@ -5,14 +5,15 @@ use matching::*;
 #[allow(unused_imports)]
 use personas::*;
 
-use crate::facet::Facet;
-use crate::persona::{Fingerprint, Persona};
+use phiecs::phasor::facet::Facet;
+use crate::persona::{Fingerprint, Style};
 use crate::trainer::Trainer;
 use std::collections::HashMap;
 use std::fmt;
 
-/// World - a collection of personas that can interact, compare,
-/// and be impersonated.
+/// Styles - a collection of personas' styles that can interact, compare,
+/// and be impersonated. (phiecs's `World` is a different thing: the world
+/// of told rows.)
 ///
 /// The world is the context personas live in. It stores multiple
 /// personas, computes differences between them, and can generate
@@ -28,9 +29,9 @@ use std::fmt;
 ///
 /// The world is generic - it works with any text examples.
 /// No hardcoded names. Feed it anyone's writing and it learns.
-pub struct World {
+pub struct Styles {
     /// All personas in this world, keyed by name.
-    pub personas: HashMap<String, Persona>,
+    pub personas: HashMap<String, Style>,
 }
 
 /// PersonaComparison - the result of comparing two personas.

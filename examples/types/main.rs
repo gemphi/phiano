@@ -60,7 +60,7 @@ use sweep::*;
 
 use phiano::chunker::ChunkStore;
 use phiano::config::LEARNING_RATE;
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::metrics::harness::{Harness, Split};
 use phiano::kinds::{OffsetEstimator, KindTable};
 use phiano::sources::definition_core;

@@ -2,7 +2,7 @@
 //! by the tuner (offline, from corpus positions) and by the generator (online,
 //! from its decoding state), so what is learned is what is used.
 
-use crate::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 
 pub const N_FEATURES: usize = 8;
