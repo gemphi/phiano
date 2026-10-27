@@ -29,7 +29,7 @@ use train::*;
 use verdict::*;
 
 use phiano::chunker::ChunkStore;
-use phiano::cognitive::DefinitionGrounder;
+use phiano::core::grounding::DefinitionGrounder;
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
 use phiano::metrics::relation::{RelationBenchmark, RelationFamily, RelationReport};

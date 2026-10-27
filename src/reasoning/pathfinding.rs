@@ -1,4 +1,4 @@
-use crate::cognitive::Chain;
+use crate::core::searle::Chain;
 use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::tokenizer::Tokenizer;

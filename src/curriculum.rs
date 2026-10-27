@@ -4,7 +4,7 @@
 //! Loads stage definitions from data/curriculum.json (no hardcoded words).
 
 use crate::chunker::ChunkStore;
-use crate::cognitive::DefinitionGrounder;
+use crate::core::grounding::DefinitionGrounder;
 use phiecs::phasor::facet::Facet;
 use crate::trainer::Trainer;
 use serde::Deserialize;

@@ -123,7 +123,7 @@ pub const RATE: f64 = 0.06;
 
 /// Below this circular dispersion a channel has collapsed and is muted.
 ///
-/// The same reasoning as `cognitive::grounding::DISPERSION_FLOOR`, applied per
+/// The same reasoning as `core::grounding::DISPERSION_FLOOR`, applied per
 /// channel because that is where this representation collapses.
 pub const CHANNEL_DISPERSION_FLOOR: f64 = 0.35;
 

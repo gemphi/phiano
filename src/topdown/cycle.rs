@@ -13,7 +13,7 @@ impl Descent {
         contrast: bool,
         concentration: f64,
     ) -> DescentReport {
-        let (dispersion_before, band_before) = crate::cognitive::grounding::dispersion_pair(facet);
+        let (dispersion_before, band_before) = crate::core::grounding::dispersion_pair(facet);
 
         // Only sentences whose words the lexicon knows contribute anything, and
         // a sentence of one known word has an empty leave-one-out state.
@@ -47,8 +47,8 @@ impl Descent {
             words_moved = Self::settle(&mut candidate, &votes, usable.len(), step, contrast, concentration);
         }
 
-        let (dispersion_after, band_after) = crate::cognitive::grounding::dispersion_pair(&candidate);
-        let floor = crate::cognitive::grounding::DISPERSION_FLOOR;
+        let (dispersion_after, band_after) = crate::core::grounding::dispersion_pair(&candidate);
+        let floor = crate::core::grounding::DISPERSION_FLOOR;
         let rejected = dispersion_after < floor || band_after < floor;
 
         if !rejected {

@@ -25,7 +25,7 @@ pub mod synthetic;
 pub mod synonym;
 pub mod wave;
 
-use crate::cognitive::CognitiveCore;
+use crate::core::searle::CognitiveCore;
 use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 use crate::memory::Memo;

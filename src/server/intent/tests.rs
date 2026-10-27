@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use crate::cognitive::CognitiveResult;
+use crate::core::searle::CognitiveResult;
 
 fn mock_cog(speech_act: &str) -> CognitiveResult {
     CognitiveResult {
@@ -14,7 +14,7 @@ fn mock_cog(speech_act: &str) -> CognitiveResult {
         direction_of_fit: "mind->world".to_string(),
         satisfaction: 0.9,
         intentional_states: Vec::new(),
-        felicity_conditions: crate::cognitive::FelicityCondition {
+        felicity_conditions: crate::core::searle::FelicityCondition {
             propositional_content_rule: "".to_string(),
             preparatory_condition: "".to_string(),
             sincerity_condition: "".to_string(),

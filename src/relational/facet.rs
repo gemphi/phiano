@@ -105,7 +105,7 @@ impl RelationalFacet {
     /// from sparse marker channels holding near-random angles.
     ///
     /// The project already has this guard for the manifold as a whole
-    /// (`cognitive::grounding::DISPERSION_FLOOR`); this applies it per channel,
+    /// (`core::grounding::DISPERSION_FLOOR`); this applies it per channel,
     /// which is where the new representation can fail.
     pub(super) fn silence_collapsed(&mut self) {
         // Dispersion over a handful of points is not a measurement, and muting a

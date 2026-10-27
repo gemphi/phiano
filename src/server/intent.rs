@@ -14,7 +14,7 @@ use grounded::*;
 use greeting::*;
 
 use crate::chunker::ChunkStore;
-use crate::cognitive::CognitiveResult;
+use crate::core::searle::CognitiveResult;
 use crate::config::{CHUNK_STORE_DIR, DEFAULT_CONTEXT_WINDOW, DEFAULT_REASONING_STEPS};
 use crate::model::Model;
 

@@ -30,7 +30,7 @@ use kind::*;
 use engine::*;
 #[allow(unused_imports)]
 
-use crate::cognitive::CognitiveCore;
+use crate::core::searle::CognitiveCore;
 use phiecs::phasor::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Generator};
 use crate::layers::HierarchicalPhaseField;

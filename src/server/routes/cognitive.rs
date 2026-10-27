@@ -58,7 +58,7 @@ pub async fn run_curriculum(
 pub async fn reason_chain(
     State(state): State<SharedModel>,
     Json(req): Json<ReasonChainRequest>,
-) -> Result<Json<crate::cognitive::Chain<crate::cognitive::Thought>>, StatusCode> {
+) -> Result<Json<crate::core::searle::Chain<crate::core::searle::Thought>>, StatusCode> {
     let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let mut ctx_buf = crate::generate::ContextWaveBuffer::new(4096);
     let result = guard.cognitive_core.reason(

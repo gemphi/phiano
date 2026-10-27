@@ -85,7 +85,7 @@ impl BenchmarkRunner {
             arc_results,
             shortcut_warnings: shortcuts,
             phase_dispersion: facet.phase_dispersion(),
-            band_dispersion: facet.dispersion_top(crate::cognitive::grounding::GUARD_BAND_TOP),
+            band_dispersion: facet.dispersion_top(crate::core::grounding::GUARD_BAND_TOP),
             sector_gini: facet.sector_gini(),
         }
     }

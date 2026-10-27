@@ -51,7 +51,7 @@ use report::*;
 use seeds::*;
 
 use phiano::chunker::ChunkStore;
-use phiano::cognitive::grounding::DefinitionGrounder;
+use phiano::core::grounding::DefinitionGrounder;
 use phiano::conception::{
     Conception, DefinitionGraph, ANCHOR, BETA_STRONG, BETA_WEAK, HEAD_STEP, REINFORCE,
 };

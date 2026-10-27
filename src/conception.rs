@@ -1,6 +1,6 @@
 //! Definitions as compositions, across every channel, in order, both ways.
 //!
-//! [`crate::cognitive::grounding::DefinitionGrounder`] already moves a word
+//! [`crate::core::grounding::DefinitionGrounder`] already moves a word
 //! toward its definition. Measured, it halves phase dispersion and improves no
 //! relation metric — and three properties of how it does it explain why:
 //!

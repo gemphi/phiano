@@ -1,4 +1,7 @@
-//! Cognitive core - Searle-inspired 16-agent cognitive architecture.
+//! `searle`: Phiano's Searle-inspired 16-agent cognitive architecture, the
+//! one place Searle lives in phiano (it was `cognitive`). The speech agent
+//! classifies from marker lists; `phiton::p64::searle` reads the same acts
+//! from the syntax key, and the two are not joined yet (phiton TODO).
 //!
 //! Module structure:
 //! - types.rs: Core data structures (IntentionalState, FelicityCondition, etc.)
@@ -12,7 +15,6 @@
 //! - synthesis.rs: MentalCausation agent (intentional states -> output)
 //! - word_selection.rs: word selection + synthesis templates
 //! - reasoning.rs: multi-step reasoning chain
-//! - grounding.rs: definition-grounded phase initialization
 //! - mod.rs: CognitiveCore coordinator
 
 pub mod types;
@@ -26,7 +28,6 @@ pub mod social;
 pub mod synthesis;
 pub mod selection;
 pub mod reasoning;
-pub mod grounding;
 
 #[allow(unused_imports)]
 pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCondition};
@@ -35,7 +36,6 @@ pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
 pub use speech::SpeechActAgent;
 #[allow(unused_imports)]
 pub use reasoning::{Chain, ChainOfThought, Thought};
-pub use grounding::DefinitionGrounder;
 #[allow(unused_imports)]
 pub use selection::WordSelector;
 

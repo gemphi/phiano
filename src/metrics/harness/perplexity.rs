@@ -130,7 +130,7 @@ impl Harness {
                 coherence: Self::mean_coherence(&facet, &split.valid),
                 phase_dispersion: facet.phase_dispersion(),
                 band_dispersion: facet
-                    .dispersion_top(crate::cognitive::grounding::GUARD_BAND_TOP),
+                    .dispersion_top(crate::core::grounding::GUARD_BAND_TOP),
                 sector_gini: facet.sector_gini(),
                 vocab_size: facet.vocabulary_size(),
                 mean_amplitude: facet.average_amplitude(),

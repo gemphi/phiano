@@ -7,7 +7,7 @@ pub mod bpe;
 pub mod chunker;
 pub use phient::code;
 pub mod helix;
-pub mod cognitive;
+pub mod core;
 pub mod command;
 pub mod compose;
 pub mod conception;

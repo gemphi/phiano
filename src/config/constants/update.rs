@@ -151,5 +151,5 @@ pub const GROUND_BY_COMPOSITION: bool = true;
 /// dominant setting: alpha = 0.25 gives the best analogy MRR and alpha = 1.00
 /// the best pair/random and a healthier manifold, monotonically, in opposite
 /// directions. 0.5 sits between them, with the dispersion floor in
-/// `cognitive::grounding` as the binding constraint rather than this constant.
+/// `core::grounding` as the binding constraint rather than this constant.
 pub const COMPOSITION_ANCHOR: f64 = 0.5;

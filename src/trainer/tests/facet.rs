@@ -87,8 +87,8 @@ fn test_global_dispersion_is_blind_to_a_collapsed_frequent_band() {
         "the frequent band is one angle; dispersion should be ~0, got {band:.4}"
     );
     assert!(
-        global >= crate::cognitive::grounding::DISPERSION_FLOOR
-            && band < crate::cognitive::grounding::DISPERSION_FLOOR,
+        global >= crate::core::grounding::DISPERSION_FLOOR
+            && band < crate::core::grounding::DISPERSION_FLOOR,
         "this is the blind spot: the global figure passes the floor ({global:.4}) \
          while the band fails it ({band:.4})"
     );

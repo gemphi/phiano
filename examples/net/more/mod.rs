@@ -69,7 +69,7 @@ pub fn run(a: Vec<String>) {
 
     // ── 1. decoys the unigram would pick ────────────────────────────────
     println!("\n=== 1. what the operator is trained to beat ===");
-    let uniform = |t: usize, r: u64| Fno::decoy(&pool, t, r);
+    let uniform = |t: usize, r: u64| phistd::decoy(&pool, t, r);
     let counts: Vec<f64> = pool.iter().map(|&i| space.counts[i] as f64).collect();
     let by_freq = FrequencySampler::new(pool.clone(), &counts, 1.0);
     let by_freq_soft = FrequencySampler::new(pool.clone(), &counts, 0.75);
