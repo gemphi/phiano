@@ -1,9 +1,15 @@
 //! The learner trait, and Phical counts — what each token relates to under
-//! each condition, with a count. (Lookup is in `lookup.rs`, the naming
-//! table in `naming.rs`.)
+//! each condition, with a count. The counts are phient's (`relate::Tally`);
+//! what is the game's own — which game a word may be read in, its posts,
+//! the teacher — is here. (Lookup is in `lookup.rs`, the naming table in
+//! `naming.rs`.)
 
 use super::world::{Episode, ASPECTS};
-use std::collections::HashMap;
+use phiecs::quest::Row;
+use std::collections::{BTreeSet, HashMap};
+
+/// The kind a told triple's token is given under, in phient's tally.
+const SAYS: &str = "⟨says⟩";
 
 pub type Action = [String; 5];
 
@@ -47,10 +53,14 @@ pub enum Compose {
     Movement,
 }
 
-/// Tally of `(token, kind) ⇒ value`, kinds `aspect|game` and `aspect`.
+/// The game's counts of `(token, kind) ⇒ value`, kinds `aspect|game` and
+/// `aspect`, held by phient's `relate::Tally`: each told triple is one row
+/// there, its token given under `SAYS`, so a word said twice counts twice.
 #[derive(Default)]
-pub struct Tally {
-    pub n: HashMap<(String, String), HashMap<String, f64>>,
+pub struct GameCounts {
+    pub tally: ::phient::relate::Tally,
+    /// Every token told, sorted (game tokens included).
+    pub words: Vec<String>,
     pub compose: Compose,
     /// Nats a word must move an aspect to hold a post there (`compose::POST`
     /// unless swept, docs/105).
@@ -70,24 +80,26 @@ pub fn kind(a: usize, game: Option<&str>) -> String {
     }
 }
 
-impl Tally {
+impl GameCounts {
     pub fn new(train: &[Episode]) -> Self {
-        let mut c = Tally { post: super::compose::POST, ..Tally::default() };
-        for e in train {
-            for (t, a, v) in told(e) {
+        let mut c = GameCounts { tally: ::phient::relate::Tally::new(&[SAYS]), post: super::compose::POST, ..GameCounts::default() };
+        let (mut rows, mut words) = (Vec::new(), BTreeSet::new());
+        for (i, e) in train.iter().enumerate() {
+            for (j, (t, a, v)) in told(e).into_iter().enumerate() {
+                let about = format!("⟨{i}·{j}⟩");
+                rows.push(Row::new(&about, SAYS, &t));
                 for k in [kind(a, Some(&e.game)), kind(a, None)] {
-                    *c.n.entry((t.clone(), k)).or_default().entry(v.clone()).or_default() += 1.0;
+                    rows.push(Row::new(&about, &k, &v));
                 }
-            }
-        }
-        for (t, k) in c.n.keys() {
-            if let Some((_, g)) = k.split_once('|') {
                 let gs = c.games.entry(t.clone()).or_default();
-                if !gs.iter().any(|x| x == g) {
-                    gs.push(g.to_string());
+                if !gs.iter().any(|x| *x == e.game) {
+                    gs.push(e.game.clone());
                 }
+                words.insert(t);
             }
         }
+        c.tally.learn(&rows);
+        c.words = words.into_iter().collect();
         let mut names: Vec<String> = train.iter().map(|e| e.game.clone()).collect();
         names.sort();
         names.dedup();
@@ -100,13 +112,37 @@ impl Tally {
     /// The condition a token is read under for aspect `a`: its game's, or
     /// any game's when it was never told in this one.
     pub fn read_kind(&self, t: &str, a: usize, game: &str) -> Option<String> {
-        [kind(a, Some(game)), kind(a, None)].into_iter().find(|k| self.n.contains_key(&(t.to_string(), k.clone())))
+        [kind(a, Some(game)), kind(a, None)].into_iter().find(|k| self.has(t, k))
+    }
+
+    /// Was `t` told under `k` at all?
+    pub fn has(&self, t: &str, k: &str) -> bool {
+        self.tally.told(t, k) > 0.0
+    }
+
+    /// What `t` was told under `k`, value ⇒ count; `None` when never.
+    pub fn table(&self, t: &str, k: &str) -> Option<HashMap<String, f64>> {
+        let m: HashMap<String, f64> = self.tally.said(Some(t), k).into_iter().collect();
+        (!m.is_empty()).then_some(m)
+    }
+
+    /// Every `(token, kind)` told, in the words' order.
+    pub fn pairs(&self) -> Vec<(String, String)> {
+        let mut out = Vec::new();
+        for t in &self.words {
+            for a in 0..ASPECTS.len() {
+                let games = self.games.get(t).map(Vec::as_slice).unwrap_or(&[]);
+                let ks = games.iter().map(|g| kind(a, Some(g))).chain([kind(a, None)]);
+                out.extend(ks.filter(|k| self.has(t, k)).map(|k| (t.clone(), k)));
+            }
+        }
+        out
     }
 
     /// How firmly a token relates under a kind: its top count over its
     /// total plus one — one sighting is never certainty.
     pub fn firmness(&self, t: &str, k: &str) -> f64 {
-        self.n.get(&(t.to_string(), k.to_string())).map_or(0.0, |m| {
+        self.table(t, k).map_or(0.0, |m| {
             let total: f64 = m.values().sum();
             m.values().cloned().fold(0.0, f64::max) / (total + 1.0)
         })
@@ -114,15 +150,12 @@ impl Tally {
 
     /// How many times `(t, k)` was told.
     pub fn told(&self, t: &str, k: &str) -> f64 {
-        self.n.get(&(t.to_string(), k.to_string())).map_or(0.0, |m| m.values().sum())
+        self.tally.told(t, k)
     }
 
     /// Every value told under aspect `a`.
     pub fn values(&self, a: usize) -> Vec<String> {
-        let mut v: Vec<String> = self.n.iter().filter(|((_, k), _)| k == ASPECTS[a]).flat_map(|(_, m)| m.keys().cloned()).collect();
-        v.sort();
-        v.dedup();
-        v
+        self.tally.values(ASPECTS[a])
     }
 
     pub fn tokens(e: &Episode) -> Vec<String> {
@@ -132,7 +165,7 @@ impl Tally {
     }
 }
 
-impl Learner for Tally {
+impl Learner for GameCounts {
     fn name(&self) -> String {
         match self.compose {
             Compose::Sum => "Phical counts, summed (no operator)".into(),
@@ -146,12 +179,12 @@ impl Learner for Tally {
         let mut out: Action = Default::default();
         for (a, slot) in out.iter_mut().enumerate() {
             let mut score: HashMap<String, f64> = HashMap::new();
-            for t in Tally::tokens(e) {
+            for t in GameCounts::tokens(e) {
                 let Some(k) = self.read_kind(&t, a, &e.game) else { continue };
                 let w = self.firmness(&t, &k);
-                let m = &self.n[&(t.clone(), k)];
+                let Some(m) = self.table(&t, &k) else { continue };
                 let total: f64 = m.values().sum();
-                for (v, c) in m {
+                for (v, c) in &m {
                     *score.entry(v.clone()).or_default() += w * c / total;
                 }
             }
@@ -161,11 +194,13 @@ impl Learner for Tally {
     }
 }
 
-impl Tally {
+impl GameCounts {
     /// The count distribution of `(t, k)` over `values`, smoothed toward
-    /// `base` with weight one: one sighting is never certainty.
+    /// `base` with weight one: one sighting is never certainty. (phient's
+    /// `Tally::dist` is the same sum, added in another order; this one keeps
+    /// the game's recorded numbers to the last bit.)
     pub fn dist(&self, t: &str, k: &str, values: &[String], base: &[f64]) -> Option<Vec<f64>> {
-        let m = self.n.get(&(t.to_string(), k.to_string()))?;
+        let m = self.table(t, k)?;
         let total: f64 = m.values().sum();
         Some(values.iter().zip(base).map(|(v, b)| (m.get(v).copied().unwrap_or(0.0) + b) / (total + 1.0)).collect())
     }

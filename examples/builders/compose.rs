@@ -14,34 +14,32 @@
 //!   what is done with it. Agreement is judged between the two games, so a
 //!   third game (corrected mistakes, §54) cannot veto it (docs/104).
 
-use super::learners::{game_token, kind, Tally};
+use super::learners::{game_token, kind, GameCounts};
 use super::world::{Episode, ASPECTS};
 use std::collections::HashMap;
 
 /// Nats a word must move an aspect's answer to hold a post there.
 pub const POST: f64 = 0.5;
 
-impl Tally {
+impl GameCounts {
     /// The condition's own distribution over `values`: the game token's
     /// counts under `k` (every episode of the game tells it).
     pub fn condition(&self, e: &Episode, k: &str, values: &[String]) -> Vec<f64> {
-        let m = self.n.get(&(game_token(e), k.to_string())).cloned().unwrap_or_default();
+        let m = self.table(&game_token(e), k).unwrap_or_default();
         let total: f64 = m.values().sum();
         values.iter().map(|v| (m.get(v).copied().unwrap_or(0.0) + 0.01) / (total + 0.01 * values.len() as f64)).collect()
     }
 
     /// The plain aspect's condition: every game token's counts under `k`.
     pub fn everywhere(&self, k: &str, values: &[String]) -> Vec<f64> {
-        let mut m: HashMap<&str, f64> = HashMap::new();
-        for ((t, kk), vs) in &self.n {
-            if kk == k && t.starts_with("⟨game:") {
-                for (v, x) in vs {
-                    *m.entry(v.as_str()).or_default() += x;
-                }
+        let mut m: HashMap<String, f64> = HashMap::new();
+        for t in self.words.iter().filter(|t| t.starts_with("⟨game:")) {
+            for (v, x) in self.table(t, k).unwrap_or_default() {
+                *m.entry(v).or_default() += x;
             }
         }
         let total: f64 = m.values().sum();
-        values.iter().map(|v| (m.get(v.as_str()).copied().unwrap_or(0.0) + 0.01) / (total + 0.01 * values.len() as f64)).collect()
+        values.iter().map(|v| (m.get(v).copied().unwrap_or(0.0) + 0.01) / (total + 0.01 * values.len() as f64)).collect()
     }
 
     /// Whether games `g1` and `g2` agree on aspect `a`: among tokens that
@@ -50,7 +48,7 @@ impl Tally {
     /// is firm in both (no evidence).
     pub fn agree_between(&self, a: usize, g1: &str, g2: &str) -> Option<bool> {
         let top = |t: &str, g: &str| {
-            let m = self.n.get(&(t.to_string(), kind(a, Some(g))))?;
+            let m = self.table(t, &kind(a, Some(g)))?;
             let total: f64 = m.values().sum();
             m.iter().max_by(|x, y| x.1.total_cmp(y.1).then(y.0.cmp(x.0))).filter(|x| *x.1 >= 0.5 * total).map(|x| x.0.clone())
         };
@@ -80,7 +78,7 @@ pub fn kl(p: &[f64], q: &[f64]) -> f64 {
 
 /// The value of aspect `a` the utterance moves to. `dist(t, k, base)` is a
 /// token's reading under kind `k` as a distribution over `values`.
-pub fn movement(c: &Tally, e: &Episode, a: usize, values: &[String], dist: impl Fn(&str, &str, &[f64]) -> Option<Vec<f64>>) -> String {
+pub fn movement(c: &GameCounts, e: &Episode, a: usize, values: &[String], dist: impl Fn(&str, &str, &[f64]) -> Option<Vec<f64>>) -> String {
     let k0 = kind(a, Some(&e.game));
     // The condition is read from its count, for every learner: a game token
     // relates to every answer (it holds no post), and a function reads such
@@ -90,7 +88,7 @@ pub fn movement(c: &Tally, e: &Episode, a: usize, values: &[String], dist: impl 
     let prior = counted.clone();
     let mut score: Vec<f64> = prior.iter().map(|p| p.ln()).collect();
     for t in &e.tokens {
-        let k = match c.n.contains_key(&(t.clone(), k0.clone())) {
+        let k = match c.has(t, &k0) {
             true => k0.clone(),
             false if c.games.get(t).is_some_and(|gs| gs.iter().any(|g| c.carries(a, g, &e.game))) => kind(a, None),
             false => continue,
@@ -117,10 +115,8 @@ pub fn movement(c: &Tally, e: &Episode, a: usize, values: &[String], dist: impl 
 
 /// §11–17, the toolbox: for every word, the aspects of the order game in
 /// which it holds a post, and what it moves the answer to there.
-pub fn posts(c: &Tally) -> String {
-    let mut words: Vec<&String> = c.n.keys().map(|(t, _)| t).filter(|t| !t.starts_with("⟨game")).collect();
-    words.sort();
-    words.dedup();
+pub fn posts(c: &GameCounts) -> String {
+    let words: Vec<&String> = c.words.iter().filter(|t| !t.starts_with("⟨game")).collect();
     let mut s = String::from("| word | holds a post under | moves the answer to |\n|---|---|---|\n");
     let probe = Episode { game: "order".into(), tokens: vec![], action: Default::default() };
     for w in words {

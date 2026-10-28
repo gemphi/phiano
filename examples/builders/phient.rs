@@ -6,7 +6,7 @@
 //! (its count) and the readings are summed — the sentence is the pairs of
 //! words moving under a condition.
 
-use super::learners::{Action, Compose, Tally, Learner};
+use super::learners::{Action, Compose, GameCounts, Learner};
 use super::world::{Episode, ASPECTS};
 use phiano::relate::{kind_token, RelationModel};
 use phiecs::quest::Row;
@@ -16,7 +16,7 @@ use phical::{FnoConfig, Tie};
 use std::collections::HashMap;
 
 pub struct Phient {
-    counts: Tally,
+    counts: GameCounts,
     m: RelationModel,
     /// `(token, kind)` ⇒ the operator's reading of `unit(token + kind)`.
     read: HashMap<(String, String), Function>,
@@ -34,12 +34,12 @@ fn value_name(a: usize, v: &str) -> String {
 
 impl Phient {
     pub fn new(train: &[Episode], relations_per_word: usize, epochs: usize, seed: u64, compose: Compose) -> Self {
-        let counts = Tally::new(train);
+        let counts = GameCounts::new(train);
         let aspect_of = |k: &str| ASPECTS.iter().position(|a| k.split('|').next() == Some(*a)).unwrap_or(0);
         let mut rows: Vec<Row> = Vec::new();
-        for ((t, k), m) in &counts.n {
-            for (v, c) in m {
-                rows.push(Row { about: t.clone(), kind: k.clone(), other: value_name(aspect_of(k), v), weight: *c });
+        for (t, k) in counts.pairs() {
+            for (v, c) in counts.table(&t, &k).unwrap_or_default() {
+                rows.push(Row { about: t.clone(), kind: k.clone(), other: value_name(aspect_of(&k), &v), weight: c });
             }
         }
         rows.sort_by(|x, y| (&x.about, &x.kind, &x.other).cmp(&(&y.about, &y.kind, &y.other)));
@@ -68,7 +68,7 @@ impl Phient {
             }
         }
         let table = m.joint.functions();
-        let keys: Vec<(String, String)> = counts.n.keys().cloned().collect();
+        let keys: Vec<(String, String)> = counts.pairs();
         let inputs: Vec<Function> = keys
             .iter()
             .map(|(t, k)| {
@@ -95,7 +95,7 @@ impl Phient {
             .filter(|((t, k), y)| {
                 let a = aspect(k);
                 let f = top(self.values[a].iter().map(|(v, i)| (v.clone(), phistd::cosine(y, &self.table[*i]))).collect());
-                let c = top(self.counts.n[&(t.clone(), k.clone())].iter().map(|(v, x)| (v.clone(), *x)).collect());
+                let c = top(self.counts.table(t, k).unwrap_or_default().into_iter().collect());
                 f.is_some() && f == c
             })
             .map(|(key, _)| key.clone())
@@ -127,7 +127,7 @@ impl Learner for Phient {
         let mut out: Action = Default::default();
         for (a, slot) in out.iter_mut().enumerate() {
             let mut reads: Vec<(f64, &Function)> = Vec::new();
-            for t in Tally::tokens(e) {
+            for t in GameCounts::tokens(e) {
                 let Some(k) = self.counts.read_kind(&t, a, &e.game) else { continue };
                 let w = self.counts.firmness(&t, &k);
                 reads.push((w, &self.read[&(t, k)]));

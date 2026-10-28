@@ -9,7 +9,7 @@
 //! conditions (c): one pointing gives a word its first relation.
 
 use super::follow;
-use super::learners::{Compose, Tally, Learner};
+use super::learners::{Compose, GameCounts, Learner};
 use super::split::Split;
 use super::teacher;
 use super::world::Episode;
@@ -86,7 +86,7 @@ pub fn report(sp: &Split, dir: &str) -> String {
         c.sort_by(|x, y| y.1.cmp(&x.1).then(x.0.cmp(y.0)));
         let top: Vec<String> = c.iter().take(3).map(|(v, n)| format!("{v} {n}")).collect();
         let exact = read.iter().filter(|x| x.2 == x.0.action).count();
-        let mut student = Tally { compose: Compose::Movement, ..Tally::new(&sp.with_ostension(k, grammar)) };
+        let mut student = GameCounts { compose: Compose::Movement, ..GameCounts::new(&sp.with_ostension(k, grammar)) };
         let ys: Vec<_> = asked.iter().map(|x| (student.act(&x.rule), &x.rule.action)).collect();
         // Distilled (stage B): in each fold, if Phi-4 answered the taught word
         // as the colour in most orders of the other folds, the student is told
@@ -97,7 +97,7 @@ pub fn report(sp: &Split, dir: &str) -> String {
         for f in 0..5 {
             let others: Vec<&(&Episode, [String; 5], [String; 5])> = read.iter().filter(|x| asked.iter().position(|a| std::ptr::eq(&a.rule, x.0)).map(fold) != Some(f)).collect();
             let as_colour = others.iter().filter(|x| x.2[2] == "sepia").count() * 2 > others.len();
-            let mut d = Tally { compose: Compose::Movement, ..Tally::new(&sp.with_ostension(k, grammar || as_colour)) };
+            let mut d = GameCounts { compose: Compose::Movement, ..GameCounts::new(&sp.with_ostension(k, grammar || as_colour)) };
             sd += asked.iter().enumerate().filter(|(i, _)| fold(*i) == f).filter(|(_, x)| d.act(&x.rule) == x.rule.action).count();
         }
         let (se, sc) = (ys.iter().filter(|(y, r)| y == *r).count(), ys.iter().filter(|(y, r)| y[2] == r[2]).count());

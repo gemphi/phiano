@@ -7,7 +7,7 @@
 //! inside the training set (counts from three quarters, answers from the
 //! fourth), never on the test.
 
-use super::learners::{kind, Action, Tally, Learner};
+use super::learners::{kind, Action, GameCounts, Learner};
 use super::world::Episode;
 
 const B: usize = 5;
@@ -30,12 +30,12 @@ pub struct Move {
 }
 
 /// The condition and each relating word's move, for aspect `a`.
-pub fn moves(c: &Tally, e: &Episode, a: usize, values: &[String]) -> (Vec<f64>, Vec<Move>) {
+pub fn moves(c: &GameCounts, e: &Episode, a: usize, values: &[String]) -> (Vec<f64>, Vec<Move>) {
     let k0 = kind(a, Some(&e.game));
     let prior = c.condition(e, &k0, values);
     let mut out = Vec::new();
     for t in &e.tokens {
-        let k = match c.n.contains_key(&(t.clone(), k0.clone())) {
+        let k = match c.has(t, &k0) {
             true => k0.clone(),
             false if c.games.get(t).is_some_and(|gs| gs.iter().any(|g| c.carries(a, g, &e.game))) => kind(a, None),
             false => continue,
@@ -43,19 +43,19 @@ pub fn moves(c: &Tally, e: &Episode, a: usize, values: &[String]) -> (Vec<f64>, 
         let home = if k == k0 { prior.clone() } else { c.everywhere(&k, values) };
         let Some(told) = c.dist(t, &k, values, &home) else { continue };
         let Some(p) = c.dist(t, &k, values, &prior) else { continue };
-        let n: f64 = c.n[&(t.clone(), k)].values().sum();
+        let n: f64 = c.told(t, &k);
         out.push(Move { word: t.clone(), nats: super::compose::kl(&told, &home), told: n, r: p.iter().zip(&prior).map(|(x, b)| (x.max(1e-12) / b).ln()).collect() });
     }
     (prior, out)
 }
 
-fn terms(c: &Tally, e: &Episode, a: usize, values: &[String]) -> (Vec<f64>, Vec<(usize, Vec<f64>)>) {
+fn terms(c: &GameCounts, e: &Episode, a: usize, values: &[String]) -> (Vec<f64>, Vec<(usize, Vec<f64>)>) {
     let (prior, ms) = moves(c, e, a, values);
     (prior, ms.into_iter().map(|m| (a * B + bucket(m.nats), m.r)).collect())
 }
 
 pub struct Weighted {
-    c: Tally,
+    c: GameCounts,
     beta: [f64; 5],
     alpha: Vec<f64>,
 }
@@ -74,7 +74,7 @@ impl Weighted {
         // Held-out examples: (aspect, truth index, condition, moves).
         let mut ex = Vec::new();
         for f in 0..4 {
-            let c = Tally::new(&train.iter().filter(|e| fold(e) != f).cloned().collect::<Vec<_>>());
+            let c = GameCounts::new(&train.iter().filter(|e| fold(e) != f).cloned().collect::<Vec<_>>());
             for a in 0..5 {
                 let values = c.values(a);
                 for e in train.iter().filter(|e| fold(e) == f) {
@@ -84,7 +84,7 @@ impl Weighted {
                 }
             }
         }
-        let mut w = Weighted { c: Tally::new(train), beta: [1.0; 5], alpha: vec![1.0; 5 * B] };
+        let mut w = Weighted { c: GameCounts::new(train), beta: [1.0; 5], alpha: vec![1.0; 5 * B] };
         let (mut g2b, mut g2a) = ([1e-8; 5], vec![1e-8; 5 * B]);
         for _ in 0..epochs {
             for (a, i, prior, ts) in &ex {

@@ -3,7 +3,7 @@
 //! logistic regression, SGD). No word is told what it names; the weights
 //! are shared out discriminatively.
 
-use super::learners::{game_token, Action, Tally, Learner};
+use super::learners::{game_token, Action, GameCounts, Learner};
 use super::world::{Dice, Episode, ASPECTS};
 use std::collections::HashMap;
 
@@ -30,7 +30,7 @@ fn trained(e: &Episode) -> Vec<usize> {
 }
 
 impl Bow {
-    pub fn new(train: &[Episode], counts: &Tally, epochs: usize, seed: u64) -> Self {
+    pub fn new(train: &[Episode], counts: &GameCounts, epochs: usize, seed: u64) -> Self {
         let values: Vec<Vec<String>> = (0..ASPECTS.len()).map(|a| counts.values(a)).collect();
         let mut w: Vec<HashMap<String, Vec<f64>>> = vec![HashMap::new(); ASPECTS.len()];
         let mut order: Vec<usize> = (0..train.len()).collect();

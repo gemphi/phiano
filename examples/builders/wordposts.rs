@@ -12,7 +12,7 @@
 //! conditions (c); the slow speed lets how much it counts be one of them.
 
 use super::compose::POST;
-use super::learners::{Action, Tally, Learner};
+use super::learners::{Action, GameCounts, Learner};
 use super::weighted::moves;
 use super::world::Episode;
 use std::collections::HashMap;
@@ -21,7 +21,7 @@ pub const SEEN: f64 = 8.0;
 pub const LAMBDA: f64 = 0.05;
 
 pub struct WordPosts {
-    c: Tally,
+    c: GameCounts,
     /// (word, aspect) ⇒ weight learned away from the post.
     delta: HashMap<(String, usize), f64>,
     pub seen: f64,
@@ -40,7 +40,7 @@ impl WordPosts {
         let fold = |e: &Episode| (phistd::mix64(phiano::phasor::fnv1a(&e.key()) ^ seed ^ 0x5EE) % 4) as usize;
         let mut ex = Vec::new();
         for f in 0..4 {
-            let c = Tally::new(&train.iter().filter(|e| fold(e) != f).cloned().collect::<Vec<_>>());
+            let c = GameCounts::new(&train.iter().filter(|e| fold(e) != f).cloned().collect::<Vec<_>>());
             for a in 0..5 {
                 let values = c.values(a);
                 for e in train.iter().filter(|e| fold(e) == f) {
@@ -68,7 +68,7 @@ impl WordPosts {
                 }
             }
         }
-        WordPosts { c: Tally::new(train), delta, seen }
+        WordPosts { c: GameCounts::new(train), delta, seen }
     }
 
     /// The words that moved most from their post, per aspect.

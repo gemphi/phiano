@@ -21,7 +21,8 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 - [x] persona: phiano's `Persona` and `World` were not phiecs's (a style fingerprint and a set of them, against a persona file and the world of rows): renamed `Style` and `Styles`.
 - [x] reasoning: `cognitive::ReasoningResult` and `reasoning::ReasoningChain` were one thing: now one `cognitive::Chain<S>` (`reasoning::ReasoningChain` is `Chain<ReasoningStep>`, kept in `cognitive` so `reasoning` stays out of the cycle); the cognitive core's steps are `Thought`, its engine `ChainOfThought`.
 - [x] examples: the code reader's `Tally` and the learner example's `Hits` counted what phient's held-out score counts: both use `phient::study::Score`. The code writers' `Tally` was a scoreboard: renamed `Scoreboard`.
-- [ ] examples/builders: `Tally` is phient's `relate::Tally` before it was general (docs/105–111), with game-scoped reading on top (games, open aspects, per-aspect teacher posts). Port those into phient's `Tally` and re-run the builders' measurements to show the recorded numbers hold, then retire the example's copy.
+- [x] examples/builders: its `Tally` kept its own map of counts. The counts now live in phient's `relate::Tally` (one row per told triple), and what is the game's own (which game a word may be read in, posts, the teacher) stays as `GameCounts`. `tests.rs` checks that phient holds exactly the counts the game told, on two seeds.
+- [ ] examples/builders: re-run the full builders report once the machine is free and diff it against the last recorded one (docs/102–111); the counts are proven equal, so the numbers should not move.
 
 ## Structure
 

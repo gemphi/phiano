@@ -34,8 +34,10 @@ mod teacher;
 mod weighted;
 mod wordposts;
 mod world;
+#[cfg(test)]
+mod tests;
 
-use learners::{Compose, Tally, Learner};
+use learners::{Compose, GameCounts, Learner};
 use lookup::Lookup;
 use split::Split;
 use world::Episode;
@@ -52,9 +54,9 @@ fn learners(train: &[Episode], r: usize, epochs: usize, seed: u64) -> (Vec<Box<d
     let p = std::rc::Rc::new(phient::Phient::new(train, r, epochs, seed, Compose::Movement));
     let note = format!("{} relations kept from {} episodes · {} numbers · functions agree with counts on {:.1}% · {:.0} s", p.relations, train.len(), p.size(), 100.0 * p.agreed_share(), t0.elapsed().as_secs_f64());
     let p_sum = phient::Phient::new(train, r, epochs, seed, Compose::Sum);
-    let counts = Tally::new(train);
+    let counts = GameCounts::new(train);
     let bow = bow::Bow::new(train, &counts, epochs, seed);
-    let moved = Tally { compose: Compose::Movement, ..Tally::new(train) };
+    let moved = GameCounts { compose: Compose::Movement, ..GameCounts::new(train) };
     (vec![Box::new(Lookup::new(train)), Box::new(naming::Naming::new(train)), Box::new(bow), Box::new(counts), Box::new(moved), Box::new(weighted::Weighted::new(train, epochs, seed)), Box::new(wordposts::WordPosts::new(train, epochs, seed, wordposts::SEEN)), Box::new(p_sum), Box::new(phient::TwoSpeed { p: p.clone(), consolidate: 0.0 }), Box::new(phient::TwoSpeed { p: p.clone(), consolidate: 8.0 }), Box::new(phient::TwoSpeed { p, consolidate: -1.0 })], note)
 }
 
@@ -180,7 +182,7 @@ fn main() {
         md += &format!("| {} |\n", c.join(" | "));
     }
     md += "\n## The toolbox (§11–17): where each word holds a post (order game, Phical counts)\n\n";
-    md += &compose::posts(&Tally::new(&sp.with_ostension(3, true)));
+    md += &compose::posts(&GameCounts::new(&sp.with_ostension(3, true)));
     md += "\n";
     md += &experiments::curve(&sp, &[20, 40, 80, 160, 320, 640], &[8, 32], epochs, seed);
     md += "\n";

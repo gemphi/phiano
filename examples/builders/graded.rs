@@ -12,7 +12,7 @@
 //! a condition, and a teacher who teaches by tendency sets it lower (§§88, 107).
 
 use super::bow::Bow;
-use super::learners::{Compose, Tally, Learner};
+use super::learners::{Compose, GameCounts, Learner};
 use super::weighted::Weighted;
 use super::wordposts::WordPosts;
 use super::world::Episode;
@@ -31,7 +31,7 @@ fn choose(train: &[Episode], taus: &[f64], seed: u64) -> Vec<f64> {
     for f in 0..4 {
         let tr: Vec<Episode> = train.iter().filter(|e| fold(e) != f).cloned().collect();
         for (i, &tau) in taus.iter().enumerate() {
-            let mut l = Tally { compose: Compose::Movement, post: tau, ..Tally::new(&tr) };
+            let mut l = GameCounts { compose: Compose::Movement, post: tau, ..GameCounts::new(&tr) };
             for t in train.iter().filter(|e| fold(e) == f) {
                 let y = l.act(t);
                 (0..5).for_each(|a| right[a][i] += (y[a] == t.action[a]) as usize);
@@ -57,14 +57,14 @@ pub fn sweep(read: &[(&Episode, [String; 5], [String; 5])], taus: &[f64], epochs
         let heard: std::collections::HashSet<&String> = train.iter().flat_map(|e| &e.tokens).collect();
         let known = |t: &Episode| t.tokens.iter().any(|w| !w.starts_with('⟨') && heard.contains(w));
         n_known += test.iter().filter(|t| known(t)).count();
-        let counts = Tally::new(&train);
+        let counts = GameCounts::new(&train);
         let mut ls: Vec<Box<dyn Learner>> = vec![Box::new(Bow::new(&train, &counts, epochs, seed))];
         for &tau in taus {
-            ls.push(Box::new(Tally { compose: Compose::Movement, post: tau, ..Tally::new(&train) }));
+            ls.push(Box::new(GameCounts { compose: Compose::Movement, post: tau, ..GameCounts::new(&train) }));
         }
         let by = choose(&train, taus, seed);
         chosen.push(format!("{by:?}"));
-        ls.push(Box::new(Tally { compose: Compose::Movement, post_by: by, ..Tally::new(&train) }));
+        ls.push(Box::new(GameCounts { compose: Compose::Movement, post_by: by, ..GameCounts::new(&train) }));
         let w = Weighted::new(&train, epochs, seed);
         table = w.table();
         ls.push(Box::new(w));

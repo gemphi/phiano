@@ -3,19 +3,19 @@
 //! told), and the stranger of §32, who learns a new vocabulary for a game
 //! he already plays.
 
-use super::learners::{Compose, Tally, Learner};
+use super::learners::{Compose, GameCounts, Learner};
 use super::lookup::Lookup;
 use super::split::Split;
 use super::world::{Dice, Episode};
 use super::{bow, naming, phient};
 
 pub fn all(train: &[Episode], rs: &[usize], epochs: usize, seed: u64) -> Vec<Box<dyn Learner>> {
-    let counts = Tally::new(train);
+    let counts = GameCounts::new(train);
     let mut v: Vec<Box<dyn Learner>> = vec![
         Box::new(Lookup::new(train)),
         Box::new(naming::Naming::new(train)),
         Box::new(bow::Bow::new(train, &counts, epochs, seed)),
-        Box::new(Tally { compose: Compose::Movement, ..Tally::new(train) }),
+        Box::new(GameCounts { compose: Compose::Movement, ..GameCounts::new(train) }),
         Box::new(super::weighted::Weighted::new(train, epochs, seed)),
         Box::new(super::wordposts::WordPosts::new(train, epochs, seed, super::wordposts::SEEN)),
     ];
@@ -101,7 +101,7 @@ pub fn stranger(sp: &Split, ks: &[usize], rs: &[usize], epochs: usize, seed: u64
 /// `corrected` — a condition, not a deletion.
 pub fn mistakes(sp: &Split, rates: &[f64], rs: &[usize], epochs: usize, seed: u64) -> String {
     let tests: Vec<Episode> = [&sp.seen, &sp.combos, &sp.report, &sp.no_name].into_iter().flatten().cloned().collect();
-    let counts = Tally::new(&sp.train);
+    let counts = GameCounts::new(&sp.train);
     let values: Vec<Vec<String>> = (0..super::world::ASPECTS.len()).map(|a| counts.values(a)).collect();
     let mut rows: Vec<Vec<String>> = Vec::new();
     let mut cols = Vec::new();
@@ -157,7 +157,7 @@ pub fn posts(sp: &Split, taus: &[f64], seed: u64) -> String {
     let mut s = String::from("## How exact must a post be? (§§69–71, §88) — Phical counts, movement\n\n| τ (nats) | four rule tests | sepia, 1 pointing + `colour` | 160 episodes |\n|---|---|---|---|\n");
     for &tau in taus {
         let at = |train: &[Episode], test: &[Episode]| {
-            let mut c = Tally { compose: Compose::Movement, ..Tally::new(train) };
+            let mut c = GameCounts { compose: Compose::Movement, ..GameCounts::new(train) };
             c.post = tau;
             100.0 * exact(&mut c, test)
         };
