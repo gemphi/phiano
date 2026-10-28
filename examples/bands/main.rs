@@ -102,12 +102,12 @@ use types::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::metrics::relation::RelationBenchmark;
+use phient::metrics::harness::Harness;
+use phient::metrics::relation::RelationBenchmark;
 use phiano::phasor::fnv1a;
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, Up};
+use phient::train::trainer::Trainer;
 
 fn main() {
     let s = setup();

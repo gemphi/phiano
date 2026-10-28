@@ -10,16 +10,6 @@ fn machine() -> Machine {
 }
 
 #[test]
-fn reads_and_evaluates() {
-    let mut m = machine();
-    assert_eq!(m.run("(+ 1 2 (* 2 3))").unwrap(), Value::Num(9.0));
-    assert_eq!(m.run("(car '(a b))").unwrap(), Value::Sym("a".into()));
-    assert_eq!(m.run("(define sq (lambda (x) (* x x))) (sq 7)").unwrap(), Value::Num(49.0));
-    assert_eq!(m.run("(let ((x 2)) (if (< x 3) \"small\" \"big\"))").unwrap(), Value::Str("small".into()));
-    assert_eq!(m.run("(length (list 1 2 3)) ; a comment\n").unwrap(), Value::Num(3.0));
-}
-
-#[test]
 fn russell_on_the_machine() {
     let mut m = machine();
     assert_eq!(m.run("(count (held russell is-a))").unwrap(), Value::Num(2.0));

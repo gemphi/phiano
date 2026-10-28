@@ -9,7 +9,7 @@
 //! `--personas` may be given more than once (both rings).
 
 use phiano::lab::flag;
-use phiano::sys::lisp::Machine;
+use phiano::sys::lisp::{Machine, Stage};
 use phiano::sys::{persona_files, trace, Being};
 use std::io::BufRead;
 use std::path::PathBuf;
@@ -37,7 +37,7 @@ fn main() {
     }
     if !tree.is_empty() {
         m = m.with_scopes(trace::scopes_of(&tree));
-        eprintln!("; {} scopes from {}{}", m.scopes.len(), text.as_deref().unwrap_or(""), bcpl.as_deref().map(|b| format!(" + {b}")).unwrap_or_default());
+        eprintln!("; {} scopes from {}{}", m.host.scopes.len(), text.as_deref().unwrap_or(""), bcpl.as_deref().map(|b| format!(" + {b}")).unwrap_or_default());
     }
     let mut beings = Vec::new();
     for r in &rings {

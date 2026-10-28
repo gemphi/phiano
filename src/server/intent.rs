@@ -13,7 +13,7 @@ use grounded::*;
 #[allow(unused_imports)]
 use greeting::*;
 
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use crate::core::searle::CognitiveResult;
 use crate::config::{CHUNK_STORE_DIR, DEFAULT_CONTEXT_WINDOW, DEFAULT_REASONING_STEPS};
 use crate::model::Model;

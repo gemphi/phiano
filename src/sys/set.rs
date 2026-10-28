@@ -4,18 +4,11 @@
 //! either holds), meet (what both hold), composition (`a R b`, `b S c` ⇒
 //! `a R∘S c`) and the converse. Nothing is inferred that is not a pair
 //! someone was told; the algebra only says which pairs stand together.
+//! The algebra is `phiclm::lisp::set`; what reads a being stays here.
 
 use super::{Agent, Being};
-use std::collections::BTreeSet;
 
-/// The whole of ∗30–∗37 and the ancestral of ∗90: see [`algebra`].
-pub mod principia {
-    pub use super::algebra::*;
-    pub use super::{compose, converse, meet, union, Relation};
-}
-
-/// A relation: the set of `(about, other)` pairs.
-pub type Relation = BTreeSet<(String, String)>;
+use phiclm::lisp::set::{compose, meet, union, Relation};
 
 /// Every pair `who` holds under `kind`.
 pub fn held(who: &Being, kind: &str) -> Relation {
@@ -27,26 +20,6 @@ pub fn held(who: &Being, kind: &str) -> Relation {
             w.edges.out_of(word).iter().filter(|e| e.kind == k).map(move |e| (s.to_string(), w.spelling(e.to).to_string()))
         })
         .collect()
-}
-
-/// What either holds.
-pub fn union(a: &Relation, b: &Relation) -> Relation {
-    a.union(b).cloned().collect()
-}
-
-/// What both hold — the agreement.
-pub fn meet(a: &Relation, b: &Relation) -> Relation {
-    a.intersection(b).cloned().collect()
-}
-
-/// `R ∘ S`: `(x, z)` for every `(x, y)` in `R` and `(y, z)` in `S`.
-pub fn compose(r: &Relation, s: &Relation) -> Relation {
-    r.iter().flat_map(|(x, y)| s.iter().filter(move |(y2, _)| y2 == y).map(move |(_, z)| (x.clone(), z.clone()))).collect()
-}
-
-/// `R˘`: every pair turned round.
-pub fn converse(r: &Relation) -> Relation {
-    r.iter().map(|(x, y)| (y.clone(), x.clone())).collect()
 }
 
 /// One kind thought over by two beings.
@@ -85,7 +58,5 @@ pub fn render(a: &str, b: &str, thoughts: &[Thought]) -> String {
     out
 }
 
-mod algebra;
-pub use algebra::*;
 #[cfg(test)]
 mod tests;

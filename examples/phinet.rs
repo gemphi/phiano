@@ -26,13 +26,14 @@
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::phinet::reader;
-use phiano::phinet::space::{examples, Example, FunctionSpace, Sides, WordFunction};
+use phient::metrics::harness::Harness;
+use phient::net::reader;
+use phient::net::space::{examples, Example, FunctionSpace, Sides, WordFunction};
 use phical::rank;
-use phiano::phinet::{Adam, Fno, FnoConfig};
+use phistd::Adam;
+use phical::{Fno, FnoConfig};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 const POOL_FLOOR: u32 = 25;
 const WINDOW: usize = 6;

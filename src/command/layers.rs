@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::layers::HierarchicalPhaseField;
+use phiecs::phasor::layers::HierarchicalPhaseField;
 use crate::tokenizer::Tokenizer;
 use phiecs::phasor::wave::Wave;
 

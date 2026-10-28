@@ -11,14 +11,14 @@
 //! ratio. Same seed for every arm.
 
 use phiano::config::LEARNING_RATE;
-use phiano::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiano::generate::{ContextWaveBuffer, Generator, OperatorGuide};
-use phiano::metrics::harness::Harness;
-use phiano::metrics::baseline::kn::KneserNey;
-use phiano::phinet::space::Sides;
-use phiano::storage::Storage;
+use phient::metrics::harness::Harness;
+use phient::metrics::baseline::kn::KneserNey;
+use phient::net::space::Sides;
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 /// An arm: (name, operator, weight, prior-corrected proposals, widen, learned?, relational proposals).
 type Arm = (&'static str, Option<&'static str>, f64, usize, usize, bool, usize);
@@ -57,7 +57,7 @@ fn main() {
     println!("{} prompts from held-out sentences; judge: Kneser-Ney on the training split", prompts.len());
 
     let _untrained = {
-        let space = phiano::phinet::space::FunctionSpace::from_facet_sides(&facet, Sides::Directed);
+        let space = phient::net::space::FunctionSpace::from_facet_sides(&facet, Sides::Directed);
         let cfg = phical::FnoConfig { space: space.space(), width: 8, layers: 2, modes: 12, margin: 0.2, lr: 2e-3, tie: phical::Tie::Circle };
         let fno = phical::Fno::new(cfg, 99);
         std::fs::write("data/phinet_untrained.fno", fno.to_bytes()).expect("write");

@@ -4,7 +4,7 @@ pub mod worse;
 pub mod tune;
 
 use phiecs::phasor::facet::Facet;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use std::fmt;
 
 /// Color mapping palette for phase-space sectors.
@@ -54,7 +54,7 @@ pub struct Composition {
     /// Number of recursive refinement rounds completed.
     pub rounds: usize,
     /// The evaluation scores of the winner.
-    pub eval: crate::eval::Eval,
+    pub eval: phient::eval::Eval,
     /// All sector scores from the final round: (sector, score) pairs.
     pub sector_scores: Vec<(u16, f64)>,
     /// Examples that were learned from before composing.

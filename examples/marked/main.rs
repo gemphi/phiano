@@ -105,12 +105,12 @@ use summary::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
+use phient::metrics::harness::Harness;
 use phiecs::relation::{RelationVocab, MARKER_MAX_GAP, OFFSET_CHANNELS};
-use phiano::relational::RelationalFacet;
+use phiecs::phasor::relational::RelationalFacet;
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, Up};
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 
 fn main() {

@@ -9,11 +9,11 @@
 
 use phiano::config::{LEARNING_RATE, OPERATOR_FILE};
 use phiano::generate::OperatorGuide;
-use phiano::metrics::harness::Harness;
-use phiano::phinet::space::{FunctionSpace, Sides};
+use phient::metrics::harness::Harness;
+use phient::net::space::{FunctionSpace, Sides};
 use phistd::hexagram::KING_WEN_MAP;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use phistd::hexagram::{hexagram_of, lines, novelty};
 
 fn main() {

@@ -2,7 +2,7 @@
 //! Implements Ch 14.2's reasoning about hypothetical situations.
 
 use crate::config::TWO_PI;
-use crate::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 

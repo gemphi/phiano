@@ -22,10 +22,10 @@
 mod relate;
 
 use phiano::config::LEARNING_RATE;
-use phiano::metrics::harness::{Harness, Split};
+use phient::metrics::harness::{Harness, Split};
 use phiano::persona::{PersonaStore, Styles};
-use phiano::storage::Storage;
-use phiano::trainer::Trainer;
+use phiecs::phasor::facet::storage::Storage;
+use phient::train::trainer::Trainer;
 use phiano::relate::read_quests;
 use phiecs::persona::Persona;
 use std::path::Path;

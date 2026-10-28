@@ -75,9 +75,7 @@ impl PhiConfig {
     ///        + novelty   × EVAL_WEIGHT_NOVELTY
     ///        + resonance × EVAL_WEIGHT_RESONANCE`
     pub fn eval_overall(coherence: f64, novelty: f64, resonance: f64) -> f64 {
-        coherence * EVAL_WEIGHT_COHERENCE
-            + novelty * EVAL_WEIGHT_NOVELTY
-            + resonance * EVAL_WEIGHT_RESONANCE
+        phient::eval::Evaluator::overall(coherence, novelty, resonance)
     }
 
     /// Returns `true` if `word` is a stop word.

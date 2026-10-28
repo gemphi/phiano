@@ -24,7 +24,7 @@
 mod report;
 
 use phiano::relate::{find_laws, kind_token, RelationModel, Triple};
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 use phical::relate::{self, chance, closure_epoch, closure_pairs, find_inverses, implied, laws_epoch, score_laws, Converse, Inherit};
 use phistd::Adam;
 use phical::{FnoConfig, Tie};

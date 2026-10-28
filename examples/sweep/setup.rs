@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
 use super::*;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::phinet::space::{examples, FunctionSpace, Sides};
-use phiano::storage::Storage;
+use phient::metrics::harness::Harness;
+use phient::net::space::{examples, FunctionSpace, Sides};
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 
 /// Everything an arm trains and scores against.

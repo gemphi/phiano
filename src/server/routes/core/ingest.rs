@@ -19,15 +19,15 @@ pub async fn ingest_all(
         let model = &mut *guard;
         vocab_before = model.facet.vocabulary_size();
         if do_curriculum {
-            let cur = crate::curriculum::ChildCurriculum::new();
+            let cur = phient::train::curriculum::ChildCurriculum::new();
             if !cur.stages.is_empty() {
-                let chunks = crate::chunker::ChunkStore::new("data/chunks");
+                let chunks = phient::train::chunker::ChunkStore::new("data/chunks");
                 let r = cur.run(&mut model.facet, &model.trainer, &chunks);
                 curriculum_sentences = r.sentences_trained;
             }
         }
         if do_dialogue {
-            let src = crate::sources::dialogue::DialogueSource::default_curriculum();
+            let src = phient::train::sources::dialogue::DialogueSource::default_curriculum();
             dialogues_trained = src.learn_into_facet(&mut model.facet, &mut model.memo, &model.trainer);
         }
         if do_phi4 {

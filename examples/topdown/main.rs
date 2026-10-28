@@ -48,12 +48,12 @@ use types::*;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::metrics::relation::{CountFloor, RelationBenchmark};
-use phiano::metrics::sentence::SentenceBenchmark;
+use phient::metrics::harness::Harness;
+use phient::metrics::relation::{CountFloor, RelationBenchmark};
+use phient::metrics::sentence::SentenceBenchmark;
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, DescentReport, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, DescentReport, Up};
+use phient::train::trainer::Trainer;
 
 fn main() {
     let Setup { seed, corpus } = setup();

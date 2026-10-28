@@ -28,12 +28,12 @@ use train::*;
 #[allow(unused_imports)]
 use verdict::*;
 
-use phiano::chunker::ChunkStore;
-use phiano::core::grounding::DefinitionGrounder;
+use phient::train::chunker::ChunkStore;
+use phient::train::grounding::DefinitionGrounder;
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::relation::{RelationBenchmark, RelationFamily, RelationReport};
-use phiano::trainer::Trainer;
+use phient::metrics::relation::{RelationBenchmark, RelationFamily, RelationReport};
+use phient::train::trainer::Trainer;
 
 fn main() {
     let families = RelationBenchmark::default_families();

@@ -1,9 +1,9 @@
 use phiano::config::CHROMA_FILE;
-use phiano::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator};
-use phiano::storage::Storage;
-use phiano::trainer::Trainer;
+use phiecs::phasor::facet::storage::Storage;
+use phient::train::trainer::Trainer;
 
 const PROMPTS: &[&str] = &[
     "the cat sat on the mat",

@@ -5,16 +5,16 @@ use super::*;
 
 /// Novelty distance scaling factor.
 /// novelty = 1 - exp(-distance × NOVELTY_SCALE)
-pub const NOVELTY_SCALE: f64 = 0.3;
+pub use phient::eval::constants::NOVELTY_SCALE;
 
 /// Coherence weight in overall eval score.
-pub const EVAL_WEIGHT_COHERENCE: f64 = 0.4;
+pub use phient::eval::constants::EVAL_WEIGHT_COHERENCE;
 
 /// Novelty weight in overall eval score.
-pub const EVAL_WEIGHT_NOVELTY: f64 = 0.3;
+pub use phient::eval::constants::EVAL_WEIGHT_NOVELTY;
 
 /// Resonance weight in overall eval score.
-pub const EVAL_WEIGHT_RESONANCE: f64 = 0.3;
+pub use phient::eval::constants::EVAL_WEIGHT_RESONANCE;
 
 // ── RAY CASTING ────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ pub const SYNTAX_LAG_DEFAULT: f64 = SYNTACTIC_LAG_BETA;
 pub use phiecs::phasor::facet::SYNTAX_LAG_LEARN_RATE;
 
 /// Anti-phase pulse applied to a misunderstood concept (π radians).
-pub const PHASE_REPULSION: f64 = std::f64::consts::PI;
+pub use phient::train::constants::PHASE_REPULSION;
 
 /// Candidate pool size for torus attractor decoding.
 pub const TORUS_DECODE_POOL: usize = 48;
@@ -49,7 +49,7 @@ pub const DEFAULT_CONTEXT_WINDOW: usize = 4096;
 pub const DEFAULT_REASONING_STEPS: usize = 5;
 
 /// Default syntactic forward phase momentum velocity.
-pub const SYNTACTIC_MOMENTUM_DEFAULT: f64 = 0.15;
+pub use phiecs::phasor::facet::constants::SYNTACTIC_MOMENTUM_DEFAULT;
 
 /// Default definition chain search depth.
 pub const DEFINITION_CHAIN_DEPTH: usize = 3;

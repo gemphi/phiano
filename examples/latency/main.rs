@@ -36,15 +36,15 @@ use path::*;
 #[allow(unused_imports)]
 use pct::*;
 
-use phiano::chunker::ChunkStore;
-use phiano::conception::Conception;
+use phient::train::chunker::ChunkStore;
+use phient::train::conception::Conception;
 use phiano::config::LEARNING_RATE;
-use phiano::correction::CorrectionLog;
-use phiano::metrics::harness::Harness;
+use phient::train::correction::CorrectionLog;
+use phient::metrics::harness::Harness;
 use phiano::phasor::SpectralPhasor;
-use phiano::sources::definition_core;
+use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use std::time::{Duration, Instant};
 
 fn main() {

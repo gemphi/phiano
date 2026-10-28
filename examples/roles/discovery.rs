@@ -12,7 +12,7 @@ use super::*;
 /// clusterer never sees. If the discovered clusters line up with those labels
 /// above chance, the types came from the data.
 pub(super) fn discovery_experiment(facet: &Facet) {
-    use phiano::roles::RoleDiscovery;
+    use phient::train::roles::RoleDiscovery;
 
     let families = RelationBenchmark::default_families();
     let mut pairs: Vec<(String, String)> = Vec::new();

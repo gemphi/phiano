@@ -1,6 +1,6 @@
 use crate::command::Context;
 use crate::config;
-use crate::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 
 /// Save - persists or loads the facet to/from disk.
 ///

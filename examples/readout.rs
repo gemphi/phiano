@@ -19,9 +19,9 @@
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, PhianoLM, Split, SweepRow};
+use phient::metrics::harness::{Harness, PhianoLM, Split, SweepRow};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 const BETAS: [f64; 3] = [0.5, 1.0, 2.0];
 const READOUT_LR: f64 = 0.5;

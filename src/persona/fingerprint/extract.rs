@@ -17,7 +17,7 @@ impl Fingerprint {
         let mut n = 0usize;
         for p in facet.lexicon.values() {
             if p.has_evidence() {
-                for (a, b) in sum.iter_mut().zip(crate::phinet::space::encode_side(p, true)) {
+                for (a, b) in sum.iter_mut().zip(phient::net::space::encode_side(p, true)) {
                     *a += b;
                 }
                 n += 1;
@@ -43,7 +43,7 @@ impl Fingerprint {
         if !p.has_evidence() {
             return Wave::word_sector(facet, word);
         }
-        let f: Vec<phistd::c64> = crate::phinet::space::encode_side(p, true).iter().zip(mean).map(|(a, m)| a - m).collect();
+        let f: Vec<phistd::c64> = phient::net::space::encode_side(p, true).iter().zip(mean).map(|(a, m)| a - m).collect();
         Some(phistd::hexagram::hexagram_of(&f) as u16)
     }
 
@@ -73,7 +73,7 @@ impl Fingerprint {
                 for t in sentence_tokens {
                     if let Some(p) = facet.lexicon.get(t) {
                         if p.has_evidence() {
-                            for ((a, b), m) in sum.iter_mut().zip(crate::phinet::space::encode_side(p, true)).zip(&mean) {
+                            for ((a, b), m) in sum.iter_mut().zip(phient::net::space::encode_side(p, true)).zip(&mean) {
                                 *a += b - m;
                             }
                         }

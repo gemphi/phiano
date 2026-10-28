@@ -21,11 +21,11 @@ use measure::*;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, Split};
+use phient::metrics::harness::{Harness, Split};
 use phiano::persona::{PersonaStore, Styles};
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use util::dir_sentences;
 
 const LEXICON: &str = "data/personas.chroma";

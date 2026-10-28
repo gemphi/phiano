@@ -7,7 +7,7 @@ use crate::compose::SectorPalette;
 use crate::config;
 use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 /// Discarder — the "worse" half of the reviewing process.
 ///

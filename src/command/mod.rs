@@ -28,9 +28,9 @@ pub mod wave;
 use crate::core::searle::CognitiveCore;
 use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
-use crate::memory::Memo;
+use phient::memory::Memo;
 use crate::persona::Styles;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 /// Shared context passed to every command handler.
 ///
@@ -49,9 +49,9 @@ pub struct Context<'a> {
     /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: &'a CognitiveCore,
     /// Persisted journal of taught corrections, so they survive a re-ingest.
-    pub corrections: &'a mut crate::correction::CorrectionLog,
+    pub corrections: &'a mut phient::train::correction::CorrectionLog,
     /// Outstanding knowledge gaps, when the caller tracks them.
-    pub gaps: Option<&'a crate::envision::GapLedger>,
+    pub gaps: Option<&'a phient::train::envision::GapLedger>,
     /// The argument string after the command name (trimmed).
     pub arg: &'a str,
     /// The full raw input line.

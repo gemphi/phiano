@@ -7,7 +7,7 @@
 //! magnitude inert, and named that reason too: one amplitude per word factors
 //! out of a normalised comparison exactly.
 //!
-//! [`phiano::relational`] fixes both. A word carries a phase *and a magnitude*
+//! [`phiecs::phasor::relational`] fixes both. A word carries a phase *and a magnitude*
 //! per channel; channel `r` belongs to relation `r`; an observation moves the
 //! channel of the relation it observed and no other. The relations come from the
 //! text — relative offset, and the most frequent word standing between a pair.
@@ -27,7 +27,7 @@
 //! # What it found
 //!
 //! On **similarity** the new representation loses, and the module doc for
-//! [`phiano::relational`] says why: relation-specific channels make comparison
+//! [`phiecs::phasor::relational`] says why: relation-specific channels make comparison
 //! sparse, and sparse comparison loses to dense averaging when the question is
 //! "are these two words alike" — 38.8% for the best single dimension against
 //! 61.5% for the shipped mean of sixty-four.
@@ -105,16 +105,16 @@ use closing::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::metrics::relation::{RelationBenchmark, RelationFamily};
+use phient::metrics::harness::Harness;
+use phient::metrics::relation::{RelationBenchmark, RelationFamily};
 use phiano::phasor::fnv1a;
-use phiano::flow::PhaseFlow;
+use phiecs::phasor::flow::PhaseFlow;
 use phiecs::relation::RelationVocab;
-use phiano::relational::{RelationalFacet, WINDOW};
+use phiecs::phasor::relational::{RelationalFacet, WINDOW};
 use std::collections::HashMap;
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, Up};
+use phient::train::trainer::Trainer;
 
 fn main() {
     let run = setup();

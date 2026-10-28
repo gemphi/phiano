@@ -3,9 +3,9 @@ use std::io::{BufRead, BufReader};
 use std::time::Instant;
 
 use phiano::compose::Composition;
-use phiano::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 fn main() {
     println!("════════════════════════════════════════════════════════════");

@@ -2,7 +2,7 @@
 
 use super::super::SharedModel;
 use super::super::types::*;
-use crate::curriculum::{ChildCurriculum, CurriculumResult};
+use phient::train::curriculum::{ChildCurriculum, CurriculumResult};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Json;
@@ -50,7 +50,7 @@ pub async fn run_curriculum(
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &mut *guard;
     let curriculum = ChildCurriculum::new();
-    let chunk_store = crate::chunker::ChunkStore::new("data/chunks");
+    let chunk_store = phient::train::chunker::ChunkStore::new("data/chunks");
     let result = curriculum.run(&mut model.facet, &model.trainer, &chunk_store);
     Ok(Json(result))
 }

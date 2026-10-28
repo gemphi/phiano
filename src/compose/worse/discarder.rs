@@ -107,7 +107,7 @@ impl Discarder {
         &self,
         facet: &mut Facet,
         trainer: &Trainer,
-        flow: &crate::flow::PhaseFlow,
+        flow: &phiecs::phasor::flow::PhaseFlow,
         lambda: f64,
     ) -> usize {
         let n = flow.trajectory.len();

@@ -18,7 +18,7 @@ impl GenerateCmd {
             match crate::generate::OperatorGuide::load(
                 crate::config::OPERATOR_FILE,
                 ctx.manifold,
-                crate::phinet::space::Sides::Directed,
+                phient::net::space::Sides::Directed,
                 6,
             ) {
                 Ok(guide) => {

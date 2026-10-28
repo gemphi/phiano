@@ -20,7 +20,7 @@ use script::*;
 
 use phiecs::phasor::facet::Facet;
 use phiano::persona::{Dialogue, PersonaStore, Reply, Styles};
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 
 const LEXICON: &str = "data/personas.chroma";
 const STORE: &str = "data/personas.json";

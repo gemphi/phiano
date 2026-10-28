@@ -23,14 +23,15 @@ use types::*;
 use sweep::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::metrics::harness::{Harness, PhianoLM};
-use phiano::metrics::baseline::kn::KneserNey;
-use phiano::phinet::compose::Composition;
-use phiano::phinet::lm::OperatorScorer;
-use phiano::phinet::space::{examples, Example, FunctionSpace, WordFunction};
-use phiano::phinet::{Adam, Fno, FnoConfig};
+use phient::metrics::harness::{Harness, PhianoLM};
+use phient::metrics::baseline::kn::KneserNey;
+use phient::net::compose::Composition;
+use phient::net::lm::OperatorScorer;
+use phient::net::space::{examples, Example, FunctionSpace, WordFunction};
+use phistd::Adam;
+use phical::{Fno, FnoConfig};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use phical::{rank, FrequencySampler};
 
 pub fn run(a: Vec<String>) {

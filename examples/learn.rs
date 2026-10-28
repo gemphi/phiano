@@ -9,10 +9,10 @@
 
 use phiano::config::{LEARNED_FILE, LEARNING_RATE, OPERATOR_FILE};
 use phiano::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
-use phiano::metrics::harness::Harness;
-use phiano::phinet::space::Sides;
+use phient::metrics::harness::Harness;
+use phient::net::space::Sides;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 use phiano::learn::{CANDIDATES, WINDOW};
 use phiano::generate::OperatorGuide;

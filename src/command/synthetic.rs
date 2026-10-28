@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::synthetic::{SyntheticCurriculumPipeline, SyntheticGenerator};
+use phient::train::synthetic::{SyntheticCurriculumPipeline, SyntheticGenerator};
 
 pub struct SyntheticCmd;
 

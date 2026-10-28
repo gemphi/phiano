@@ -22,12 +22,12 @@ use std::io::{BufRead, BufReader};
 use std::time::Instant;
 
 use phiano::config::{CHROMA_FILE, LEARNING_RATE};
-use phiano::curriculum::ChildCurriculum;
-use phiano::eval::Evaluator;
+use phient::train::curriculum::ChildCurriculum;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 fn main() {
     println!("╔══════════════════════════════════════════════════════╗");
@@ -40,7 +40,7 @@ fn main() {
 
     let curriculum = ChildCurriculum::new();
     if !curriculum.stages.is_empty() {
-        let chunk_store = phiano::chunker::ChunkStore::new("data/chunks");
+        let chunk_store = phient::train::chunker::ChunkStore::new("data/chunks");
         let result = curriculum.run(&mut facet, &trainer, &chunk_store);
         println!(
             "  [curriculum] {} stages, {} words, {} sentences ({} ms)",

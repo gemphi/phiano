@@ -1,4 +1,4 @@
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use crate::command::Context;
 
 /// Train - trains the facet from all chunked dictionary files in parallel.

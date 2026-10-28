@@ -29,7 +29,7 @@
 //! # Two manifolds
 //!
 //! The sweep runs on both the bottom-up manifold and the one the downward pass
-//! in [`phiano::topdown`] produced, because those two disagree about whether
+//! in [`phient::train::topdown`] produced, because those two disagree about whether
 //! this project has relational structure at all. The descent tripled analogy
 //! MRR at the same frequency floor — 0.00247 to 0.00814, four times its own
 //! null — while the first run of this sweep found no relation types in the
@@ -58,15 +58,15 @@ use setup::*;
 #[allow(unused_imports)]
 use sweep::*;
 
-use phiano::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, Split};
-use phiano::kinds::{OffsetEstimator, KindTable};
-use phiano::sources::definition_core;
+use phient::metrics::harness::{Harness, Split};
+use phient::train::kinds::{OffsetEstimator, KindTable};
+use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, Up};
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 
 fn main() {

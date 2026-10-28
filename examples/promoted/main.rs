@@ -47,11 +47,11 @@ use types::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, Split};
-use phiano::metrics::relation::{RelationBenchmark, RelationFamily};
+use phient::metrics::harness::{Harness, Split};
+use phient::metrics::relation::{RelationBenchmark, RelationFamily};
 use phiano::phasor::fnv1a;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 fn main() {
     let split = load_split();

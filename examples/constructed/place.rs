@@ -44,7 +44,7 @@ pub(super) fn phase_similarity(a: &Point, b: &Point) -> f64 {
 pub(super) fn pair_vs_random<F: Fn(&Point, &Point) -> f64>(
     points: &HashMap<String, Point>,
     pool: &[&String],
-    families: &[phiano::metrics::relation::RelationFamily],
+    families: &[phient::metrics::relation::RelationFamily],
     sim: F,
     only: Option<&str>,
 ) -> (f64, usize) {

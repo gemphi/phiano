@@ -13,9 +13,9 @@ mod world;
 
 use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Decode, Generator};
-use phiano::metrics::harness::Harness;
-use phiano::metrics::baseline::kn::KneserNey;
-use phiano::storage::Storage;
+use phient::metrics::harness::Harness;
+use phient::metrics::baseline::kn::KneserNey;
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use util::dir_sentences;
 

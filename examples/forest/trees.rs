@@ -108,7 +108,7 @@ const TREES: [[&str; 6]; 16] = [
         "a directory of the facet's tree, coded as a codon",
         "the channel's place on the helix: 64 codons, three bases of four",
         "`ls`, `grep`, `cat` — the file system is the query language",
-        "phiano::helix",
+        "phiecs::phasor::facet::helix",
         "a BVH written to disk: the path names the node, so a lookup is a path walk",
     ],
     [

@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::metrics::baseline::kn::KneserNey;
+use phient::metrics::baseline::kn::KneserNey;
 
 /// A panel of judges, one per persona: a Kneser-Ney trigram model trained on
 /// that writer's own sentences. The reply is read by all of them and the one

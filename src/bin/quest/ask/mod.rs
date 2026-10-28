@@ -11,7 +11,7 @@
 //! `cargo run --release --bin quest_ask <quest.chroma>` reads `word kind`
 //! lines from stdin — `kinds` lists the kinds, `words` the words.
 use phiecs::phasor::facet::Facet;
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 use std::io::BufRead;
 
 pub fn run(a: Vec<String>) {

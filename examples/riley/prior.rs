@@ -38,7 +38,7 @@ pub(super) fn mode_prior_table(d: &Data) {
         })
         .collect();
 
-    let table = OffsetTable::build(facet, pairs, phiano::kinds::OffsetEstimator::Raw);
+    let table = OffsetTable::build(facet, pairs, phient::train::kinds::OffsetEstimator::Raw);
     let modes = table.modes();
     let kept: Vec<(String, String)> = table.pairs().to_vec();
 

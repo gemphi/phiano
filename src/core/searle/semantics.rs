@@ -9,7 +9,7 @@
 //! phase matching) and semantic understanding (definition grounding, coherence).
 
 use super::types::*;
-use crate::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use std::f64::consts::PI;

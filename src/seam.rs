@@ -24,13 +24,14 @@
 use phient::study::arena::Reader;
 
 /// The Phient model: the phasor student and the compiler, one seam.
-pub struct Model {
+/// (`crate::model::Model` is a different thing: the app's whole model.)
+pub struct Seam {
     student: crate::arena::Ecs,
     /// Sentences told, words told — so a demo can say how much it has heard.
     pub heard: (usize, usize),
 }
 
-impl Model {
+impl Seam {
     pub fn fresh() -> Self {
         Self { student: crate::arena::Ecs::new(), heard: (0, 0) }
     }
@@ -71,7 +72,7 @@ impl Model {
     }
 }
 
-impl Default for Model {
+impl Default for Seam {
     fn default() -> Self {
         Self::fresh()
     }
@@ -92,14 +93,14 @@ mod tests {
 
     #[test]
     fn it_learns_on_the_fly_and_computes_what_it_should_not_memorize() {
-        let mut m = Model::fresh();
+        let mut m = Seam::fresh();
         for _ in 0..8 {
             m.tell("the cat sat on the mat");
         }
         assert_eq!(m.heard.0, 8);
         let got = m.continue_from("the cat", 2);
         assert!(!got.is_empty(), "the student continues what it was told: {got:?}");
-        let v = Model::compute("LET start() = VALOF $( RESULTIS 6*7 $)", 10_000);
+        let v = Seam::compute("LET start() = VALOF $( RESULTIS 6*7 $)", 10_000);
         assert!(v.compiled, "{:?}", v.error);
         assert_eq!(v.result, 42);
     }

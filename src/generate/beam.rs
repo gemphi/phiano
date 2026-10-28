@@ -7,7 +7,7 @@ use super::generator::Generator;
 use super::Hypothesis;
 use crate::config::TWO_PI;
 use phiecs::phasor::facet::Facet;
-use crate::flow::PhaseFlow;
+use phiecs::phasor::flow::PhaseFlow;
 use crate::tokenizer::Tokenizer;
 
 impl Generator {

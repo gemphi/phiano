@@ -8,12 +8,12 @@
 //! Reports retention against two measured bounds — a model that saw both
 //! domains together, and one that never saw A at all — under both objectives.
 
-use phiano::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiano::config::LEARNING_RATE;
-use phiano::metrics::forgetting::{ForgettingBenchmark, ForgettingReport};
-use phiano::sources::clean_definition;
+use phient::metrics::forgetting::{ForgettingBenchmark, ForgettingReport};
+use phient::train::sources::clean_definition;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 fn show(label: &str, r: &ForgettingReport) {
     println!("\n=== {} ===", label);

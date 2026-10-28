@@ -20,7 +20,7 @@ mod buffer_tests {
     #[test]
     fn test_generate_with_flow_records_trajectory() {
         let mut facet = Facet::new();
-        let trainer = crate::trainer::Trainer::new(0.05);
+        let trainer = phient::train::trainer::Trainer::new(0.05);
         trainer.train_sentence(&mut facet, "the cat sat on the mat");
         trainer.train_sentence(&mut facet, "the dog sat on the rug");
 
@@ -79,7 +79,7 @@ mod sampling_tests {
 mod operator_guide_tests {
     use super::super::*;
     use phiecs::phasor::facet::Facet;
-    use crate::trainer::Trainer;
+    use phient::train::trainer::Trainer;
 
     /// A guide built from a fresh (untrained) operator changes candidate
     /// scores by a bounded factor and never drops a candidate.
@@ -90,7 +90,7 @@ mod operator_guide_tests {
         for s in ["the cat sat on the mat", "the dog sat on the rug", "a cat and a dog sat"] {
             t.train_sentence(&mut facet, s);
         }
-        let space = crate::phinet::space::FunctionSpace::from_facet(&facet);
+        let space = phient::net::space::FunctionSpace::from_facet(&facet);
         let cfg = phical::FnoConfig { space: space.space(), width: 4, layers: 1, modes: 8, margin: 0.2, lr: 1e-2, tie: phical::Tie::Circle };
         let guide = OperatorGuide { fno: phical::Fno::new(cfg, 3), space, window: 4, weight: OPERATOR_WEIGHT, proposals: 0, widen: 0, prior: Vec::new(), history: Vec::new(), cached: None, novelty: None, anchor: 0.0, anchor_fn: None };
         let g = Generator::deterministic(8, 0.0, 7).with_operator(guide);

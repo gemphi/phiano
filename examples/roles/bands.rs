@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::roles::{Coherence, LexicalRule};
+use phient::train::roles::{Coherence, LexicalRule};
 
 /// Coherence of `n` random pairs from the same vocabulary: the floor each band
 /// is read against.

@@ -1,8 +1,8 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::roles::LexicalRule;
-use phiano::sources::definition_senses;
+use phient::train::roles::LexicalRule;
+use phient::train::sources::definition_senses;
 
 /// Sense counts straight from the dictionary's own numbering, and the
 /// per-sense glosses they came from.

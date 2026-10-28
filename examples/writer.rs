@@ -21,7 +21,7 @@
 //! cargo run --release -p phiano --example writer -- [rounds]
 //! ```
 
-use phiano::scribe::{coin, Memory, Scribe};
+use phient::scribe::{coin, Memory, Scribe};
 use phiano::sys::{Agent, Being, Persona};
 use phiclm::token::{lex, Token};
 use phient::study::Study;

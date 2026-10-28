@@ -1,9 +1,7 @@
 use crate::command::Context;
 use crate::command::Parser;
-use crate::oscillator::{
-    OscillatorField, OscillatorEval, ComparisonResult, SphereView,
-    OscillatorTrainer,
-};
+use phiecs::phasor::oscillator::{OscillatorField, SphereView, OscillatorTrainer};
+use phient::eval::oscillator::{OscillatorEval, ComparisonResult};
 
 
 /// OscillatorCmd - oscillator model commands.

@@ -5,7 +5,7 @@ use super::*;
 pub(super) fn print_footprint(facet: &Facet) {
     let path = std::env::temp_dir().join("phiano_relations_model.chroma");
     let path = path.to_str().unwrap_or("model.chroma");
-    if phiano::storage::Storage::save(facet, path).is_ok() {
+    if phiecs::phasor::facet::storage::Storage::save(facet, path).is_ok() {
         if let Ok(meta) = std::fs::metadata(path) {
             let bytes = meta.len();
             // What the previous string-keyed layout would have cost: every

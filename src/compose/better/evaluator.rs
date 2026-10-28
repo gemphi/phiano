@@ -4,7 +4,7 @@ use super::*;
 impl Evaluator {
     /// Creates a new composer evaluator.
     pub fn new() -> Self {
-        Self { inner: crate::eval::Evaluator::new() }
+        Self { inner: phient::eval::Evaluator::new() }
     }
 
     /// Assigns a composition its coarse subgoal stage.

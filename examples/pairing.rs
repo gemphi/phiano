@@ -3,12 +3,13 @@
 //! `cargo run --release --bin pair_key [corpus] [epochs]`
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
-use phiano::metrics::harness::Harness;
-use phiano::phinet::compose::{Composition, PairKey};
-use phiano::phinet::space::{Example, FunctionSpace, Sides};
-use phiano::phinet::{Adam, Fno, FnoConfig};
+use phient::metrics::harness::Harness;
+use phient::net::compose::{Composition, PairKey};
+use phient::net::space::{Example, FunctionSpace, Sides};
+use phistd::Adam;
+use phical::{Fno, FnoConfig};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 const POOL_FLOOR: u32 = 25;
 

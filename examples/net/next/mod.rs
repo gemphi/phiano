@@ -40,16 +40,17 @@ use types::*;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, PhianoLM, Split};
-use phiano::metrics::baseline::kn::KneserNey;
-use phiano::phinet::compose::Composition;
-use phiano::phinet::joint::{index_examples, write_back, Joint};
-use phiano::phinet::lm::OperatorScorer;
+use phient::metrics::harness::{Harness, PhianoLM, Split};
+use phient::metrics::baseline::kn::KneserNey;
+use phient::net::compose::Composition;
+use phient::net::joint::{index_examples, write_back, Joint};
+use phient::net::lm::OperatorScorer;
 use phical::rank;
-use phiano::phinet::space::{examples, Example, FunctionSpace, WordFunction};
-use phiano::phinet::{Adam, Fno, FnoConfig};
+use phient::net::space::{examples, Example, FunctionSpace, WordFunction};
+use phistd::Adam;
+use phical::{Fno, FnoConfig};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 pub fn run(_a: Vec<String>) {
     let Setup { epochs, split, facet } = setup();

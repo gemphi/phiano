@@ -1,10 +1,10 @@
 use crate::command::Context;
 use crate::command::Parser;
-use crate::sources::json::JsonDictionarySource;
-use crate::sources::local::LocalSource;
-use crate::sources::phi4::Phi4Source;
-use crate::sources::wiktionary::WiktionarySource;
-use crate::sources::DictionarySource;
+use phient::train::sources::json::JsonDictionarySource;
+use phient::train::sources::local::LocalSource;
+use phient::train::sources::phi4::Phi4Source;
+use phient::train::sources::wiktionary::WiktionarySource;
+use phient::train::sources::DictionarySource;
 
 /// Ingest - bulk ingestion of definitions and models from various sources.
 ///
@@ -75,11 +75,11 @@ impl Ingest {
     pub fn dialogue(&self, ctx: &mut Context) -> bool {
         let source = if ctx.arg.is_empty() {
             println!("  ── INGESTING BUILT-IN CONVERSATIONAL CURRICULUM ──");
-            crate::sources::dialogue::DialogueSource::default_curriculum()
+            phient::train::sources::dialogue::DialogueSource::default_curriculum()
         } else {
             let path = Parser::strip_quotes(ctx.arg);
             println!("  ── INGESTING CONVERSATIONAL DIALOGUES FROM: {} ──", path);
-            crate::sources::dialogue::DialogueSource::new(&path)
+            phient::train::sources::dialogue::DialogueSource::new(&path)
         };
 
         let learned_turns = source.learn_into_facet(ctx.manifold, ctx.memory, ctx.trainer);

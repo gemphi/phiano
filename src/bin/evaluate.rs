@@ -7,7 +7,7 @@
 //! training split. The remaining 10% is never touched here — it is reserved for
 //! a single final measurement once the design is frozen.
 
-use phiano::metrics::harness::Harness;
+use phient::metrics::harness::Harness;
 use phiano::tokenizer::Tokenizer;
 
 fn main() {

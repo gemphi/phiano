@@ -1,10 +1,10 @@
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use crate::command::Context;
 use crate::command::Parser;
 use crate::config;
-use crate::sources::api::ApiSource;
-use crate::sources::local::LocalSource;
-use crate::sources::DictionarySource;
+use phient::train::sources::api::ApiSource;
+use phient::train::sources::local::LocalSource;
+use phient::train::sources::DictionarySource;
 
 /// Define - fetches, displays, and learns a word's rich definition.
 ///

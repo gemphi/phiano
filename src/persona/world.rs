@@ -7,7 +7,7 @@ use personas::*;
 
 use phiecs::phasor::facet::Facet;
 use crate::persona::{Fingerprint, Style};
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 use std::fmt;
 

@@ -1,14 +1,14 @@
-use phiano::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiano::config::{CHROMA_FILE, LEARNING_RATE};
-use phiano::curriculum::ChildCurriculum;
-use phiano::eval::Evaluator;
+use phient::train::curriculum::ChildCurriculum;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use phiano::memory::Memo;
-use phiano::sources::dialogue::DialogueSource;
-use phiano::sources::phi4::Phi4Source;
-use phiano::storage::Storage;
+use phient::memory::Memo;
+use phient::train::sources::dialogue::DialogueSource;
+use phient::train::sources::phi4::Phi4Source;
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use phiano::wiki;
 
 fn load_or_new(path: &str) -> Facet {

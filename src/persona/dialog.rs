@@ -12,7 +12,7 @@
 //! it, and by the evaluator; the best is returned with both numbers, so a
 //! transcript can be read with its confidence beside it.
 
-use crate::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Decode, Generator, PersonaPrior};
 use crate::persona::{Fingerprint, Style};

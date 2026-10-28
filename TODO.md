@@ -12,6 +12,9 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 
 ## Duplicates moved out (2026-10-27)
 
+- [x] scribe: moved to `phient::scribe` (it needs only phient and phiclm's keywords).
+- [x] relational: `RelationalPhasor`/`RelationalFacet` moved to `phiecs::phasor::relational`, whole, as the experiment the spectral phasor's evidence was promoted from; `flow` and two examples read it there.
+- [x] eval: `Verdict` renamed `Quality` (phiclm's `Verdict` is a program's compile-and-run result).
 - [x] gemgum: moved to `phiecs::phasor::gemgum`, beside the phasor it reads as light; `compose` and `facet::spectral` call it there.
 - [x] phasor: `SpectralPhasor` lives in `phiecs::phasor::spectral`, beside phiecs's `Phasor`; `crate::phasor` re-exports it, `config` re-exports its five constants, and `physics::Phical::effective_phase` reads `phiton::units::effective_phase`.
 - [x] arena: the readers moved to `phient::lineup` (see above).
@@ -22,20 +25,19 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 
 ## Structure
 
-- [ ] Break the dependency cycle: 15 of the 47 modules use each other (ARCHITECTURE.md, layer 3); it was 25 before the phasor, gemgum, facet and wave moved to phiecs.
-- [ ] The match-not-else-if rule is broken in scribe/mold.rs:30-38, bpe/pretokenize.rs:31, persona/fingerprint/traits.rs:31, eval/verdict.rs:12 and eval/verdict.rs:91.
+- [ ] Break the dependency cycle: 4 of the 19 modules use each other, all app code (compose, generate, learn, persona; ARCHITECTURE.md, layer 2), counted on code, not doc links; command and drivers are a second, small one. It was 25 (counting doc links) before the phasor, facet, wave, storage, memory, eval, metrics and the training cluster moved out.
+- [ ] The match-not-else-if rule is broken in bpe/pretokenize.rs:31, persona/fingerprint/traits.rs:31, eval/verdict.rs:12 and eval/verdict.rs:91.
 - [ ] Whole-module `#![allow(dead_code)]` hides unused parts in metrics, reasoning, synthesis, wiki, curriculum, data, instruction, lifelong and physics.
 
 ## Dead or unwired modules
 
 - [x] extension: nothing used `Extension`/`Slot` but its own tests; phiecs's `Phasor` holds extension channels and `world::SLOTS` the answer slots. Parked in `_temp/phinet-root/phiano-extension/`.
 - [ ] attention: `attention/cross.rs` is never declared (no `mod cross;`), so it is not compiled; the only caller of `Attention::next_words` is the dead `Generator::attention_pick` (generate/steer.rs:13-25).
-- [ ] seam: `seam::Model` has no user outside its test, and `continue_from` never reaches `compute` (seam.rs:26, :68).
+- [ ] seam: `seam::Seam` (was `seam::Model`, renamed off `model::Model`) has no user outside its test, and `continue_from` never reaches `compute` (seam.rs:26, :68).
 - [ ] physics: `Topology` and its shapes are used nowhere outside physics; `spectral_convolution`, `temporal_project`, `curvature` and `sector_to_point` are never called (physics/mod.rs:51, physics/operators.rs:45, :67, physics/manifold.rs:87, :95).
 - [ ] lifelong: `LifelongLearner`, `MetaLearner`, `FeatureReuse` and `ModelMonitor` have no callers; the warm-starts write channel 0 only (lifelong/mod.rs:1, :106, lifelong/meta.rs:84).
 - [ ] synthesis: `ProgramOp::Map`, `Reduce` and `Compose` do nothing; `candidates` enumerates only Sort, Reverse and Identity; `ProgramSynthesizer` and `SynthesisHeuristic` have no callers (synthesis/program.rs:47, :51, synthesis/search.rs:14, :51).
 - [ ] layers: `descend` and `candidates` have no callers; layer 0 is allocated and never filled (layers/phase/field.rs:10, :31, layers/phase/layer.rs:41).
-- [ ] relational: `RelationalPhasor`/`RelationalFacet` are kept only as the isolated experiment (relational.rs:10).
 - [ ] phinum: the Gen-0 model is kept only for the `riley` example, behind the `phinum` feature (lib.rs:44).
 
 ## Correctness
@@ -68,7 +70,6 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 - [ ] storage: says v3 files are written back as v4; save writes v6 (storage/types.rs:162).
 - [ ] phasor: says evidence is 16-bit, packed four to a word; it is 32-bit (phasor/types.rs:135, :158).
 - [ ] phinet: says the engine is the standalone `phinet` crate; the re-exports come from phistd and phical (phinet/mod.rs:5).
-- [ ] relational: cites `bin/relational`, `bin/promoted`, `bin/dimensions`, `bin/constructed`, now under examples/ (relational.rs:11).
 - [ ] sys: links to `sets` (the module is `set`); tells users to run `persona_quest`, a phiecs example (sys.rs:17, sys/race.rs:95, sys/being.rs:17).
 - [ ] command: `benchmark` is dispatched but missing from `help`; two doc comments sit on the wrong items (command/dispatch.rs:68, :76-78, command/cognitive.rs:10).
 - [ ] trainer, wave: docs sit on the wrong items (trainer/build.rs:158, wave/sentence.rs:121).

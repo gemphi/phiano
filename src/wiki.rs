@@ -7,10 +7,10 @@ mod extracts;
 #[allow(unused_imports)]
 use extracts::*;
 
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 /// A curated set of topics for comprehensive knowledge ingestion.
 /// Organized by domain for structured learning.

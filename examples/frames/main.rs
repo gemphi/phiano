@@ -98,11 +98,11 @@ use prior::*;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
-use phiano::metrics::harness::Harness;
-use phiano::kinds::{OffsetEstimator, OffsetTable};
+use phient::metrics::harness::Harness;
+use phient::train::kinds::{OffsetEstimator, OffsetTable};
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, Up};
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 
 fn main() {

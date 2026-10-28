@@ -1,9 +1,9 @@
 //! Benchmark command: runs all metrics and prints a comprehensive report.
 
 use crate::command::Context;
-use crate::metrics::benchmark::runner::BenchmarkRunner;
-use crate::metrics::benchmark::runner::BenchmarkReport;
-use crate::lifelong::history::BenchmarkHistory;
+use phient::metrics::benchmark::runner::BenchmarkRunner;
+use phient::metrics::benchmark::runner::BenchmarkReport;
+use phient::train::lifelong::history::BenchmarkHistory;
 
 pub struct Benchmark;
 

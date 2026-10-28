@@ -15,10 +15,10 @@
 //! the floor, not the result.
 
 use phiano::config::LEARNING_RATE;
-use phiano::metrics::harness::Harness;
-use phiano::metrics::sentence::{SentenceBenchmark, CANDIDATES, CONTEXT_LEN};
+use phient::metrics::harness::Harness;
+use phient::metrics::sentence::{SentenceBenchmark, CANDIDATES, CONTEXT_LEN};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 /// Groups consecutive sentences into documents of `n`.
 ///

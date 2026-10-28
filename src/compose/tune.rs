@@ -4,7 +4,7 @@ use crate::compose::worse::Discarder;
 use crate::compose::{SectorPalette, Composition};
 use crate::config;
 use phiecs::phasor::facet::Facet;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 /// CompositionTuner - the "Monitor" in the Flower-Hayes model.
 ///
@@ -172,7 +172,7 @@ impl CompositionTuner {
             .map(|s| (s.sector, s.score))
             .collect();
 
-        let eval = crate::eval::Evaluator::new().eval(facet, &winner.text);
+        let eval = phient::eval::Evaluator::new().eval(facet, &winner.text);
 
         Composition {
             prompt: prompt.to_string(),

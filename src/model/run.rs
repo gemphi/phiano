@@ -53,7 +53,7 @@ impl Model {
         // Replay what the user taught. Grounding and bootstrap both rewrite
         // phases from source data, which would otherwise silently undo every
         // correction the user has ever made.
-        let corrections = crate::correction::CorrectionLog::load(config::CORRECTION_FILE);
+        let corrections = phient::train::correction::CorrectionLog::load(config::CORRECTION_FILE);
         if !corrections.is_empty() {
             let trainer = Trainer::new(config::LEARNING_RATE);
             let n = corrections.replay(&mut facet, &trainer);
@@ -81,7 +81,7 @@ impl Model {
     pub(super) fn bootstrap_bigrams(facet: &mut Facet) {
         use std::time::Instant;
         let start = Instant::now();
-        let chunk_store = crate::chunker::ChunkStore::new("data/chunks");
+        let chunk_store = phient::train::chunker::ChunkStore::new("data/chunks");
         let entries = chunk_store.load_all();
         if entries.is_empty() {
             return;

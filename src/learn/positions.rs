@@ -36,7 +36,7 @@ pub fn corpus_positions(
             let start = i.saturating_sub(WINDOW);
             let ctx = &toks[start..i];
             let target_phase = phiecs::phasor::wave::Wave::sentence(facet, ctx).arg().rem_euclid(std::f64::consts::TAU);
-            let mut flow = crate::flow::PhaseFlow::build(facet, &ctx.join(" "));
+            let mut flow = phiecs::phasor::flow::PhaseFlow::build(facet, &ctx.join(" "));
             flow.propagate(2);
             let recent: std::collections::HashSet<&String> = toks[i.saturating_sub(12)..i].iter().collect();
             if let Some(g) = guide.as_mut() {

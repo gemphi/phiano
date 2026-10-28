@@ -92,7 +92,7 @@ fn learn_unknown_definitions(
         return Ok(0);
     }
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let chunk_store = crate::chunker::ChunkStore::new(CHUNK_STORE_DIR);
+    let chunk_store = phient::train::chunker::ChunkStore::new(CHUNK_STORE_DIR);
     let model = &mut *guard;
     let mut count = 0;
     for word in unknown {

@@ -15,7 +15,7 @@ pub(super) fn recursive_composition(op: &Operator, epochs: usize) {
     println!(
         "  {} composable words ({} roles each), {} to train the cleanup, {} held out; chance MRR {:.4}",
         n,
-        phiano::phinet::compose::ROLES,
+        phient::net::compose::ROLES,
         train_w.len(),
         test_w.len(),
         chance

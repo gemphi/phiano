@@ -5,18 +5,18 @@ use run::*;
 #[allow(unused_imports)]
 use iterate::*;
 
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use crate::command::{Context, Dispatcher};
 use crate::config;
 use crate::core::searle::CognitiveCore;
-use crate::core::grounding::DefinitionGrounder;
-use crate::envision::Envision;
+use phient::train::grounding::DefinitionGrounder;
+use phient::train::envision::Envision;
 use phiecs::phasor::facet::Facet;
-use crate::memory::Memo;
+use phient::memory::Memo;
 use crate::persona::Styles;
-use crate::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 use crate::tokenizer::Tokenizer;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use rustyline::Editor;
 use rustyline::history::DefaultHistory;
 use std::fs;
@@ -46,7 +46,7 @@ pub struct Model {
     /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: CognitiveCore,
     /// Journal of taught corrections, replayed after grounding.
-    pub corrections: crate::correction::CorrectionLog,
+    pub corrections: phient::train::correction::CorrectionLog,
     /// Gap detection, carrying its ledger across turns.
     pub envisioner: Envision,
     /// Local dictionary, consulted before the user is asked about a gap.

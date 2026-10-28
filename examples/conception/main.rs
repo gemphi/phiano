@@ -50,18 +50,18 @@ use report::*;
 #[allow(unused_imports)]
 use seeds::*;
 
-use phiano::chunker::ChunkStore;
-use phiano::core::grounding::DefinitionGrounder;
-use phiano::conception::{
+use phient::train::chunker::ChunkStore;
+use phient::train::grounding::DefinitionGrounder;
+use phient::train::conception::{
     Conception, DefinitionGraph, ANCHOR, BETA_STRONG, BETA_WEAK, HEAD_STEP, REINFORCE,
 };
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, Split};
-use phiano::metrics::relation::RelationBenchmark;
-use phiano::sources::definition_core;
+use phient::metrics::harness::{Harness, Split};
+use phient::metrics::relation::RelationBenchmark;
+use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 fn main() {
     let s = setup();

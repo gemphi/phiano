@@ -21,19 +21,10 @@ use super::*;
 /// It is a different fix from the golden angle rather than a replacement for
 /// it, and like everything else here it is a switch with a measurement behind
 /// it, not an assertion.
-pub const CHANNEL_PRIMES: [u32; 64] = [
-    2, 3, 5, 7, 11, 13, 17, 19,
-    23, 29, 31, 37, 41, 43, 47, 53,
-    59, 61, 67, 71, 73, 79, 83, 89,
-    97, 101, 103, 107, 109, 113, 127, 131,
-    137, 139, 149, 151, 157, 163, 167, 173,
-    179, 181, 191, 193, 197, 199, 211, 223,
-    227, 229, 233, 239, 241, 251, 257, 263,
-    269, 271, 277, 281, 283, 293, 307, 311,
-];
+pub use phient::train::constants::CHANNEL_PRIMES;
 
 /// Use prime-spaced channel frequencies instead of the linear ramp.
-pub const PRIME_CHANNEL_SPACING: bool = true;
+pub use phient::metrics::kernel::PRIME_CHANNEL_SPACING;
 
 /// Modulus the prime frequencies are taken against.
 ///
@@ -54,4 +45,4 @@ pub const PRIME_CHANNEL_SPACING: bool = true;
 /// them. A large modulus keeps every frequency slow and well-separated while
 /// leaving them pairwise incommensurate, which is what the primes were for.
 /// 4099 is prime, so no channel's period divides another's.
-pub const PRIME_MODULUS: f64 = 4099.0;
+pub use phient::train::constants::PRIME_MODULUS;

@@ -134,17 +134,17 @@ use prior::*;
 #[allow(unused_imports)]
 use chance::*;
 
-use phiano::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
+use phient::metrics::harness::Harness;
 use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
 use phiano::phasor::{fnv1a, mix64};
-use phiano::kinds::OffsetTable;
-use phiano::sources::definition_core;
+use phient::train::kinds::OffsetTable;
+use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
-use phiano::topdown::{Descent, Up};
-use phiano::trainer::Trainer;
+use phient::train::topdown::{Descent, Up};
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 
 fn main() {

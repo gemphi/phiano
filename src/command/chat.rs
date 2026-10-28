@@ -98,7 +98,7 @@ impl ChatCmd {
                 match rest.split_once('|') {
                     Some((wrong, correct)) => {
                         let (wrong, correct) = (wrong.trim(), correct.trim());
-                        let evaluator = crate::eval::Evaluator::new();
+                        let evaluator = phient::eval::Evaluator::new();
                         let before = evaluator.eval(ctx.manifold, wrong).coherence;
 
                         ctx.trainer.correct_graded(

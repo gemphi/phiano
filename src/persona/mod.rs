@@ -11,7 +11,7 @@ pub use impersonate::Impersonator;
 pub use world::Styles;
 
 use phiecs::phasor::facet::Facet;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use std::fmt;
 
 /// Style - a persona's learned style fingerprint in the phase manifold.

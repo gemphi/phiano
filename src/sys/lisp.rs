@@ -1,10 +1,7 @@
-//! A small Lisp over the sets (docs/165): McCarthy's machine on Russell's
-//! algebra on Wittgenstein's counts. An S-expression is a list; a row is
-//! `(kind about other)`; a relation is a set of pairs; the primitives are
-//! the whole of [`super::sets`], plus `held`, `ask` and `tell` on the
-//! personas and `next` and `says` on a sets folder. Nothing here infers:
-//! the machine computes over what was told, and only `tell` changes a
-//! world.
+//! The Lisp's phiano host (docs/165, docs/phiclm/lisp): the machine is
+//! `phiclm::lisp`; phiano plugs in its world — the personas (`held`,
+//! `ask`, `tell`, `told`, `beings`) and the stories' scopes (`scopes`,
+//! `next`, `says`). Nothing here infers; only `tell` changes a world.
 //!
 //! ```text
 //! (meet (held bertrand-russell is-a) (held whitehead is-a))
@@ -13,147 +10,94 @@
 //! (tell claude mortal is-a)
 //! ```
 
-mod eval;
-mod prims;
 #[cfg(test)]
 mod tests;
 
-pub use eval::{Env, Machine};
+pub use phiclm::lisp::{read, Env, Value};
 
-use super::set::{Class, Relation};
-use std::fmt;
+use super::set::held;
+use super::trace::Scope;
+use super::{Agent, Being, Row};
+use phiclm::lisp::{arg, as_relation, as_text, Host};
+use std::collections::BTreeMap;
 
-/// What the machine passes around.
-#[derive(Clone, Debug, PartialEq)]
-pub enum Value {
-    Nil,
-    Bool(bool),
-    Num(f64),
-    Str(String),
-    Sym(String),
-    List(Vec<Value>),
-    Relation(Relation),
-    Class(Class),
-    /// `(lambda (params) body)` with the frames it closed over.
-    Lambda(Vec<String>, Box<Value>, Env),
-    Prim(&'static str),
+/// The machine with phiano's world plugged in.
+pub type Machine = phiclm::lisp::Machine<Sys>;
+
+/// Phiano's world, as the machine's host: the personas by slug, and the
+/// stories' scopes by path.
+#[derive(Default)]
+pub struct Sys {
+    pub scopes: BTreeMap<String, Scope>,
+    pub beings: BTreeMap<String, Being>,
 }
 
-impl Value {
-    pub fn truthy(&self) -> bool {
-        !matches!(self, Value::Nil | Value::Bool(false))
-    }
-    /// A symbol or string as text; a number as its digits.
-    pub fn text(&self) -> Option<String> {
-        match self {
-            Value::Sym(s) | Value::Str(s) => Some(s.clone()),
-            Value::Num(n) => Some(n.to_string()),
-            _ => None,
+const NAMES: [&str; 8] = ["next", "says", "scopes", "held", "ask", "tell", "told", "beings"];
+
+/// Personas and scopes onto a machine, as the REPL and the tests build one.
+pub trait Stage {
+    fn with_beings(self, beings: Vec<Being>) -> Self;
+    fn with_scopes(self, scopes: BTreeMap<String, Scope>) -> Self;
+}
+
+impl Stage for Machine {
+    fn with_beings(mut self, beings: Vec<Being>) -> Self {
+        for b in beings {
+            self.host.beings.insert(b.persona.slug(), b);
         }
+        self
+    }
+
+    fn with_scopes(mut self, scopes: BTreeMap<String, Scope>) -> Self {
+        self.host.scopes = scopes;
+        self
     }
 }
 
-impl fmt::Display for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Value::Nil => write!(f, "()"),
-            Value::Bool(b) => write!(f, "{}", if *b { "#t" } else { "#f" }),
-            Value::Num(n) => write!(f, "{n}"),
-            Value::Str(s) => write!(f, "{s:?}"),
-            Value::Sym(s) => write!(f, "{s}"),
-            Value::List(v) => write!(f, "({})", v.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")),
-            Value::Relation(p) => {
-                let shown: Vec<String> = p.iter().take(8).map(|(a, b)| format!("({a} {b})")).collect();
-                write!(f, "#pairs[{}]{{{}{}}}", p.len(), shown.join(" "), if p.len() > 8 { " …" } else { "" })
-            }
-            Value::Class(c) => {
-                let shown: Vec<&str> = c.iter().take(12).map(String::as_str).collect();
-                write!(f, "#class[{}]{{{}{}}}", c.len(), shown.join(" "), if c.len() > 12 { " …" } else { "" })
-            }
-            Value::Lambda(p, _, _) => write!(f, "#lambda({})", p.join(" ")),
-            Value::Prim(n) => write!(f, "#prim:{n}"),
+impl Sys {
+    fn being(&mut self, v: &Value, name: &str) -> Result<&mut Being, String> {
+        let who = v.text().ok_or_else(|| format!("{name}: who?"))?.to_lowercase().replace(' ', "-");
+        let key = self.beings.keys().find(|k| **k == who || k.split('-').any(|w| w == who)).cloned().ok_or_else(|| format!("{name}: no persona {who}"))?;
+        Ok(self.beings.get_mut(&key).unwrap())
+    }
+}
+
+impl Host for Sys {
+    fn names(&self) -> &'static [&'static str] {
+        &NAMES
+    }
+
+    fn call(&mut self, name: &'static str, a: Vec<Value>) -> Result<Value, String> {
+        let p = |i: usize| as_relation(arg(&a, i, name)?);
+        let t = |i: usize| as_text(&a, i, name);
+        Ok(match name {
+        "next" => {
+            let path = t(0)?;
+            Value::Relation(self.scopes.get(&path).map(|sc| sc.pairs()).ok_or_else(|| format!("no scope {path}"))?)
         }
-    }
-}
-
-/// Read every S-expression in `src`.
-pub fn read(src: &str) -> Result<Vec<Value>, String> {
-    let toks = tokens(src);
-    let mut i = 0;
-    let mut out = Vec::new();
-    while i < toks.len() {
-        out.push(parse(&toks, &mut i)?);
-    }
-    Ok(out)
-}
-
-fn tokens(src: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut cur = String::new();
-    let mut chars = src.chars().peekable();
-    while let Some(c) = chars.next() {
-        match c {
-            ';' => while chars.next_back_or_skip_line() {},
-            '(' | ')' | '\'' => {
-                if !cur.is_empty() {
-                    out.push(std::mem::take(&mut cur));
-                }
-                out.push(c.to_string());
-            }
-            '"' => {
-                let mut s = String::from("\"");
-                for d in chars.by_ref() {
-                    s.push(d);
-                    if d == '"' {
-                        break;
-                    }
-                }
-                out.push(s);
-            }
-            c if c.is_whitespace() => {
-                if !cur.is_empty() {
-                    out.push(std::mem::take(&mut cur));
-                }
-            }
-            c => cur.push(c),
+        "says" => {
+            let path = t(0)?;
+            Value::Class(self.scopes.get(&path).map(|sc| sc.says.keys().cloned().collect()).ok_or_else(|| format!("no scope {path}"))?)
         }
-    }
-    if !cur.is_empty() {
-        out.push(cur);
-    }
-    out
-}
-
-trait SkipLine {
-    fn next_back_or_skip_line(&mut self) -> bool;
-}
-impl<I: Iterator<Item = char>> SkipLine for std::iter::Peekable<I> {
-    /// Consume to the end of the line (a `;` comment); false when done.
-    fn next_back_or_skip_line(&mut self) -> bool {
-        matches!(self.next(), Some(c) if c != '\n')
-    }
-}
-
-fn parse(toks: &[String], i: &mut usize) -> Result<Value, String> {
-    let t = toks.get(*i).ok_or("unexpected end")?;
-    *i += 1;
-    match t.as_str() {
-        "(" => {
-            let mut v = Vec::new();
-            while toks.get(*i).map(String::as_str) != Some(")") {
-                if *i >= toks.len() {
-                    return Err("missing )".into());
-                }
-                v.push(parse(toks, i)?);
-            }
-            *i += 1;
-            Ok(if v.is_empty() { Value::Nil } else { Value::List(v) })
+        "scopes" => Value::List(self.scopes.keys().map(|k| Value::Str(k.clone())).collect()),
+        "held" => {
+            let kind = t(1)?;
+            Value::Relation(held(self.being(arg(&a, 0, name)?, name)?, &kind))
         }
-        ")" => Err("unexpected )".into()),
-        "'" => Ok(Value::List(vec![Value::Sym("quote".into()), parse(toks, i)?])),
-        "#t" => Ok(Value::Bool(true)),
-        "#f" => Ok(Value::Bool(false)),
-        s if s.starts_with('"') => Ok(Value::Str(s.trim_matches('"').to_string())),
-        s => Ok(s.parse::<f64>().map(Value::Num).unwrap_or_else(|_| Value::Sym(s.to_string()))),
+        "ask" => {
+            let (word, kind) = (t(1)?, t(2)?);
+            Value::List(self.being(arg(&a, 0, name)?, name)?.ask(&word, &kind).into_iter().map(|(o, w)| Value::List(vec![Value::Str(o), Value::Num(w)])).collect())
+        }
+        "tell" => {
+            let (rel, kind) = (p(1)?, t(2)?);
+            let b = self.being(arg(&a, 0, name)?, name)?;
+            let rows: Vec<Row> = rel.iter().map(|(x, y)| Row::new(x, &kind, y)).collect();
+            b.tell(&rows);
+            Value::Num(rows.len() as f64)
+        }
+        "told" => Value::Num(self.being(arg(&a, 0, name)?, name)?.told() as f64),
+        "beings" => Value::List(self.beings.keys().map(|k| Value::Sym(k.clone())).collect()),
+            other => return Err(format!("unknown primitive {other}")),
+        })
     }
 }

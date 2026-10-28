@@ -11,12 +11,12 @@ mod world;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::metrics::baseline::kn::KneserNey;
+use phient::metrics::harness::Harness;
+use phient::metrics::baseline::kn::KneserNey;
 use phiano::persona::Impersonator;
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use util::dir_sentences;
 
 fn main() {

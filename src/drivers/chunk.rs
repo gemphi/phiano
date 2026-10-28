@@ -1,4 +1,4 @@
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use crate::command::Context;
 use crate::command::Parser;
 

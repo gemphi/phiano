@@ -39,7 +39,7 @@ pub use reasoning::{Chain, ChainOfThought, Thought};
 #[allow(unused_imports)]
 pub use selection::WordSelector;
 
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiecs::phasor::facet::Facet;
 use crate::generate::ContextWaveBuffer;
 

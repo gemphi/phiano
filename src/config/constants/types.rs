@@ -58,7 +58,7 @@ pub const COLOR_BANDS: u16 = 16;
 
 /// Kuramoto learning rate for phase relaxation.
 /// Recommended range: [0.01, 0.15]. Default: 0.05 (balanced).
-pub const LEARNING_RATE: f64 = 0.05;
+pub use phient::train::constants::LEARNING_RATE;
 
 /// Kuramoto-Sakaguchi asymmetric syntax phase lag (β = π/16).
 /// Enforces time-ordered syntactic flow in sequences.
@@ -70,7 +70,7 @@ pub const ANTI_PHASE_PULSE: f64 = PI_CONST;
 
 /// Phase convergence threshold - when |sin(φ_target - φ_old)| < this,
 /// band_n is incremented (prevents phase collapse).
-pub const CONVERGENCE_THRESHOLD: f64 = 0.0005;
+pub use phient::train::constants::CONVERGENCE_THRESHOLD;
 
 /// Amplitude increment per learning epoch (familiarity growth).
 pub const AMPLITUDE_INCREMENT: f64 = 0.001;
@@ -151,22 +151,22 @@ pub const IMPERSONATE_ADJACENT_FIT_FACTOR: f64 = 0.5;
 // ── OSCILLATOR PARAMETERS ──────────────────────────────────────────────────
 
 /// Frequency scaling factor for oscillator rotation speed.
-pub const OSCILLATOR_FREQ_SCALE: f64 = 100.0;
+pub use phiton::physics::oscillator::OSCILLATOR_FREQ_SCALE;
 
 /// Frequency tolerance for synchronization.
-pub const OSCILLATOR_FREQ_TOLERANCE: f64 = 5.0;
+pub use phiton::physics::oscillator::OSCILLATOR_FREQ_TOLERANCE;
 
 /// Latitude scaling - maps amplitude to latitude on the sphere.
-pub const OSCILLATOR_LAT_SCALE: f64 = 4.0;
+pub use phiton::physics::oscillator::OSCILLATOR_LAT_SCALE;
 
 /// Number of latitude bands shown in sphere projection.
-pub const OSCILLATOR_LATITUDE_BANDS: usize = 8;
+pub use phiton::physics::oscillator::OSCILLATOR_LATITUDE_BANDS;
 
 /// Warmup steps for oscillator training (gradual LR ramp-up).
-pub const OSCILLATOR_WARMUP_STEPS: usize = 4;
+pub use phiton::physics::oscillator::OSCILLATOR_WARMUP_STEPS;
 
 /// Weight decay for oscillator training (amplitude regularization).
-pub const OSCILLATOR_WEIGHT_DECAY: f64 = 0.001;
+pub use phiton::physics::oscillator::OSCILLATOR_WEIGHT_DECAY;
 
 /// Convergence delta for oscillator training (stop if improvement < this).
-pub const OSCILLATOR_CONVERGENCE_DELTA: f64 = 0.0005;
+pub use phiton::physics::oscillator::OSCILLATOR_CONVERGENCE_DELTA;

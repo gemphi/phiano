@@ -36,7 +36,7 @@ impl Scope {
     }
 
     /// The next relation as a set of pairs, for [`super::sets`].
-    pub fn pairs(&self) -> super::set::Relation {
+    pub fn pairs(&self) -> phiclm::lisp::set::Relation {
         self.next.keys().cloned().collect()
     }
 }
@@ -91,11 +91,11 @@ pub fn summary(scopes: &BTreeMap<String, Scope>, path: &str) -> String {
     };
     children.sort_by_key(|s| key(s));
     let mut out = format!("## {path}\n\n| scope | words said | distinct | next pairs | meet with previous | union with previous |\n|---|---|---|---|---|---|\n");
-    let mut prev: Option<super::set::Relation> = None;
+    let mut prev: Option<phiclm::lisp::set::Relation> = None;
     for c in children {
         let p = c.pairs();
         let (meet, union) = match &prev {
-            Some(q) => (super::set::meet(&p, q).len().to_string(), super::set::union(&p, q).len().to_string()),
+            Some(q) => (phiclm::lisp::set::meet(&p, q).len().to_string(), phiclm::lisp::set::union(&p, q).len().to_string()),
             None => ("–".into(), "–".into()),
         };
         out.push_str(&format!("| {} | {} | {} | {} | {meet} | {union} |\n", &c.path[prefix.len()..], c.trace.len(), c.says.len(), c.next.len()));
@@ -121,7 +121,7 @@ mod tests {
         assert_eq!(ch1.next[&("the".into(), "cat".into())], 2);
         assert_eq!(ch1.trace.len(), 6);
         let (p1, p2) = (sc["scope:text/tale/ch1/p1"].pairs(), sc["scope:text/tale/ch1/p2"].pairs());
-        assert_eq!(crate::sys::set::meet(&p1, &p2).len(), 1, "they share `the cat`");
+        assert_eq!(phiclm::lisp::set::meet(&p1, &p2).len(), 1, "they share `the cat`");
         let dir = std::env::temp_dir().join(format!("phinet-sets-{}", std::process::id()));
         assert_eq!(write(&dir, &sc).unwrap(), 5);
         assert!(dir.join("text/tale/ch1/p2/trace.txt").exists());

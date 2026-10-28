@@ -10,7 +10,7 @@ pub async fn define_word(
 
     // Multi-stage blocking auto-feed & lemmatization lookup
     let (source, final_def, plain_defs) = tokio::task::spawn_blocking(move || {
-        let api = crate::sources::api::ApiSource::new(crate::config::API_CACHE_FILE);
+        let api = phient::train::sources::api::ApiSource::new(crate::config::API_CACHE_FILE);
 
         // Stage 1: Exact Free Dictionary API lookup
         if let Some(rich) = api.fetch_word_rich(&word_clone) {
@@ -19,7 +19,7 @@ pub async fn define_word(
         }
 
         // Stage 2: Exact Offline 102K ChunkStore lookup
-        let chunker = crate::chunker::ChunkStore::new("data/chunks");
+        let chunker = phient::train::chunker::ChunkStore::new("data/chunks");
         if let Some(chunk_def) = chunker.load_definition(&word_clone) {
             return (
                 "Offline Webster's Unabridged Dictionary".to_string(),
@@ -29,7 +29,7 @@ pub async fn define_word(
         }
 
         // Stage 3: Morphological Lemmatization (e.g. warmed -> warm, coins -> coin)
-        let lemmas = crate::sources::api::ApiSource::lemmatize_candidates(&word_clone);
+        let lemmas = phient::train::sources::api::ApiSource::lemmatize_candidates(&word_clone);
         for (stem, label) in &lemmas {
             // Check API for stem
             if let Some(stem_rich) = api.fetch_word_rich(stem) {
@@ -50,7 +50,7 @@ pub async fn define_word(
         }
 
         // Stage 5: Local Definitions Cache fallback
-        let loc = crate::sources::local::LocalSource::new(crate::config::DEFINITIONS_FILE);
+        let loc = phient::train::sources::local::LocalSource::new(crate::config::DEFINITIONS_FILE);
         let local_defs = loc.fetch_definitions(&word_clone);
         if !local_defs.is_empty() {
             return ("Local Definitions Cache".to_string(), local_defs.join("\n"), local_defs);
@@ -91,7 +91,7 @@ pub async fn dialogue_learn(
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &mut *guard;
-    let source = crate::sources::dialogue::DialogueSource::default_curriculum();
+    let source = phient::train::sources::dialogue::DialogueSource::default_curriculum();
     let count = source.learn_into_facet(&mut model.facet, &mut model.memo, &model.trainer);
     Ok(Json(serde_json::json!({
         "dialogues_trained": count,
@@ -105,7 +105,7 @@ pub async fn save_manifold(
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &*guard;
-    crate::storage::Storage::save(&model.facet, "data/manifold.chroma")
+    phiecs::phasor::facet::storage::Storage::save(&model.facet, "data/manifold.chroma")
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let _ = model.memo.save_to_file("data/memory.chroma");
     Ok(Json(serde_json::json!({

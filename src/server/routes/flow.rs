@@ -1,5 +1,5 @@
 use super::super::SharedModel;
-use crate::flow::PhaseFlow;
+use phiecs::phasor::flow::PhaseFlow;
 use axum::extract::State;
 use axum::Json;
 use serde::{Deserialize, Serialize};
@@ -12,9 +12,9 @@ pub struct FlowRequest {
 
 #[derive(Debug, Serialize)]
 pub struct FlowResponse {
-    pub nodes: Vec<crate::flow::FlowNode>,
-    pub edges: Vec<crate::flow::FlowEdge>,
-    pub trajectory: Vec<crate::flow::FlowStep>,
+    pub nodes: Vec<phiecs::phasor::flow::FlowNode>,
+    pub edges: Vec<phiecs::phasor::flow::FlowEdge>,
+    pub trajectory: Vec<phiecs::phasor::flow::FlowStep>,
     pub collective_phase: f64,
     pub momentum: f64,
     pub order_parameter: f64,

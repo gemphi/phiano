@@ -21,7 +21,7 @@ use crate::config;
 use phiecs::phasor::facet::Facet;
 use crate::generate::{ContextWaveBuffer, Decode, Generator};
 use crate::persona::Fingerprint;
-use crate::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 pub struct Impersonator {
     /// How many candidate compositions to draw (was: refinement rounds).
@@ -56,7 +56,7 @@ impl Impersonator {
     /// Composes as the persona: `max_rounds` candidates, the best by
     /// persona likelihood and quality. The lexicon is read, not trained.
     pub fn impersonate_with(&self, facet: &mut Facet, _trainer: &Trainer, fingerprint: &Fingerprint, examples: &[String], persona_name: &str, prompt: &str) -> ImpersonationResult {
-        let eval = crate::eval::Evaluator::new();
+        let eval = phient::eval::Evaluator::new();
         let mut best: Option<(f64, f64, f64, String)> = None;
         let seed0 = phistd::mix64(prompt.len() as u64 ^ 0x5EED);
         for round in 0..self.max_rounds.max(1) {

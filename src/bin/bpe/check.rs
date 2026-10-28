@@ -4,7 +4,7 @@
 //! `tokenizers` (`torch/bpe_parity.py`).
 //!
 //! `cargo run --release --bin bpe_check [vocab_dir] [corpus.txt ...]`
-use phiano::bpe::Bpe;
+use phiton::p64::bpe::Bpe;
 use phiano::tokenizer::Tokenizer;
 use std::collections::HashMap;
 

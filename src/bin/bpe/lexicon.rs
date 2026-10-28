@@ -1,13 +1,13 @@
 //! Words versus Phi-4 pieces as the units on the relation circle, on Austen:
 //! the same trainer, the same directed reading, the same pool floor.
 //! `cargo run --release --bin bpe_lexicon`
-use phiano::bpe::Bpe;
+use phiton::p64::bpe::Bpe;
 use phiano::config::LEARNING_RATE;
-use phiano::metrics::harness::{Harness, Split};
-use phiano::phinet::space::{examples, FunctionSpace, Sides, WordFunction};
+use phient::metrics::harness::{Harness, Split};
+use phient::net::space::{examples, FunctionSpace, Sides, WordFunction};
 use phical::rank;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 use phiano::lab::sentences_of;
 

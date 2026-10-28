@@ -2,8 +2,8 @@
 
 use super::super::SharedModel;
 use crate::reasoning;
-use crate::metrics;
-use crate::lifelong;
+use phient::metrics;
+use phient::train::lifelong;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Json;

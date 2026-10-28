@@ -1,13 +1,13 @@
 //! Sections 6 and 7 of the report: what she composes, and the sixty-four operations.
 
-use phiano::eval::Evaluator;
+use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phiano::generate::{ContextWaveBuffer, Generator, OperatorGuide};
 use phiano::learn::GenWeight;
-use phiano::metrics::harness::Split;
+use phient::metrics::harness::Split;
 use phiano::persona::Styles;
-use phiano::metrics::baseline::kn::KneserNey;
-use phiano::phinet::space::{FunctionSpace, Sides};
+use phient::metrics::baseline::kn::KneserNey;
+use phient::net::space::{FunctionSpace, Sides};
 use phistd::hexagram::KING_WEN_MAP;
 use phiano::tokenizer::Tokenizer;
 use std::fmt::Write as _;

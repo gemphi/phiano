@@ -13,7 +13,7 @@ mod read;
 /// which reads 177 perplexity where the operator reads 134 (docs/65–68).
 pub struct OperatorGuide {
     pub fno: phical::Fno,
-    pub space: crate::phinet::space::FunctionSpace,
+    pub space: phient::net::space::FunctionSpace,
     pub window: usize,
     /// How much of a candidate's score the operator decides; defaults to
     /// [`OPERATOR_WEIGHT`].
@@ -33,7 +33,7 @@ pub struct OperatorGuide {
     /// Tokens seen so far — the prompt, then everything emitted.
     pub(super) history: Vec<String>,
     /// The operator's output for the current history, cached per length.
-    pub(super) cached: Option<(usize, crate::phinet::space::WordFunction)>,
+    pub(super) cached: Option<(usize, phient::net::space::WordFunction)>,
     /// I Ching novelty: `(hexagram, every)` — every `every`-th emitted token
     /// the prediction is passed through the hexagram's spectral gate
     /// (`phistd::hexagram::apply`), so the candidates are read against a
@@ -46,7 +46,7 @@ pub struct OperatorGuide {
     /// prompt (docs/78). Defaults to [`OPERATOR_ANCHOR`].
     pub anchor: f64,
     /// The prompt's mean function, set at `reset`.
-    pub(super) anchor_fn: Option<crate::phinet::space::WordFunction>,
+    pub(super) anchor_fn: Option<phient::net::space::WordFunction>,
 }
 
 /// Default weight of the prompt anchor in the operator's context.
@@ -76,10 +76,10 @@ pub const OPERATOR_PROPOSAL_COUNT: u32 = 8;
 impl OperatorGuide {
     /// Loads a `.fno` file and encodes the facet with `sides`. Fails if the
     /// operator's space does not match the encoding's sample count.
-    pub fn load(path: &str, facet: &Facet, sides: crate::phinet::space::Sides, window: usize) -> Result<Self, String> {
+    pub fn load(path: &str, facet: &Facet, sides: phient::net::space::Sides, window: usize) -> Result<Self, String> {
         let bytes = std::fs::read(path).map_err(|e| format!("{path}: {e}"))?;
         let fno = phical::Fno::from_bytes(&bytes).ok_or_else(|| format!("{path}: not a phinet operator"))?;
-        let space = crate::phinet::space::FunctionSpace::from_facet_sides(facet, sides);
+        let space = phient::net::space::FunctionSpace::from_facet_sides(facet, sides);
         if !space.evidenced {
             return Err(format!(
                 "{path}: the loaded lexicon carries no relation evidence (a v1–v3 file); an operator trained on an evidenced lexicon has nothing to read here — retrain the manifold first"
@@ -137,7 +137,7 @@ impl OperatorGuide {
     }
 
     /// Public prediction for measurement bins.
-    pub fn predict_public(&mut self) -> Option<crate::phinet::space::WordFunction> {
+    pub fn predict_public(&mut self) -> Option<phient::net::space::WordFunction> {
         self.predict()
     }
 
@@ -155,7 +155,7 @@ impl OperatorGuide {
     }
 
     /// The operator's prediction for the next word's function.
-    pub(super) fn predict(&mut self) -> Option<crate::phinet::space::WordFunction> {
+    pub(super) fn predict(&mut self) -> Option<phient::net::space::WordFunction> {
         if let Some((n, f)) = &self.cached {
             if *n == self.history.len() {
                 return Some(f.clone());

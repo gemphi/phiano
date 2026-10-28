@@ -9,7 +9,7 @@
 //! propositional content "it is raining" but differ in illocutionary force.
 
 use super::types::*;
-use crate::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiecs::phasor::facet::Facet;
 use crate::tokenizer::Tokenizer;
 use phiecs::phasor::wave::Wave;

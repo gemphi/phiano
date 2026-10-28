@@ -3,9 +3,9 @@
 //! the shared lexicon.
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::{Harness, Split};
+use phient::metrics::harness::{Harness, Split};
 use phiano::persona::Styles;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 fn sample(v: &[String], n: usize, seed: u64) -> Vec<String> {
     let mut idx: Vec<usize> = (0..v.len()).collect();

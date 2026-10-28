@@ -3,7 +3,7 @@
 use super::generator::{Decode, Generator, RELATIONAL_WINDOW};
 use super::guide::OPERATOR_PROPOSAL_FLOOR;
 use phiecs::phasor::facet::Facet;
-use crate::flow::PhaseFlow;
+use phiecs::phasor::flow::PhaseFlow;
 use crate::tokenizer::Tokenizer;
 
 impl Generator {

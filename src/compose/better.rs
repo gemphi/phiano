@@ -28,7 +28,7 @@ use std::collections::{HashMap, HashSet};
 /// no amount of fine-grained score buys a stage.
 pub struct Evaluator {
     /// The inner semantic evaluator.
-    pub(super) inner: crate::eval::Evaluator,
+    pub(super) inner: phient::eval::Evaluator,
 }
 
 /// SectorScore — the evaluation of a single sector variation.

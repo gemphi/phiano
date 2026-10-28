@@ -85,10 +85,10 @@ use variants::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
+use phient::metrics::harness::Harness;
 use phiano::phasor::{fnv1a, mix64};
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 
 fn main() {

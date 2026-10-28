@@ -2,7 +2,7 @@
 //! `cargo run --release --bin word_json [lexicon] word...`
 use phiano::config::PHASE_CHANNELS;
 use phiecs::phasor::facet::Facet;
-use phiano::storage::Storage;
+use phiecs::phasor::facet::storage::Storage;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

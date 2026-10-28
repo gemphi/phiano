@@ -13,7 +13,7 @@ use super::*;
 /// rather than from the benchmark. The benchmark families are then used only to
 /// score, and their labels never enter the update.
 pub(super) fn coherence_experiment(facet: &Facet, rules: &RuleSet) {
-    use phiano::roles::{Coherence, RoleDiscovery};
+    use phient::train::roles::{Coherence, RoleDiscovery};
 
     // Groups from the extractor: one per role.
     let mut groups: Vec<Vec<(String, String)>> = Vec::new();

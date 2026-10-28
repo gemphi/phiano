@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::memory::{MemoryBand, MEMORY_LAYERS};
+use phient::memory::{MemoryBand, MEMORY_LAYERS};
 
 /// Stat - displays facet and memory statistics.
 ///

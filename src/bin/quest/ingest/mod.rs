@@ -43,8 +43,8 @@ use rows::*;
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
 use phiano::phasor::Rounding;
-use phiano::storage::Storage;
-use phiano::trainer::Trainer;
+use phiecs::phasor::facet::storage::Storage;
+use phient::train::trainer::Trainer;
 use std::time::Instant;
 
 pub fn run(a: Vec<String>) {

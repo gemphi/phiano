@@ -24,7 +24,7 @@ use checkpoint::*;
 #[allow(unused_imports)]
 use setup::*;
 
-use phiano::phinet::space::WordFunction;
+use phient::net::space::WordFunction;
 use phical::{rank, Example};
 
 fn main() {

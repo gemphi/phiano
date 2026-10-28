@@ -1,7 +1,7 @@
 use crate::command::Context;
 use crate::command::Parser;
-use crate::envision::Envision;
-use crate::eval::Evaluator;
+use phient::train::envision::Envision;
+use phient::eval::Evaluator;
 
 /// Eval - evaluates text against the facet's semantic space.
 ///

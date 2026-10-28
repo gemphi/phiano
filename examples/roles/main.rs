@@ -61,16 +61,16 @@ use verdict::*;
 #[allow(unused_imports)]
 use setup::*;
 
-use phiano::chunker::ChunkStore;
+use phient::train::chunker::ChunkStore;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::metrics::harness::Harness;
-use phiano::metrics::relation::RelationBenchmark;
+use phient::metrics::harness::Harness;
+use phient::metrics::relation::RelationBenchmark;
 use phiano::phasor::SpectralPhasor;
-use phiano::roles::{Role, RuleSet, RoleTable};
-use phiano::sources::definition_core;
+use phient::train::roles::{Role, RuleSet, RoleTable};
+use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 
 fn main() {
