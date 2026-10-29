@@ -8,14 +8,14 @@
 //! `data/learned.json` for the generator to pick up.
 
 use phiano::config::{LEARNED_FILE, LEARNING_RATE, OPERATOR_FILE};
-use phiano::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
+use phient::generate::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phient::metrics::harness::Harness;
 use phient::net::space::Sides;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
 
-use phiano::learn::{CANDIDATES, WINDOW};
-use phiano::generate::OperatorGuide;
+use phient::generate::learn::{CANDIDATES, WINDOW};
+use phient::generate::OperatorGuide;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

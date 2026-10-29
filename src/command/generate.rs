@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::generate::Generator;
+use phient::generate::Generator;
 
 pub struct GenerateCmd;
 
@@ -15,7 +15,7 @@ impl GenerateCmd {
         let mut generator = Generator::new(32, 0.15);
         let mut guided = false;
         if std::path::Path::new(crate::config::OPERATOR_FILE).exists() {
-            match crate::generate::OperatorGuide::load(
+            match phient::generate::OperatorGuide::load(
                 crate::config::OPERATOR_FILE,
                 ctx.manifold,
                 phient::net::space::Sides::Directed,

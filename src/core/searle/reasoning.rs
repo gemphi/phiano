@@ -21,19 +21,12 @@
 //! ```
 
 use phiecs::phasor::facet::Facet;
-use crate::generate::ContextWaveBuffer;
+use phient::generate::ContextWaveBuffer;
 use serde::Serialize;
 
-/// A chain of steps toward an answer, whatever one step records: the chain
-/// of thought here holds [`Thought`]s, `reasoning`'s pathfinding its phase
-/// steps (`reasoning::ReasoningChain`). One chain, two kinds of step.
-#[derive(Debug, Clone, Serialize)]
-pub struct Chain<S> {
-    pub problem: String,
-    pub steps: Vec<S>,
-    pub converged: bool,
-    pub final_answer: String,
-}
+/// The chain itself is philog's (`philog::Chain`): one chain, two kinds
+/// of step, these thoughts and the pathfinding's phase steps.
+pub use philog::Chain;
 
 /// One step of the chain of thought: what was asked and what the core said.
 #[derive(Debug, Clone, Serialize)]

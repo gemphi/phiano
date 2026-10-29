@@ -12,8 +12,8 @@
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::generate::OperatorGuide;
-use phiano::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
+use phient::generate::OperatorGuide;
+use phient::generate::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phient::metrics::harness::{Harness, Split};
 use phient::metrics::baseline::kn::KneserNey;
 use phiano::persona::Styles;

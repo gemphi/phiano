@@ -32,7 +32,7 @@ use engine::*;
 
 use crate::core::searle::CognitiveCore;
 use phiecs::phasor::facet::Facet;
-use crate::generate::{ContextWaveBuffer, Generator};
+use phient::generate::{ContextWaveBuffer, Generator};
 use phiecs::phasor::layers::HierarchicalPhaseField;
 use crate::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;

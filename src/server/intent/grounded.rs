@@ -34,7 +34,7 @@ impl ChatIntent {
         // Fall back to multi-step phase reasoning
         let reasoning = model.cognitive_core.reason(
             &model.facet,
-            &mut crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW),
+            &mut phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW),
             topic,
             DEFAULT_REASONING_STEPS,
         );
@@ -66,7 +66,7 @@ impl ChatIntent {
 
         let reasoning = model.cognitive_core.reason(
             &model.facet,
-            &mut crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW),
+            &mut phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW),
             query,
             DEFAULT_REASONING_STEPS,
         );

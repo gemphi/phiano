@@ -1,7 +1,7 @@
 //! Reasoning API routes: hybrid reasoning, multi-path, comparison, and benchmark.
 
 use super::super::SharedModel;
-use crate::reasoning;
+use philog as reasoning;
 use phient::metrics;
 use phient::train::lifelong;
 use axum::extract::State;

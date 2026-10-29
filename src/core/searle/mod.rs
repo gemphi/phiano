@@ -41,7 +41,7 @@ pub use selection::WordSelector;
 
 use phient::train::chunker::ChunkStore;
 use phiecs::phasor::facet::Facet;
-use crate::generate::ContextWaveBuffer;
+use phient::generate::ContextWaveBuffer;
 
 /// CognitiveCore - coordinates all 16 agents and synthesizes output.
 pub struct CognitiveCore {

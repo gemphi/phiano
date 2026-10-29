@@ -16,10 +16,10 @@ mod result;
 
 pub use result::ImpersonationResult;
 
-use crate::compose::SectorPalette;
+use phient::generate::compose::SectorPalette;
 use crate::config;
 use phiecs::phasor::facet::Facet;
-use crate::generate::{ContextWaveBuffer, Decode, Generator};
+use phient::generate::{ContextWaveBuffer, Decode, Generator};
 use crate::persona::Fingerprint;
 use phient::train::trainer::Trainer;
 
@@ -61,7 +61,7 @@ impl Impersonator {
         let seed0 = phistd::mix64(prompt.len() as u64 ^ 0x5EED);
         for round in 0..self.max_rounds.max(1) {
             let temperature = 0.3 + 0.1 * (round % 3) as f64;
-            let g = Generator::deterministic(self.tokens, temperature, seed0.wrapping_add(round as u64 * 7919)).with_decode(Decode::Trigram).with_persona_examples(facet, fingerprint, examples, self.sector_weight, self.ngram_weight);
+            let g = Generator::deterministic(self.tokens, temperature, seed0.wrapping_add(round as u64 * 7919)).with_decode(Decode::Trigram).with_persona_examples(facet, &fingerprint.sector_histogram, examples, self.sector_weight, self.ngram_weight);
             let mut buf = ContextWaveBuffer::new(config::DEFAULT_CONTEXT_WINDOW);
             let text = g.generate(facet, &mut buf, prompt);
             if crate::tokenizer::Tokenizer::tokenize(&text).len() < 3 {

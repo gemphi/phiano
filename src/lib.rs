@@ -3,15 +3,14 @@ pub mod seam;
 pub use phient::code;
 pub mod core;
 pub mod command;
-pub mod compose;
+/// The generation engine is `phient::generate`; the read-only example
+/// `flow` still names `phiano::compose::flow::RiverFlow`.
+pub use phient::generate::compose;
 pub mod config;
 pub mod drivers;
 pub mod frames;
-#[path = "generate/mod.rs"]
-pub mod generate;
 pub mod instruction;
 pub mod lab;
-pub mod learn;
 pub mod model;
 pub mod persona;
 /// The spectral phasor lives in phiecs, beside the world's `Phasor`;
@@ -36,7 +35,6 @@ pub use ::phiton;
 pub use phient::operator;
 pub use phient::relate;
 pub mod sys;
-pub mod reasoning;
 pub mod server;
 pub mod tokenizer;
 pub mod wiki;

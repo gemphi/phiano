@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::generate::Generator;
+use phient::generate::Generator;
 use crate::instruction::InstructionEngine;
 
 /// Instruct - executes an instruction using the shared cognitive pipeline.

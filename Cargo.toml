@@ -27,6 +27,7 @@ phiton = { path = "../phiton" }
 phical = { path = "../phical" }
 phifno = { path = "../phifno" }
 phient = { path = "../phient" }
+philog = { path = "../philog" }
 phiecs = { path = "../phiecs" }
 phiclm = { path = "../phiclm" }
 rayon = "1.8"

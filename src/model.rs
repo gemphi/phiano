@@ -42,7 +42,7 @@ pub struct Model {
     /// The world - collection of personas for impersonation.
     pub world: Styles,
     /// The running multi-turn context wave buffer.
-    pub context_buffer: crate::generate::ContextWaveBuffer,
+    pub context_buffer: phient::generate::ContextWaveBuffer,
     /// The cognitive core - 16 Searle-inspired agents.
     pub cognitive_core: CognitiveCore,
     /// Journal of taught corrections, replayed after grounding.

@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::time::Instant;
 
-use phiano::compose::Composition;
+use phient::generate::compose::Composition;
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phient::train::trainer::Trainer;

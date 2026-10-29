@@ -60,7 +60,7 @@ impl fmt::Display for Fingerprint {
         writeln!(f, "  diversity (entropy): {:.3}", self.diversity)?;
         writeln!(f, "  dominant sectors:")?;
         for (sector, weight) in self.dominant_sectors(8) {
-            let color = crate::compose::SectorPalette::color(sector);
+            let color = phient::generate::compose::SectorPalette::color(sector);
             writeln!(f, "    sector {} ({}) weight {:.4}", sector, color, weight)?;
         }
         Ok(())

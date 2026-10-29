@@ -1,7 +1,7 @@
 use phiano::config::CHROMA_FILE;
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use phiano::generate::{ContextWaveBuffer, Generator};
+use phient::generate::{ContextWaveBuffer, Generator};
 use phiecs::phasor::facet::storage::Storage;
 use phient::train::trainer::Trainer;
 

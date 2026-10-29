@@ -1,6 +1,6 @@
 use super::super::SharedModel;
 use super::super::types::TextRequest;
-use crate::generate::Generator;
+use phient::generate::Generator;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::sse::{Event, KeepAlive, Sse};
@@ -27,7 +27,7 @@ pub async fn generate_stream(
     let max_tok = req.max_tokens.unwrap_or(24);
     let temp = req.temperature.unwrap_or(0.15);
     let generator = Generator::new(max_tok, temp);
-    let mut ctx = crate::generate::ContextWaveBuffer::new(4096);
+    let mut ctx = phient::generate::ContextWaveBuffer::new(4096);
     let (tokens, flow) = generator.decode(&guard.facet, &mut ctx, &req.text);
     drop(guard);
 

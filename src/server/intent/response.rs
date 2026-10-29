@@ -12,8 +12,8 @@ impl ChatIntent {
     ) -> String {
         match self {
             Self::Greeting => {
-                let mut ctx_buf = crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
-                let generator = crate::generate::Generator::new(32, 0.7);
+                let mut ctx_buf = phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
+                let generator = phient::generate::Generator::new(32, 0.7);
                 let dynamic_greeting = generator.generate(
                     &model.facet,
                     &mut ctx_buf,
@@ -29,8 +29,8 @@ impl ChatIntent {
             }
 
             Self::SelfCorrection { statement, correction } => {
-                let mut ctx_buf = crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
-                let generator = crate::generate::Generator::new(36, 0.5);
+                let mut ctx_buf = phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
+                let generator = phient::generate::Generator::new(36, 0.5);
                 let affirmation = generator.generate(
                     &model.facet,
                     &mut ctx_buf,
@@ -50,8 +50,8 @@ impl ChatIntent {
             Self::Explanation { topic } => self.explain(model, cog, topic, wiki_extract),
 
             Self::PersonalMemory { statement } => {
-                let mut ctx_buf = crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
-                let generator = crate::generate::Generator::new(28, 0.6);
+                let mut ctx_buf = phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
+                let generator = phient::generate::Generator::new(28, 0.6);
                 let generated_ack = generator.generate(
                     &model.facet,
                     &mut ctx_buf,
@@ -73,8 +73,8 @@ impl ChatIntent {
             }
 
             Self::InstitutionalDeclaration { declaration } => {
-                let mut ctx_buf = crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
-                let generator = crate::generate::Generator::new(28, 0.6);
+                let mut ctx_buf = phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW);
+                let generator = phient::generate::Generator::new(28, 0.6);
                 let generated_response = generator.generate(
                     &model.facet,
                     &mut ctx_buf,
@@ -105,7 +105,7 @@ impl ChatIntent {
             Self::GeneralQuery { prompt } => {
                 let reasoning = model.cognitive_core.reason(
                     &model.facet,
-                    &mut crate::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW),
+                    &mut phient::generate::ContextWaveBuffer::new(DEFAULT_CONTEXT_WINDOW),
                     prompt,
                     DEFAULT_REASONING_STEPS - 1,
                 );

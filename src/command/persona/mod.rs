@@ -10,7 +10,6 @@
 //!   persona match "unknown text"
 //!   persona chat <name>
 
-mod chat;
 
 use crate::command::Context;
 use crate::persona::Impersonator;
@@ -36,7 +35,7 @@ impl PersonaCmd {
             "compare" => self.compare(ctx, rest),
             "impersonate" => self.impersonate(ctx, rest),
             "match" => self.match_text(ctx, rest),
-            "chat" => chat::chat(ctx, rest),
+            "chat" => super::personate::chat(ctx, rest),
             "help" | "?" => { self.print_help(); true }
             _ => {
                 println!("  Unknown persona subcommand: '{}'", subcmd);

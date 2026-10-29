@@ -9,6 +9,10 @@
 //! the words they were told (the test words nobody was told are a miss for
 //! every model, and are counted as such).
 //!
+//! `--more a.txt,b.txt` tells every model more English beside the guide's
+//! training sentences, cut the same way. The dev and test sets stay the
+//! guide's own: the extra text is never scored.
+//!
 //! | model | what it is |
 //! |---|---|
 //! | the most told word | the floor |
@@ -18,7 +22,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…]
 //! ```
 
 mod counting;
@@ -63,7 +67,11 @@ fn main() {
         }
     }
     let words = |ls: &[Vec<String>]| ls.iter().map(Vec::len).sum::<usize>();
-    println!("told {} sentences ({} words) · dev {} · test {} ({} positions)\n", train.len(), words(&train), dev.len(), test.len(), words(&test) - test.len());
+    let guide_told = train.len();
+    for extra in flag("--more").iter().flat_map(|m| m.split(',')).filter(|m| !m.is_empty()) {
+        train.extend(sentences(extra));
+    }
+    println!("told {} sentences ({} words; {guide_told} of them the guide's) · dev {} · test {} ({} positions)\n", train.len(), words(&train), dev.len(), test.len(), words(&test) - test.len());
 
     let mut rows: Vec<String> = Vec::new();
     let row = |name: &str, h: &Score, ppl: Option<f64>| {

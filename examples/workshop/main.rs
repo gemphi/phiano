@@ -1,6 +1,6 @@
 //! `workshop` — teacher, student and compiler coupled on the English guide
 //! (docs/192). The book is the curriculum: each unit is a lesson. For
-//! every lesson the student (the phasors) is scored on the unit's sentences
+//! every lesson the student (phient's learner) is scored on the unit's sentences
 //! BEFORE it is told them — what it brought — then told them (on the fly),
 //! then names the constructions it is unsure of (the quest's prompts), the
 //! unit's exercises become the workshop prompts for a teacher, and one task
@@ -9,16 +9,23 @@
 //!
 //! Since docs/194 the KEY at the back of the book grades the student: the
 //! Key is never told; after each unit's lesson the student must complete
-//! the unit's answers word by word (top-1), on the phasors and, as the
-//! contrast line, on counts.
+//! the unit's answers word by word (top-1).
+//!
+//! Since docs/203 the student is the LEARNER: told a sentence, it predicts
+//! each word, compares it with the word that came, and the error moves the
+//! angles. It is corrected on the fly, as it is told; `--rehearse` adds one
+//! pass over everything told after each page. The counted phasors (the old
+//! student, `arena::Ecs`) and the counts are told the same sentences as the
+//! contrast lines.
 //!
 //! ```text
-//! cargo run --release -p phiano --example workshop -- crates/phiano/data/person/murphy.txt --key crates/phiano/data/person/murphy_key.txt --pages 64 --out crates/phiano/docs/193_workshop.md
+//! cargo run --release -p phiano --example workshop -- crates/phiano/data/person/murphy.txt --key crates/phiano/data/person/murphy_key.txt --pages 64 --out crates/phiano/docs/193_workshop.md [--rehearse]
 //! ```
 
 mod key;
 
 use phiano::arena::Ecs;
+use phient::lineup::learner::{Config, Learner};
 use phient::lineup::Count;
 use phient::prose::{family_prompt, paragraph, tokens, Knowing};
 use phient::study::Reader;
@@ -70,7 +77,7 @@ fn sentences(lines: &[String]) -> Vec<Vec<String>> {
 }
 
 /// Top-1 next-word over the sentences, without telling them.
-fn score(student: &mut Ecs, sents: &[Vec<String>]) -> (usize, usize) {
+fn score(student: &mut impl Reader, sents: &[Vec<String>]) -> (usize, usize) {
     let (mut hit, mut n) = (0, 0);
     for w in sents {
         for j in 1..w.len() {
@@ -101,19 +108,21 @@ fn main() {
     let flag = |k: &str| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)).cloned();
     let pages: usize = flag("--pages").and_then(|s| s.parse().ok()).unwrap_or(64);
     let out = flag("--out").unwrap_or_else(|| "workshop.md".into());
+    let rehearse = a.iter().any(|x| x == "--rehearse");
 
     let text = std::fs::read_to_string(&path).unwrap_or_default();
     let book = units(&text);
     let key = flag("--key").map(|k| key::parse(&std::fs::read_to_string(k).unwrap_or_default())).unwrap_or_default();
     let mut contrast = Count::new();
-    let (mut key_hit, mut key_n, mut key_hit_c) = (0usize, 0usize, 0usize);
+    let (mut key_hit, mut key_n, mut key_hit_p, mut key_hit_c) = (0usize, 0usize, 0usize, 0usize);
     let per = (book.len() / pages.max(1)).max(1);
-    let mut student = Ecs::new();
+    let mut student = Learner::new(Config { block: 8, silence: 0.2, ..Config::default() });
+    let mut phasors = Ecs::new();
     let mut knowing = Knowing::fresh();
     let mut doc = String::new();
     let _ = writeln!(doc, "# 193 · The workshop — {} units of the guide played as {} pages\n", book.len(), book.len().div_ceil(per));
     let _ = writeln!(doc, "In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle; meaning is a side effect of pairs of words moving under a condition, and they move by the error of what was expected — toward what came, away from what did not.\n");
-    let _ = writeln!(doc, "The Key holds {} answers across {} units; it is never told — after each lesson the student completes the unit's answers word by word, and is graded.\n", key.len(), key.iter().map(|a| a.unit).collect::<std::collections::HashSet<_>>().len());
+    let _ = writeln!(doc, "The Key holds {} answers across {} units; it is never told — after each lesson the student (the learner) completes the unit's answers word by word, and is graded, beside the counted phasors and the counts as contrast lines.{}\n", key.len(), key.iter().map(|a| a.unit).collect::<std::collections::HashSet<_>>().len(), if rehearse { " After each page the learner rehearses everything told so far once." } else { " The learner is corrected on the fly only." });
     let _ = writeln!(doc, "Each page: what the student BROUGHT to the unit (next-word top-1 on its sentences before being told them), the unit told on the fly, the quest prompts it would send a teacher for the constructions it is unsure of, the unit's own exercises as workshop prompts, and one task of logic handed to the compiler and judged. Generated by `examples/workshop.rs`; nothing here is written by hand.\n");
     let (mut brought_all, mut n_all) = (0usize, 0usize);
     for (p, group) in book.chunks(per).enumerate() {
@@ -125,26 +134,30 @@ fn main() {
             n_all += n;
             for w in &sents {
                 student.tell(w);
+                phasors.tell(w);
                 contrast.tell(w);
                 let id = format!("unit{}/s{}", u.number, knowing.paragraphs.len());
                 knowing.tell(&id, &paragraph(&id, &[w.join(" ")]));
             }
             // Graded against the Key: complete this unit's answers, word by
             // word, any alternative counting; the Key itself is never told.
-            let (mut kh, mut kn, mut kc) = (0usize, 0usize, 0usize);
+            let (mut kh, mut kn, mut kp, mut kc) = (0usize, 0usize, 0usize, 0usize);
             for ans in key.iter().filter(|a| a.unit == u.number) {
                 let first = &ans.alternative[0];
                 for j in 1..first.len() {
                     kn += 1;
                     let g = student.guess(&first[..j]);
+                    let p = phasors.guess(&first[..j]);
                     let c = contrast.guess(&first[..j]);
                     let ok = |g: &Option<String>| ans.alternative.iter().any(|alt| alt.get(j).is_some_and(|t| Some(t) == g.as_ref()));
                     kh += ok(&g) as usize;
+                    kp += ok(&p) as usize;
                     kc += ok(&c) as usize;
                 }
             }
             key_hit += kh;
             key_n += kn;
+            key_hit_p += kp;
             key_hit_c += kc;
             // Unsure of WORDS, not exercise numbering; prompts are the
             // numbered instructions (`1.3 Write questions …`), not the items.
@@ -169,7 +182,7 @@ fn main() {
                 .collect();
             let negatives: Vec<bool> = sents.iter().map(|w| w.iter().any(|t| t == "not" || t.ends_with("n't"))).collect();
             let (src, v) = counted(&negatives);
-            let _ = writeln!(doc, "\n**Unit {} — {}** · {} sentences · brought {:.1}% of its next words ({hit}/{n}) before being told · **Key: {:.1}%** of its answers' words completed on the phasors ({kh}/{kn}; counts {:.1}%).", u.number, u.title, sents.len(), 100.0 * hit as f64 / n.max(1) as f64, 100.0 * kh as f64 / kn.max(1) as f64, 100.0 * kc as f64 / kn.max(1) as f64);
+            let _ = writeln!(doc, "\n**Unit {} — {}** · {} sentences · brought {:.1}% of its next words ({hit}/{n}) before being told · **Key: {:.1}%** of its answers' words completed by the learner ({kh}/{kn}; counted phasors {:.1}%, counts {:.1}%).", u.number, u.title, sents.len(), 100.0 * hit as f64 / n.max(1) as f64, 100.0 * kh as f64 / kn.max(1) as f64, 100.0 * kp as f64 / kn.max(1) as f64, 100.0 * kc as f64 / kn.max(1) as f64);
             let _ = writeln!(doc, "\nQuest prompts (unsure of {} constructions; the first three):", unsure.len());
             for pair in unsure.iter().take(3) {
                 let _ = writeln!(doc, "- `{}`", family_prompt(pair));
@@ -181,8 +194,11 @@ fn main() {
             let _ = writeln!(doc, "\nCompiler task: count the negatives the student read among the {} sentences — phiclm ran {} O-code steps and returned **{}** ({}); the student's own count is {}.", sents.len(), v.steps, v.result, if v.compiled && v.error.is_none() { "judged" } else { "failed" }, negatives.iter().filter(|b| **b).count());
             let _ = writeln!(doc, "\n```text\n{}\n```", src.lines().take(2).chain(src.lines().skip(src.lines().count().saturating_sub(2))).collect::<Vec<_>>().join("\n… \n"));
         }
+        if rehearse {
+            student.epoch();
+        }
     }
-    let _ = writeln!(doc, "\n## The whole course\n\nOver {} units the student brought {:.1}% of each unit's next words before being told it ({brought_all}/{n_all}) — what it carried from every earlier lesson into the next, on the fly, with nothing retrained.\n\n**Graded against the Key** (never told): the phasors completed **{:.1}%** of the answers' words ({key_hit}/{key_n}); the counts, as the contrast line, {:.1}% ({key_hit_c}/{key_n}). The floor is one word in the book's vocabulary.", book.len(), 100.0 * brought_all as f64 / n_all.max(1) as f64, 100.0 * key_hit as f64 / key_n.max(1) as f64, 100.0 * key_hit_c as f64 / key_n.max(1) as f64);
+    let _ = writeln!(doc, "\n## The whole course\n\nOver {} units the student brought {:.1}% of each unit's next words before being told it ({brought_all}/{n_all}) — what it carried from every earlier lesson into the next, on the fly, with nothing retrained.\n\n**Graded against the Key** (never told): the learner completed **{:.1}%** of the answers' words ({key_hit}/{key_n}); the contrast lines, the counted phasors {:.1}% ({key_hit_p}/{key_n}) and the counts {:.1}% ({key_hit_c}/{key_n}). The floor is one word in the book's vocabulary.", book.len(), 100.0 * brought_all as f64 / n_all.max(1) as f64, 100.0 * key_hit as f64 / key_n.max(1) as f64, 100.0 * key_hit_p as f64 / key_n.max(1) as f64, 100.0 * key_hit_c as f64 / key_n.max(1) as f64);
     std::fs::write(&out, &doc).expect("write the pages");
     println!("{} units → {} pages → {out}", book.len(), book.len().div_ceil(per));
 }

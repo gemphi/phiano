@@ -8,7 +8,7 @@
 //! "same as the previous word", and "the next in the King Wen sequence"?
 
 use phiano::config::{LEARNING_RATE, OPERATOR_FILE};
-use phiano::generate::OperatorGuide;
+use phient::generate::OperatorGuide;
 use phient::metrics::harness::Harness;
 use phient::net::space::{FunctionSpace, Sides};
 use phistd::hexagram::KING_WEN_MAP;

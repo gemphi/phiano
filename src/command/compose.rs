@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::compose::Composition;
+use phient::generate::compose::Composition;
 
 /// Compose - recursive composition via the Flower-Hayes cognitive process.
 ///

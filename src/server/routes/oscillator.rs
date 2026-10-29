@@ -2,7 +2,7 @@
 
 use super::super::SharedModel;
 use super::super::types::*;
-use crate::compose::Composition;
+use phient::generate::compose::Composition;
 use phiecs::phasor::oscillator::{OscillatorField, OscillatorTrainer};
 use phient::eval::oscillator::OscillatorEval;
 use axum::extract::State;

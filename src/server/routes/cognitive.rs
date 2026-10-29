@@ -12,7 +12,7 @@ pub async fn cognitive(
     Json(req): Json<TextRequest>,
 ) -> Result<Json<CognitiveResponse>, StatusCode> {
     let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let mut ctx_buf = crate::generate::ContextWaveBuffer::new(4096);
+    let mut ctx_buf = phient::generate::ContextWaveBuffer::new(4096);
     let result = guard.cognitive_core.process(&guard.facet, &mut ctx_buf, &req.text);
 
     let agent_outputs: Vec<CognitiveAgentOutput> = result.agent_outputs.iter()
@@ -60,7 +60,7 @@ pub async fn reason_chain(
     Json(req): Json<ReasonChainRequest>,
 ) -> Result<Json<crate::core::searle::Chain<crate::core::searle::Thought>>, StatusCode> {
     let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let mut ctx_buf = crate::generate::ContextWaveBuffer::new(4096);
+    let mut ctx_buf = phient::generate::ContextWaveBuffer::new(4096);
     let result = guard.cognitive_core.reason(
         &guard.facet, &mut ctx_buf, &req.text, req.max_steps,
     );

@@ -36,7 +36,7 @@ impl PersonaChatLoop {
         let top_colors: Vec<String> = dominant
             .iter()
             .map(|(s, w)| {
-                let color = crate::compose::SectorPalette::color(*s);
+                let color = phient::generate::compose::SectorPalette::color(*s);
                 format!("{} ({:.1}%)", color, w * 100.0)
             })
             .collect();

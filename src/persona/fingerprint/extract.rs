@@ -6,53 +6,12 @@ impl Fingerprint {
         crate::config::PhiConfig::is_stop_word(word)
     }
 
-    /// The mean target-side function of the evidenced lexicon: the bias every
-    /// word shares. Sectors are read on the *centred* function (word minus
-    /// this mean), because the raw centroids of a whole lexicon bunch into a
-    /// few sectors (45–49 on Austen, docs/74) and a histogram over them
-    /// cannot tell authors apart. Centring is what a channel-balanced sector
-    /// means: what this word does that the average word does not.
-    pub fn lexicon_mean(facet: &Facet) -> Vec<phistd::c64> {
-        let mut sum = vec![phistd::c64::new(0.0, 0.0); crate::config::PHASE_CHANNELS];
-        let mut n = 0usize;
-        for p in facet.lexicon.values() {
-            if p.has_evidence() {
-                for (a, b) in sum.iter_mut().zip(phient::net::space::encode_side(p, true)) {
-                    *a += b;
-                }
-                n += 1;
-            }
-        }
-        if n > 0 {
-            for z in sum.iter_mut() {
-                *z /= n as f64;
-            }
-        }
-        sum
-    }
-
-    /// The sector a word occupies on the relation circle: the Q64 sector of
-    /// the centroid of its evidence-weighted *target-side* function — the
-    /// side a writer's choices put it under — centred on the lexicon mean,
-    /// when the lexicon carries relation evidence; the legacy single phase
-    /// otherwise. The single phase (channel 0, source side) collapsed for
-    /// frequent words (docs/69) and every persona read the same four sectors
-    /// from it; the uncentred centroid bunched into sectors 45–49 (docs/74).
-    pub fn relational_sector(facet: &Facet, word: &str, mean: &[phistd::c64]) -> Option<u16> {
-        let p = facet.lexicon.get(word)?;
-        if !p.has_evidence() {
-            return Wave::word_sector(facet, word);
-        }
-        let f: Vec<phistd::c64> = phient::net::space::encode_side(p, true).iter().zip(mean).map(|(a, m)| a - m).collect();
-        Some(phistd::hexagram::hexagram_of(&f) as u16)
-    }
-
     /// Extracts a fingerprint from text examples using the facet.
     pub fn extract(facet: &Facet, examples: &[String]) -> Self {
         let n = Wave::sector_count() as usize;
         let mut histogram = vec![0.0f64; n];
         let mut total_length = 0usize;
-        let mean = Self::lexicon_mean(facet);
+        let mean = phient::net::space::lexicon_mean(facet);
 
         for example in examples {
             let tokens = Tokenizer::tokenize(example);
@@ -88,7 +47,7 @@ impl Fingerprint {
             }
 
             for token in &content_tokens {
-                if let Some(word_sector) = Self::relational_sector(facet, token, &mean) {
+                if let Some(word_sector) = phient::net::space::relational_sector(facet, token, &mean) {
                     let s = word_sector as usize;
                     if s < n {
                         let amp = facet.get_phasor(token).map(|p| p.amplitude).unwrap_or(1.0);

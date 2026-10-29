@@ -12,7 +12,7 @@ use phiano::lab as util;
 mod world;
 
 use phiecs::phasor::facet::Facet;
-use phiano::generate::{ContextWaveBuffer, Decode, Generator};
+use phient::generate::{ContextWaveBuffer, Decode, Generator};
 use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phiecs::phasor::facet::storage::Storage;
@@ -45,7 +45,7 @@ fn main() {
             let mut picks = std::collections::BTreeMap::new();
             let (mut lp, mut d, mut n) = (0.0, 0.0, 0usize);
             for (i, prompt) in prompts.iter().enumerate() {
-                let g = Generator::deterministic(tokens, 0.3, 900 + i as u64).with_decode(Decode::Trigram).with_persona_examples(&pfacet, fp, &world.personas[name].examples, weight, ngram);
+                let g = Generator::deterministic(tokens, 0.3, 900 + i as u64).with_decode(Decode::Trigram).with_persona_examples(&pfacet, &fp.sector_histogram, &world.personas[name].examples, weight, ngram);
                 let mut buf = ContextWaveBuffer::new(64);
                 let text = g.generate(&pfacet, &mut buf, prompt);
                 let toks = Tokenizer::tokenize(&text);

@@ -2,8 +2,8 @@
 
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use phiano::generate::{ContextWaveBuffer, Generator, OperatorGuide};
-use phiano::learn::GenWeight;
+use phient::generate::{ContextWaveBuffer, Generator, OperatorGuide};
+use phient::generate::learn::GenWeight;
 use phient::metrics::harness::Split;
 use phiano::persona::Styles;
 use phient::metrics::baseline::kn::KneserNey;

@@ -23,7 +23,7 @@ impl PersonalityMapper {
         let mut total = 0.0f64;
 
         for &(sector, weight) in &dominant {
-            let phiton_color = crate::compose::SectorPalette::phiton_color(sector);
+            let phiton_color = phient::generate::compose::SectorPalette::phiton_color(sector);
             let band = phiton_color.band;
 
             if band.is_warm() {

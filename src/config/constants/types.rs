@@ -98,26 +98,19 @@ pub const COMPOSE_DEPTH_MAX: usize = 16;
 /// Default number of recursive refinement rounds for composition.
 pub const COMPOSE_ROUNDS_DEFAULT: usize = 8;
 
-/// Weight for coherence in composition scoring.
-pub const WEIGHT_COHERENCE: f64 = 0.25;
+pub use phient::generate::constants::WEIGHT_COHERENCE;
 
-/// Weight for novelty in composition scoring.
-pub const WEIGHT_NOVELTY: f64 = 0.15;
+pub use phient::generate::constants::WEIGHT_NOVELTY;
 
-/// Weight for resonance in composition scoring.
-pub const WEIGHT_RESONANCE: f64 = 0.15;
+pub use phient::generate::constants::WEIGHT_RESONANCE;
 
-/// Weight for word diversity in composition scoring.
-pub const WEIGHT_DIVERSITY: f64 = 0.10;
+pub use phient::generate::constants::WEIGHT_DIVERSITY;
 
-/// Weight for sector coverage in composition scoring.
-pub const WEIGHT_COVERAGE: f64 = 0.05;
+pub use phient::generate::constants::WEIGHT_COVERAGE;
 
-/// Weight for prompt alignment in composition scoring.
-pub const WEIGHT_ALIGNMENT: f64 = 0.30;
+pub use phient::generate::constants::WEIGHT_ALIGNMENT;
 
-/// Convergence delta for composition - stop refining if improvement is below this.
-pub const COMPOSE_CONVERGENCE_DELTA: f64 = 0.001;
+pub use phient::generate::constants::COMPOSE_CONVERGENCE_DELTA;
 
 // ── PERSONA PARAMETERS ─────────────────────────────────────────────────────
 

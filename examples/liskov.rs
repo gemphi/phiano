@@ -11,8 +11,8 @@
 //! `cargo run --release --bin liskov`
 
 use phiecs::phasor::facet::Facet;
-use phiano::generate::{ContextWaveBuffer, Generator};
-use phiano::learn::GenWeight;
+use phient::generate::{ContextWaveBuffer, Generator};
+use phient::generate::learn::GenWeight;
 use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phiecs::phasor::facet::storage::Storage;

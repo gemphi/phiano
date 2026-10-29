@@ -69,7 +69,7 @@ impl Model {
             trainer: Trainer::new(config::LEARNING_RATE),
             memo,
             world: Styles::new(),
-            context_buffer: crate::generate::ContextWaveBuffer::new(4096),
+            context_buffer: phient::generate::ContextWaveBuffer::new(4096),
             cognitive_core,
         }
     }

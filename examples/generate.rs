@@ -12,7 +12,7 @@
 
 use phiano::config::LEARNING_RATE;
 use phient::eval::Evaluator;
-use phiano::generate::{ContextWaveBuffer, Generator, OperatorGuide};
+use phient::generate::{ContextWaveBuffer, Generator, OperatorGuide};
 use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phient::net::space::Sides;
@@ -64,7 +64,7 @@ fn main() {
         "data/phinet_untrained.fno"
     };
 
-    let learned = phiano::learn::GenWeight::load_default();
+    let learned = phient::generate::learn::GenWeight::load_default();
     println!("learned weights: {}", if learned.is_some() { "data/learned.json" } else { "none (run bin/learn)" });
     let arms: [Arm; 8] = [
         ("hand scorer, unguided", None, 0.0, 0, 0, false, 0),

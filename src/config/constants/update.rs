@@ -64,19 +64,13 @@ pub use phient::metrics::kernel::CONTEXT_OMEGA;
 
 // ── COMPOSE TOURNAMENT (Huberman stage/measure ordering) ───────────────────
 
-/// Repulsion applied to losing compositions, relative to the learning rate.
-pub const LOSER_REPULSION: f64 = 0.25;
+pub use phient::generate::constants::LOSER_REPULSION;
 
-/// Sector-score spread below which the variant population is degenerate.
-pub const SPREAD_ALARM: f64 = 0.01;
+pub use phient::generate::constants::SPREAD_ALARM;
 
-/// Bonus weight for words that appeared in a winning sector last round
-/// (Huberman's killer heuristic, 1968).
-pub const KILLER_BONUS: f64 = 0.15;
+pub use phient::generate::constants::KILLER_BONUS;
 
-/// Weight for the composition length factor. Previously this term borrowed
-/// WEIGHT_NOVELTY, which was therefore counted twice.
-pub const WEIGHT_LENGTH: f64 = 0.15;
+pub use phient::generate::constants::WEIGHT_LENGTH;
 
 // ── PERSISTENCE ────────────────────────────────────────────────────────────
 
@@ -131,8 +125,7 @@ pub const CORRECTION_STRENGTH: f64 = 0.3;
 /// Path to the persisted correction journal.
 pub const CORRECTION_FILE: &str = "data/corrections.json";
 
-/// Phase dispersion below which generation warns that the manifold is degenerate.
-pub const DEGENERACY_WARN: f64 = 0.2;
+pub use phient::generate::constants::DEGENERACY_WARN;
 
 /// Ground startup phases by multi-channel composition rather than the
 /// single-channel centroid.

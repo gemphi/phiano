@@ -60,7 +60,7 @@ pub async fn generate_seq(
     let max_tok = req.max_tokens.unwrap_or(32);
     let temp = req.temperature.unwrap_or(0.15);
     let generator = Generator::new(max_tok, temp);
-    let mut ctx_buf = crate::generate::ContextWaveBuffer::new(4096);
+    let mut ctx_buf = phient::generate::ContextWaveBuffer::new(4096);
     let generated = generator.generate(&guard.facet, &mut ctx_buf, &req.text);
     Ok(Json(GenerateResponse {
         prompt: req.text,

@@ -1,6 +1,6 @@
 use crate::command::Context;
 use crate::command::Parser;
-use crate::generate::Generator;
+use phient::generate::Generator;
 use crate::instruction::InstructionEngine;
 use std::io::{BufRead, Write};
 

@@ -14,7 +14,7 @@
 
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use crate::generate::{ContextWaveBuffer, Decode, Generator, PersonaPrior};
+use phient::generate::{ContextWaveBuffer, Decode, Generator, PersonaPrior};
 use crate::persona::{Fingerprint, Style};
 use crate::tokenizer::Tokenizer;
 use std::rc::Rc;
@@ -81,7 +81,7 @@ impl Dialogue {
     /// Opens a dialogue with an ingested persona against the lexicon it was
     /// ingested into.
     pub fn open(facet: &Facet, persona: &Style) -> Self {
-        let prior = PersonaPrior::new(facet, &persona.fingerprint, 0.0).with_examples(&persona.examples, 1.0);
+        let prior = PersonaPrior::new(facet, &persona.fingerprint.sector_histogram, 0.0).with_examples(&persona.examples, 1.0);
         Self {
             name: persona.name.clone(),
             fingerprint: Fingerprint::extract(facet, &persona.examples),

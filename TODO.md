@@ -6,7 +6,9 @@ Paths are under `src/` unless they say otherwise. Diagrams: [ARCHITECTURE.md](AR
 
 The readers that need nothing of phiano's (counts, concepts, the mirror, the operator, the learner) moved to `phient::lineup`; their items are in phient's TODO.md. `arena` keeps `Ecs`, which reads a persona's world.
 
-- [ ] arena: put phient's learner behind `examples/talk.rs` and the workshop, so nothing that generates runs on counts.
+- [x] arena: phient's learner is behind `examples/talk.rs` (7 epochs, then `speak`) and the workshop (the student, corrected on the fly; `--rehearse` adds a pass per page); the counted phasors are only a contrast now (`talk --counted`, the workshop's contrast column).
+- [x] talk, workshop: run on the guide with the learner (docs/205): talk answers short and in grammar where the counted phasors run on; on the Key the learner completes 19.0% against 14.2% (counted phasors) and 17.2% (counts), one run, on the fly.
+- [ ] workshop: run with `--rehearse` (one pass over everything told after each page) and compare with the on-the-fly 19.0%.
 - [x] arena: `Operator` was missing from the lineup table (now `phient::lineup`'s table).
 - [ ] arena: `use crate::sys::Agent;` is repeated inside `Ecs::angle` and `Ecs::profile` (arena/ecs.rs).
 
@@ -19,21 +21,21 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 - [x] phasor: `SpectralPhasor` lives in `phiecs::phasor::spectral`, beside phiecs's `Phasor`; `crate::phasor` re-exports it, `config` re-exports its five constants, and `physics::Phical::effective_phase` reads `phiton::units::effective_phase`.
 - [x] arena: the readers moved to `phient::lineup` (see above).
 - [x] persona: phiano's `Persona` and `World` were not phiecs's (a style fingerprint and a set of them, against a persona file and the world of rows): renamed `Style` and `Styles`.
-- [x] reasoning: `cognitive::ReasoningResult` and `reasoning::ReasoningChain` were one thing: now one `cognitive::Chain<S>` (`reasoning::ReasoningChain` is `Chain<ReasoningStep>`, kept in `cognitive` so `reasoning` stays out of the cycle); the cognitive core's steps are `Thought`, its engine `ChainOfThought`.
+- [x] reasoning: `cognitive::ReasoningResult` and `reasoning::ReasoningChain` were one thing: now one `Chain<S>`, in `phient::reasoning` since phase B (`ReasoningChain` is `Chain<ReasoningStep>`; `core::searle` re-exports it beside its `Thought` and `ChainOfThought`).
+- [x] Phase B (docs/phiano/engine): `generate` (with `learn`, `compose` and its 16 constants) is `phient::generate`, `reasoning` is `phient::reasoning`. The persona prior takes a sector histogram, and the two sector functions are `phient::net::space::{lexicon_mean, relational_sector}`, so the engine no longer reads `persona`. phiano keeps `pub use phient::generate::compose;` only for the read-only example `flow`.
 - [x] examples: the code reader's `Tally` and the learner example's `Hits` counted what phient's held-out score counts: both use `phient::study::Score`. The code writers' `Tally` was a scoreboard: renamed `Scoreboard`.
 - [x] examples/builders: its `Tally` kept its own map of counts. The counts now live in phient's `relate::Tally` (one row per told triple), and what is the game's own (which game a word may be read in, posts, the teacher) stays as `GameCounts`. `tests.rs` checks that phient holds exactly the counts the game told, on two seeds.
-- [ ] examples/builders: re-run the full builders report once the machine is free and diff it against the last recorded one (docs/102–111); the counts are proven equal, so the numbers should not move.
+- [x] examples/builders: the full report re-run on the ported code (seed 7, R = 32, 30 epochs) matches docs/113_rule_game_seed7.md in all 90 table rows; only the run time differs (1319 s at idle priority on a busy machine, against 79 s).
 
 ## Structure
 
-- [ ] Break the dependency cycle: 4 of the 19 modules use each other, all app code (compose, generate, learn, persona; ARCHITECTURE.md, layer 2), counted on code, not doc links; command and drivers are a second, small one. It was 25 (counting doc links) before the phasor, facet, wave, storage, memory, eval, metrics and the training cluster moved out.
+- [ ] The one cycle left: command ↔ drivers, 2 of the 15 modules, both app code (ARCHITECTURE.md), counted on code, not doc links. It was 25 (counting doc links) before the phasor, facet, wave, storage, memory, eval, metrics, the training cluster and the engine moved out.
 - [ ] The match-not-else-if rule is broken in bpe/pretokenize.rs:31, persona/fingerprint/traits.rs:31, eval/verdict.rs:12 and eval/verdict.rs:91.
-- [ ] Whole-module `#![allow(dead_code)]` hides unused parts in metrics, reasoning, synthesis, wiki, curriculum, data, instruction, lifelong and physics.
+- [ ] Whole-module `#![allow(dead_code)]` hides unused parts in instruction and wiki.
 
 ## Dead or unwired modules
 
 - [x] extension: nothing used `Extension`/`Slot` but its own tests; phiecs's `Phasor` holds extension channels and `world::SLOTS` the answer slots. Parked in `_temp/phinet-root/phiano-extension/`.
-- [ ] attention: `attention/cross.rs` is never declared (no `mod cross;`), so it is not compiled; the only caller of `Attention::next_words` is the dead `Generator::attention_pick` (generate/steer.rs:13-25).
 - [ ] seam: `seam::Seam` (was `seam::Model`, renamed off `model::Model`) has no user outside its test, and `continue_from` never reaches `compute` (seam.rs:26, :68).
 - [ ] physics: `Topology` and its shapes are used nowhere outside physics; `spectral_convolution`, `temporal_project`, `curvature` and `sector_to_point` are never called (physics/mod.rs:51, physics/operators.rs:45, :67, physics/manifold.rs:87, :95).
 - [ ] lifelong: `LifelongLearner`, `MetaLearner`, `FeatureReuse` and `ModelMonitor` have no callers; the warm-starts write channel 0 only (lifelong/mod.rs:1, :106, lifelong/meta.rs:84).
@@ -64,7 +66,6 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 
 ## Stale docs
 
-- [ ] reasoning: lists `program_analogy.rs` and `multi_path.rs`; the files are program.rs and paths.rs (reasoning/mod.rs:8, :15).
 - [ ] cognitive: lists `speech_acts.rs` and `word_selection.rs`; agent numbers in `process` disagree with the agents' own docs (cognitive/mod.rs:7, :13, :79-94).
 - [ ] kinds: the README names `RelationTypes`; the type is `KindTable`; the k=16/64 tables are provisional (kinds/README.md:12, :24, :190).
 - [ ] sources: spec.md describes an `Ingester::ingest` that lives in `drivers::ingest` (sources/spec.md:26, :39).

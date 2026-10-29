@@ -17,6 +17,7 @@ pub mod layers;
 pub mod learn;
 pub mod oscillator;
 pub mod persona;
+mod personate;
 pub mod reasoning;
 pub mod resonance;
 pub mod save;
@@ -27,7 +28,7 @@ pub mod wave;
 
 use crate::core::searle::CognitiveCore;
 use phiecs::phasor::facet::Facet;
-use crate::generate::ContextWaveBuffer;
+use phient::generate::ContextWaveBuffer;
 use phient::memory::Memo;
 use crate::persona::Styles;
 use phient::train::trainer::Trainer;

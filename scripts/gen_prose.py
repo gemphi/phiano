@@ -136,8 +136,10 @@ def gather(model, word, n, persona, host, batch=24, predict=1200, threads=0, pac
         tries += 1
         try:
             resp = ollama(model, prompt_for(word, batch, persona), host, predict=predict, threads=threads)
-        except Exception:
-            break
+        except Exception as e:
+            print(f"  {time.strftime('%H:%M')} · {word}: ollama failed ({e}); waiting a minute", file=sys.stderr, flush=True)
+            time.sleep(60)
+            continue
         if pace:
             pace.after(len(resp.split()))
         for line in resp.splitlines():
@@ -198,6 +200,7 @@ def main():
             break
         sents = gather(args.model, w, args.n, args.persona, args.host, batch, predict, args.threads, pace)
         if not sents:
+            print(f"  {time.strftime('%H:%M')} · {w}: no sentences, skipped", flush=True)
             continue
         para = ". ".join(s.rstrip(" .") for s in sents) + " .\n\n"
         with open(os.path.join(args.out, f"prose_{shard:04d}.txt"), "a", encoding="utf-8") as f:

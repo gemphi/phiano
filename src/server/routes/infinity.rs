@@ -75,12 +75,12 @@ pub async fn infinity_visualize(
         phase: prompt_wave.arg(),
     };
 
-    let flows = crate::compose::flow::RiverFlow::generate_variations(&facet, prompt, 8);
+    let flows = phient::generate::compose::flow::RiverFlow::generate_variations(&facet, prompt, 8);
     let mut variations = Vec::with_capacity(flows.len());
 
     for flow in flows {
         let sector = flow.source_sector;
-        let color = crate::compose::SectorPalette::color(sector);
+        let color = phient::generate::compose::SectorPalette::color(sector);
         let text = flow.text;
         let wave = phiecs::phasor::wave::Wave::text(&facet, &text);
         let theta = (sector as f64) * 2.0 * std::f64::consts::PI / (phiecs::phasor::wave::Wave::sector_count() as f64);

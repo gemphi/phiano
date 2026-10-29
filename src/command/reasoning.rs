@@ -1,5 +1,5 @@
 use crate::command::Context;
-use crate::reasoning::ReasoningEngine;
+use philog::ReasoningEngine;
 
 pub struct ReasoningCmd;
 

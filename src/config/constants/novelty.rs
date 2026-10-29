@@ -18,8 +18,7 @@ pub use phient::eval::constants::EVAL_WEIGHT_RESONANCE;
 
 // ── RAY CASTING ────────────────────────────────────────────────────────────
 
-/// Default pool size for ray cast in composition.
-pub const RAY_CAST_POOL_SIZE: usize = 512;
+pub use phient::generate::constants::RAY_CAST_POOL_SIZE;
 
 /// Default top-K for ray cast word queries.
 pub const RAY_CAST_DEFAULT_K: usize = 16;
@@ -39,11 +38,9 @@ pub use phiecs::phasor::facet::SYNTAX_LAG_LEARN_RATE;
 /// Anti-phase pulse applied to a misunderstood concept (π radians).
 pub use phient::train::constants::PHASE_REPULSION;
 
-/// Candidate pool size for torus attractor decoding.
-pub const TORUS_DECODE_POOL: usize = 48;
+pub use phient::generate::constants::TORUS_DECODE_POOL;
 
-/// Default context window ring buffer capacity.
-pub const DEFAULT_CONTEXT_WINDOW: usize = 4096;
+pub use phient::generate::constants::DEFAULT_CONTEXT_WINDOW;
 
 /// Default reasoning chain iteration limit.
 pub const DEFAULT_REASONING_STEPS: usize = 5;
@@ -66,10 +63,7 @@ pub const CHROMA_FILE: &str = "data/manifold.chroma";
 /// (`Generator::with_operator`, `OperatorGuide::load`). Absent = unguided.
 pub const OPERATOR_FILE: &str = "data/phinet_generate.fno";
 
-/// Learned generator weights (`learn::GenWeight`), fit by `bin/learn` from
-/// held-out text. When present the generator scores candidates with them
-/// instead of the hand-tuned constants.
-pub const LEARNED_FILE: &str = "data/learned.json";
+pub use phient::generate::constants::LEARNED_FILE;
 
 /// Path to the serialized 16-layer memory log.
 pub const MEMORY_FILE: &str = "data/memory.chroma";

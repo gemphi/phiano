@@ -7,7 +7,7 @@
 
 use super::types::*;
 use phiecs::phasor::facet::Facet;
-use crate::generate::ContextWaveBuffer;
+use phient::generate::ContextWaveBuffer;
 use crate::tokenizer::Tokenizer;
 use phiecs::phasor::wave::Wave;
 use std::f64::consts::PI;
