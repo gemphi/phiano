@@ -31,9 +31,10 @@ pub async fn ingest_all(
             dialogues_trained = src.learn_into_facet(&mut model.facet, &mut model.memo, &model.trainer);
         }
         if do_phi4 {
-            let src = Phi4Source::discover();
-            let s = src.learn_into_facet(&mut model.facet, &model.trainer);
-            phi4_merges = s.merges_trained;
+            if let Ok(src) = Phi4Source::discover() {
+                let s = src.learn_into_facet(&mut model.facet, &model.trainer, "main");
+                phi4_merges = s.merges_trained;
+            }
         }
     }
 

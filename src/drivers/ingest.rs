@@ -48,24 +48,39 @@ impl Ingest {
         self.ingest_and_report(ctx, &WiktionarySource::new(&path), 30)
     }
 
-    /// Learns from the Phi-4 model in the refs folder.
+    /// Learns from the Phi-4 model in the directory given (or the default refs
+    /// folder when none is given), reading that directory alone.
     pub fn phi4(&self, ctx: &mut Context) -> bool {
-        let path = if ctx.arg.is_empty() {
-            "refs/Phi-4-multimodal-instruct"
+        let raw = if ctx.arg.is_empty() {
+            phient::train::sources::phi4::DEFAULT_DIR.to_string()
         } else {
-            ctx.arg
+            Parser::strip_quotes(ctx.arg)
         };
+        let path = std::path::Path::new(&raw);
 
         println!("  ── LEARNING FROM PHI-4 MODEL REFERENCES ──");
-        println!("  Source path: {}", path);
+        println!("  Source path: {}", path.display());
 
-        let source = Phi4Source::discover();
-        let summary = source.learn_into_facet(ctx.manifold, ctx.trainer);
+        let source = match Phi4Source::at(path) {
+            Ok(source) => source,
+            Err(err) => {
+                // A missing vocabulary file is reported by the path looked for;
+                // nothing is ingested and the facet is left unchanged (R3.15).
+                println!("  [error] {}", err);
+                return true;
+            }
+        };
 
+        let facet_name = "main";
+        let summary = source.learn_into_facet(ctx.manifold, ctx.trainer, facet_name);
+
+        // Report the words read, the merges read, and the facet the words
+        // landed in (R3.16).
         println!("  [Phi-4 Ingestion Summary]");
         println!("    • Tiktoken tokens loaded: {}", summary.vocab_tokens_loaded);
         println!("    • BPE token merges trained: {}", summary.merges_trained);
         println!("    • Doc & prompt sentences trained: {}", summary.doc_sentences_trained);
+        println!("    • Facet: {}", summary.facet);
         println!("    • Total Facet Vocabulary: {} words\n", summary.final_vocabulary_size);
 
         true

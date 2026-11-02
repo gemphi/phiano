@@ -91,12 +91,16 @@ fn main() {
     println!("  [dialogue] {} turns, vocab {}", d, facet.vocabulary_size());
 
     if !skip_phi4 {
-        let phi4 = Phi4Source::discover();
-        let s = phi4.learn_into_facet(&mut facet, &trainer);
-        println!(
-            "  [phi-4] vocab+{} merges+{} docs+{} → {}",
-            s.vocab_tokens_loaded, s.merges_trained, s.doc_sentences_trained, s.final_vocabulary_size
-        );
+        match Phi4Source::discover() {
+            Ok(phi4) => {
+                let s = phi4.learn_into_facet(&mut facet, &trainer, "main");
+                println!(
+                    "  [phi-4] vocab+{} merges+{} docs+{} → {}",
+                    s.vocab_tokens_loaded, s.merges_trained, s.doc_sentences_trained, s.final_vocabulary_size
+                );
+            }
+            Err(err) => println!("  [phi-4] {}", err),
+        }
     }
 
     if !skip_wiki && wiki_topics > 0 {

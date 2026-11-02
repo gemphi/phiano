@@ -140,8 +140,19 @@ pub async fn phi4_learn(
 ) -> Result<Json<Phi4LearnResponse>, StatusCode> {
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &mut *guard;
-    let source = Phi4Source::discover();
-    let summary = source.learn_into_facet(&mut model.facet, &model.trainer);
+    let source = match Phi4Source::discover() {
+        Ok(source) => source,
+        Err(err) => {
+            return Ok(Json(Phi4LearnResponse {
+                vocab_tokens_loaded: 0,
+                merges_trained: 0,
+                doc_sentences_trained: 0,
+                final_vocabulary_size: model.facet.vocabulary_size(),
+                message: err.to_string(),
+            }));
+        }
+    };
+    let summary = source.learn_into_facet(&mut model.facet, &model.trainer, "main");
     Ok(Json(Phi4LearnResponse {
         vocab_tokens_loaded: summary.vocab_tokens_loaded,
         merges_trained: summary.merges_trained,

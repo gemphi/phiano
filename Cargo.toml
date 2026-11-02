@@ -30,6 +30,7 @@ phient = { path = "../phient" }
 philog = { path = "../philog" }
 phiecs = { path = "../phiecs" }
 phiclm = { path = "../phiclm" }
+phisor = { path = "../phisor" }
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -86,6 +87,10 @@ path = "src/bin/relate/main.rs"
 [[bin]]
 name = "helix"
 path = "src/bin/helix/main.rs"
+
+[[bin]]
+name = "harness"
+path = "src/bin/harness/main.rs"
 
 [[example]]
 name = "riley"

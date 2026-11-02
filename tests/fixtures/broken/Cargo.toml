@@ -1,0 +1,14 @@
+# A fixture crate holding a deliberate syntax error, used by spawn.rs to
+# assert a build failure is distinguished from a test failure (R1.9). It is
+# outside the workspace's member globs so `cargo test -p phiano` never
+# compiles it; the spawn test invokes it explicitly by --manifest-path.
+[package]
+name = "broken-fixture"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "lib.rs"
+
+[workspace]
