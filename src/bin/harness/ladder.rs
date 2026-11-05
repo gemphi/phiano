@@ -28,6 +28,12 @@ use std::path::Path;
 /// The Guide and its Key, relative to the workspace root.
 const GUIDE: &str = "crates/phiano/data/person/murphy.txt";
 const KEY: &str = "crates/phiano/data/person/murphy_key.txt";
+/// The foundation's mined part-of-speech lexicon, primed into the reader so
+/// its word classes come from what was learned over the corpora.
+const POS: &str = "crates/phiano/data/lex/pos.tsv";
+/// The foundation's closed-class function words, primed so the reader never
+/// inflects a pronoun, preposition or determiner.
+const FUNCTION: &str = "crates/phiano/data/lex/function.txt";
 
 /// The Mode the ladder numbers are reported at (R5.6 declared the purity Bar
 /// over Mode 16).
@@ -44,6 +50,9 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
         eprintln!("harness: the Guide at {GUIDE} is unreadable; ladder numbers are unjudged");
         return Vec::new();
     };
+    // The Guide's own table of irregular verbs (Appendix 1.4), so the reader
+    // and realiser take their irregular forms from the book being read.
+    phisor::lexicon::prime_irregular(&text);
     let split = Split::new(guide::read(&text, &key));
     let (best, purity) = tune(&split);
     eprintln!(
@@ -138,6 +147,16 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
     // first reader clears neither Bar, so these record honest misses rather
     // than the unjudged they were before. Coverage and per-field need a
     // baseline and stay unjudged.
+    // Prime the reader with the foundation's mined POS lexicon, so its act
+    // numbers reflect word classes learned over the corpora rather than the
+    // reader's built-in closed sets. Absent file: the reader falls back.
+    if let Ok(pos) = std::fs::read_to_string(Path::new(POS)) {
+        phisor::lexicon::prime(&pos);
+    }
+    if let Ok(func) = std::fs::read_to_string(Path::new(FUNCTION)) {
+        phisor::lexicon::prime_function(&func);
+    }
+
     if let Ok(gold) = phisor::gold::read() {
         let (rt_matched, rt_total, _) = phisor::ladder::round_trip(gold.pairs());
         if rt_total > 0 {
@@ -148,6 +167,38 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
         if fp_covered > 0 {
             let purity = 100.0 * fp_matched as f64 / fp_covered as f64;
             out.push(Measured::judged("ladder.act.force_purity", one_decimal(purity), Unit::Percentage, bars));
+        }
+    }
+
+    // The reader on held-out foundation text: the Guide's Test sentences
+    // (one in ten, never tuned on), read and realised back. Unlike the gold
+    // - a frozen 150-sentence grammar yardstick the reader already covers -
+    // this is real English the reader was never hand-fit to, so it is the
+    // honest instrument that registers whether the reader generalises.
+    // Both need a baseline to judge, so they record unjudged for now.
+    let heldout = split.strings(phisor::guide::Part::Test);
+    let (m, covered, total) = phisor::ladder::read_realise_rate(heldout.iter().map(String::as_str));
+    if total > 0 {
+        let coverage = 100.0 * covered as f64 / total as f64;
+        out.push(Measured::judged("ladder.act.foundation_coverage", one_decimal(coverage), Unit::Percentage, bars));
+        if covered > 0 {
+            let soundness = 100.0 * m as f64 / covered as f64;
+            out.push(Measured::judged("ladder.act.foundation_soundness", one_decimal(soundness), Unit::Percentage, bars));
+        }
+    }
+
+    // The same reader on the cleaned held-out set: the Guide's exercise
+    // scaffolding (labels, answer-key doubling, `etc` fragments, split stems)
+    // removed by a text-only test, never by whether the reader succeeds. The
+    // raw numbers above stay on the record so nothing is hidden.
+    let clean = split.clean_strings(phisor::guide::Part::Test);
+    let (cm, ccov, ctotal) = phisor::ladder::read_realise_rate(clean.iter().map(String::as_str));
+    if ctotal > 0 {
+        let coverage = 100.0 * ccov as f64 / ctotal as f64;
+        out.push(Measured::judged("ladder.act.clean_coverage", one_decimal(coverage), Unit::Percentage, bars));
+        if ccov > 0 {
+            let soundness = 100.0 * cm as f64 / ccov as f64;
+            out.push(Measured::judged("ladder.act.clean_soundness", one_decimal(soundness), Unit::Percentage, bars));
         }
     }
     out
