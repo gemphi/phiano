@@ -59,6 +59,59 @@ pub fn measure(split: &Split, bars: &Bars, docs: &Path) -> Vec<Measured> {
     for (kind, n) in phisor::ladder::ABSTENTION_KINDS.iter().zip(kinds) {
         out.push(count(&format!("ladder.act.abstain.{kind}"), n, bars));
     }
+
+    // Audit each hand-authored Reader word list against the Held_Out_Slice:
+    // how many held-out words the list covers, and how many would change if
+    // the list were decided by the foundation lexicon instead (task 5.1,
+    // R5.2, R5.3). Counts only; no held-out word reaches a Reader decision.
+    out.extend(word_lists(&heldout, bars));
+    out
+}
+
+/// The distinct lower-case tokens of the Held_Out_Slice, the vocabulary the
+/// word-list audit measures each list's reach over. Terminating marks are
+/// already off the reconstructed strings.
+fn heldout_vocabulary(sentences: &[String]) -> std::collections::BTreeSet<String> {
+    sentences
+        .iter()
+        .flat_map(|s| s.trim_end_matches(['.', '?']).split_whitespace())
+        .map(str::to_lowercase)
+        .collect()
+}
+
+/// Whether the foundation lexicon - the learned source - would place `word` in
+/// the list category `name`. This is the "if the list were learned instead"
+/// arm of R5.3: a verb list is decided by verb-capability, the adverb list by
+/// an adverbial tag, the conjunction list by the closed-class function words.
+/// An unprimed or unknown word is not placed, so the arm reports a real learned
+/// verdict and never borrows the hand list's answer.
+fn learned_in_list(name: &str, word: &str) -> bool {
+    match name {
+        "control_verbs" | "complement_verbs" | "performatives" => phisor::lexicon::verb_capable(word),
+        "set_aside_adverbs" => phisor::lexicon::tag(word).is_some_and(|t| t.contains('r')),
+        "clause_conjunctions" => phisor::lexicon::function_word(word),
+        _ => false,
+    }
+}
+
+/// Per hand-authored Reader word list, two counts over the Held_Out_Slice's
+/// vocabulary: `ladder.act.wordlist.<name>.covers`, the held-out words the
+/// hand list contains, and `ladder.act.wordlist.<name>.would_change`, the
+/// held-out words whose membership the foundation lexicon would decide
+/// differently (task 5.1, R5.2, R5.3). Both are plain counts, judged only when
+/// a Bar names them; they measure a list, they do not move the Reader.
+fn word_lists(heldout: &[String], bars: &Bars) -> Vec<Measured> {
+    let vocab = heldout_vocabulary(heldout);
+    let mut out = Vec::new();
+    for (name, words) in phisor::ladder::word_lists() {
+        let in_hand: std::collections::BTreeSet<&str> = words.iter().copied().collect();
+        let covers = vocab.iter().filter(|w| in_hand.contains(w.as_str())).count();
+        let would_change =
+            vocab.iter().filter(|w| in_hand.contains(w.as_str()) != learned_in_list(name, w)).count();
+        eprintln!("ladder.act.wordlist.{name}: covers {covers} held-out words, {would_change} would change if learned");
+        out.push(count(&format!("ladder.act.wordlist.{name}.covers"), covers, bars));
+        out.push(count(&format!("ladder.act.wordlist.{name}.would_change"), would_change, bars));
+    }
     out
 }
 
