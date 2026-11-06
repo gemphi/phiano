@@ -158,16 +158,23 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
     }
 
     if let Ok(gold) = phisor::gold::read() {
-        let (rt_matched, rt_total, _) = phisor::ladder::round_trip(gold.pairs());
-        if rt_total > 0 {
-            let rate = 100.0 * rt_matched as f64 / rt_total as f64;
-            out.push(Measured::judged("ladder.act.round_trip", one_decimal(rate), Unit::Percentage, bars));
-        }
-        let (fp_matched, fp_covered) = phisor::ladder::force_purity(gold.pairs());
-        if fp_covered > 0 {
-            let purity = 100.0 * fp_matched as f64 / fp_covered as f64;
-            out.push(Measured::judged("ladder.act.force_purity", one_decimal(purity), Unit::Percentage, bars));
-        }
+        // All 150 frames: the headline round-trip and force purity the task
+        // 13.7 reader already reports.
+        let all: Vec<_> = gold.pairs().collect();
+        out.extend(gold_figures("", &all, bars));
+        // The same two figures over the reachable subset only - the 150 minus
+        // the Unreachable_Frames no text-only reader can label (R2.2). The
+        // exclusion lives only in this figure; the gold file is untouched. The
+        // reachable figures are the before baseline the Realiser tasks (7.1 to
+        // 7.4) compare their after figures against (R4.5).
+        let reachable: Vec<_> = gold
+            .entries
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| phisor::gold::unreachable(*i).is_none())
+            .map(|(_, e)| (&e.act, e.sentence.as_str()))
+            .collect();
+        out.extend(gold_figures("_reachable", &reachable, bars));
     }
 
     // The reader on the Held_Out_Slice: four measures, regression flag and
@@ -175,7 +182,91 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
     out.extend(super::act::measure(split, bars, Path::new(super::DOCS_DIR)));
     out
 }
+
+/// The round-trip and force-purity figures over a set of gold `(Act, text)`
+/// pairs, named `ladder.act.round_trip{suffix}` and
+/// `ladder.act.force_purity{suffix}`. `suffix` is empty for the all-150 cut
+/// and `_reachable` for the subset that drops the Unreachable_Frames, so both
+/// cuts are reported side by side (R2.2). A cut with nothing to score emits no
+/// record, matching the all-150 behaviour it replaced.
+fn gold_figures(suffix: &str, pairs: &[(&phisor::ir::Act, &str)], bars: &Bars) -> Vec<Measured> {
+    let mut out = Vec::new();
+    let (rt_matched, rt_total, _) =
+        phisor::ladder::round_trip(pairs.iter().map(|&(a, s)| (a, s)));
+    if rt_total > 0 {
+        let rate = 100.0 * rt_matched as f64 / rt_total as f64;
+        let name = format!("ladder.act.round_trip{suffix}");
+        out.push(Measured::judged(&name, one_decimal(rate), Unit::Percentage, bars));
+    }
+    let (fp_matched, fp_covered) = phisor::ladder::force_purity(pairs.iter().map(|&(a, s)| (a, s)));
+    if fp_covered > 0 {
+        let purity = 100.0 * fp_matched as f64 / fp_covered as f64;
+        let name = format!("ladder.act.force_purity{suffix}");
+        out.push(Measured::judged(&name, one_decimal(purity), Unit::Percentage, bars));
+    }
+    out
+}
+
 /// One decimal place, matching the Recorder's reporting.
 pub(super) fn one_decimal(value: f64) -> f64 {
     (value * 10.0).round() / 10.0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The reachable cut drops the Unreachable_Frames, so it reports the same
+    /// two names with the `_reachable` suffix beside the all-150 pair, and
+    /// scores no lower than the all-150 cut on either figure (R2.2).
+    #[test]
+    fn reachable_cut_sits_beside_the_all_150_cut() {
+        let bars = Bars::default();
+        // Prime the reader as the live walk does, so the before figures this
+        // test prints match the harness record the Realiser tasks compare
+        // against. Absent files leave the reader on its built-in classes.
+        if let Ok(pos) = std::fs::read_to_string(Path::new(POS)) {
+            phisor::lexicon::prime(&pos);
+        }
+        if let Ok(func) = std::fs::read_to_string(Path::new(FUNCTION)) {
+            phisor::lexicon::prime_function(&func);
+        }
+        let gold = phisor::gold::read().expect("the frozen gold set loads");
+
+        let all: Vec<_> = gold.pairs().collect();
+        let reachable: Vec<_> = gold
+            .entries
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| phisor::gold::unreachable(*i).is_none())
+            .map(|(_, e)| (&e.act, e.sentence.as_str()))
+            .collect();
+
+        // The subset is the 150 minus the listed Unreachable_Frames.
+        assert_eq!(reachable.len(), gold.len() - phisor::gold::UNREACHABLE.len());
+
+        let all_figs = gold_figures("", &all, &bars);
+        let reach_figs = gold_figures("_reachable", &reachable, &bars);
+        let get = |figs: &[Measured], name: &str| {
+            figs.iter().find(|m| m.name == name).map(|m| m.value)
+        };
+
+        let rt_all = get(&all_figs, "ladder.act.round_trip").expect("all round-trip");
+        let fp_all = get(&all_figs, "ladder.act.force_purity").expect("all force purity");
+        let rt_reach =
+            get(&reach_figs, "ladder.act.round_trip_reachable").expect("reachable round-trip");
+        let fp_reach =
+            get(&reach_figs, "ladder.act.force_purity_reachable").expect("reachable force purity");
+
+        // Every figure is a share, so it sits in [0, 100].
+        for v in [rt_all, fp_all, rt_reach, fp_reach] {
+            assert!((0.0..=100.0).contains(&v), "{v} is not a percentage");
+        }
+        // The Unreachable_Frames are the ones whose Force the surface text
+        // cannot settle (BareWill, and the NameCase/Unaccusative that share a
+        // surface shape), so dropping them lifts force purity. Round-trip is a
+        // realiser check independent of the label, so it is not constrained to
+        // move either way and is only checked to be in range above.
+        assert!(fp_reach >= fp_all, "force purity {fp_reach} < all {fp_all}");
+    }
 }
