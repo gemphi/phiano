@@ -192,6 +192,17 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
     // removed by a text-only test, never by whether the reader succeeds. The
     // raw numbers above stay on the record so nothing is hidden.
     let clean = split.clean_strings(phisor::guide::Part::Test);
+    // What the filter did, so the cleaned figures can be read honestly: the
+    // kept and removed counts, then how many sentences each named operator
+    // rejects (a sentence two operators reject counts under both).
+    let count = |name: &str, n: usize| Measured::judged(name, n as f64, Unit::Count, bars);
+    out.push(count("ladder.act.clean_kept", clean.len()));
+    out.push(count("ladder.act.clean_removed", heldout.len() - clean.len()));
+    for (name, n) in split.removed_by(phisor::guide::Part::Test) {
+        let rule = phisor::guide::OPERATORS.iter().find(|o| o.name == name).map_or("", |o| o.rule);
+        eprintln!("ladder.act.operator.{name}: {n} removed ({rule})");
+        out.push(count(&format!("ladder.act.operator.{name}"), n));
+    }
     let (cm, ccov, ctotal) = phisor::ladder::read_realise_rate(clean.iter().map(String::as_str));
     if ctotal > 0 {
         let coverage = 100.0 * ccov as f64 / ctotal as f64;
