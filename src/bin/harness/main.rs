@@ -15,6 +15,7 @@
 //! fast and offline.
 #![allow(dead_code)]
 
+mod act;
 mod bars;
 mod curric;
 mod curriculum;

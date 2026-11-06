@@ -120,6 +120,13 @@ pub fn previous_bars(dir: &Path) -> BTreeMap<String, Bar> {
     out
 }
 
+/// The value the most recent earlier page recorded for `name`, or `None` when
+/// there is no earlier page or it holds no finite value under that name.
+pub fn previous_value(dir: &Path, name: &str) -> Option<f64> {
+    let body = std::fs::read_to_string(highest_page(dir)?).ok()?;
+    parse(&body).into_iter().find(|m| m.name == name && m.value.is_finite()).map(|m| m.value)
+}
+
 /// The path of the highest-numbered page in `dir`, or `None`.
 fn highest_page(dir: &Path) -> Option<PathBuf> {
     let entries = std::fs::read_dir(dir).ok()?;

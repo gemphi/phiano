@@ -194,6 +194,11 @@ impl Recorder {
     }
 }
 
+/// The value the most recent earlier page recorded for `name`, if any.
+pub fn previous_value(dir: &Path, name: &str) -> Option<f64> {
+    parse::previous_value(dir, name)
+}
+
 /// Truncate `s` to at most `cap` characters, taking a prefix of the original
 /// (R2.5's 20-name list, and the shared cap rule Property 4 pins over all
 /// four declared caps). Counting is by `char`, so a multi-byte character is

@@ -170,51 +170,12 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
         }
     }
 
-    // The reader on held-out foundation text: the Guide's Test sentences
-    // (one in ten, never tuned on), read and realised back. Unlike the gold
-    // - a frozen 150-sentence grammar yardstick the reader already covers -
-    // this is real English the reader was never hand-fit to, so it is the
-    // honest instrument that registers whether the reader generalises.
-    // Both need a baseline to judge, so they record unjudged for now.
-    let heldout = split.strings(phisor::guide::Part::Test);
-    let (m, covered, total) = phisor::ladder::read_realise_rate(heldout.iter().map(String::as_str));
-    if total > 0 {
-        let coverage = 100.0 * covered as f64 / total as f64;
-        out.push(Measured::judged("ladder.act.foundation_coverage", one_decimal(coverage), Unit::Percentage, bars));
-        if covered > 0 {
-            let soundness = 100.0 * m as f64 / covered as f64;
-            out.push(Measured::judged("ladder.act.foundation_soundness", one_decimal(soundness), Unit::Percentage, bars));
-        }
-    }
-
-    // The same reader on the cleaned held-out set: the Guide's exercise
-    // scaffolding (labels, answer-key doubling, `etc` fragments, split stems)
-    // removed by a text-only test, never by whether the reader succeeds. The
-    // raw numbers above stay on the record so nothing is hidden.
-    let clean = split.clean_strings(phisor::guide::Part::Test);
-    // What the filter did, so the cleaned figures can be read honestly: the
-    // kept and removed counts, then how many sentences each named operator
-    // rejects (a sentence two operators reject counts under both).
-    let count = |name: &str, n: usize| Measured::judged(name, n as f64, Unit::Count, bars);
-    out.push(count("ladder.act.clean_kept", clean.len()));
-    out.push(count("ladder.act.clean_removed", heldout.len() - clean.len()));
-    for (name, n) in split.removed_by(phisor::guide::Part::Test) {
-        let rule = phisor::guide::OPERATORS.iter().find(|o| o.name == name).map_or("", |o| o.rule);
-        eprintln!("ladder.act.operator.{name}: {n} removed ({rule})");
-        out.push(count(&format!("ladder.act.operator.{name}"), n));
-    }
-    let (cm, ccov, ctotal) = phisor::ladder::read_realise_rate(clean.iter().map(String::as_str));
-    if ctotal > 0 {
-        let coverage = 100.0 * ccov as f64 / ctotal as f64;
-        out.push(Measured::judged("ladder.act.clean_coverage", one_decimal(coverage), Unit::Percentage, bars));
-        if ccov > 0 {
-            let soundness = 100.0 * cm as f64 / ccov as f64;
-            out.push(Measured::judged("ladder.act.clean_soundness", one_decimal(soundness), Unit::Percentage, bars));
-        }
-    }
+    // The reader on the Held_Out_Slice: four measures, regression flag and
+    // abstention kinds (see ct).
+    out.extend(super::act::measure(split, bars, Path::new(super::DOCS_DIR)));
     out
 }
 /// One decimal place, matching the Recorder's reporting.
-fn one_decimal(value: f64) -> f64 {
+pub(super) fn one_decimal(value: f64) -> f64 {
     (value * 10.0).round() / 10.0
 }
