@@ -10,3 +10,16 @@ jobs/
 # dictionaries); the corpora the examples read are kept.
 data/*
 !data/person/
+# The word lists the code reads instead of holding (no data in code,
+# 2026-11-07): small, hand-editable, and a clone must have them.
+!data/intent/
+!data/stop_words.txt
+# data/lex holds the reader's hand-authored language lists (tracked); the
+# mined or vendored tables beside them stay out.
+!data/lex/
+data/lex/dict.jsonl
+data/lex/freq.tsv
+data/lex/near.tsv
+data/lex/pos.tsv
+data/lex/sense.tsv
+data/lex/function.txt

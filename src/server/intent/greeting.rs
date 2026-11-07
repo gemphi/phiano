@@ -1,40 +1,45 @@
 #[allow(unused_imports)]
 use super::*;
 
+
+/// One of the intent classifier's phrase lists, read once from
+/// `data/intent/<name>.txt` (the ruling of 2026-11-07: no data in code).
+/// The whole line is the entry, so "no, " keeps its trailing space.
+fn intent_list(name: &'static str) -> &'static [String] {
+    use std::collections::HashMap;
+    use std::sync::{Mutex, OnceLock};
+    static LISTS: OnceLock<Mutex<HashMap<&'static str, &'static [String]>>> = OnceLock::new();
+    let mut lists = LISTS.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner());
+    lists.entry(name).or_insert_with(|| {
+        let path = format!("{}/data/intent/{name}.txt", env!("CARGO_MANIFEST_DIR"));
+        Box::leak(phistd::lexfile::read(path).into_boxed_slice())
+    })
+}
+
 impl ChatIntent {
 
     // ── PATTERN CLASSIFIER HELPERS ─────────────────────────────────────────────
 
     pub(super) fn is_greeting(p_lower: &str) -> bool {
-    const GREETINGS: &[&str] = &[
-        "hello", "hi", "hey", "good morning", "good afternoon", "good evening", "greetings", "howdy",
-    ];
+    let GREETINGS = intent_list("greetings");
     let cleaned = p_lower.trim_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace());
-    GREETINGS.iter().any(|&g| {
+    GREETINGS.iter().any(|g| {
         cleaned.starts_with(g) || p_lower.starts_with(g)
     })
 }
 
     pub(super) fn is_self_correction(p_lower: &str) -> bool {
-    const CORRECTION_STARTS: &[&str] = &[
-        "no, ", "no ", "that is wrong", "that's wrong", "incorrect", "correction:", "you are wrong", "you're wrong",
-    ];
-    CORRECTION_STARTS.iter().any(|&c| p_lower.starts_with(c) || p_lower.contains(c))
+    let CORRECTION_STARTS = intent_list("correction_starts");
+    CORRECTION_STARTS.iter().any(|c| p_lower.starts_with(c.as_str()) || p_lower.contains(c.as_str()))
 }
 
     /// Extracts the correction content by stripping the negation prefix.
     ///
     /// e.g. "no, that's wrong, dogs are mammals" → "dogs are mammals"
     pub(super) fn extract_correction_content(p_lower: &str) -> String {
-    const CORRECTION_PREFIXES: &[&str] = &[
-        "no, that's wrong, ", "no, that is wrong, ", "no, ",
-        "that's wrong, ", "that is wrong, ",
-        "incorrect, ", "correction: ",
-        "you are wrong, ", "you're wrong, ",
-        "no ", "incorrect ", "correction: ",
-    ];
+    let CORRECTION_PREFIXES = intent_list("correction_prefixes");
     for prefix in CORRECTION_PREFIXES {
-        if let Some(rest) = p_lower.strip_prefix(prefix) {
+        if let Some(rest) = p_lower.strip_prefix(prefix.as_str()) {
             return rest.trim().to_string();
         }
     }
@@ -49,40 +54,27 @@ impl ChatIntent {
 }
 
     pub(super) fn is_personal_memory(p_lower: &str) -> bool {
-    const PERSONAL_TRIGGERS: &[&str] = &[
-        "my ", "i am ", "i love", "i live in", "we are", "allergic to", "my name is", "my daughter", "my son",
-    ];
-    PERSONAL_TRIGGERS.iter().any(|&t| p_lower.contains(t))
+    let PERSONAL_TRIGGERS = intent_list("personal_triggers");
+    PERSONAL_TRIGGERS.iter().any(|t| p_lower.contains(t.as_str()))
 }
 
     pub(super) fn is_recommendation(p_lower: &str) -> bool {
-    const RECOMMENDATION_TRIGGERS: &[&str] = &[
-        "what books", "what topics", "what should", "recommend", "suggest", "where should", "how should i learn",
-        "explore next", "books or topics",
-    ];
-    RECOMMENDATION_TRIGGERS.iter().any(|&r| p_lower.contains(r))
+    let RECOMMENDATION_TRIGGERS = intent_list("recommendation_triggers");
+    RECOMMENDATION_TRIGGERS.iter().any(|r| p_lower.contains(r.as_str()))
 }
 
     pub(super) fn is_explanation_request(p_lower: &str) -> bool {
-    const QUESTION_TRIGGERS: &[&str] = &[
-        "what is", "define", "explain", "tell me about", "how does", "why do", "why does", "who is", "what are",
-    ];
-    QUESTION_TRIGGERS.iter().any(|&q| p_lower.contains(q)) || p_lower.ends_with('?')
+    let QUESTION_TRIGGERS = intent_list("question_triggers");
+    QUESTION_TRIGGERS.iter().any(|q| p_lower.contains(q.as_str())) || p_lower.ends_with('?')
 }
 
     pub fn extract_topic_term(tokens: &[String], prompt: &str) -> String {
-    const STOP_WORDS: &[&str] = &[
-        "what", "is", "are", "were", "was", "be", "been", "being", "have", "has", "had", "a", "an", "the",
-        "explain", "why", "do", "does", "did", "how", "can", "could", "will", "would", "shall", "should",
-        "may", "might", "must", "you", "tell", "me", "about", "define", "who", "whom", "whose", "which",
-        "where", "when", "she", "he", "they", "we", "i", "or", "and", "not", "next", "books", "recommend",
-        "suggest", "for", "in", "on", "to", "with", "by", "at", "from", "into", "of", "considered", "between",
-    ];
+    let STOP_WORDS = intent_list("stop_words");
 
     for t in tokens {
         let t_clean = t.to_lowercase();
         let stripped = t_clean.trim_matches(|c: char| !c.is_alphabetic());
-        if !STOP_WORDS.contains(&stripped) && stripped.len() >= 3 {
+        if !STOP_WORDS.iter().any(|w| w == stripped) && stripped.len() >= 3 {
             return stripped.to_string();
         }
     }

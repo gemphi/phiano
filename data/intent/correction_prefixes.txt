@@ -1,0 +1,13 @@
+# correction_prefixes: one entry per line, the whole line counts (a trailing space is part of it). A run may append.
+no, that's wrong, 
+no, that is wrong, 
+no, 
+that's wrong, 
+that is wrong, 
+incorrect, 
+correction: 
+you are wrong, 
+you're wrong, 
+no 
+incorrect 
+correction: 
