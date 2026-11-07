@@ -545,9 +545,9 @@ mod tests {
     /// - 133 `i was delighted with your letter.`
     ///
     /// Direct read as Assert, 102 `please close the window.`, is fixed by
-    /// `politeness_marker.txt` (task 4.3). Wish read as Assert: 143
+    /// `politeness_marker.txt` (task 4.3). Wish read as Assert, 143
     /// `i wish we did not have to go.`, which has no general rule.
-    const WRONG_FORCE: [(usize, Force, Force); 9] = [
+    const WRONG_FORCE: [(usize, Force, Force); 8] = [
         (117, Force::Commit, Force::Assert),
         (119, Force::Commit, Force::Assert),
         (120, Force::Commit, Force::Assert),
@@ -556,7 +556,6 @@ mod tests {
         (124, Force::Commit, Force::Assert),
         (126, Force::Commit, Force::Assert),
         (133, Force::Express, Force::Assert),
-        (143, Force::Wish, Force::Assert),
     ];
 
     /// Pins the wrong-Force gold frames by index with the confusion, and the
@@ -576,7 +575,7 @@ mod tests {
         assert_eq!(count(Force::Commit, Force::Assert), 7);
         assert_eq!(count(Force::Express, Force::Assert), 1);
         assert_eq!(count(Force::Direct, Force::Assert), 0);
-        assert_eq!(count(Force::Wish, Force::Assert), 1);
+        assert_eq!(count(Force::Wish, Force::Assert), 0);
 
         // The seven Commit frames are exactly the BareWill Unreachable_Frames.
         let bare: Vec<usize> = (0..phisor::gold::COUNT)
@@ -586,9 +585,9 @@ mod tests {
             found.iter().filter(|f| f.1 == Force::Commit).map(|f| f.0).collect();
         assert_eq!(bare, commits, "the BareWill frames and the Commit confusions differ");
 
-        // Removing only the BareWill frames leaves 2 wrong of 115 covered (task 4.3: was 6; task 4.2: was 8 of 113).
+        // Removing only the BareWill frames leaves 1 wrong of 115 covered (wish rows read back: was 2; task 4.3: was 6; task 4.2: was 8 of 113).
         let decidable = decidable_figure(&gold, &Bars::default()).expect("decidable figure");
         assert_eq!(decidable.name, "ladder.act.force_purity_decidable");
-        assert_eq!(decidable.value, 98.3);
+        assert_eq!(decidable.value, 99.1);
     }
 }
