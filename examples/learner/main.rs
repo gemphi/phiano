@@ -17,7 +17,9 @@
 //! learner whole, and `--resume ckpt` starts the next run from it instead of
 //! the seed, telling it only what is new. `--no-guide` tells it the extra
 //! text alone, so a curriculum is two runs: the wide text first and saved,
-//! then the guide on top of it.
+//! then the guide on top of it. On a resume `--epochs` and `--rate` are this
+//! run's; `--forget 0.1` scales the Adagrad accumulators so a sure learner
+//! gets its stride back (docs/214).
 //!
 //! | model | what it is |
 //! |---|---|
@@ -28,7 +30,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--no-guide] [--resume ckpt] [--widen 128] [--save ckpt]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--no-guide] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt]
 //! ```
 
 mod counting;
@@ -145,6 +147,9 @@ fn main() {
             if flag("--epochs").is_some() {
                 l.config.epochs = config.epochs;
             }
+            if flag("--rate").is_some() {
+                l.config.rate = config.rate;
+            }
             println!("resumed from {path}: {} lines told before, vocabulary {}\n", l.lines_told(), l.vocabulary());
             // More channels for a learner that has already learned (docs/210):
             // the old kept, the new born quiet, nothing learned lost.
@@ -154,6 +159,13 @@ fn main() {
                     true => println!("widened from {from} to {wide} channels\n"),
                     false => println!("not widened: {wide} is not wider than {from}, or not a multiple of the block {}\n", l.config.block),
                 }
+            }
+            // Its stride back (docs/214): the accumulators scaled, the
+            // phasors kept, so a resumed learner can take real steps again.
+            if let Some(share) = flag("--forget").and_then(|s| s.parse::<f32>().ok()) {
+                l.forget(share);
+                println!("forgot the stride: accumulators scaled by {share}
+");
             }
             l
         }
