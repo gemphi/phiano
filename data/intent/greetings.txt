@@ -1,0 +1,9 @@
+# greetings: one entry per line, the whole line counts (a trailing space is part of it). A run may append.
+hello
+hi
+hey
+good morning
+good afternoon
+good evening
+greetings
+howdy

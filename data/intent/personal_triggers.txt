@@ -1,0 +1,10 @@
+# personal_triggers: one entry per line, the whole line counts (a trailing space is part of it). A run may append.
+my 
+i am 
+i love
+i live in
+we are
+allergic to
+my name is
+my daughter
+my son

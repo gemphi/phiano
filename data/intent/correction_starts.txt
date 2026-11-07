@@ -1,0 +1,9 @@
+# correction_starts: one entry per line, the whole line counts (a trailing space is part of it). A run may append.
+no, 
+no 
+that is wrong
+that's wrong
+incorrect
+correction:
+you are wrong
+you're wrong

@@ -78,3 +78,9 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 - [ ] phinum: cites "phidoc ◂ puijs", which are not dependencies (phinum/mod.rs:19).
 - [ ] topdown: the sentence level does not move (1.01× chance); `Up::Bound` is kept though always worse (topdown.rs:76, :80).
 - [x] The paradigm sentence "with a count" in README.md and personas/ (re-worded: the words move by the error of what was expected).
+
+## Data to files (2026-11-07)
+
+- [x] `server::intent::greeting`: the seven phrase lists are `data/intent/*.txt`, read once, the whole line the entry.
+- [ ] 48 cwd-relative `"data/…"` paths across src: resolve from `CARGO_MANIFEST_DIR` like `data/intent/`, so a binary run from the workspace root finds them.
+- [ ] `config/constants/*`: read each table of words or phrases there the same way.

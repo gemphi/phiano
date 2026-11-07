@@ -1,0 +1,10 @@
+# question_triggers: one entry per line, the whole line counts (a trailing space is part of it). A run may append.
+what is
+define
+explain
+tell me about
+how does
+why do
+why does
+who is
+what are

@@ -1,0 +1,10 @@
+# recommendation_triggers: one entry per line, the whole line counts (a trailing space is part of it). A run may append.
+what books
+what topics
+what should
+recommend
+suggest
+where should
+how should i learn
+explore next
+books or topics
