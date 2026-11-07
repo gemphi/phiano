@@ -1,0 +1,9 @@
+# Verbs that take a recipient as their first object, from the Guide's
+# ditransitive patterns ("give/tell/show someone something").
+# One entry per line.
+give
+tell
+show
+send
+offer
+teach

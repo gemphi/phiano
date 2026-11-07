@@ -1,0 +1,19 @@
+# Multi-word adverbials the IR has no slot for, set aside as a unit the same
+# way the single words above are. Each is a fixed adverb phrase of time or
+# degree that the gold leaves out of its frames, never a noun phrase ("a lot
+# of money") or a place phrase the gold keeps under a preposition. They are
+# matched as a contiguous run of words and dropped whole, so a sentence whose
+# only remainder is a frame the reader covers becomes readable, and the same
+# phrase is dropped on both sides of the round-trip (task 6.2, R3.3, R5.2).
+#
+# Linguistic source: Murphy's *English Grammar in Use* adverbials of time -
+# Unit 19 ("i'm doing it right now", the present moment) and Unit 108's
+# position note, plus the fixed phrase "at the moment" Murphy uses throughout
+# Units 1-3 and 25 for the present. "these days" is the present-period
+# adverbial of Unit 5. Like the single adverbs, these sit around the verb and
+# the gold has no slot for them.
+# One phrase per line, its words separated by spaces.
+right now
+at the moment
+these days
+right away

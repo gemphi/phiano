@@ -1,0 +1,22 @@
+# The closed set of base-form verbs the Guide uses to give an instruction,
+# so the reader recognises an imperative without guessing from word order.
+# One entry per line.
+ask
+boil
+choose
+close
+compare
+complete
+finish
+forget
+give
+listen
+look
+open
+put
+read
+repeat
+study
+tell
+use
+write
