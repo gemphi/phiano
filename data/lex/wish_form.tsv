@@ -1,0 +1,13 @@
+# The verb group of a wished-for clause (the past that does not hold): the
+# subjunctive form that stands in for the plain past of a verb or modal.
+# key<TAB>polarity (`positive` or `negative`)<TAB>words
+# key     `be` (the copula, simple past) or a modal's present form. A `be` row
+#         is the whole verb group; a modal row is followed by the bare verb.
+#
+# Linguistic source: Murphy Units 40-41. After `wish`, `be` is `were` for every
+# person ("i wish she were here", not "was"), and `must` is said `had to`
+# ("i wish we did not have to go").
+be	positive	were
+be	negative	were not
+must	positive	had to
+must	negative	did not have to
