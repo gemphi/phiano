@@ -192,6 +192,7 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
             .collect();
         out.extend(gold_figures("_reachable", &reachable, bars));
         out.extend(realisable_figure(&gold, bars));
+        out.extend(decidable_figure(&gold, bars));
     }
 
     // The reader on the Held_Out_Slice: four measures, regression flag and
@@ -243,6 +244,27 @@ fn realisable_figure(gold: &phisor::gold::Gold, bars: &Bars) -> Option<Measured>
     })
 }
 
+/// `ladder.act.force_purity_decidable`: force purity with only the `BareWill`
+/// frames removed. A bare `will` is a Commit or a prediction and the text does
+/// not say which, so no Force can be read for it; the `NameCase` frames stay
+/// in, since a proper name cannot change a Force (R2.1). The gold file is
+/// untouched; the exclusion lives only in this figure.
+fn decidable_figure(gold: &phisor::gold::Gold, bars: &Bars) -> Option<Measured> {
+    use phisor::gold::Reason;
+    let decidable: Vec<_> = gold
+        .entries
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| phisor::gold::unreachable(*i) != Some(Reason::BareWill))
+        .map(|(_, e)| (&e.act, e.sentence.as_str()))
+        .collect();
+    let (matched, covered) = phisor::ladder::force_purity(decidable);
+    (covered > 0).then(|| {
+        let purity = 100.0 * matched as f64 / covered as f64;
+        Measured::judged("ladder.act.force_purity_decidable", one_decimal(purity), Unit::Percentage, bars)
+    })
+}
+
 /// One decimal place, matching the Recorder's reporting.
 pub(super) fn one_decimal(value: f64) -> f64 {
     (value * 10.0).round() / 10.0
@@ -252,6 +274,7 @@ pub(super) fn one_decimal(value: f64) -> f64 {
 mod tests {
     use super::*;
     use phisor::guide::{Function, Mark, Sentence};
+    use phisor::ir::Force;
 
     /// A small deterministic text whose function follows its first word, in
     /// 240 sentences of three units, so every part of the split is occupied.
@@ -467,5 +490,112 @@ mod tests {
         let realisable = realisable_figure(&gold, &bars).expect("realisable round-trip");
         assert_eq!(realisable.name, "ladder.act.round_trip_realisable");
         assert_eq!(realisable.value, 100.0);
+    }
+
+    /// Every covered gold frame the Reader reads with a wrong Force, by gold
+    /// index: `(index, gold Force, read Force, sentence)` (R2.2).
+    fn wrong_force(gold: &phisor::gold::Gold) -> Vec<(usize, phisor::ir::Force, phisor::ir::Force, String)> {
+        gold.entries
+            .iter()
+            .enumerate()
+            .filter_map(|(i, e)| {
+                let read = phisor::ladder::read(&e.sentence)?;
+                (read.force != e.act.force).then(|| (i, e.act.force, read.force, e.sentence.clone()))
+            })
+            .collect()
+    }
+
+    /// Prime the reader as the live walk does (pos.tsv, function.txt and the
+    /// Guide's irregular verbs), so the pinned table matches the harness record.
+    fn prime_as_the_harness() {
+        // The tests run from the package directory, not the workspace root the
+        // harness consts are relative to, so resolve from the manifest.
+        let data = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
+        let pos = std::fs::read_to_string(data.join("lex/pos.tsv")).expect("pos.tsv loads");
+        phisor::lexicon::prime(&pos);
+        let func = std::fs::read_to_string(data.join("lex/function.txt")).expect("function.txt loads");
+        phisor::lexicon::prime_function(&func);
+        let guide = std::fs::read_to_string(data.join("person/murphy.txt")).expect("the Guide text loads");
+        phisor::lexicon::prime_irregular(&guide);
+    }
+
+
+    /// The gold frames the Reader reads with a wrong Force, by gold index:
+    /// `(index, gold Force, read Force)`, measured with the harness priming
+    /// (task 4.1). Gold is frozen, so this is the yardstick for tasks 4.2 to
+    /// 4.4. Sentence beside the confusion:
+    ///
+    /// Commit read as Assert, the seven `BareWill` Unreachable_Frames (a bare
+    /// `will` or `shall` is a Commit or a prediction, and is never mapped to
+    /// Commit by rule, R2.5):
+    ///
+    /// - 117 `i will explain the rule.`
+    /// - 119 `we shall not forget.`
+    /// - 120 `i will send you the book.`
+    /// - 121 `i am going to study french.`
+    /// - 122 `we will meet at eight.`
+    /// - 124 `i will have finished by friday.`
+    /// - 126 `we will answer your letter.`
+    ///
+    /// Express read as Assert, six frames the text could settle:
+    ///
+    /// - 129 `congratulations on your success.`
+    /// - 130 `i do not mind the noise.`
+    /// - 131 `welcome to london.`
+    /// - 132 `i have enjoyed the lesson.`
+    /// - 133 `i was delighted with your letter.`
+    /// - 134 `i am not complaining.`
+    ///
+    /// Direct read as Assert: 102 `please close the window.` Wish read as
+    /// Assert: 143 `i wish we did not have to go.`
+    const WRONG_FORCE: [(usize, Force, Force); 15] = [
+        (102, Force::Direct, Force::Assert),
+        (117, Force::Commit, Force::Assert),
+        (119, Force::Commit, Force::Assert),
+        (120, Force::Commit, Force::Assert),
+        (121, Force::Commit, Force::Assert),
+        (122, Force::Commit, Force::Assert),
+        (124, Force::Commit, Force::Assert),
+        (126, Force::Commit, Force::Assert),
+        (129, Force::Express, Force::Assert),
+        (130, Force::Express, Force::Assert),
+        (131, Force::Express, Force::Assert),
+        (132, Force::Express, Force::Assert),
+        (133, Force::Express, Force::Assert),
+        (134, Force::Express, Force::Assert),
+        (143, Force::Wish, Force::Assert),
+    ];
+
+    /// Pins the wrong-Force gold frames by index with the confusion, and the
+    /// decidable figure that follows from them (R2.1, R2.2).
+    #[test]
+    fn the_wrong_force_frames_are_pinned_by_index_and_confusion() {
+        use phisor::gold::Reason;
+        prime_as_the_harness();
+        let gold = phisor::gold::read().expect("the frozen gold set loads");
+        let wrong = wrong_force(&gold);
+        let found: Vec<_> = wrong.iter().map(|(i, g, r, _)| (*i, *g, *r)).collect();
+        assert_eq!(found, WRONG_FORCE, "the set of wrong-Force gold frames moved");
+        assert!(found.iter().all(|(i, ..)| *i < phisor::gold::COUNT));
+
+        // Confusion counts, gold Force to read Force.
+        let count = |g: Force, r: Force| found.iter().filter(|f| f.1 == g && f.2 == r).count();
+        assert_eq!(count(Force::Commit, Force::Assert), 7);
+        assert_eq!(count(Force::Express, Force::Assert), 6);
+        assert_eq!(count(Force::Direct, Force::Assert), 1);
+        assert_eq!(count(Force::Wish, Force::Assert), 1);
+
+        // The seven Commit frames are exactly the BareWill Unreachable_Frames.
+        let bare: Vec<usize> = (0..phisor::gold::COUNT)
+            .filter(|i| phisor::gold::unreachable(*i) == Some(Reason::BareWill))
+            .collect();
+        let commits: Vec<usize> =
+            found.iter().filter(|f| f.1 == Force::Commit).map(|f| f.0).collect();
+        assert_eq!(bare, commits, "the BareWill frames and the Commit confusions differ");
+
+        // Removing only the BareWill frames leaves 8 wrong of 113 covered.
+        let decidable = decidable_figure(&gold, &Bars::default()).expect("decidable figure");
+        assert_eq!(decidable.name, "ladder.act.force_purity_decidable");
+        assert_eq!(decidable.value, 92.9);
     }
 }
