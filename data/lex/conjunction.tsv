@@ -1,0 +1,30 @@
+# The conjunctions, one per line: word<TAB>roles (comma-separated).
+# clause   joins two clauses: coordinating (and, but, or, so) and subordinating
+#          (if, when, because, while, until, before, after, as, since, although,
+#          unless). The reader stores the second clause as an adjunct of the first,
+#          under the conjunction, the way a time phrase is stored under its
+#          preposition. Murphy, English Grammar in Use: Unit 93 (coordinating),
+#          Units 25, 38, 118-120 (time and condition).
+# opener   a word that joins or opens a clause, for the abstention buckets in
+#          ladder/abstain: the clause conjunctions the buckets count, plus the
+#          relative words (that, who, which, where, whose).
+and	clause,opener
+but	clause,opener
+or	clause,opener
+so	clause,opener
+if	clause,opener
+when	clause,opener
+because	clause,opener
+while	clause,opener
+until	clause,opener
+before	clause,opener
+after	clause,opener
+although	clause,opener
+unless	clause,opener
+as	clause
+since	clause
+that	opener
+who	opener
+which	opener
+where	opener
+whose	opener

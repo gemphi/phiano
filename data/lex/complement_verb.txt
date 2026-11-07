@@ -1,0 +1,27 @@
+# Verbs that take a finite clause as their complement, with or without
+# "that": "i think she works in a shop", "i knew sarah was busy". The clause
+# is read as a sentence of its own and becomes the matrix verb's theme.
+#
+# Linguistic source: the reporting and mental-state verbs Murphy lists as
+# taking a that-clause (the "that" optional), Units 47-48 ("say and tell",
+# reported speech) and 51-52 ("i think ...", "i don't think ..."). A hand
+# list pending task 5.1's audit and a possible learned proposal (R5.2, R5.3).
+# One entry per line.
+think
+believe
+know
+say
+suppose
+guess
+realise
+realize
+notice
+feel
+mean
+suggest
+bet
+doubt
+imagine
+understand
+discover
+promise

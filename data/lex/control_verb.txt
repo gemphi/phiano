@@ -1,0 +1,33 @@
+# Verbs that take a to-infinitive whose subject is their own (control):
+# "i want to go", "i promise to come", "i have to leave". The realiser says a
+# same-subject clause under one of these as an infinitive and under any other
+# verb as a finite clause, and the reader reads "to" only after one of these,
+# so the two agree.
+#
+# Linguistic source: the verbs Murphy's *English Grammar in Use* lists as
+# taking a to-infinitive with the same subject (control / catenative verbs),
+# Units 53-56 ("verb + to ...", "verb + -ing or to ..."). A hand list until
+# task 5.1's audit; a learned proposal may later extend it (R5.2, R5.3).
+# One entry per line.
+want
+try
+promise
+need
+have
+decide
+hope
+plan
+agree
+learn
+begin
+start
+like
+love
+hate
+refuse
+manage
+forget
+remember
+expect
+offer
+prefer

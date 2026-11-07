@@ -1,0 +1,14 @@
+# The explicit performative verbs the reader reads as naming their own force:
+# first-person present "i promise ..." is a Commit and "i wish ..." a Wish.
+# The reading is still gated verb by verb at each site (the force each sets
+# differs), so this list names the sources rather than driving the branch;
+# the harness audits it alongside the other hand lists (task 5.1).
+#
+# Linguistic source: Austin/Searle's explicit performatives as the Guide
+# uses them - Murphy Unit 36 ("i promise ...", a present commitment) and the
+# wish/subjunctive of Units 40-41 ("i wish ..."). The Reader never maps a
+# bare "will" to Commit, because the surface cannot tell Commit from Predict
+# (R2.5); only an explicit performative sets the force.
+# One entry per line.
+promise
+wish

@@ -1,0 +1,36 @@
+# Adverbs of manner, frequency and degree that the IR has no slot for and
+# the gold leaves out of its frames ("she has worn that suit before" is just
+# wear/perfect). Time and place adverbs (tomorrow, here) are not here: the
+# gold keeps those, under a preposition. "never" is here too, but is also
+# read as negation.
+#
+# Linguistic source: the adverbs of frequency and degree Murphy groups and
+# positions around the verb, Units 107-110 ("always/usually/often ...",
+# "already/yet/still", "even", "also/too"). A hand list pending task 5.1's
+# audit; task 6.2 extends it with multi-word adverbs such as "right now"
+# (R3.3, R5.2).
+# One entry per line.
+always
+often
+usually
+sometimes
+never
+already
+still
+soon
+recently
+really
+quite
+very
+also
+too
+again
+ever
+almost
+nearly
+probably
+perhaps
+maybe
+just
+yet
+certainly

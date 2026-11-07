@@ -1,0 +1,32 @@
+# Verbs whose complement is an `-ing` form with the same subject ("i enjoy
+# reading", "she admitted stealing the money", "would you mind closing the
+# door"). `like`, `love`, `hate`, `start` and `begin` also take `-ing`, and
+# are already in [`CONTROL_VERBS`]. `suggest` and `imagine` are left out:
+# they take a finite clause, which is said another way.
+#
+# Linguistic source: Murphy's *English Grammar in Use*, Units 53-54 ("verb +
+# -ing") and Unit 55 ("verb + -ing or to"). A hand list under the task 5.1
+# audit (`word_lists`).
+# One entry per line.
+enjoy
+mind
+admit
+avoid
+keep
+finish
+stop
+practise
+practice
+consider
+deny
+risk
+miss
+delay
+postpone
+fancy
+dislike
+like
+love
+hate
+start
+begin

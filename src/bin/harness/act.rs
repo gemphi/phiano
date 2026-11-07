@@ -106,7 +106,7 @@ fn word_lists(heldout: &[String], bars: &Bars) -> Vec<Measured> {
     let vocab = heldout_vocabulary(heldout);
     let mut out = Vec::new();
     for (name, words) in phisor::ladder::word_lists() {
-        let in_hand: std::collections::BTreeSet<&str> = words.iter().copied().collect();
+        let in_hand: std::collections::BTreeSet<&str> = words.iter().map(String::as_str).collect();
         let covers = vocab.iter().filter(|w| in_hand.contains(w.as_str())).count();
         let would_change =
             vocab.iter().filter(|w| in_hand.contains(w.as_str()) != learned_in_list(name, w)).count();
