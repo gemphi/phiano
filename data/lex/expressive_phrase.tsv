@@ -1,0 +1,13 @@
+# Express frames whose sentence is a fixed phrase, not a subject and a verb
+# group: the predicate the frame carries, the words that open the sentence in
+# its place, and whether the frame's theme follows them. The frame's agent is
+# the speaker and is never said ("thank you", not "i thank you"); the
+# prepositional adjuncts follow as usual.
+#
+# Linguistic source: Murphy's Unit 36 and the expressions of thanks, apology,
+# congratulation and welcome the Guide teaches as set phrases.
+# pred<TAB>opening words<TAB>theme (`theme` or `-`)
+thank	thank	theme
+apologise	i am sorry	-
+congratulate	congratulations	-
+welcome	welcome	-
