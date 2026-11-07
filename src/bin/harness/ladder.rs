@@ -3,15 +3,15 @@
 //! `run_walk` once handed the Recorder an empty slice, so every learning
 //! number came back unjudged. This module loads The_Guide, sweeps a declared
 //! grid of the exchange routine's settings, keeps the settings that score the
-//! highest held-out function purity, and reports that run's numbers as
+//! highest function purity on the dev part, and reports that run's numbers as
 //! `record::Measured` judged against the declared Bars.
 //!
 //! The sweep is honest hyperparameter search, not fitting the yardstick: the
 //! Bar (56.7%), the Split_Rule, the test labels and the scorer are all fixed.
-//! Only the learner's settings vary, and the metric optimised is the same
-//! held-out purity the Bar judges - measured through the HoldoutGuard, so a
-//! label that reached training would be a breach, not a better score. If no
-//! setting clears the Bar, the record shows an honest miss.
+//! Only the learner's settings vary. The metric optimised is function purity
+//! on `Part::Dev`; the Held_Out_Slice (`Part::Test`) is read once, after the
+//! choice, for the reported figure the Bar judges. If no setting clears the
+//! Bar, the record shows an honest miss.
 //!
 //! The act-height numbers stay out, since the English reader (task 13.7) is
 //! not built, so they remain unjudged exactly as the design says.
@@ -19,7 +19,7 @@
 use super::bars::{Bars, Unit};
 use super::record::Measured;
 use phisor::guide::holdout::HoldoutGuard;
-use phisor::guide::{self, Split};
+use phisor::guide::{self, Part, Split};
 use phisor::ladder::{Judged, Ladder, Seeds};
 use phical::classes::{Settings, MAX_PASSES};
 use phiton::p64::variants::Level;
@@ -57,10 +57,14 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
     let (best, purity) = tune(&split);
     eprintln!(
         "harness: tuned settings max_passes={} stop_fraction={} min_unit_frequency={} \
-         split_cost_penalty={} -> held-out function purity {purity:.1}%",
+         split_cost_penalty={} -> dev function purity {purity:.1}%",
         best.max_passes, best.stop_fraction, best.min_unit_frequency, best.split_cost_penalty
     );
-    measure(&split, bars, &best)
+    let out = measure(&split, bars, &best);
+    if let Some(held) = out.iter().find(|m| m.name == "ladder.function_purity.learned") {
+        eprintln!("harness: held-out function purity {:.1}% (read once, after the choice)", held.value);
+    }
+    out
 }
 
 /// The declared settings grid. Each axis is a legitimate knob of the exchange
@@ -83,8 +87,8 @@ fn grid() -> Vec<Settings> {
     out
 }
 
-/// Sweep the grid and keep the settings with the highest held-out function
-/// purity. Ties keep the earlier (simpler) settings, so a more complex setting
+/// Sweep the grid and keep the settings with the highest dev function
+/// purity (never the Held_Out_Slice). Ties keep the earlier (simpler) settings, so a more complex setting
 /// has to earn its place. Returns the best settings and the purity it scored.
 fn tune(split: &Split) -> (Settings, f64) {
     let mut best = Settings { max_passes: 1, ..Settings::default() };
@@ -99,13 +103,13 @@ fn tune(split: &Split) -> (Settings, f64) {
     (best, best_purity.max(0.0))
 }
 
-/// The held-out function purity a given settings grows, or negative infinity
+/// The dev function purity a given settings grows, or negative infinity
 /// when the arm could not be scored (so it never wins the sweep).
 fn function_purity_of(split: &Split, settings: &Settings) -> f64 {
     let ladder = Ladder::new(split, Seeds::DECLARED);
     let learned = ladder.kinds(phisor::ladder::Arm::Learned, MODE, settings);
     let mut guard = HoldoutGuard::new(vec![]);
-    match ladder.function_purity(&learned, &mut guard) {
+    match ladder.function_purity_on(Part::Dev, &learned, &mut guard) {
         Ok(report) => value(&report.purity),
         Err(_) => f64::NEG_INFINITY,
     }
@@ -215,6 +219,87 @@ pub(super) fn one_decimal(value: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use phisor::guide::{Function, Mark, Sentence};
+
+    /// A small deterministic text whose function follows its first word, in
+    /// 240 sentences of three units, so every part of the split is occupied.
+    fn synthetic(flip_test: bool) -> Split {
+        let words = ["go", "see", "the", "a", "dog", "cat", "run", "is", "what", "now"];
+        let mut state = 0x2545_f491u64;
+        let sentences = (0..240usize)
+            .map(|i| {
+                let mut next = || {
+                    state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+                    (state >> 33) as usize
+                };
+                let len = 4 + next() % 3;
+                let mut ws: Vec<String> = (0..len).map(|_| words[next() % words.len()].to_string()).collect();
+                let function = match i % 3 {
+                    0 => Function::Explain,
+                    1 => Function::Instruct,
+                    _ => Function::Answer,
+                };
+                ws[0] = ["is", "go", "dog"][i % 3].to_string();
+                let held_out = i % 10 == 0;
+                let function = match (flip_test && held_out, function) {
+                    (true, Function::Explain) => Function::Instruct,
+                    (true, Function::Instruct) => Function::Answer,
+                    (true, Function::Answer) => Function::Explain,
+                    (false, f) => f,
+                };
+                Sentence { words: ws, function, mark: Mark::Stop, unit: i / 80 + 1, run: 0 }
+            })
+            .collect();
+        Split::new(sentences)
+    }
+
+    /// **Property 3: Tuning never reads the Held_Out_Slice.**
+    /// **Validates: Requirements 3.1**
+    #[test]
+    fn tuning_ignores_the_held_out_labels() {
+        let (a, pa) = tune(&synthetic(false));
+        let (b, pb) = tune(&synthetic(true));
+        assert_eq!(pa, pb, "the tuned dev purity moved with the held-out labels");
+        assert_eq!(
+            (a.max_passes, a.min_unit_frequency, a.split_cost_penalty),
+            (b.max_passes, b.min_unit_frequency, b.split_cost_penalty)
+        );
+    }
+
+    /// The dev and held-out purity of every grid point, then the choice made
+    /// on dev and the one the old held-out selection would have made. Run:
+    /// `cargo test -p phiano --bin harness before_and_after -- --ignored --nocapture`
+    /// from the workspace root.
+    #[test]
+    #[ignore = "diagnostic: reads the real Guide; run alone"]
+    fn before_and_after_the_dev_choice() {
+        let (Ok(text), Ok(key)) = (
+            std::fs::read_to_string(Path::new(GUIDE)),
+            std::fs::read_to_string(Path::new(KEY)),
+        ) else {
+            eprintln!("the Guide is unreadable from here");
+            return;
+        };
+        phisor::lexicon::prime_irregular(&text);
+        let split = Split::new(guide::read(&text, &key));
+        let ladder = Ladder::new(&split, Seeds::DECLARED);
+        let (mut by_dev, mut by_test) = ((f64::MIN, f64::MIN, 0usize), (f64::MIN, f64::MIN, 0usize));
+        for (n, settings) in grid().iter().enumerate() {
+            let learned = ladder.kinds(phisor::ladder::Arm::Learned, MODE, settings);
+            let mut guard = HoldoutGuard::new(vec![]);
+            let dev = value(&ladder.function_purity_on(Part::Dev, &learned, &mut guard).unwrap().purity);
+            let test = value(&ladder.function_purity(&learned, &mut guard).unwrap().purity);
+            eprintln!("grid {n}: dev {dev:.1} test {test:.1}");
+            if dev > by_dev.0 {
+                by_dev = (dev, test, n);
+            }
+            if test > by_test.1 {
+                by_test = (dev, test, n);
+            }
+        }
+        eprintln!("AFTER  (chosen on dev):  grid {} dev {:.1} held-out {:.1}", by_dev.2, by_dev.0, by_dev.1);
+        eprintln!("BEFORE (chosen on test): grid {} dev {:.1} held-out {:.1}", by_test.2, by_test.0, by_test.1);
+    }
 
     /// The reachable cut drops the Unreachable_Frames, so it reports the same
     /// two names with the `_reachable` suffix beside the all-150 pair, and
