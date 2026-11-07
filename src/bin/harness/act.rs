@@ -200,7 +200,6 @@ fn absent(name: &str, unit: Unit) -> Measured {
     }
 }
 
-#[cfg(test)]
 mod predict;
 #[cfg(test)]
 mod tests;
