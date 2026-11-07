@@ -42,4 +42,4 @@ So the order of the day's lessons: the register of the text decides whether it h
 
 ## Status
 
-2026-11-07. No code changed. `guide_twice.ckpt` (133,522 lines, 25,806 words, 64 channels) is the newest checkpoint; the next run resumes it with more epochs.
+2026-11-07. No code changed. `guide_twice.ckpt` (133,522 lines, 25,806 words, 64 channels) is the newest checkpoint. The next run resumed it for more epochs and bought nothing: the curve had flattened (docs/213).
