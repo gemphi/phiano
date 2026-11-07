@@ -1,0 +1,23 @@
+# The irregular verbs the reader and realiser name. The Guide's Appendix 1.4
+# is asked first when it is primed; this table is the fallback when it is not
+# (and carries `be`, which the Guide table is parsed without).
+# lemma<TAB>past<TAB>participle<TAB>ing; `-` where the regular rule applies.
+# Append a verb here to teach it.
+have	had	-	-
+do	did	done	-
+wear	wore	worn	-
+write	wrote	written	-
+break	broke	broken	-
+send	sent	sent	-
+lose	lost	lost	-
+sell	sold	sold	-
+see	saw	seen	-
+leave	left	left	-
+be	-	been	being
+go	went	gone	-
+know	knew	known	-
+give	gave	given	-
+take	took	taken	-
+come	came	come	-
+tell	told	told	-
+say	said	said	-
