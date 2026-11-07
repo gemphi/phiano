@@ -1,0 +1,4 @@
+# Words that open a trailing time phrase of one noun ("last week", "last night").
+# The reader stores the noun under Via(word); the Realiser says word then noun.
+# One entry per line.
+last
