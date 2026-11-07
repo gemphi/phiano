@@ -28,7 +28,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--no-guide] [--resume ckpt] [--save ckpt]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--no-guide] [--resume ckpt] [--widen 128] [--save ckpt]
 //! ```
 
 mod counting;
@@ -100,7 +100,7 @@ fn main() {
     let (mut nll, mut known) = (0.0f64, 0usize);
     for l in &test {
         for j in 1..l.len() {
-            floor.rank(rank(&common[..5], &l[j]));
+            floor.rank(rank(&common[..common.len().min(5)], &l[j]));
             let mut after = count.choices(&l[j - 1]);
             after.sort_by(|x, y| y.1.cmp(&x.1).then_with(|| x.0.cmp(y.0)));
             counted.rank(rank(&after.into_iter().take(5).map(|(w, _)| w.clone()).collect::<Vec<_>>(), &l[j]));
@@ -146,6 +146,15 @@ fn main() {
                 l.config.epochs = config.epochs;
             }
             println!("resumed from {path}: {} lines told before, vocabulary {}\n", l.lines_told(), l.vocabulary());
+            // More channels for a learner that has already learned (docs/210):
+            // the old kept, the new born quiet, nothing learned lost.
+            if let Some(wide) = flag("--widen").and_then(|s| s.parse().ok()) {
+                let from = l.config.channels;
+                match l.widen(wide) {
+                    true => println!("widened from {from} to {wide} channels\n"),
+                    false => println!("not widened: {wide} is not wider than {from}, or not a multiple of the block {}\n", l.config.block),
+                }
+            }
             l
         }
         None => Learner::new(config.clone()),
