@@ -1,16 +1,37 @@
-# Express frames whose sentence is a fixed phrase, not a subject and a verb
-# group: the predicate the frame carries, the words that open the sentence in
-# its place, whether the frame's theme follows them, and the role the phrase
-# leaves unsaid. The Realiser reads the file forward and the Reader reads it
-# back, so one row serves both. The prepositional adjuncts follow as usual.
+# Express frames, of two kinds (the second column).
+#
+# phrase     a sentence that is a fixed phrase, not a subject and a verb
+#            group: the predicate the frame carries, the words that open the
+#            sentence in its place, whether the frame's theme follows them, and
+#            the role the phrase leaves unsaid. The Realiser reads the file
+#            forward and the Reader reads it back, so one row serves both. The
+#            prepositional adjuncts follow as usual.
+# predicate  a psychological-state verb that is Express when said by the
+#            speaker in the present: the Reader reads "i <verb> ..." (first
+#            person agent from pronoun.tsv, present tense, no modal, said as a
+#            statement) as Express, not Assert. The other columns are `-`; the
+#            Realiser says such a frame as an ordinary statement.
 #
 # Linguistic source: Murphy's Unit 36 and the expressions of thanks, apology,
-# congratulation and welcome the Guide teaches as set phrases.
-# pred<TAB>opening words<TAB>theme (`theme` or `-`)<TAB>unsaid role (`role=pronoun`, or `-`)
+# congratulation and welcome the Guide teaches as set phrases (phrase rows);
+# Searle (1979), "A Taxonomy of Illocutionary Acts", in Expression and Meaning:
+# the expressive point expresses a psychological state about a state of affairs
+# (his list: thank, congratulate, apologise, condole, deplore, welcome), and
+# Searle & Vanderveken (1985, Foundations of Illocutionary Logic) add verbs of
+# feeling and complaint (enjoy, regret, appreciate, complain, lament).
+# `mind` and `delight` are the same class (stating a feeling about the matter).
+#
+# pred<TAB>kind<TAB>opening words<TAB>theme (`theme` or `-`)<TAB>unsaid role (`role=pronoun`, or `-`)
 # The unsaid role is the speaker or the addressee the phrase takes for
 # granted: "thank you" is said by "i" (agent=i), "welcome to london" is said
 # to "you" (theme=you). The Realiser does not say it; the Reader restores it.
-thank	thank	theme	agent=i
-apologise	i am sorry	-	agent=i
-congratulate	congratulations	-	theme=you
-welcome	welcome	-	theme=you
+thank	phrase	thank	theme	agent=i
+apologise	phrase	i am sorry	-	agent=i
+congratulate	phrase	congratulations	-	theme=you
+welcome	phrase	welcome	-	theme=you
+mind	predicate	-	-	-
+enjoy	predicate	-	-	-
+delight	predicate	-	-	-
+complain	predicate	-	-	-
+regret	predicate	-	-	-
+appreciate	predicate	-	-	-

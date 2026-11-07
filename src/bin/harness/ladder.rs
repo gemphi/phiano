@@ -537,19 +537,17 @@ mod tests {
     /// - 124 `i will have finished by friday.`
     /// - 126 `we will answer your letter.`
     ///
-    /// Express read as Assert, the four frames that remain (129 and 131 are fixed
-    /// phrases in `expressive_phrase.tsv` and the Reader reads them, task 4.2; the
-    /// rest are ordinary verbs whose Force the text does not settle):
+    /// Express read as Assert, the one frame that remains (129 and 131 are fixed
+    /// phrases in `expressive_phrase.tsv`, task 4.2; 130, 132 and 134 are a
+    /// first-person present psychological-state predicate listed there, task
+    /// 4.3; 133 is past tense, outside that rule):
     ///
-    /// - 130 `i do not mind the noise.`
-    /// - 132 `i have enjoyed the lesson.`
     /// - 133 `i was delighted with your letter.`
-    /// - 134 `i am not complaining.`
     ///
-    /// Direct read as Assert: 102 `please close the window.` Wish read as
-    /// Assert: 143 `i wish we did not have to go.`
-    const WRONG_FORCE: [(usize, Force, Force); 13] = [
-        (102, Force::Direct, Force::Assert),
+    /// Direct read as Assert, 102 `please close the window.`, is fixed by
+    /// `politeness_marker.txt` (task 4.3). Wish read as Assert: 143
+    /// `i wish we did not have to go.`, which has no general rule.
+    const WRONG_FORCE: [(usize, Force, Force); 9] = [
         (117, Force::Commit, Force::Assert),
         (119, Force::Commit, Force::Assert),
         (120, Force::Commit, Force::Assert),
@@ -557,10 +555,7 @@ mod tests {
         (122, Force::Commit, Force::Assert),
         (124, Force::Commit, Force::Assert),
         (126, Force::Commit, Force::Assert),
-        (130, Force::Express, Force::Assert),
-        (132, Force::Express, Force::Assert),
         (133, Force::Express, Force::Assert),
-        (134, Force::Express, Force::Assert),
         (143, Force::Wish, Force::Assert),
     ];
 
@@ -579,8 +574,8 @@ mod tests {
         // Confusion counts, gold Force to read Force.
         let count = |g: Force, r: Force| found.iter().filter(|f| f.1 == g && f.2 == r).count();
         assert_eq!(count(Force::Commit, Force::Assert), 7);
-        assert_eq!(count(Force::Express, Force::Assert), 4);
-        assert_eq!(count(Force::Direct, Force::Assert), 1);
+        assert_eq!(count(Force::Express, Force::Assert), 1);
+        assert_eq!(count(Force::Direct, Force::Assert), 0);
         assert_eq!(count(Force::Wish, Force::Assert), 1);
 
         // The seven Commit frames are exactly the BareWill Unreachable_Frames.
@@ -591,9 +586,9 @@ mod tests {
             found.iter().filter(|f| f.1 == Force::Commit).map(|f| f.0).collect();
         assert_eq!(bare, commits, "the BareWill frames and the Commit confusions differ");
 
-        // Removing only the BareWill frames leaves 6 wrong of 115 covered (task 4.2: was 8 of 113).
+        // Removing only the BareWill frames leaves 2 wrong of 115 covered (task 4.3: was 6; task 4.2: was 8 of 113).
         let decidable = decidable_figure(&gold, &Bars::default()).expect("decidable figure");
         assert_eq!(decidable.name, "ladder.act.force_purity_decidable");
-        assert_eq!(decidable.value, 94.8);
+        assert_eq!(decidable.value, 98.3);
     }
 }

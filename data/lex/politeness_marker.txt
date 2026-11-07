@@ -1,0 +1,7 @@
+# Politeness markers: a word that opens a request without changing what is
+# asked. A marker ahead of an imperative leaves a Direct.
+#
+# Linguistic source: Searle (1969), Speech Acts, ch. 3: "please" is an
+# illocutionary force indicating device for requests.
+# One entry per line.
+please
