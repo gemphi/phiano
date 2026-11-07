@@ -17,7 +17,7 @@ mod bands;
 use super::bars::{Bars, Unit};
 use super::record::Measured;
 use phient::metrics::baseline::kn::KneserNey;
-use phient::metrics::harness::{PhianoLM, Split, GAMMA_GRID};
+use phient::metrics::harness::{PhianoLM, Split, DISCOUNT_GRID, GAMMA_GRID};
 use phient::train::sources::wiktionary::WiktionarySource;
 use phient::train::trainer::Trainer;
 use phiecs::phasor::facet::Facet;
@@ -114,8 +114,16 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
     // near-flat phase softmax. Mix in the unigram, with the weight chosen on
     // the dev sentences (never the test ones).
     let gamma = dev_gamma(&facet, &dev);
-    let learner_ppl = PhianoLM::with_gamma(&facet, gamma).perplexity(&test);
-    eprintln!("harness: curriculum back-off gamma {gamma:.1} chosen on {} dev sentences", dev.len());
+    // The n-gram tables' absolute discount, likewise chosen on dev at that
+    // gamma: a small training set has many singletons, which want a larger
+    // discount than the 0.75 default.
+    let discount = dev_discount(&facet, &dev, gamma);
+    let lm = PhianoLM::with_gamma(&facet, gamma).with_discount(discount);
+    let learner_ppl = lm.perplexity(&test);
+    eprintln!(
+        "harness: curriculum back-off gamma {gamma:.1}, discount {discount:.2} chosen on {} dev sentences",
+        dev.len()
+    );
     let trigram_ppl = KneserNey::train(&train).perplexity(&test);
     eprintln!(
         "harness: curriculum perplexity learner {learner_ppl:.1} vs trigram {trigram_ppl:.1} \
@@ -123,7 +131,7 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
         test.len()
     );
 
-    bands::print(&facet, gamma, &train, &test);
+    bands::print(&lm, &train, &test);
 
     // Only the learner's perplexity is judged against the declared Bar
     // (AtMost 84.7). The trigram's is recorded beside it with no Bar, so it
@@ -151,6 +159,20 @@ fn dev_gamma(facet: &Facet, dev: &[String]) -> f64 {
         .filter(|(_, p)| p.is_finite())
         .min_by(|a, b| a.1.total_cmp(&b.1))
         .map_or(1.0, |(g, _)| g)
+}
+
+/// The n-gram discount with the lowest dev perplexity at `gamma`. Falls back
+/// to the default 0.75 when there is no dev text.
+fn dev_discount(facet: &Facet, dev: &[String], gamma: f64) -> f64 {
+    if dev.is_empty() {
+        return 0.75;
+    }
+    DISCOUNT_GRID
+        .iter()
+        .map(|d| (*d, PhianoLM::with_gamma(facet, gamma).with_discount(*d).perplexity(dev)))
+        .filter(|(_, p)| p.is_finite())
+        .min_by(|a, b| a.1.total_cmp(&b.1))
+        .map_or(0.75, |(d, _)| d)
 }
 
 fn one_decimal(value: f64) -> f64 {
