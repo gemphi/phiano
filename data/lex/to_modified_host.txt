@@ -1,7 +1,7 @@
 # Nouns and adverbs whose following `to` + verb modifies them ("something to
 # eat", "somewhere to stay") instead of giving the purpose of the action. The
-# reader leaves these to abstain: reading them as purpose would round-trip
-# the words but state the wrong structure.
+# reader reads the infinitive as the host's own `to` attribute, never as a
+# purpose clause and never as `to` plus a noun.
 #
 # Linguistic source: Murphy's *English Grammar in Use*, the infinitive after
 # `something`, `anything`, `somewhere` and the like ("I need something to
