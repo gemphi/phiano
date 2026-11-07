@@ -27,13 +27,22 @@ fn gate_opens_only_when_learned_beats_both_controls() {
 
 #[test]
 fn an_uncomputable_figure_keeps_the_layer_off_and_is_named() {
-    let learned = scores(Some(0.6), Some(5.0));
-    let silent = scores(None, Some(9.0));
-    let g = decide(&learned, &silent, &silent);
+    let blind = scores(None, Some(5.0));
+    let weak = scores(Some(0.2), Some(9.0));
+    let g = decide(&blind, &weak, &weak);
     assert!(!g.enabled && g.reason.contains("uncomputable"), "{g:?}");
-    let (records, _) = gate_records(&learned, &silent, &silent, &Bars::default());
+    let (records, _) = gate_records(&blind, &weak, &weak, &Bars::default());
     assert!(records[0].value.is_nan() && records[1].value.is_nan());
     assert_eq!(records[2].value, 0.0);
+}
+
+#[test]
+fn a_control_that_never_answers_is_judged_on_perplexity_alone() {
+    let learned = scores(Some(0.6), Some(5.0));
+    let silent = scores(None, Some(9.0));
+    assert!(decide(&learned, &silent, &silent).enabled);
+    let better = scores(None, Some(4.0));
+    assert!(!decide(&learned, &better, &silent).enabled);
 }
 
 #[test]
@@ -47,4 +56,19 @@ fn missing_scores_are_eight_named_absences() {
 #[test]
 fn the_gate_never_changes_the_default() {
     assert!(!Config::default().enabled);
+}
+
+/// Run the real Guide split once and print the figures and the gate verdict.
+/// Run from the workspace root: `cargo test -p phiano --bin harness real_guide -- --ignored --nocapture`.
+#[test]
+#[ignore = "reads the real Guide; slow"]
+fn real_guide_figures() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let text = std::fs::read_to_string(root.join("crates/phiano/data/person/murphy.txt")).unwrap();
+    let key = std::fs::read_to_string(root.join("crates/phiano/data/person/murphy_key.txt")).unwrap();
+    phisor::lexicon::prime_irregular(&text);
+    let split = Split::new(phisor::guide::read(&text, &key));
+    for m in measure(&split, &Bars::default()) {
+        eprintln!("{} = {}", m.name, m.value);
+    }
 }

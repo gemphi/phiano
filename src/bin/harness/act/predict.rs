@@ -9,8 +9,9 @@
 //!
 //! The gate bar is declared in code: the learned arm must beat BOTH control
 //! arms at the abstract level, on perplexity (strictly lower) and on top-1
-//! (strictly higher). If any of the four figures is uncomputable the layer
-//! is not enabled. The verdict is recorded as `ladder.act.abstract_gate_*`.
+//! (strictly higher, judged only against a control that answered at all). If
+//! the learned arm's own figures, or a control's perplexity, are uncomputable
+//! the layer is not enabled. The verdict is recorded as `ladder.act.abstract_gate_*`.
 //! The verdict never flips `Config::default`: the layer is off by default
 //! whatever it says. `enabled` in the measuring config below only lets the
 //! predict stage run so it can be measured.
@@ -45,11 +46,11 @@ fn beats(learned: &Scores, control: &Scores, name: &str) -> Result<bool, String>
         need(learned.abstract_perplexity, "abstract perplexity", "learned")?,
         need(control.abstract_perplexity, "abstract perplexity", name)?,
     );
-    let (lt, ct) = (
-        need(learned.abstract_top1, "abstract top-1", "learned")?,
-        need(control.abstract_top1, "abstract top-1", name)?,
-    );
-    Ok(cp - lp > GATE_PERPLEXITY_MARGIN && 100.0 * (lt - ct) > GATE_TOP1_MARGIN_POINTS)
+    let lt = need(learned.abstract_top1, "abstract top-1", "learned")?;
+    // A control that never answers has no top-1 to beat; it is then judged
+    // on perplexity alone, which is over every position and always exists.
+    let top1_ok = control.abstract_top1.is_none_or(|ct| 100.0 * (lt - ct) > GATE_TOP1_MARGIN_POINTS);
+    Ok(cp - lp > GATE_PERPLEXITY_MARGIN && top1_ok)
 }
 
 /// Decide the gate from the three arms' scores.
@@ -63,7 +64,7 @@ pub fn decide(learned: &Scores, shuffled: &Scores, frequency: &Scores) -> Gate {
         }
     }
     if lost.is_empty() {
-        Gate { enabled: true, reason: "learned beats both controls on abstract perplexity and top-1".into() }
+        Gate { enabled: true, reason: "learned beats both controls on abstract perplexity (and top-1 where a control answered)".into() }
     } else {
         Gate { enabled: false, reason: format!("learned layer stays off: {}", lost.join("; ")) }
     }
