@@ -1,0 +1,10 @@
+# The words a fronted wh-hole is said as when its role changes the wording:
+# the Guide stores "how long have you been waiting?" as `for=?how`, the
+# duration being the `for` phrase, so the wh is said "how long", not "how".
+# wh<TAB>preposition<TAB>words
+# wh           the wh-word's stored name (`how`)
+# preposition  the `Via` preposition of the slot the hole fills (`for`)
+# words        what is said in place of the bare wh-word
+#
+# Linguistic source: Murphy Unit 14 ("How long have you been ...?").
+how	for	how long
