@@ -4,7 +4,7 @@ use super::tune::{grid, tune, value};
 mod reachable;
 
 use super::*;
-use phisor::guide::{Function, Mark, Sentence};
+use phisor::guide::{Function, Mark, Part, Sentence};
 use phisor::ir::Force;
 
 /// A small deterministic text whose function follows its first word, in

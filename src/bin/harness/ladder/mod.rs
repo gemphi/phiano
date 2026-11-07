@@ -20,7 +20,7 @@
 use super::bars::{Bars, Unit};
 use super::record::Measured;
 use phisor::guide::holdout::HoldoutGuard;
-use phisor::guide::{self, Part, Split};
+use phisor::guide::{self, Split};
 use phisor::ladder::{Ladder, Seeds};
 use phical::classes::Settings;
 use phiton::p64::variants::Level;
