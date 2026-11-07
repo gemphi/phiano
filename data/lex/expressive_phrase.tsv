@@ -1,13 +1,16 @@
 # Express frames whose sentence is a fixed phrase, not a subject and a verb
 # group: the predicate the frame carries, the words that open the sentence in
-# its place, and whether the frame's theme follows them. The frame's agent is
-# the speaker and is never said ("thank you", not "i thank you"); the
-# prepositional adjuncts follow as usual.
+# its place, whether the frame's theme follows them, and the role the phrase
+# leaves unsaid. The Realiser reads the file forward and the Reader reads it
+# back, so one row serves both. The prepositional adjuncts follow as usual.
 #
 # Linguistic source: Murphy's Unit 36 and the expressions of thanks, apology,
 # congratulation and welcome the Guide teaches as set phrases.
-# pred<TAB>opening words<TAB>theme (`theme` or `-`)
-thank	thank	theme
-apologise	i am sorry	-
-congratulate	congratulations	-
-welcome	welcome	-
+# pred<TAB>opening words<TAB>theme (`theme` or `-`)<TAB>unsaid role (`role=pronoun`, or `-`)
+# The unsaid role is the speaker or the addressee the phrase takes for
+# granted: "thank you" is said by "i" (agent=i), "welcome to london" is said
+# to "you" (theme=you). The Realiser does not say it; the Reader restores it.
+thank	thank	theme	agent=i
+apologise	i am sorry	-	agent=i
+congratulate	congratulations	-	theme=you
+welcome	welcome	-	theme=you
