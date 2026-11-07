@@ -1,0 +1,20 @@
+# The pronouns, one per line: word<TAB>roles (comma-separated).
+# reader   a pronoun the reader keeps as a filler word and never reads as a verb,
+#          in the nominative as the IR does (`her` stays `her`).
+# subject  can open a clause as its subject (also what `a <pronoun>` ahead of a
+#          sentence marks as an item label, not a sentence).
+# object   reads as a recipient at the head of a ditransitive command.
+# s_host   takes `'s` as is/has (`he's`), never as a possessive.
+i	subject,reader
+you	subject,reader,object
+he	subject,reader,s_host
+she	subject,reader,s_host
+it	subject,reader,s_host
+we	subject,reader
+they	subject,reader
+me	reader,object
+him	reader,object
+her	object
+us	reader,object
+them	reader,object
+mine	reader
