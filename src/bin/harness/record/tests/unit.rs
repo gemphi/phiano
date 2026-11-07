@@ -16,7 +16,7 @@ fn num(name: &str, value: f64, verdict: Judged) -> Measured {
 /// re-barred.
 #[test]
 fn tally_partitions_and_rebarred_is_detected() {
-    let dir = std::env::temp_dir().join(format!("phiano_rec_tally_{SEED:x}"));
+    let dir = std::env::temp_dir().join(format!("phiano_rec_tally_{SEED:x}_{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let bars = Bars::from_map(BTreeMap::new());
@@ -35,7 +35,7 @@ fn tally_partitions_and_rebarred_is_detected() {
 /// writes a readable page; a second read then recovers the first page's Bars.
 #[test]
 fn close_writes_at_series_start_and_the_page_reads_back() {
-    let dir = std::env::temp_dir().join(format!("phiano_rec_series_{SEED:x}"));
+    let dir = std::env::temp_dir().join(format!("phiano_rec_series_{SEED:x}_{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let bars = Bars::from_map(BTreeMap::new());
@@ -69,7 +69,7 @@ fn close_writes_at_series_start_and_the_page_reads_back() {
 /// earlier page beside it is checked byte-identical after the failed close.
 #[test]
 fn a_recorder_on_a_read_only_page_reports_the_path_and_reason() {
-    let dir = std::env::temp_dir().join(format!("phiano_rec_ro_{SEED:x}"));
+    let dir = std::env::temp_dir().join(format!("phiano_rec_ro_{SEED:x}_{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
 
