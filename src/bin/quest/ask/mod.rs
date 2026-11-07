@@ -16,7 +16,7 @@ use std::io::BufRead;
 
 pub fn run(a: Vec<String>) {
     let a = a;
-    let path = a.first().cloned().unwrap_or_else(|| "data/quest/synthetic.chroma".to_string());
+    let path = a.first().cloned().unwrap_or_else(|| phiano::data::path("quest/synthetic.chroma"));
     let facet = match Storage::load(&path) {
         Ok(f) => f,
         Err(e) => {

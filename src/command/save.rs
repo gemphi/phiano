@@ -12,11 +12,11 @@ pub struct Save;
 impl Save {
     /// Saves the facet to disk.
     pub fn save(&self, ctx: &mut Context) -> bool {
-        match Storage::save(ctx.manifold, config::CHROMA_FILE) {
+        match Storage::save(ctx.manifold, &crate::data::path(config::CHROMA_FILE)) {
             Ok(_) => {
                 println!(
                     "  [saved] {} ({} words)",
-                    config::CHROMA_FILE,
+                    &crate::data::path(config::CHROMA_FILE),
                     ctx.manifold.vocabulary_size(),
                 );
             }

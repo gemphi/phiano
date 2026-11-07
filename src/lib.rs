@@ -7,6 +7,7 @@ pub mod command;
 /// `flow` still names `phiano::compose::flow::RiverFlow`.
 pub use phient::generate::compose;
 pub mod config;
+pub mod data;
 pub mod drivers;
 pub mod frames;
 pub mod instruction;

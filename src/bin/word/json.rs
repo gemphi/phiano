@@ -6,7 +6,7 @@ use phiecs::phasor::facet::storage::Storage;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let lex = args.get(1).cloned().unwrap_or_else(|| "data/austen_voice.chroma".into());
+    let lex = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("austen_voice.chroma"));
     let facet: Facet = Storage::load(&lex).expect("lexicon");
     let mut out = Vec::new();
     for w in args.iter().skip(2) {

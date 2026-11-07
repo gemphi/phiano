@@ -40,7 +40,7 @@ impl Define {
         }
 
         // 2. Fall back to offline ChunkStore (102,217 definitions from Webster's)
-        let chunker = ChunkStore::new("data/chunks");
+        let chunker = ChunkStore::new(&crate::data::path("chunks"));
         if let Some(chunk_def) = chunker.load_definition(&word) {
             println!("{}\n(Offline Dictionary)\n{}", word, chunk_def);
             ctx.trainer.train_definition(ctx.manifold, &word, &chunk_def);

@@ -72,7 +72,7 @@ fn main() {
     let out_path = args
         .get(2)
         .cloned()
-        .unwrap_or_else(|| "data/prose_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("prose_corpus.txt"));
 
     let mut out = String::new();
     let (mut articles, mut sentences, mut tokens) = (0usize, 0usize, 0usize);

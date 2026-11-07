@@ -17,7 +17,7 @@ impl Model {
                 if std::path::Path::new(config::CHROMA_FILE).exists() {
                     eprintln!(
                         "  [WARN] could not load {}: {} — starting from an empty lexicon",
-                        config::CHROMA_FILE, e
+                        &crate::data::path(config::CHROMA_FILE), e
                     );
                 }
                 let _ = fs::create_dir_all("data");
@@ -42,10 +42,10 @@ impl Model {
         // dictionary, and re-running it meant the model that started was never
         // quite the model that was saved.
         if !facet.lexicon.is_empty() && facet.grounded_version < config::GROUNDING_VERSION {
-            DefinitionGrounder::ground_best(&mut facet, &ChunkStore::new("data/chunks"));
+            DefinitionGrounder::ground_best(&mut facet, &ChunkStore::new(&crate::data::path("chunks")));
         }
 
-        let cognitive_core = CognitiveCore::new(ChunkStore::new("data/chunks"));
+        let cognitive_core = CognitiveCore::new(ChunkStore::new(&crate::data::path("chunks")));
 
         let memo = Memo::load_from_file(config::MEMORY_FILE)
             .unwrap_or_else(|_| Memo::new());
@@ -64,7 +64,7 @@ impl Model {
             turns_since_save: 0,
             corrections,
             envisioner: Envision::new(),
-            chunk_store: ChunkStore::new("data/chunks"),
+            chunk_store: ChunkStore::new(&crate::data::path("chunks")),
             facet,
             trainer: Trainer::new(config::LEARNING_RATE),
             memo,
@@ -81,7 +81,7 @@ impl Model {
     pub(super) fn bootstrap_bigrams(facet: &mut Facet) {
         use std::time::Instant;
         let start = Instant::now();
-        let chunk_store = phient::train::chunker::ChunkStore::new("data/chunks");
+        let chunk_store = phient::train::chunker::ChunkStore::new(&crate::data::path("chunks"));
         let entries = chunk_store.load_all();
         if entries.is_empty() {
             return;

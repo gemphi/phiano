@@ -16,7 +16,7 @@ impl GenerateCmd {
         let mut guided = false;
         if std::path::Path::new(crate::config::OPERATOR_FILE).exists() {
             match phient::generate::OperatorGuide::load(
-                crate::config::OPERATOR_FILE,
+                &crate::data::path(crate::config::OPERATOR_FILE),
                 ctx.manifold,
                 phient::net::space::Sides::Directed,
                 6,

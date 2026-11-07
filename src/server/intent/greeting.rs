@@ -11,7 +11,7 @@ fn intent_list(name: &'static str) -> &'static [String] {
     static LISTS: OnceLock<Mutex<HashMap<&'static str, &'static [String]>>> = OnceLock::new();
     let mut lists = LISTS.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner());
     lists.entry(name).or_insert_with(|| {
-        let path = format!("{}/data/intent/{name}.txt", env!("CARGO_MANIFEST_DIR"));
+        let path = crate::data::path(&format!("intent/{name}.txt"));
         Box::leak(phistd::lexfile::read(path).into_boxed_slice())
     })
 }

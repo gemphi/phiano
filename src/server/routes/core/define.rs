@@ -19,7 +19,7 @@ pub async fn define_word(
         }
 
         // Stage 2: Exact Offline 102K ChunkStore lookup
-        let chunker = phient::train::chunker::ChunkStore::new("data/chunks");
+        let chunker = phient::train::chunker::ChunkStore::new(&crate::data::path("chunks"));
         if let Some(chunk_def) = chunker.load_definition(&word_clone) {
             return (
                 "Offline Webster's Unabridged Dictionary".to_string(),
@@ -105,9 +105,9 @@ pub async fn save_manifold(
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &*guard;
-    phiecs::phasor::facet::storage::Storage::save(&model.facet, "data/manifold.chroma")
+    phiecs::phasor::facet::storage::Storage::save(&model.facet, &crate::data::path("manifold.chroma"))
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let _ = model.memo.save_to_file("data/memory.chroma");
+    let _ = model.memo.save_to_file(&crate::data::path("memory.chroma"));
     Ok(Json(serde_json::json!({
         "status": "ok",
         "vocabulary": model.facet.vocabulary_size(),

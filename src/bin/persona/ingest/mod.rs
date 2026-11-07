@@ -28,8 +28,8 @@ use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
 use util::dir_sentences;
 
-const LEXICON: &str = "data/personas.chroma";
-const STORE: &str = "data/personas.json";
+const LEXICON: &str = "personas.chroma";
+const STORE: &str = "personas.json";
 
 pub fn run(a: Vec<String>) {
     let arg = |k: usize| a.get(k - 1).and_then(|s| s.parse::<usize>().ok());
@@ -49,7 +49,7 @@ pub fn run(a: Vec<String>) {
     let split = Split { train, valid, test };
     println!("\ntraining the shared lexicon on {} sentences, {passes} passes…", split.train.len());
     let facet = Harness::train_ranking_only(&split, &Trainer::new(LEARNING_RATE).with_seed(0), passes);
-    Storage::save(&facet, LEXICON).expect("save lexicon");
+    Storage::save(&facet, &phiano::data::path(LEXICON)).expect("save lexicon");
     println!("  {} words, {} with relation evidence, {} marker channels → {LEXICON} ({:.0} s)", facet.vocabulary_size(), facet.evidenced_words(), facet.relations.markers(), t0.elapsed().as_secs_f64());
 
     // ── the personas: the sampled baseline, then every sentence ──
@@ -69,8 +69,8 @@ pub fn run(a: Vec<String>) {
         world.add_persona_quiet(&a.name, &a.split.train, &mut pfacet, &trainer);
         println!("  ingested {} from {} sentences ({:.0} s)", a.name, a.split.train.len(), t.elapsed().as_secs_f64());
     }
-    Storage::save(&pfacet, LEXICON).expect("save lexicon");
-    PersonaStore::save(&world, LEXICON, STORE).expect("save personas");
+    Storage::save(&pfacet, &phiano::data::path(LEXICON)).expect("save lexicon");
+    PersonaStore::save(&world, &phiano::data::path(LEXICON), &phiano::data::path(STORE)).expect("save personas");
 
     // ── what the full ingestion bought ──
     let (full_acc, full_rows) = attribution(&world, &pfacet, &authors, 150);

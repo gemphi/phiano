@@ -49,7 +49,7 @@ use std::time::Instant;
 
 pub fn run(a: Vec<String>) {
     let a = a;
-    let path = a.first().cloned().unwrap_or_else(|| "data/quest/synthetic.tsv".to_string());
+    let path = a.first().cloned().unwrap_or_else(|| phiano::data::path("quest/synthetic.tsv"));
     let epochs: usize = a.get(1).and_then(|s| s.parse().ok()).unwrap_or(8);
     let out = a.get(2).cloned();
 

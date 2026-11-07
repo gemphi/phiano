@@ -22,8 +22,8 @@ use phiecs::phasor::facet::Facet;
 use phiano::persona::{Dialogue, PersonaStore, Reply, Styles};
 use phiecs::phasor::facet::storage::Storage;
 
-const LEXICON: &str = "data/personas.chroma";
-const STORE: &str = "data/personas.json";
+const LEXICON: &str = "personas.chroma";
+const STORE: &str = "personas.json";
 
 pub fn run(a: Vec<String>) {
     let args = a;
@@ -31,8 +31,8 @@ pub fn run(a: Vec<String>) {
     let args: Vec<String> = args.into_iter().filter(|a| a != "--interactive").collect();
     // PHIANO_PERSONAS: another store — e.g. personas learned from quests
     // (bin/persona_from_quest) — read against the lexicon it names.
-    let store = std::env::var("PHIANO_PERSONAS").unwrap_or_else(|_| STORE.to_string());
-    let lexicon = PersonaStore::lexicon_of(&store).unwrap_or_else(|_| LEXICON.to_string());
+    let store = std::env::var("PHIANO_PERSONAS").unwrap_or_else(|_| phiano::data::path(STORE));
+    let lexicon = PersonaStore::lexicon_of(&store).unwrap_or_else(|_| phiano::data::path(LEXICON));
     let facet: Facet = Storage::load(&lexicon).expect("run bin/persona_ingest (or persona_from_quest) first");
     let world: Styles = PersonaStore::load(&store, &facet).expect("run bin/persona_ingest (or persona_from_quest) first");
     let mut names: Vec<String> = world.personas.keys().cloned().collect();

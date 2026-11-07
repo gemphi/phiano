@@ -26,7 +26,7 @@ impl SearleMarker {
     /// Loads from data/searle_markers.json (cached via OnceLock).
     pub fn load() -> &'static SearleMarker {
         MARKERS.get_or_init(|| {
-            let path = std::path::Path::new("data/searle_markers.json");
+            let path = crate::data::path("searle_markers.json");
             match std::fs::read_to_string(path) {
                 Ok(content) => serde_json::from_str(&content).unwrap_or_else(|e| {
                     eprintln!("[searle] Failed to parse markers JSON: {}", e);

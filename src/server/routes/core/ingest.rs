@@ -21,7 +21,7 @@ pub async fn ingest_all(
         if do_curriculum {
             let cur = phient::train::curriculum::ChildCurriculum::new();
             if !cur.stages.is_empty() {
-                let chunks = phient::train::chunker::ChunkStore::new("data/chunks");
+                let chunks = phient::train::chunker::ChunkStore::new(&crate::data::path("chunks"));
                 let r = cur.run(&mut model.facet, &model.trainer, &chunks);
                 curriculum_sentences = r.sentences_trained;
             }

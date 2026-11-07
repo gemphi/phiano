@@ -25,7 +25,7 @@ fn author_of(dir: &str, file: &str) -> String {
 pub(crate) fn authors() -> Vec<Author> {
     let mut by_author: std::collections::BTreeMap<String, (Vec<String>, Vec<String>)> = std::collections::BTreeMap::new();
     for dir in ["austen", "contrast"] {
-        for (file, sents) in dir_sentences(&format!("data/corpora/{dir}")) {
+        for (file, sents) in dir_sentences(&phiano::data::path(&format!("corpora/{dir}"))) {
             let a = author_of(dir, &file);
             let e = by_author.entry(a).or_default();
             e.0.push(file);

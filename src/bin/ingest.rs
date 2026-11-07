@@ -61,7 +61,7 @@ fn main() {
         .position(|a| a == "--out")
         .and_then(|i| args.get(i + 1))
         .cloned()
-        .unwrap_or_else(|| CHROMA_FILE.to_string());
+        .unwrap_or_else(|| phiano::data::path(CHROMA_FILE));
 
     println!("╔══════════════════════════════════════════════════════╗");
     println!("║  PHIANO — ingest curriculum + wiki + phi-4 + dialog  ║");
@@ -70,7 +70,7 @@ fn main() {
     let mut facet = load_or_new(&out);
     let trainer = Trainer::new(LEARNING_RATE);
     let mut memo = Memo::new();
-    let chunks = ChunkStore::new("data/chunks");
+    let chunks = ChunkStore::new(&phiano::data::path("chunks"));
 
     let curriculum = ChildCurriculum::new();
     if !curriculum.stages.is_empty() {
@@ -81,7 +81,7 @@ fn main() {
         );
     }
 
-    let rust_n = train_file_sentences(&mut facet, &trainer, "data/rust_book_corpus.txt", 2000);
+    let rust_n = train_file_sentences(&mut facet, &trainer, &phiano::data::path("rust_book_corpus.txt"), 2000);
     if rust_n > 0 {
         println!("  [rust-book] {} sentences, vocab {}", rust_n, facet.vocabulary_size());
     }

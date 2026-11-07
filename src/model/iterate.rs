@@ -78,7 +78,7 @@ impl Model {
 
     /// Persists without printing a banner — used for automatic checkpoints.
     pub(super) fn scale_quiet(&self) {
-        let _ = Storage::save(&self.facet, config::CHROMA_FILE);
+        let _ = Storage::save(&self.facet, &crate::data::path(config::CHROMA_FILE));
         let _ = self.memo.save_to_file(config::MEMORY_FILE);
         let _ = self.corrections.save(config::CORRECTION_FILE);
     }
@@ -113,19 +113,19 @@ impl Model {
     ///
     /// Called on exit to ensure all learned knowledge is saved.
     pub fn scale(&self) {
-        if let Err(e) = Storage::save(&self.facet, config::CHROMA_FILE) {
-            eprintln!("  [ERROR] could not save {}: {}", config::CHROMA_FILE, e);
+        if let Err(e) = Storage::save(&self.facet, &crate::data::path(config::CHROMA_FILE)) {
+            eprintln!("  [ERROR] could not save {}: {}", &crate::data::path(config::CHROMA_FILE), e);
             return;
         }
         if let Err(e) = self.memo.save_to_file(config::MEMORY_FILE) {
-            eprintln!("  [ERROR] could not save {}: {}", config::MEMORY_FILE, e);
+            eprintln!("  [ERROR] could not save {}: {}", &crate::data::path(config::MEMORY_FILE), e);
         }
         if let Err(e) = self.corrections.save(config::CORRECTION_FILE) {
-            eprintln!("  [ERROR] could not save {}: {}", config::CORRECTION_FILE, e);
+            eprintln!("  [ERROR] could not save {}: {}", &crate::data::path(config::CORRECTION_FILE), e);
         }
         println!(
             "  [saved] {} ({} words)",
-            config::CHROMA_FILE,
+            &crate::data::path(config::CHROMA_FILE),
             self.facet.vocabulary_size(),
         );
     }

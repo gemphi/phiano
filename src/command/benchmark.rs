@@ -14,7 +14,7 @@ impl Benchmark {
         let report = BenchmarkRunner::run_all(ctx.manifold, ctx.trainer);
         println!("{}", report);
 
-        let history = BenchmarkHistory::load("data/benchmark_history.json");
+        let history = BenchmarkHistory::load(&crate::data::path("benchmark_history.json"));
         if let Some(latest) = history.latest() {
             println!("\n  ── Comparison with previous benchmark ──");
             println!("  {}", BenchmarkReport::compare(&latest.report, &report));
@@ -22,7 +22,7 @@ impl Benchmark {
 
         let mut new_history = history;
         new_history.record(report);
-        new_history.save("data/benchmark_history.json");
+        new_history.save(&crate::data::path("benchmark_history.json"));
 
         println!("\n  Benchmark recorded to data/benchmark_history.json");
         true

@@ -15,7 +15,7 @@ fn main() {
     let path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let epochs: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(12);
 
     let raw = match std::fs::read_to_string(&path) {
@@ -89,7 +89,7 @@ fn main() {
     let _ = std::fs::create_dir_all("data");
     match serde_json::to_string_pretty(&report) {
         Ok(j) => {
-            let _ = std::fs::write("data/evaluation.json", j);
+            let _ = std::fs::write(&phiano::data::path("evaluation.json"), j);
             println!("\nfull log written to data/evaluation.json");
         }
         Err(e) => eprintln!("could not serialise report: {}", e),

@@ -101,9 +101,9 @@ pub async fn benchmark(
     let model = &mut *guard;
     let report = metrics::benchmark::runner::BenchmarkRunner::run_all(&mut model.facet, &model.trainer);
 
-    let mut history = lifelong::history::BenchmarkHistory::load("data/benchmark_history.json");
+    let mut history = lifelong::history::BenchmarkHistory::load(&crate::data::path("benchmark_history.json"));
     history.record(report.clone());
-    history.save("data/benchmark_history.json");
+    history.save(&crate::data::path("benchmark_history.json"));
 
     Ok(Json(report))
 }

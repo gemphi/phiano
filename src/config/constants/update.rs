@@ -123,7 +123,7 @@ pub use phient::train::constants::CORRECTION_FLOOR;
 pub const CORRECTION_STRENGTH: f64 = 0.3;
 
 /// Path to the persisted correction journal.
-pub const CORRECTION_FILE: &str = "data/corrections.json";
+pub const CORRECTION_FILE: &str = "corrections.json";
 
 pub use phient::generate::constants::DEGENERACY_WARN;
 

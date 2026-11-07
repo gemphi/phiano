@@ -10,10 +10,10 @@ use std::collections::HashMap;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let dir = args.get(1).cloned().unwrap_or_else(|| "data/tokenizers/phi4".into());
+    let dir = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("tokenizers/phi4"));
     let bpe = Bpe::from_dir(&dir).expect("vocab.json + merges.txt");
     println!("vocabulary: {} pieces", bpe.vocab_size());
-    let corpora: Vec<String> = if args.len() > 2 { args[2..].to_vec() } else { vec!["data/corpora/austen/emma.txt".into(), "data/rust_book_corpus.txt".into()] };
+    let corpora: Vec<String> = if args.len() > 2 { args[2..].to_vec() } else { vec![phiano::data::path("corpora/austen/emma.txt"), phiano::data::path("rust_book_corpus.txt")] };
     for path in &corpora {
         let raw = match std::fs::read_to_string(path) { Ok(r) => r, Err(_) => continue };
         let sentences = Tokenizer::split_sentences(&raw);
@@ -35,7 +35,7 @@ fn main() {
                 all.push_str(&format!("{{\"text\":{s:?},\"ids\":{:?}}}", bpe.encode(s)));
             }
             all.push(']');
-            std::fs::write("data/tokenizers/phi4/parity_rust_emma.json", all).unwrap();
+            std::fs::write(&phiano::data::path("tokenizers/phi4/parity_rust_emma.json"), all).unwrap();
         }
         for s in sentences.iter().take(2) {
             let ids = bpe.encode(s);
@@ -51,5 +51,5 @@ fn main() {
         out.push_str(&format!("{{\"text\":{s:?},\"ids\":{:?}}}", bpe.encode(s)));
     }
     out.push(']');
-    std::fs::write("data/tokenizers/phi4/parity_rust.json", out).unwrap();
+    std::fs::write(&phiano::data::path("tokenizers/phi4/parity_rust.json"), out).unwrap();
 }

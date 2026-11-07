@@ -16,7 +16,7 @@ fn main() {
     let trainer = Trainer::new(0.15); // Learning rate
     let evaluator = Evaluator::new();
 
-    let corpus_path = "data/rust_book_corpus.txt";
+    let corpus_path = &phiano::data::path("rust_book_corpus.txt");
     let file = match File::open(corpus_path) {
         Ok(f) => f,
         Err(e) => {

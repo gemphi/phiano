@@ -37,7 +37,7 @@ pub fn sentences_of(path: &str) -> Vec<String> {
 pub const AUSTEN: [&str; 3] = ["emma", "persuasion", "sense_and_sensibility"];
 
 pub fn austen() -> Vec<String> {
-    AUSTEN.iter().flat_map(|f| sentences_of(&format!("data/corpora/austen/{f}.txt"))).collect()
+    AUSTEN.iter().flat_map(|f| sentences_of(&crate::data::path(&format!("corpora/austen/{f}.txt")))).collect()
 }
 
 /// Every `.txt` under `dir` (READMEs aside), as `(name, sentences)`, sorted.

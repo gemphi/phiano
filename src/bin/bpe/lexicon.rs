@@ -29,10 +29,10 @@ fn measure(name: &str, split: &Split) {
 fn main() {
     let mut all = Vec::new();
     for f in ["emma", "persuasion", "sense_and_sensibility"] {
-        all.extend(sentences_of(&format!("data/corpora/austen/{f}.txt")));
+        all.extend(sentences_of(&phiano::data::path(&format!("corpora/austen/{f}.txt"))));
     }
     let words = Harness::split(all.clone(), 7);
-    let bpe = Bpe::from_dir("data/tokenizers/phi4").expect("tokenizer");
+    let bpe = Bpe::from_dir(&phiano::data::path("tokenizers/phi4")).expect("tokenizer");
     // A piece sentence: every piece as one lowercase alphanumeric token, `Ġ` (space) kept as the letter ġ so "the" and " the" stay distinct pieces.
     let piecify = |s: &str| -> String {
         bpe.pieces(&s.to_lowercase()).iter().map(|p| p.chars().filter(|c| c.is_alphanumeric()).collect::<String>()).filter(|p| !p.is_empty()).collect::<Vec<_>>().join(" ")

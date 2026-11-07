@@ -19,7 +19,7 @@ impl Chunk {
         }
 
         let path = Parser::strip_quotes(ctx.arg);
-        let store = ChunkStore::new("data/chunks");
+        let store = ChunkStore::new(&crate::data::path("chunks"));
         let count = store.split(&path);
         println!("  [chunk] {} words split into data/chunks/", count);
         true

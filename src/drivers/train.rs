@@ -19,7 +19,7 @@ impl Train {
         }
 
         let epochs: usize = ctx.arg.trim().parse().unwrap_or(30);
-        let store = ChunkStore::new("data/chunks");
+        let store = ChunkStore::new(&crate::data::path("chunks"));
         let metrics = store.ingest_parallel(ctx.manifold, ctx.trainer, epochs);
         metrics.report();
         true

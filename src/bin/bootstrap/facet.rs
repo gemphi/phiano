@@ -40,7 +40,7 @@ fn main() {
 
     let curriculum = ChildCurriculum::new();
     if !curriculum.stages.is_empty() {
-        let chunk_store = phient::train::chunker::ChunkStore::new("data/chunks");
+        let chunk_store = phient::train::chunker::ChunkStore::new(&phiano::data::path("chunks"));
         let result = curriculum.run(&mut facet, &trainer, &chunk_store);
         println!(
             "  [curriculum] {} stages, {} words, {} sentences ({} ms)",
@@ -53,7 +53,7 @@ fn main() {
 
     let corpus_path = std::env::args()
         .nth(1)
-        .unwrap_or_else(|| "data/dictionary_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("dictionary_corpus.txt"));
     let max_lines: usize = std::env::args()
         .nth(2)
         .and_then(|s| s.parse().ok())
@@ -90,7 +90,7 @@ fn main() {
 
     let out = std::env::args()
         .nth(3)
-        .unwrap_or_else(|| CHROMA_FILE.to_string());
+        .unwrap_or_else(|| phiano::data::path(CHROMA_FILE));
     if let Some(parent) = std::path::Path::new(&out).parent() {
         let _ = fs::create_dir_all(parent);
     }

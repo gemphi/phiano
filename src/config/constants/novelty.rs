@@ -57,28 +57,28 @@ pub const WIKI_SNIPPET_MAX_CHARS: usize = 1200;
 // ── FILE PATHS ─────────────────────────────────────────────────────────────
 
 /// Path to the serialized facet (lexicon) binary file.
-pub const CHROMA_FILE: &str = "data/manifold.chroma";
+pub const CHROMA_FILE: &str = "manifold.chroma";
 
 /// A trained Phinet operator that guides generation when present
 /// (`Generator::with_operator`, `OperatorGuide::load`). Absent = unguided.
-pub const OPERATOR_FILE: &str = "data/phinet_generate.fno";
+pub const OPERATOR_FILE: &str = "phinet_generate.fno";
 
 pub use phient::generate::constants::LEARNED_FILE;
 
 /// Path to the serialized 16-layer memory log.
-pub const MEMORY_FILE: &str = "data/memory.chroma";
+pub const MEMORY_FILE: &str = "memory.chroma";
 
 /// Path to the dictionary chunk directory.
-pub const CHUNK_STORE_DIR: &str = "data/chunks";
+pub const CHUNK_STORE_DIR: &str = "chunks";
 
 /// Path to the local definitions text file.
-pub const DEFINITIONS_FILE: &str = "data/definitions.txt";
+pub const DEFINITIONS_FILE: &str = "definitions.txt";
 
 /// Path to the API response cache file.
-pub const API_CACHE_FILE: &str = "data/api_cache.txt";
+pub const API_CACHE_FILE: &str = "api_cache.txt";
 
 /// Path to the stop words file (one word per line, space-separated).
-pub const STOP_WORDS_FILE: &str = "data/stop_words.txt";
+pub const STOP_WORDS_FILE: &str = "stop_words.txt";
 
 // ── ROTOR MULTI-DIMENSIONAL PHASES (CAPACITY UPGRADE) ──────────────────────
 
