@@ -5,7 +5,7 @@ fn a_figure_below_the_declared_bar_is_a_miss_with_the_bar_on_record() {
     let m = percent("ladder.act.clean_soundness", Some(70.0), &Bars::default(), Some(CLEAN_SOUNDNESS_BAR));
     assert_eq!(m.bar, Some(Bar { value: CLEAN_SOUNDNESS_BAR, sense: Sense::AtLeast }));
     assert!(matches!(m.verdict, Judged::Miss { shortfall } if (shortfall + 6.8).abs() < 1e-9));
-    let ok = percent("ladder.act.clean_coverage", Some(32.5), &Bars::default(), Some(CLEAN_COVERAGE_BAR));
+    let ok = percent("ladder.act.clean_coverage", Some(CLEAN_COVERAGE_BAR + 1.0), &Bars::default(), Some(CLEAN_COVERAGE_BAR));
     assert_eq!(ok.verdict, Judged::Pass);
 }
 
