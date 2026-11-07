@@ -1,0 +1,5 @@
+﻿# Words that follow their noun phrase instead of preceding it: 	wo hours ago.
+# The reader stores the phrase under Via(word) and the Realiser says it back
+# as <phrase> <word>. Murphy, English Grammar in Use, Unit 20 (ago).
+# One entry per line.
+ago
