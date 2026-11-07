@@ -35,6 +35,7 @@ pub fn measure(split: &Split, bars: &Bars, docs: &Path) -> Vec<Measured> {
     let heldout = split.strings(Part::Test);
     let clean = split.clean_strings(Part::Test);
 
+    out.extend(round_trip_canonical(bars));
     out.extend(view("foundation", &heldout, bars, None));
     // What the filter did, so the cleaned figures can be read honestly.
     out.push(count("ladder.act.clean_kept", clean.len(), bars));
@@ -68,6 +69,20 @@ pub fn measure(split: &Split, bars: &Bars, docs: &Path) -> Vec<Measured> {
     // Abstract and surface prediction with control arms, and the gate (task 9.6).
     out.extend(predict::measure(split, bars));
     out
+}
+
+/// `ladder.act.round_trip_canonical`: the gold realisation round trip with
+/// Canonical_Form on both sides, reported beside the strict
+/// `ladder.act.round_trip` (which stays strict and is emitted by `ladder.rs`).
+/// Unjudged unless a Bar names it. A gold set that cannot load is a named
+/// absence, never a zero.
+fn round_trip_canonical(bars: &Bars) -> Vec<Measured> {
+    const NAME: &str = "ladder.act.round_trip_canonical";
+    let rate = phisor::gold::read().ok().and_then(|gold| {
+        let (matched, total, _) = phisor::ladder::round_trip_canonical(gold.pairs());
+        (total > 0).then(|| one_decimal(100.0 * matched as f64 / total as f64))
+    });
+    vec![percent(NAME, rate, bars, None)]
 }
 
 /// The distinct lower-case tokens of the Held_Out_Slice, the vocabulary the
