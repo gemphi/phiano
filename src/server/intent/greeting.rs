@@ -21,24 +21,24 @@ impl ChatIntent {
     // ── PATTERN CLASSIFIER HELPERS ─────────────────────────────────────────────
 
     pub(super) fn is_greeting(p_lower: &str) -> bool {
-    let GREETINGS = intent_list("greetings");
+    let greetings = intent_list("greetings");
     let cleaned = p_lower.trim_matches(|c: char| c.is_ascii_punctuation() || c.is_whitespace());
-    GREETINGS.iter().any(|g| {
+    greetings.iter().any(|g| {
         cleaned.starts_with(g) || p_lower.starts_with(g)
     })
 }
 
     pub(super) fn is_self_correction(p_lower: &str) -> bool {
-    let CORRECTION_STARTS = intent_list("correction_starts");
-    CORRECTION_STARTS.iter().any(|c| p_lower.starts_with(c.as_str()) || p_lower.contains(c.as_str()))
+    let correction_starts = intent_list("correction_starts");
+    correction_starts.iter().any(|c| p_lower.starts_with(c.as_str()) || p_lower.contains(c.as_str()))
 }
 
     /// Extracts the correction content by stripping the negation prefix.
     ///
     /// e.g. "no, that's wrong, dogs are mammals" → "dogs are mammals"
     pub(super) fn extract_correction_content(p_lower: &str) -> String {
-    let CORRECTION_PREFIXES = intent_list("correction_prefixes");
-    for prefix in CORRECTION_PREFIXES {
+    let correction_prefixes = intent_list("correction_prefixes");
+    for prefix in correction_prefixes {
         if let Some(rest) = p_lower.strip_prefix(prefix.as_str()) {
             return rest.trim().to_string();
         }
@@ -54,27 +54,27 @@ impl ChatIntent {
 }
 
     pub(super) fn is_personal_memory(p_lower: &str) -> bool {
-    let PERSONAL_TRIGGERS = intent_list("personal_triggers");
-    PERSONAL_TRIGGERS.iter().any(|t| p_lower.contains(t.as_str()))
+    let personal_triggers = intent_list("personal_triggers");
+    personal_triggers.iter().any(|t| p_lower.contains(t.as_str()))
 }
 
     pub(super) fn is_recommendation(p_lower: &str) -> bool {
-    let RECOMMENDATION_TRIGGERS = intent_list("recommendation_triggers");
-    RECOMMENDATION_TRIGGERS.iter().any(|r| p_lower.contains(r.as_str()))
+    let recommendation_triggers = intent_list("recommendation_triggers");
+    recommendation_triggers.iter().any(|r| p_lower.contains(r.as_str()))
 }
 
     pub(super) fn is_explanation_request(p_lower: &str) -> bool {
-    let QUESTION_TRIGGERS = intent_list("question_triggers");
-    QUESTION_TRIGGERS.iter().any(|q| p_lower.contains(q.as_str())) || p_lower.ends_with('?')
+    let question_triggers = intent_list("question_triggers");
+    question_triggers.iter().any(|q| p_lower.contains(q.as_str())) || p_lower.ends_with('?')
 }
 
     pub fn extract_topic_term(tokens: &[String], prompt: &str) -> String {
-    let STOP_WORDS = intent_list("stop_words");
+    let stop_words = intent_list("stop_words");
 
     for t in tokens {
         let t_clean = t.to_lowercase();
         let stripped = t_clean.trim_matches(|c: char| !c.is_alphabetic());
-        if !STOP_WORDS.iter().any(|w| w == stripped) && stripped.len() >= 3 {
+        if !stop_words.iter().any(|w| w == stripped) && stripped.len() >= 3 {
             return stripped.to_string();
         }
     }

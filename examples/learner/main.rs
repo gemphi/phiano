@@ -139,7 +139,12 @@ fn main() {
     let t = Instant::now();
     let mut l = match flag("--resume") {
         Some(path) => {
-            let l = Learner::load(&path).expect("read the checkpoint");
+            let mut l = Learner::load(&path).expect("read the checkpoint");
+            // The shape of the learner is the checkpoint's; how long this
+            // instalment trains is this run's.
+            if flag("--epochs").is_some() {
+                l.config.epochs = config.epochs;
+            }
             println!("resumed from {path}: {} lines told before, vocabulary {}\n", l.lines_told(), l.vocabulary());
             l
         }
