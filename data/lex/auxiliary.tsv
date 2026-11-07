@@ -1,0 +1,28 @@
+# The finite auxiliaries: word<TAB>tense<TAB>family<TAB>tags.
+# tense   present | past.
+# family  be | have | do | can | will | may | shall | must (the last five are
+#         the modals; a past form such as `could` carries its modal's sense).
+# tags    operator: the word can open a question (do-support or a modal).
+# `cannot` reads as `can`, but is not a question operator.
+# Append a row to teach the reader a form.
+is	present	be	-
+are	present	be	-
+am	present	be	-
+was	past	be	-
+were	past	be	-
+has	present	have	-
+have	present	have	-
+had	past	have	-
+do	present	do	operator
+does	present	do	operator
+did	past	do	operator
+can	present	can	operator
+cannot	present	can	-
+could	past	can	operator
+will	present	will	operator
+would	past	will	operator
+may	present	may	operator
+might	past	may	operator
+shall	present	shall	operator
+should	past	shall	operator
+must	present	must	operator
