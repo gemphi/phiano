@@ -5,7 +5,7 @@
 //! band carries the perplexity gap before any change is tried.
 
 use phient::metrics::baseline::kn::KneserNey;
-use phient::metrics::harness::Harness;
+use phient::metrics::harness::PhianoLM;
 use phiecs::phasor::facet::Facet;
 use phiton::p64::words::Tokenizer;
 use std::collections::HashMap;
@@ -72,7 +72,7 @@ pub fn report(bands: &[Band; 5]) -> Vec<String> {
 /// Score the test tokens with both models and print the per-band diagnostic.
 /// Both are scored on the same positions: token 2 onward of each sentence,
 /// the ones the learner's perplexity averages.
-pub fn print(facet: &Facet, train: &[String], test: &[String]) {
+pub fn print(facet: &Facet, gamma: f64, train: &[String], test: &[String]) {
     let mut counts: HashMap<String, usize> = HashMap::new();
     for s in train {
         for t in Tokenizer::tokenize(s) {
@@ -80,7 +80,7 @@ pub fn print(facet: &Facet, train: &[String], test: &[String]) {
         }
     }
     let kn = KneserNey::train(train);
-    let lm = Harness::language_model(facet, true);
+    let lm = PhianoLM::with_gamma(facet, gamma);
     let learner = lm.scored_tokens(test);
     // `scored_tokens` walks the sentences in order, skipping the first two
     // tokens of each; walk the trigram over the same positions.

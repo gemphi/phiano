@@ -17,7 +17,7 @@ mod bands;
 use super::bars::{Bars, Unit};
 use super::record::Measured;
 use phient::metrics::baseline::kn::KneserNey;
-use phient::metrics::harness::{Harness, Split};
+use phient::metrics::harness::{PhianoLM, Split, GAMMA_GRID};
 use phient::train::sources::wiktionary::WiktionarySource;
 use phient::train::trainer::Trainer;
 use phiecs::phasor::facet::Facet;
@@ -62,11 +62,12 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
         .collect();
     let mut train = Vec::new();
     let mut test = Vec::new();
+    let mut dev = Vec::new();
     for (i, s) in sentences.iter().enumerate() {
         match role_of(i) {
             Role::Test => test.push(s.clone()),
             Role::Train => train.push(s.clone()),
-            Role::Dev => {}
+            Role::Dev => dev.push(s.clone()),
         }
     }
     if train.is_empty() || test.is_empty() {
@@ -107,7 +108,14 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
     }
     let _ = Split { train: train.clone(), valid: test.clone(), test: test.clone() };
 
-    let learner_ppl = Harness::perplexity(&facet, &test);
+    // The phase manifold is a back-off, not the whole distribution: at gamma 1
+    // it is the only mass behind the trigram's discounted remainder, so the
+    // very frequent words the n-gram tables already know are diluted by a
+    // near-flat phase softmax. Mix in the unigram, with the weight chosen on
+    // the dev sentences (never the test ones).
+    let gamma = dev_gamma(&facet, &dev);
+    let learner_ppl = PhianoLM::with_gamma(&facet, gamma).perplexity(&test);
+    eprintln!("harness: curriculum back-off gamma {gamma:.1} chosen on {} dev sentences", dev.len());
     let trigram_ppl = KneserNey::train(&train).perplexity(&test);
     eprintln!(
         "harness: curriculum perplexity learner {learner_ppl:.1} vs trigram {trigram_ppl:.1} \
@@ -115,7 +123,7 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
         test.len()
     );
 
-    bands::print(&facet, &train, &test);
+    bands::print(&facet, gamma, &train, &test);
 
     // Only the learner's perplexity is judged against the declared Bar
     // (AtMost 84.7). The trigram's is recorded beside it with no Bar, so it
@@ -129,6 +137,20 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
             bars,
         ),
     ]
+}
+
+/// The back-off mixing weight with the lowest dev perplexity. Falls back to 1
+/// (the manifold alone, the prior behaviour) when there is no dev text.
+fn dev_gamma(facet: &Facet, dev: &[String]) -> f64 {
+    if dev.is_empty() {
+        return 1.0;
+    }
+    GAMMA_GRID
+        .iter()
+        .map(|g| (*g, PhianoLM::with_gamma(facet, *g).perplexity(dev)))
+        .filter(|(_, p)| p.is_finite())
+        .min_by(|a, b| a.1.total_cmp(&b.1))
+        .map_or(1.0, |(g, _)| g)
 }
 
 fn one_decimal(value: f64) -> f64 {
