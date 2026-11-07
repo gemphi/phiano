@@ -33,6 +33,12 @@ pub use provenance::{present, Comparison, Corpus, CorpusRef, Fed, RunStart, Stag
 /// The current numbers every candidate is written beside (R4.3).
 pub const LEARNER_TOP1: f64 = 21.3;
 pub const LEARNER_PERPLEXITY: f64 = 101.2;
+///
+/// `TRIGRAM_PERPLEXITY` is stale: the trigram now measures 63.0
+/// (`curriculum.trigram_perplexity`), not 84.7. It stays at 84.7 on purpose
+/// (task 6.4, R4.4/R4.6): the learner (best 98.2) has not reached the 84.7
+/// bar, so the constant is corrected only once `curriculum.perplexity` is at
+/// or below 84.7.
 pub const TRIGRAM_TOP1: f64 = 24.8;
 pub const TRIGRAM_PERPLEXITY: f64 = 84.7;
 
