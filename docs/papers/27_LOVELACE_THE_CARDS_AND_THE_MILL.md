@@ -138,10 +138,10 @@ The engine's value to science, she wrote, would be in combining general symbols 
 | tabulate or develope | A | counted phasors vs the learner corrected by its error | done, measured side by side |
 | the store apart from the mill | A, D | `ground` / `machine` | done |
 | operation cards and variable cards | D, G | `machine::ops`: cards in files, punched at run time; `phisor-rows` names the columns | **done today**; variable cards not a named thing |
-| backing the cards: cycles | C, E, G | recursive cards; the step cap | done |
-| arrangement for economy | D | the curriculum, chosen by the human by measurement | partial: the engine does not arrange |
+| backing the cards: cycles | C, E, G | recursive cards; the step cap; her Bernoulli program runs (paper 28) | done |
+| arrangement for economy | D | `engine::arrange`: the shortest agreeing trace among cards (paper 28); the curriculum still arranged by hand | done at one question's scale |
 | stops on an impossible order | (Menabrea) | `Fault` in place of a value; the detector's classes | done |
-| the trace: every operation accounted for | G | `agree`; the harness and learner records | done |
+| the trace: every operation accounted for | G | `agree`; `engine::answer_traced` (paper 28); the records | done |
 | originates nothing, anticipates nothing | G | `truth`; no data in code; the learner follows its order | done |
 | general symbols in unlimited succession | A | cards composing cards over a fixed alphabet | done |
 
@@ -166,7 +166,7 @@ flowchart LR
     T["truth: a claim classified before a row is told"] -.-> R
 ```
 
-Twelve ideas: ten done and measured, one done today, one partial. What is not hers but is phisor's own — the learner's phasors, the kinds found by the river, the guide's split — is outside this ledger on purpose.
+Twelve ideas: ten done and measured, one done today, one partial — and paper 28, written the same day, closes the partial one and runs her program. What is not hers but is phisor's own — the learner's phasors, the kinds found by the river, the guide's split — is outside this ledger on purpose.
 
 ## 4. Evaluation
 
