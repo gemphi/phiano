@@ -12,6 +12,8 @@
 //! so the walk stays within its cap; the number is a real floor, not the
 //! learner's best possible.
 
+mod bands;
+
 use super::bars::{Bars, Unit};
 use super::record::Measured;
 use phient::metrics::baseline::kn::KneserNey;
@@ -113,15 +115,20 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
         test.len()
     );
 
+    bands::print(&facet, &train, &test);
+
     // Only the learner's perplexity is judged against the declared Bar
-    // (AtMost 84.7). The trigram number is reported beside it by the eprintln
-    // above; top-1 stays unmeasured and therefore unjudged.
-    vec![Measured::judged(
-        "curriculum.perplexity",
-        one_decimal(learner_ppl),
-        Unit::Perplexity,
-        bars,
-    )]
+    // (AtMost 84.7). The trigram's is recorded beside it with no Bar, so it
+    // is unjudged; top-1 stays unmeasured and therefore unjudged too.
+    vec![
+        Measured::judged("curriculum.perplexity", one_decimal(learner_ppl), Unit::Perplexity, bars),
+        Measured::judged(
+            "curriculum.trigram_perplexity",
+            one_decimal(trigram_ppl),
+            Unit::Perplexity,
+            bars,
+        ),
+    ]
 }
 
 fn one_decimal(value: f64) -> f64 {
@@ -131,6 +138,20 @@ fn one_decimal(value: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use phient::train::sources::wiktionary::WiktionarySource;
+
+    /// One bounded curriculum measurement without the ten-level walk or a
+    /// record page: prints the perplexities and the band diagnostic.
+    /// `cargo test -p phiano --bin harness measure_curriculum -- --ignored --nocapture`
+    #[test]
+    #[ignore = "trains a facet; run explicitly"]
+    fn measure_curriculum() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        std::env::set_current_dir(root).unwrap();
+        let bars = super::super::bars::Bars::read(std::path::Path::new("docs/bars.md"));
+        for m in super::run(&bars) {
+            eprintln!("{m:?}");
+        }
+    }
 
     /// The fold path reads real relation sentences from a Kaikki-shaped dump:
     /// the same `relation_sentences` the walk folds in, proven here so the
