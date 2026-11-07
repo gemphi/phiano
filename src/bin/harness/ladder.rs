@@ -191,6 +191,7 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
             .map(|(_, e)| (&e.act, e.sentence.as_str()))
             .collect();
         out.extend(gold_figures("_reachable", &reachable, bars));
+        out.extend(realisable_figure(&gold, bars));
     }
 
     // The reader on the Held_Out_Slice: four measures, regression flag and
@@ -221,6 +222,25 @@ fn gold_figures(suffix: &str, pairs: &[(&phisor::ir::Act, &str)], bars: &Bars) -
         out.push(Measured::judged(&name, one_decimal(purity), Unit::Percentage, bars));
     }
     out
+}
+
+/// `ladder.act.round_trip_realisable`: the strict gold round trip over the 150
+/// minus the Unrealisable_Frames, the frames whose Act has no field for a word
+/// of the sentence (R1.4, R1.8). The gold file is untouched; the exclusion
+/// lives only in this figure.
+fn realisable_figure(gold: &phisor::gold::Gold, bars: &Bars) -> Option<Measured> {
+    let realisable: Vec<_> = gold
+        .entries
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| phisor::gold::unrealisable(*i).is_none())
+        .map(|(_, e)| (&e.act, e.sentence.as_str()))
+        .collect();
+    let (matched, total, _) = phisor::ladder::round_trip(realisable);
+    (total > 0).then(|| {
+        let rate = 100.0 * matched as f64 / total as f64;
+        Measured::judged("ladder.act.round_trip_realisable", one_decimal(rate), Unit::Percentage, bars)
+    })
 }
 
 /// One decimal place, matching the Recorder's reporting.
@@ -441,5 +461,11 @@ mod tests {
         // realiser check independent of the label, so it is not constrained to
         // move either way and is only checked to be in range above.
         assert!(fp_reach >= fp_all, "force purity {fp_reach} < all {fp_all}");
+
+        // The realisable cut is the 150 minus the Unrealisable_Frames; every
+        // frame left round-trips, so the figure is 100.
+        let realisable = realisable_figure(&gold, &bars).expect("realisable round-trip");
+        assert_eq!(realisable.name, "ladder.act.round_trip_realisable");
+        assert_eq!(realisable.value, 100.0);
     }
 }
