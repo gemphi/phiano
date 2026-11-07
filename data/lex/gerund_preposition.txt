@@ -1,0 +1,18 @@
+# Prepositions whose object may be an `-ing` clause sharing the subject of the
+# clause they close ("he thanked me for helping him", "she is thinking of
+# buying a car", "he left without saying goodbye"). Conjunction-like
+# prepositions (`before`, `after`, `while`) are left out: they are read as
+# conjunctions with their own subject.
+#
+# Linguistic source: Murphy's *English Grammar in Use*, Units 59-60
+# (preposition + -ing). A hand list.
+# One entry per line.
+for
+of
+at
+by
+about
+without
+in
+from
+on
