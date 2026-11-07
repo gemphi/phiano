@@ -301,6 +301,60 @@ mod tests {
         eprintln!("BEFORE (chosen on test): grid {} dev {:.1} held-out {:.1}", by_test.2, by_test.0, by_test.1);
     }
 
+    /// Per-function-class purity at the dev-chosen settings, on the dev part
+    /// and on the Held_Out_Slice. A class is credited with the sentences that
+    /// fall in Kinds whose majority label is that class: recall is that share
+    /// of the class, precision is that share of those Kinds' sentences. Run:
+    /// `cargo test -p phiano --bin harness per_function_class -- --ignored --nocapture`
+    /// from the workspace root (the Guide path is relative to it).
+    ///
+    /// Recorded figures (dev-chosen settings, 9 Kinds):
+    /// - dev: 95.4% over 822; explain 784 (recall 100.0), instruct 38 (0.0), answer 0.
+    /// - held-out: 52.6% over 2994; explain 1558 (recall 86.0, precision 53.0),
+    ///   instruct 96 (recall 0.0), answer 1340 (recall 17.6, precision 50.9).
+    ///
+    /// Weakest classes: instruct (never the majority of any Kind) and answer
+    /// (17.6% recall). Dev holds no answer sentences and 38 instruct, so its
+    /// 95.4% is just the explain share; every setting scores it and dev cannot
+    /// separate them. Held-out is 45% answer, so the purity there is near the
+    /// 52% explain share plus a little.
+    #[test]
+    #[ignore = "diagnostic: reads the real Guide; run alone"]
+    fn per_function_class_purity() {
+        let (Ok(text), Ok(key)) = (
+            std::fs::read_to_string(Path::new(GUIDE)),
+            std::fs::read_to_string(Path::new(KEY)),
+        ) else {
+            eprintln!("the Guide is unreadable from here");
+            return;
+        };
+        phisor::lexicon::prime_irregular(&text);
+        let split = Split::new(guide::read(&text, &key));
+        let (best, _) = tune(&split);
+        let ladder = Ladder::new(&split, Seeds::DECLARED);
+        let learned = ladder.kinds(phisor::ladder::Arm::Learned, MODE, &best);
+        for part in [Part::Dev, Part::Test] {
+            let mut guard = HoldoutGuard::new(vec![]);
+            let report = ladder.function_purity_on(part, &learned, &mut guard).unwrap();
+            eprintln!("{part:?}: purity {:.1}% over {} scored, {} unassigned, {} kinds",
+                value(&report.purity), report.scored, report.unassigned, report.table.len());
+            let majority = |row: &Vec<f64>| {
+                (0..row.len()).max_by(|&a, &b| row[a].total_cmp(&row[b]).then(b.cmp(&a))).unwrap()
+            };
+            for (c, f) in guide::Function::ALL.iter().enumerate() {
+                let total: f64 = report.table.iter().map(|r| r[c]).sum();
+                let (mut caught, mut claimed) = (0.0, 0.0);
+                for row in report.table.iter().filter(|r| majority(r) == c) {
+                    caught += row[c];
+                    claimed += row.iter().sum::<f64>();
+                }
+                let pct = |n: f64, d: f64| if d > 0.0 { 100.0 * n / d } else { 0.0 };
+                eprintln!("  {:<9} n {total:>4} recall {:>5.1}% precision {:>5.1}%",
+                    f.name(), pct(caught, total), pct(caught, claimed));
+            }
+        }
+    }
+
     /// The reachable cut drops the Unreachable_Frames, so it reports the same
     /// two names with the `_reachable` suffix beside the all-150 pair, and
     /// scores no lower than the all-150 cut on either figure (R2.2).
