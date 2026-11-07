@@ -1,0 +1,8 @@
+# Irregular noun plurals: singular<TAB>plural. The realiser writes the plural
+# and the reader recovers the singular from it. Append a noun to teach it.
+child	children
+man	men
+woman	women
+foot	feet
+tooth	teeth
+person	people

@@ -1,0 +1,6 @@
+# Weather verbs: they take no argument and an empty expletive `it` subject.
+# One per line.
+rain
+snow
+freeze
+thunder

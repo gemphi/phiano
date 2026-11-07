@@ -1,0 +1,11 @@
+# Words whose first letter misleads the indefinite article: prefix<TAB>article
+# (`an` before a vowel sound, `a` before a consonant sound). First match wins;
+# a word with no match takes `an` before a vowel letter, else `a`.
+hour	an
+honest	an
+honour	an
+honor	an
+uni	a
+use	a
+eu	a
+one	a
