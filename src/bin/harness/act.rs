@@ -65,6 +65,8 @@ pub fn measure(split: &Split, bars: &Bars, docs: &Path) -> Vec<Measured> {
     // the list were decided by the foundation lexicon instead (task 5.1,
     // R5.2, R5.3). Counts only; no held-out word reaches a Reader decision.
     out.extend(word_lists(&heldout, bars));
+    // Abstract and surface prediction with control arms, and the gate (task 9.6).
+    out.extend(predict::measure(split, bars));
     out
 }
 
@@ -198,5 +200,7 @@ fn absent(name: &str, unit: Unit) -> Measured {
     }
 }
 
+#[cfg(test)]
+mod predict;
 #[cfg(test)]
 mod tests;
