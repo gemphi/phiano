@@ -34,4 +34,4 @@ Read, straight:
 
 ## Status
 
-2026-11-08, 00:10. `--test-more` in `examples/learner`; the set is on disk under `_corpus`, not in a repository, as the samples are. Every run from here reports both rows.
+2026-11-08, 00:00. `--test-more` in `examples/learner`; the set is on disk under `_corpus`, not in a repository, as the samples are. Every run from here reports both rows.

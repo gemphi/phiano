@@ -23,3 +23,8 @@ data/lex/near.tsv
 data/lex/pos.tsv
 data/lex/sense.tsv
 data/lex/function.txt
+
+# Lovelace's Notes, whole: the text paper 27 and phisor::lovelace read (2026-11-08).
+!data/corpora/
+data/corpora/*
+!data/corpora/lovelace/
