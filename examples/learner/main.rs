@@ -30,7 +30,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--no-guide] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt]
 //! ```
 
 mod counting;
@@ -77,6 +77,13 @@ fn main() {
     let words = |ls: &[Vec<String>]| ls.iter().map(Vec::len).sum::<usize>();
     if a.iter().any(|x| x == "--no-guide") {
         train.clear();
+    }
+    let guide_told = train.len();
+    // The guide's share of the rehearsal (docs/212, 216): told `--guide-times`
+    // times, so more text beside it does not dilute it.
+    let times = num("--guide-times", 1.0) as usize;
+    for _ in 1..times {
+        train.extend(train[..guide_told].to_vec());
     }
     let guide_told = train.len();
     for extra in flag("--more").iter().flat_map(|m| m.split(',')).filter(|m| !m.is_empty()) {
