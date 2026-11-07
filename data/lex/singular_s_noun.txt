@@ -1,0 +1,8 @@
+# Nouns ending in `s` that are singular, so the reader does not strip the
+# `s` and read a spurious plural. The closed set the Guide uses.
+# One entry per line.
+bus
+gas
+lens
+news
+class

@@ -1,0 +1,29 @@
+# Multi-syllable verbs stressed on the last syllable, which double the final
+# consonant before `-ed`/`-ing` (admit -> admitted). The standard English
+# spelling rule (Murphy, English Grammar in Use, Appendix 6): a syllable
+# count cannot be read from the spelling, so these are named, not guessed.
+# One entry per line.
+admit
+permit
+submit
+commit
+omit
+prefer
+refer
+occur
+begin
+regret
+forget
+control
+equip
+forbid
+rebel
+expel
+compel
+propel
+patrol
+upset
+transfer
+confer
+defer
+recur

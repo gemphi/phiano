@@ -1,0 +1,11 @@
+# The silent-e verbs the Guide uses whose `-ing`/`-ed` drops the e, so the
+# reader restores it ("living" -> live) rather than keeping the bare stem.
+# One entry per line.
+live
+come
+make
+write
+give
+take
+arrive
+use
