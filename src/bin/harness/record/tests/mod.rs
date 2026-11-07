@@ -2,6 +2,7 @@
 //! named properties in `prop`, the integration unit facts and the read-only
 //! directory test (R2.9) in `unit`.
 
+mod figures;
 mod prop;
 mod unit;
 
