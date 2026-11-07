@@ -3,7 +3,8 @@
 //! `run_walk` once handed the Recorder an empty slice, so every learning
 //! number came back unjudged. This module loads The_Guide, sweeps a declared
 //! grid of the exchange routine's settings, keeps the settings that score the
-//! highest function purity on the dev part, and reports that run's numbers as
+//! highest function purity on the dev part (ties go to the higher dev
+//! terminator purity, then the earlier setting), and reports that run's numbers as
 //! `record::Measured` judged against the declared Bars.
 //!
 //! The sweep is honest hyperparameter search, not fitting the yardstick: the
@@ -92,27 +93,38 @@ fn grid() -> Vec<Settings> {
 /// has to earn its place. Returns the best settings and the purity it scored.
 fn tune(split: &Split) -> (Settings, f64) {
     let mut best = Settings { max_passes: 1, ..Settings::default() };
-    let mut best_purity = f64::NEG_INFINITY;
+    let mut best_score = (f64::NEG_INFINITY, f64::NEG_INFINITY);
     for settings in grid() {
-        let purity = function_purity_of(split, &settings);
-        if purity > best_purity {
-            best_purity = purity;
+        let score = dev_scores_of(split, &settings);
+        if score > best_score {
+            best_score = score;
             best = settings;
         }
     }
-    (best, best_purity.max(0.0))
+    (best, best_score.0.max(0.0))
 }
 
-/// The dev function purity a given settings grows, or negative infinity
-/// when the arm could not be scored (so it never wins the sweep).
-fn function_purity_of(split: &Split, settings: &Settings) -> f64 {
+/// The dev scores a given settings earns, in the order the sweep compares
+/// them: function purity first, then terminator purity.
+///
+/// Dev holds no answer sentences (the Split_Rule sends every Key answer to
+/// Test), so dev function purity is the explain share for every setting and
+/// never separates them. The terminator mark is read off the text, not the
+/// Key, so terminator purity on dev still varies with the Kinds and breaks
+/// that tie. It names no held-out label and reads only `Part::Dev`.
+/// A setting that could not be scored is negative infinity on both, so it
+/// never wins the sweep.
+fn dev_scores_of(split: &Split, settings: &Settings) -> (f64, f64) {
     let ladder = Ladder::new(split, Seeds::DECLARED);
     let learned = ladder.kinds(phisor::ladder::Arm::Learned, MODE, settings);
     let mut guard = HoldoutGuard::new(vec![]);
-    match ladder.function_purity_on(Part::Dev, &learned, &mut guard) {
-        Ok(report) => value(&report.purity),
-        Err(_) => f64::NEG_INFINITY,
-    }
+    let function = ladder
+        .function_purity_on(Part::Dev, &learned, &mut guard)
+        .map_or(f64::NEG_INFINITY, |r| value(&r.purity));
+    let terminator = ladder
+        .terminator_purity_on(Part::Dev, &learned, &mut guard)
+        .map_or(f64::NEG_INFINITY, |r| value(&r.purity));
+    (function, terminator)
 }
 
 /// The number behind a ladder `Measured`, whichever verdict it carries, so
@@ -313,7 +325,11 @@ mod tests {
     /// - held-out: 52.6% over 2994; explain 1558 (recall 86.0, precision 53.0),
     ///   instruct 96 (recall 0.0), answer 1340 (recall 17.6, precision 50.9).
     ///
-    /// Weakest classes: instruct (never the majority of any Kind) and answer
+    /// After 5.3 (dev ties broken by dev terminator purity; 13 Kinds): dev
+    /// 95.4% unchanged; held-out 53.0% (explain recall 87.8, answer recall
+    /// 16.4, instruct 0.0). The gain is finer Kinds, not better answer recall.
+    ///
+    /// Weakest classes before 5.3: instruct (never the majority of any Kind) and answer
     /// (17.6% recall). Dev holds no answer sentences and 38 instruct, so its
     /// 95.4% is just the explain share; every setting scores it and dev cannot
     /// separate them. Held-out is 45% answer, so the purity there is near the
