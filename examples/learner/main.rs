@@ -13,6 +13,12 @@
 //! training sentences, cut the same way. The dev and test sets stay the
 //! guide's own: the extra text is never scored.
 //!
+//! The learner ACCUMULATES (docs/208): `--save ckpt` writes the best epoch's
+//! learner whole, and `--resume ckpt` starts the next run from it instead of
+//! the seed, telling it only what is new. `--no-guide` tells it the extra
+//! text alone, so a curriculum is two runs: the wide text first and saved,
+//! then the guide on top of it.
+//!
 //! | model | what it is |
 //! |---|---|
 //! | the most told word | the floor |
@@ -22,7 +28,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--no-guide] [--resume ckpt] [--save ckpt]
 //! ```
 
 mod counting;
@@ -67,6 +73,9 @@ fn main() {
         }
     }
     let words = |ls: &[Vec<String>]| ls.iter().map(Vec::len).sum::<usize>();
+    if a.iter().any(|x| x == "--no-guide") {
+        train.clear();
+    }
     let guide_told = train.len();
     for extra in flag("--more").iter().flat_map(|m| m.split(',')).filter(|m| !m.is_empty()) {
         train.extend(sentences(extra));
@@ -125,9 +134,18 @@ fn main() {
         eprintln!("phiecs: {:.1}s", t.elapsed().as_secs_f64());
     }
 
-    // The phasors corrected by their error.
+    // The phasors corrected by their error: fresh, or carried on from a
+    // checkpoint and told only what is new.
     let t = Instant::now();
-    let mut l = Learner::new(config.clone());
+    let mut l = match flag("--resume") {
+        Some(path) => {
+            let l = Learner::load(&path).expect("read the checkpoint");
+            println!("resumed from {path}: {} lines told before, vocabulary {}\n", l.lines_told(), l.vocabulary());
+            l
+        }
+        None => Learner::new(config.clone()),
+    };
+    let config = l.config.clone();
     for s in &train {
         l.tell(s);
     }
@@ -155,6 +173,10 @@ fn main() {
     }
     let r = best.measure(&test);
     rows.push(row("**phient learner (corrected by its error)**", &r, Some(r.perplexity())));
+    if let Some(path) = flag("--save") {
+        best.save(&path).expect("write the checkpoint");
+        println!("\nsaved the best epoch to {path} ({} lines told, vocabulary {})", best.lines_told(), best.vocabulary());
+    }
 
     println!("\n| model, on the held-out test sentences | top-1 | top-5 | perplexity |\n|---|---|---|---|");
     for r in &rows {
