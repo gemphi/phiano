@@ -22,7 +22,7 @@ use std::path::Path;
 use std::process::Command;
 
 /// Declared Bar: clean coverage, percent of clean held-out sentences read.
-pub const CLEAN_COVERAGE_BAR: f64 = 33.2;
+pub const CLEAN_COVERAGE_BAR: f64 = 33.5;
 /// Declared Bar: clean soundness, percent of the read that round-trips.
 pub const CLEAN_SOUNDNESS_BAR: f64 = 76.8;
 /// A clean-soundness drop larger than this many points is a regression.
