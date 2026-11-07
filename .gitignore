@@ -28,3 +28,5 @@ data/lex/function.txt
 !data/corpora/
 data/corpora/*
 !data/corpora/lovelace/
+# The curriculum record the learner example keeps and proposes from (paper 28).
+!data/curriculum/

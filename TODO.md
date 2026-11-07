@@ -4,6 +4,8 @@ Paths are under `src/` unless they say otherwise. Diagrams: [ARCHITECTURE.md](AR
 
 ## The arena (docs/203)
 
+- [x] The curriculum is a record the run keeps (2026-11-08, docs/220): `examples/learner --record name,lever,doc` appends the instalment to `data/curriculum/instalments.tsv`; `--propose` reads it and names the lever whose last application paid most. Note D at the learner's scale (paper 28).
+
 The readers that need nothing of phiano's (counts, concepts, the mirror, the operator, the learner) moved to `phient::lineup`; their items are in phient's TODO.md. `arena` keeps `Ecs`, which reads a persona's world.
 
 - [x] arena: phient's learner is behind `examples/talk.rs` (7 epochs, then `speak`) and the workshop (the student, corrected on the fly; `--rehearse` adds a pass per page); the counted phasors are only a contrast now (`talk --counted`, the workshop's contrast column).

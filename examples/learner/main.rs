@@ -19,7 +19,9 @@
 //! text alone, so a curriculum is two runs: the wide text first and saved,
 //! then the guide on top of it. On a resume `--epochs` and `--rate` are this
 //! run's; `--forget 0.1` scales the Adagrad accumulators so a sure learner
-//! gets its stride back (docs/214).
+//! gets its stride back (docs/214). `--record name,lever,doc` appends the run
+//! to the curriculum record and `--propose` reads the record and names the
+//! next lever (`curriculum`, paper 28).
 //!
 //! | model | what it is |
 //! |---|---|
@@ -30,10 +32,11 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt] [--record name,lever,doc] [--propose]
 //! ```
 
 mod counting;
+mod curriculum;
 
 use counting::{rank, sentences, WittenBell};
 use phient::study::Score;
@@ -51,6 +54,11 @@ fn main() {
     };
     let flag = |k: &str| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)).cloned();
     let num = |k: &str, d: f64| flag(k).and_then(|s| s.parse().ok()).unwrap_or(d);
+    // The curriculum read back and the next instalment proposed (paper 28).
+    if a.iter().any(|x| x == "--propose") {
+        print!("{}", curriculum::propose(&curriculum::read()));
+        return;
+    }
     let config = Config {
         channels: num("--channels", 64.0) as usize,
         context: num("--context", 4.0) as usize,
@@ -218,6 +226,35 @@ fn main() {
     if let Some(path) = flag("--save") {
         best.save(&path).expect("write the checkpoint");
         println!("\nsaved the best epoch to {path} ({} lines told, vocabulary {})", best.lines_told(), best.vocabulary());
+    }
+    // `--record name,lever,doc`: this instalment appended to the curriculum.
+    if let Some(spec) = flag("--record") {
+        let f: Vec<&str> = spec.split(',').collect();
+        let stem = |p: &str| std::path::Path::new(p).file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| p.to_string());
+        let text: Vec<String> = flag("--more").iter().flat_map(|m| m.split(',')).filter(|m| !m.is_empty()).map(stem).collect();
+        let instalment = curriculum::Instalment {
+            name: f.first().map(|s| s.to_string()).unwrap_or_else(|| flag("--save").map(|p| stem(&p)).unwrap_or_default()),
+            from: flag("--resume").map(|p| stem(&p)).unwrap_or_else(|| "-".into()),
+            lever: f.get(1).map(|s| s.to_string()).unwrap_or_else(|| "?".into()),
+            text: match text.is_empty() {
+                true => "-".into(),
+                false => text.join("+"),
+            },
+            guide_times: match a.iter().any(|x| x == "--no-guide") {
+                true => 0,
+                false => num("--guide-times", 1.0) as usize,
+            },
+            epochs: config.epochs,
+            top1: r.top1(),
+            top5: r.top5(),
+            ppl: r.perplexity(),
+            doc: f.get(2).map(|s| s.to_string()).unwrap_or_else(|| "-".into()),
+        };
+        match curriculum::record(&instalment) {
+            Ok(true) => println!("recorded {} in {}", instalment.name, curriculum::file().display()),
+            Ok(false) => println!("{} was already in {}", instalment.name, curriculum::file().display()),
+            Err(e) => println!("could not record {}: {e}", instalment.name),
+        }
     }
 
     println!("\n| model, on the held-out test sentences | top-1 | top-5 | perplexity |\n|---|---|---|---|");
