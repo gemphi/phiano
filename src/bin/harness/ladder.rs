@@ -329,6 +329,18 @@ mod tests {
     /// 95.4% unchanged; held-out 53.0% (explain recall 87.8, answer recall
     /// 16.4, instruct 0.0). The gain is finer Kinds, not better answer recall.
     ///
+    /// 5.4 (second change, tried and reverted): `split_cost_penalty` was made to
+    /// reach `settle` (added to `split_cost` before the keep decision). At the
+    /// declared 0.5 and 1.0 nats, against a split cost of tens of nats, no
+    /// split flipped: the 36 grid points scored as before and the dev-chosen
+    /// held-out purity stayed 53.0% (13 Kinds), so the change did not raise it
+    /// and was dropped. A larger penalty could only merge Kinds, and purity
+    /// rises with the Kind count, so it cannot help. The gap against the
+    /// hash-null is `UnequalKindCount` (learned 13, hash-null 16) already at
+    /// 5.3, so it is unjudged, and the change could not have lowered it.
+    /// Best held-out function purity after 5.3 and 5.4: 53.0%. The Bar stays
+    /// 56.7%: an honest recorded miss, not a tuned pass.
+    ///
     /// Weakest classes before 5.3: instruct (never the majority of any Kind) and answer
     /// (17.6% recall). Dev holds no answer sentences and 38 instruct, so its
     /// 95.4% is just the explain share; every setting scores it and dev cannot
@@ -349,6 +361,12 @@ mod tests {
         let (best, _) = tune(&split);
         let ladder = Ladder::new(&split, Seeds::DECLARED);
         let learned = ladder.kinds(phisor::ladder::Arm::Learned, MODE, &best);
+        let [hash, _, paired] = ladder.all_kinds(MODE, &best);
+        let mut gate = HoldoutGuard::new(vec![]);
+        match ladder.function_gap(&paired, &hash, &mut gate) {
+            Ok(gap) => eprintln!("gap vs hash-null {:.2}", value(&gap.difference)),
+            Err(e) => eprintln!("gap vs hash-null unavailable: {e:?}"),
+        }
         for part in [Part::Dev, Part::Test] {
             let mut guard = HoldoutGuard::new(vec![]);
             let report = ladder.function_purity_on(part, &learned, &mut guard).unwrap();
