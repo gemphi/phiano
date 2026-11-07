@@ -1,0 +1,14 @@
+# Contraction clitics: suffix<TAB>the words it stands for.
+# The reader finds the suffix on any token and splits the token into its stem
+# and these words, so no pronoun is listed ("we're" -> we are, "don't" -> do not).
+# Only the unambiguous clitics are here. `'d` (would/had) is left out on purpose:
+# it is as ambiguous as `'s` and the reader must abstain on it, not guess; add it
+# here only together with a resolver. `'s` (is/has/possessive) is resolved
+# by the word that follows it (contraction_s.tsv). Irregular whole forms whose
+# stem the suffix cannot give ("won't") are in contraction_exception.tsv, which
+# is checked first.
+'re	are
+'ll	will
+'ve	have
+'m	am
+n't	not

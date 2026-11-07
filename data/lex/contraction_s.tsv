@@ -1,0 +1,7 @@
+# What follows `he's`, `she's`, `it's` and settles it as "has": the word<TAB>
+# the auxiliary it makes the `'s`. Any other following word that is an -ing
+# form, or cannot be a participle, makes it "is"; an -ed or irregular
+# participle stays ambiguous and the reader abstains.
+been	has
+got	has
+gotten	has

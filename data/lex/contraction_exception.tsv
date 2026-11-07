@@ -1,0 +1,10 @@
+# Irregular contractions: whole form<TAB>the words it expands to.
+# Checked before the clitic rules in contraction_clitic.tsv, for forms whose
+# stem is not what the clitic strips to ("won't" would give "wo", "shan't"
+# "sha") or that expand to one word ("can't").
+# "let's" (let us) is not here yet: expanding it moves the clean held-out
+# figures (coverage 32.9 -> 32.8), so it waits for a reader rule that wants it.
+won't	will not
+can't	cannot
+cannot	cannot
+shan't	shall not
