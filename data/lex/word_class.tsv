@@ -1,34 +1,37 @@
 # The reader's closed word classes: one word per line, then the classes it
 # belongs to (comma-separated): determiner, aux, copula, preposition, modifier,
 # cardinal (number words; a run of digits is a rule), time_adverb, place_adverb,
-# adjective (the fallback set used only when the POS lexicon is not primed).
+# adjective (the fallback set used only when the POS lexicon is not primed),
+# aux_lemma (the bare auxiliary verbs), and the determiner kinds det_definite,
+# det_indefinite, det_near, det_far, det_quant, det_owner (what the IR calls
+# the determiner; a quantifier or owner is carried by its own spelling).
 # Append a word, or a class to a word, to teach the reader.
-the	determiner
-a	determiner
-an	determiner
-this	determiner
-that	determiner
-these	determiner
-those	determiner
-my	determiner
-your	determiner
-his	determiner
-her	determiner
-its	determiner
-our	determiner
-their	determiner
-some	determiner
-any	determiner
-no	determiner
-every	determiner
-each	determiner
-all	determiner
-many	determiner
-both	determiner
-half	determiner
-several	determiner
-few	determiner
-most	determiner
+the	determiner,det_definite
+a	determiner,det_indefinite
+an	determiner,det_indefinite
+this	determiner,det_near
+that	determiner,det_far
+these	determiner,det_near
+those	determiner,det_far
+my	determiner,det_owner
+your	determiner,det_owner
+his	determiner,det_owner
+her	determiner,det_owner
+its	determiner,det_owner
+our	determiner,det_owner
+their	determiner,det_owner
+some	determiner,det_quant
+any	determiner,det_quant
+no	determiner,det_quant
+every	determiner,det_quant
+each	determiner,det_quant
+all	determiner,det_quant
+many	determiner,det_quant
+both	determiner,det_quant
+half	determiner,det_quant
+several	determiner,det_quant
+few	determiner,det_quant
+most	determiner,det_quant
 nobody	determiner
 nothing	determiner
 is	aux,copula
@@ -104,3 +107,6 @@ big	adjective
 small	adjective
 good	adjective
 correct	adjective
+be	aux_lemma
+have	aux_lemma
+do	aux_lemma

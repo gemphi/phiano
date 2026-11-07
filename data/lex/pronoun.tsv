@@ -4,13 +4,15 @@
 # subject  can open a clause as its subject (also what `a <pronoun>` ahead of a
 #          sentence marks as an item label, not a sentence).
 # object   reads as a recipient at the head of a ditransitive command.
+# third_singular  he/she/it: the present verb takes -s.
+# first_person     I/we: the present copula is am/are.
 # s_host   takes `'s` as is/has (`he's`), never as a possessive.
-i	subject,reader
+i	subject,reader,first_person
 you	subject,reader,object
-he	subject,reader,s_host
-she	subject,reader,s_host
-it	subject,reader,s_host
-we	subject,reader
+he	subject,reader,s_host,third_singular
+she	subject,reader,s_host,third_singular
+it	subject,reader,s_host,third_singular
+we	subject,reader,first_person
 they	subject,reader
 me	reader,object
 him	reader,object
