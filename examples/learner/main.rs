@@ -30,7 +30,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt]
 //! ```
 
 mod counting;
@@ -206,6 +206,15 @@ fn main() {
     }
     let r = best.measure(&test);
     rows.push(row("**phient learner (corrected by its error)**", &r, Some(r.perplexity())));
+    // Held-out sentences of another register (docs/217): the same learner,
+    // scored on text it was never told, to tell English learned from the
+    // guide learned. The guide's test row above is the bar; these are beside it.
+    for extra in flag("--test-more").iter().flat_map(|m| m.split(',')).filter(|m| !m.is_empty()) {
+        let more = sentences(extra);
+        let r = best.measure(&more);
+        let name = std::path::Path::new(extra).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default();
+        rows.push(row(&format!("the learner, on {name} ({} sentences, never told)", more.len()), &r, Some(r.perplexity())));
+    }
     if let Some(path) = flag("--save") {
         best.save(&path).expect("write the checkpoint");
         println!("\nsaved the best epoch to {path} ({} lines told, vocabulary {})", best.lines_told(), best.vocabulary());
