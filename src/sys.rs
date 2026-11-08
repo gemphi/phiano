@@ -19,7 +19,6 @@
 
 mod being;
 pub mod circus;
-pub mod eye;
 pub mod lisp;
 pub mod race;
 pub mod set;
