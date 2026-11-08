@@ -1,14 +1,14 @@
 # The learner's curriculum, one instalment per line (examples/learner --record; --propose reads it).
-# name	from	lever	text	guide_times	epochs	top1	top5	ppl	doc   (scores on the guide's held-out test)
-guide_alone	-	guide	-	1	16	21.3	40.9	101.2	203
-wide	-	text	simplewiki+prose	0	8	nan	nan	nan	208
-wide_then_guide	wide	guide	-	1	8	19.9	39.3	123.4	208
-tatoeba1	wide_then_guide	text	sample80k	0	8	19.7	39.7	119.6	209
-widened128	tatoeba1	widen	-	0	2	19.7	39.6	119.6	210
-guide_twice	tatoeba1	guide	-	1	8	20.9	41.4	104.3	212
-guide_twice_2	guide_twice	epochs	-	0	2	20.9	41.4	104.3	213
-tatoeba2_guide	guide_twice	text+guide	sample80k_2	1	8	21.3	42.0	97.9	214
-forget01	tatoeba2_guide	forget	-	0	2	21.3	42.0	97.9	215
-tatoeba3_guide	tatoeba2_guide	text+guide	sample80k_3	1	8	21.6	42.3	95.3	216
-tatoeba4_guide2	tatoeba3_guide	text+guide	sample80k_4	2	8	22.1	43.3	90.9	218
-guide_thrice	tatoeba4_guide2	guide	-	1	8	22.3	43.7	89.2	221
+# name	from	lever	text	guide_times	epochs	top1	top5	ppl	doc	held   (scores on the guide's held-out test; held = perplexity on the never-told register, docs/217)
+guide_alone	-	guide	-	1	16	21.3	40.9	101.2	203	nan
+wide	-	text	simplewiki+prose	0	8	nan	nan	nan	208	nan
+wide_then_guide	wide	guide	-	1	8	19.9	39.3	123.4	208	nan
+tatoeba1	wide_then_guide	text	sample80k	0	8	19.7	39.7	119.6	209	nan
+widened128	tatoeba1	widen	-	0	2	19.7	39.6	119.6	210	nan
+guide_twice	tatoeba1	guide	-	1	8	20.9	41.4	104.3	212	nan
+guide_twice_2	guide_twice	epochs	-	0	2	20.9	41.4	104.3	213	nan
+tatoeba2_guide	guide_twice	text+guide	sample80k_2	1	8	21.3	42.0	97.9	214	nan
+forget01	tatoeba2_guide	forget	-	0	2	21.3	42.0	97.9	215	nan
+tatoeba3_guide	tatoeba2_guide	text+guide	sample80k_3	1	8	21.6	42.3	95.3	216	123.5
+tatoeba4_guide2	tatoeba3_guide	text+guide	sample80k_4	2	8	22.1	43.3	90.9	218	119.5
+guide_thrice	tatoeba4_guide2	guide	-	1	8	22.3	43.7	89.2	221	120.0

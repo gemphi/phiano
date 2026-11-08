@@ -217,9 +217,13 @@ fn main() {
     // Held-out sentences of another register (docs/217): the same learner,
     // scored on text it was never told, to tell English learned from the
     // guide learned. The guide's test row above is the bar; these are beside it.
+    let mut held = f64::NAN;
     for extra in flag("--test-more").iter().flat_map(|m| m.split(',')).filter(|m| !m.is_empty()) {
         let more = sentences(extra);
         let r = best.measure(&more);
+        if held.is_nan() {
+            held = r.perplexity();
+        }
         let name = std::path::Path::new(extra).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default();
         rows.push(row(&format!("the learner, on {name} ({} sentences, never told)", more.len()), &r, Some(r.perplexity())));
     }
@@ -249,6 +253,7 @@ fn main() {
             top5: r.top5(),
             ppl: r.perplexity(),
             doc: f.get(2).map(|s| s.to_string()).unwrap_or_else(|| "-".into()),
+            held,
         };
         match curriculum::record(&instalment) {
             Ok(true) => println!("recorded {} in {}", instalment.name, curriculum::file().display()),

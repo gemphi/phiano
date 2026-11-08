@@ -4,7 +4,8 @@
 //! Every instalment of the learner's training is one line of
 //! `data/curriculum/instalments.tsv`: what it resumed from, which lever it
 //! pulled, what text, the guide's share, and what it scored on the guide's
-//! held-out test. `--record` appends the line after a run, so the record is
+//! held-out test, and since docs/222 on the never-told register too (`held`:
+//! perplexity on the first `--test-more` file; docs/217). `--record` appends the line after a run, so the record is
 //! kept by the run and not by the writer; `--propose` reads the record and
 //! says which lever to pull next: the one whose last application paid most,
 //! measured as the perplexity it took off the instalment it resumed from.
@@ -39,6 +40,8 @@ pub struct Instalment {
     pub top5: f64,
     pub ppl: f64,
     pub doc: String,
+    /// Perplexity on the never-told register (docs/217); NaN when not scored.
+    pub held: f64,
 }
 
 /// The record: the crate's `data/curriculum/instalments.tsv`.
@@ -53,7 +56,7 @@ pub fn read() -> Vec<Instalment> {
         .iter()
         .filter_map(|line| {
             let f: Vec<&str> = line.split('\t').collect();
-            let parsed = (f.len() == 10).then(|| Instalment {
+            let parsed = (f.len() == 10 || f.len() == 11).then(|| Instalment {
                 name: f[0].into(),
                 from: f[1].into(),
                 lever: f[2].into(),
@@ -64,9 +67,10 @@ pub fn read() -> Vec<Instalment> {
                 top5: f[7].parse().unwrap_or(f64::NAN),
                 ppl: f[8].parse().unwrap_or(f64::NAN),
                 doc: f[9].into(),
+                held: f.get(10).and_then(|h| h.parse().ok()).unwrap_or(f64::NAN),
             });
             if parsed.is_none() {
-                eprintln!("instalments.tsv: a line with {} fields, not 10, skipped: {line}", f.len());
+                eprintln!("instalments.tsv: a line with {} fields, not 10 or 11, skipped: {line}", f.len());
             }
             parsed
         })
@@ -76,8 +80,8 @@ pub fn read() -> Vec<Instalment> {
 /// Appends an instalment to the record. Returns whether it was new.
 pub fn record(i: &Instalment) -> std::io::Result<bool> {
     let line = format!(
-        "{}\t{}\t{}\t{}\t{}\t{}\t{:.1}\t{:.1}\t{:.1}\t{}",
-        i.name, i.from, i.lever, i.text, i.guide_times, i.epochs, i.top1, i.top5, i.ppl, i.doc
+        "{}\t{}\t{}\t{}\t{}\t{}\t{:.1}\t{:.1}\t{:.1}\t{}\t{:.1}",
+        i.name, i.from, i.lever, i.text, i.guide_times, i.epochs, i.top1, i.top5, i.ppl, i.doc, i.held
     );
     phistd::lexfile::append(file(), &line)
 }
@@ -91,18 +95,18 @@ pub fn gain(i: &Instalment, all: &[Instalment]) -> Option<f64> {
 
 /// The record read back as a table, and the proposal.
 pub fn propose(all: &[Instalment]) -> String {
-    let mut out = String::from("| instalment | from | lever | text | guide × | top-1 | top-5 | ppl | gain | doc |\n|---|---|---|---|---|---|---|---|---|---|\n");
+    let mut out = String::from("| instalment | from | lever | text | guide × | top-1 | top-5 | ppl | gain | never-told | doc |\n|---|---|---|---|---|---|---|---|---|---|---|\n");
     for i in all {
         let g = gain(i, all).map_or("—".to_string(), |g| format!("{g:+.1}"));
         let pct = |x: f64| match x.is_nan() {
             true => "—".to_string(),
             false => format!("{x:.1}%"),
         };
-        let ppl = match i.ppl.is_nan() {
+        let num = |x: f64| match x.is_nan() {
             true => "—".to_string(),
-            false => format!("{:.1}", i.ppl),
+            false => format!("{x:.1}"),
         };
-        out += &format!("| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n", i.name, i.from, i.lever, i.text, i.guide_times, pct(i.top1), pct(i.top5), ppl, g, i.doc);
+        out += &format!("| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n", i.name, i.from, i.lever, i.text, i.guide_times, pct(i.top1), pct(i.top5), num(i.ppl), g, num(i.held), i.doc);
     }
     // Each lever's last application and the one before it.
     let mut levers: Vec<&str> = all.iter().map(|i| i.lever.as_str()).collect();
@@ -133,5 +137,23 @@ pub fn propose(all: &[Instalment]) -> String {
             why += &format!(", though that is less than half of the {b:.1} before it: the lever is paying less each time, and the guide's share is the first thing to raise beside it");
         }
     }
-    out + &format!("\nproposal: pull `{lever}` again, resuming `{newest}` — {why}.\n")
+    out += &format!("\nproposal: pull `{lever}` again, resuming `{newest}` — {why}.\n");
+    out + &registers(all)
+}
+
+/// Whether the newest instalment moved the never-told register with the
+/// guide's or against it (docs/217, 221): said when both it and the one it
+/// resumed from were scored on it.
+fn registers(all: &[Instalment]) -> String {
+    let Some(i) = all.last() else { return String::new() };
+    let Some(parent) = all.iter().find(|p| p.name == i.from) else { return String::new() };
+    let (Some(g), held) = (gain(i, all), parent.held - i.held) else { return String::new() };
+    if held.is_nan() {
+        return String::new();
+    }
+    let how = match (g > 0.0) == (held > 0.0) {
+        true => "with",
+        false => "against",
+    };
+    format!("registers: `{}` moved the never-told register {how} the guide's ({held:+.1} beside {g:+.1}).\n", i.name)
 }
