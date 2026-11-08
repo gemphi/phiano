@@ -6,7 +6,7 @@ pub mod world;
 
 pub use dialog::{Dialogue, Reply};
 pub use fingerprint::Fingerprint;
-pub use store::PersonaStore;
+pub use store::{PersonaStore, LEXICON, STORE};
 pub use impersonate::Impersonator;
 pub use world::Styles;
 

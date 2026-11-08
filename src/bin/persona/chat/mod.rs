@@ -19,11 +19,9 @@ use judge::*;
 use script::*;
 
 use phiecs::phasor::facet::Facet;
-use phiano::persona::{Dialogue, PersonaStore, Reply, Styles};
+use phiano::persona::{Dialogue, PersonaStore, Reply, Styles, LEXICON, STORE};
 use phiecs::phasor::facet::storage::Storage;
 
-const LEXICON: &str = "personas.chroma";
-const STORE: &str = "personas.json";
 
 pub fn run(a: Vec<String>) {
     let args = a;

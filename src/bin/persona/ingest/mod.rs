@@ -22,14 +22,12 @@ use measure::*;
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{Harness, Split};
-use phiano::persona::{PersonaStore, Styles};
+use phiano::persona::{PersonaStore, Styles, LEXICON, STORE};
 use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
 use util::dir_sentences;
 
-const LEXICON: &str = "personas.chroma";
-const STORE: &str = "personas.json";
 
 pub fn run(a: Vec<String>) {
     let arg = |k: usize| a.get(k - 1).and_then(|s| s.parse::<usize>().ok());

@@ -25,6 +25,11 @@ struct Stored {
     personas: Vec<StoredPersona>,
 }
 
+/// The lexicon file the personas are ingested against, under `data/`.
+pub const LEXICON: &str = "personas.chroma";
+/// The persona store file, under `data/`.
+pub const STORE: &str = "personas.json";
+
 pub struct PersonaStore;
 
 impl PersonaStore {
