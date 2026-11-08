@@ -7,7 +7,7 @@ Phiano is where the models are played and measured. The arena (`src/arena/`) lin
 ## The examples are the demonstrations
 
 ```
-cargo run --release -p phiano --example person   -- <corpus> --chunks 8     # the learning curve, honest
+cargo run --release -p phient --example person   -- <corpus> --chunks 8     # the learning curve, honest
 cargo run --release -p phiano --example talk     -- <corpus> "a prompt"     # continuation in the learned voice
 cargo run --release -p phiano --example workshop -- murphy.txt --key ...    # the 129-unit course, graded against the Key it was never told
 cargo run --release -p phiano --example arena    -- <corpus>                # every model, one table
