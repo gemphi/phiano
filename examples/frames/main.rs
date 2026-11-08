@@ -97,7 +97,8 @@ use prior::*;
 
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
-use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
+use phiano::frames::{collapse_small, predictive_gain, shuffle_classes};
+use phient::study::class::discover_classes;
 use phient::metrics::harness::Harness;
 use phient::train::kinds::{OffsetEstimator, OffsetTable};
 use phiano::tokenizer::Tokenizer;
