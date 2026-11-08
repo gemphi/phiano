@@ -1,28 +1,37 @@
-# The finite auxiliaries: word<TAB>tense<TAB>family<TAB>tags.
+# The finite auxiliaries: word<TAB>tense<TAB>family<TAB>tags<TAB>person<TAB>number.
 # tense   present | past.
 # family  be | have | do | can | will | may | shall | must (the last five are
 #         the modals; a past form such as `could` carries its modal's sense).
 # tags    operator: the word can open a question (do-support or a modal).
-# `cannot` reads as `can`, but is not a question operator.
+# person  the persons the form agrees with: a comma list of 1, 2, 3; `*` for
+#         any; `-` for none (the form is never chosen by agreement).
+# number  sg, pl, a comma list of both, `*` for any, or `-` for none.
+# A word may take several rows, one per agreement; its first row gives its
+# tense, family and tags. `cannot` reads as `can`, but is not a question
+# operator and is never chosen by agreement.
 # Append a row to teach the reader a form.
-is	present	be	-
-are	present	be	-
-am	present	be	-
-was	past	be	-
-were	past	be	-
-has	present	have	-
-have	present	have	-
-had	past	have	-
-do	present	do	operator
-does	present	do	operator
-did	past	do	operator
-can	present	can	operator
-cannot	present	can	-
-could	past	can	operator
-will	present	will	operator
-would	past	will	operator
-may	present	may	operator
-might	past	may	operator
-shall	present	shall	operator
-should	past	shall	operator
-must	present	must	operator
+is	present	be	-	3	sg
+am	present	be	-	1	sg
+are	present	be	-	2	sg
+are	present	be	-	1,2,3	pl
+was	past	be	-	1,3	sg
+were	past	be	-	2	sg
+were	past	be	-	1,2,3	pl
+has	present	have	-	3	sg
+have	present	have	-	1,2	sg
+have	present	have	-	1,2,3	pl
+had	past	have	-	*	*
+do	present	do	operator	1,2	sg
+do	present	do	operator	1,2,3	pl
+does	present	do	operator	3	sg
+did	past	do	operator	*	*
+can	present	can	operator	*	*
+cannot	present	can	-	-	-
+could	past	can	operator	*	*
+will	present	will	operator	*	*
+would	past	will	operator	*	*
+may	present	may	operator	*	*
+might	past	may	operator	*	*
+shall	present	shall	operator	*	*
+should	past	shall	operator	*	*
+must	present	must	operator	*	*
