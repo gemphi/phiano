@@ -80,9 +80,6 @@ path = "src/bin/persona/main.rs"
 name = "quest"
 path = "src/bin/quest/main.rs"
 
-[[bin]]
-name = "relate"
-path = "src/bin/relate/main.rs"
 
 [[bin]]
 name = "helix"
