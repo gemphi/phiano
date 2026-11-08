@@ -4,7 +4,7 @@
 //! f inherits it — `calls(f) = own(f) ⊕ λ · calls(T)` — the inheritance
 //! structure of docs/99, along `part-of` instead of `is-a`.
 
-use phiano::relate::{held_out, kind_token, RelationModel, Triple};
+use phient::relate::{held_out, kind_token, RelationModel, Triple};
 use phiecs::quest::Row;
 use phical::relate::{self, inherit_epoch, score_inherit, Inherit};
 use phistd::Adam;

@@ -24,7 +24,7 @@ mod waves;
 mod words;
 mod world;
 
-use phiano::prose::{tokens, Knowing};
+use phient::prose::{tokens, Knowing};
 use serde_json::{json, Value};
 use std::path::PathBuf;
 

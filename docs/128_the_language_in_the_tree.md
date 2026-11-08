@@ -15,7 +15,7 @@ Reading `data/text` makes 2,772,514 rows and takes about eight seconds; the coun
 
 ## 1. What was added
 
-- **The reader** (`phiano::prose::read_tree`): a directory is a scope, a `.txt` file is a scope (a chapter), each blank-line paragraph in it is a scope `p1`, `p2`, …. docs/127's one-sentence-per-file form reads the same way.
+- **The reader** (`phient::prose::read_tree`): a directory is a scope, a `.txt` file is a scope (a chapter), each blank-line paragraph in it is a scope `p1`, `p2`, …. docs/127's one-sentence-per-file form reads the same way.
 - **The word under each scope** (`in-word`, `in-pair` rows): besides `next` of a word anywhere, each occurrence is told under `scope|word` and `scope|pair` for every scope below the root. What this story goes on to is then a condition of its own, read after what the language goes on to.
 - **Going on inside a scope** (`Knowing.within`, `story --in text/story`): the cast starts at that scope and stays in its subtree; the word levels still draw on the whole tree. The levels, coarse to fine: the path's scopes; the last word everywhere, then under each scope of the path; the last two everywhere, then under each scope. Nine levels for a paragraph of the story; each posts only if it says something (D2 against the prior) and moves the reading from where the levels above left it (`read_levels`).
 - **`--beyond`**: where what was told ends (`⟨end⟩` is the best next word), go on with the language instead of stopping.

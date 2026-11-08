@@ -30,8 +30,8 @@ mod strata;
 #[path = "../waves/strata.rs"]
 mod waves;
 
-use phiano::prose::{heldout, Knowing};
-use phiano::relate::RelationModel;
+use phient::prose::{heldout, Knowing};
+use phient::relate::RelationModel;
 use phical::{FnoConfig, Tie};
 use phistd::Adam;
 use std::io::Write;
@@ -79,16 +79,16 @@ fn main() {
 
     let held = heldout::held(share, seed);
     let (mut story, _) = Knowing::learn_except(&root, &held);
-    story.within = phiano::relate::scopes(&within, 0);
+    story.within = phient::relate::scopes(&within, 0);
     let unseen = heldout::held(dev, seed);
     let (told, _) = operator::rows_ahead(&root, &unseen, ahead);
     // The rows the reader's mixture is fitted on: the dev paragraphs when there are any, else the operator's own.
     let fit = if dev > share { operator::rows(&root, &|p: &str| !unseen(p) || held(p)).0 } else { told.clone() };
     if let Some(file) = measure {
         let mut m = RelationModel::load(&file).expect("operator");
-        let defects = phiano::relate::FnoWave::new(&mut m).defects(1000).unwrap_or_default();
+        let defects = phient::relate::FnoWave::new(&mut m).defects(1000).unwrap_or_default();
         println!("symmetry defects over 1,000 words: global phase {:.3}, conjugation {:.3}\n", defects.0, defects.1);
-        print!("{}\n{}", strata::strata(&mut story, Some(&mut m)), waves::measure(&mut story, &mut phiano::relate::FnoWave::new(&mut m), ahead, &fit));
+        print!("{}\n{}", strata::strata(&mut story, Some(&mut m)), waves::measure(&mut story, &mut phient::relate::FnoWave::new(&mut m), ahead, &fit));
         return;
     }
     let cfg = FnoConfig { space, width: 16, layers: 2, modes: (space / 4).min(16), margin: 0.3, lr: 5e-3, tie };
@@ -122,7 +122,7 @@ fn main() {
         if from % every == 0 || from == epochs {
             save(&m, &format!("epoch_{from}.relate"));
             let t = Instant::now();
-            let table = format!("{}\n{}", strata::strata(&mut story, Some(&mut m)), waves::measure(&mut story, &mut phiano::relate::FnoWave::new(&mut m), ahead, &fit));
+            let table = format!("{}\n{}", strata::strata(&mut story, Some(&mut m)), waves::measure(&mut story, &mut phient::relate::FnoWave::new(&mut m), ahead, &fit));
             log(&out, &format!("\n## Epoch {from} · hinge loss {loss:.4} · {:.0} s measuring · {:.1} h this sitting\n\n{table}", t.elapsed().as_secs_f64(), start.elapsed().as_secs_f64() / 3600.0));
         }
     }

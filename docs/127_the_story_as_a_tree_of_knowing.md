@@ -8,7 +8,7 @@ In Phient's world, a word (w) is a seed: what it relates to, under what conditio
 >
 > She suddenly had an idea: their new investment would demand them to meet, and she was going to make an irresistible move on this young CEO of an AI company.
 
-Seventy-eight words, two paragraphs, one chapter. docs/126 said the levels need a corpus whose levels say more than its words; this is the smallest one. Everything below is run, not described: `story data\story --go "She suddenly"` (`bin/story`, `phiano::prose`, `phiano::relate::{Counts, levels, tree}`).
+Seventy-eight words, two paragraphs, one chapter. docs/126 said the levels need a corpus whose levels say more than its words; this is the smallest one. Everything below is run, not described: `story data\story --go "She suddenly"` (`bin/story`, `phient::prose`, `phient::relate::{Counts, levels, tree}`).
 
 ## 1. How a CLM holds them
 

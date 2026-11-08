@@ -10,7 +10,7 @@
 //! descriptions a reader has only heard of.
 
 use super::data::{feature, Table};
-use phiano::relate::{held_out, kind_token, RelationModel};
+use phient::relate::{held_out, kind_token, RelationModel};
 use phiecs::quest::Row;
 use phistd::Function;
 

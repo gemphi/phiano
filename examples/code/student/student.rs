@@ -1,6 +1,6 @@
 //! The student of code, on the base (docs/124). It learns an answer the
 //! moment it is told: the answer's relations by the grammar
-//! (`phiano::code`), counted (`phiano::relate::Tally`), and the answer
+//! (`phiano::code`), counted (`phient::relate::Tally`), and the answer
 //! itself kept whole, as the builders' game student keeps a told order. It
 //! writes by one mechanism, D4 movement over those counts:
 //!
@@ -20,7 +20,7 @@
 //! conditions (c): `below` is the exchange of `>` for `<` under `count`.
 
 use super::rows::{given, join_ops, rows_of};
-use phiano::relate::{Tally, ScopeTree, SAYS};
+use phient::relate::{Tally, ScopeTree, SAYS};
 use phiecs::quest::Row;
 
 pub const GIVEN: [&str; 4] = ["has-word", "takes", "returns", "within"];
@@ -64,7 +64,7 @@ impl Student {
         // per type, are four answers).
         let key = format!("{name}#{}", self.told.len());
         rows.push(Row { about: name.clone(), kind: "said-again".into(), other: key.clone(), weight: 1.0 });
-        let scopes = phiano::relate::scopes(path, 1);
+        let scopes = phient::relate::scopes(path, 1);
         for s in &scopes {
             rows.push(Row { about: name.clone(), kind: "within".into(), other: s.clone(), weight: 1.0 });
         }

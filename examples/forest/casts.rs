@@ -3,8 +3,8 @@
 //! cast — the scope tree read as a bounding-volume hierarchy, a stretch of
 //! words a ray drawn down it (`relate::tree`, docs/126).
 
-use phiano::prose::Knowing;
-use phiano::relate::SAYS;
+use phient::prose::Knowing;
+use phient::relate::SAYS;
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 

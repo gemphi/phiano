@@ -13,8 +13,8 @@
 //!
 //! `cargo run --release --bin ladder -- data/text --in text/emma [--held-out 0.05] [--seed 7] [--n 1500] [--tau 0.5] [--alpha 0.5] [--gate 0.12]`
 
-use phiano::prose::{heldout, Knowing};
-use phiano::relate::{scopes, SAYS};
+use phient::prose::{heldout, Knowing};
+use phient::relate::{scopes, SAYS};
 
 mod lex;
 mod rungs;

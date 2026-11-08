@@ -1,7 +1,7 @@
 //! Train a relation model on told rows (inheritance where the personas
 //! declare it) and read it on any rows against the prior.
 
-use phiano::relate::{kind_token, RelationModel};
+use phient::relate::{kind_token, RelationModel};
 use phiecs::quest::Row;
 use phical::relate::{self, inherit_epoch, prior, score, score_inherit, Inherit, Score, Triple};
 use phistd::Adam;

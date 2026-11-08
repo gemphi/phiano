@@ -6,8 +6,8 @@
 //! kin's distribution, and the field cast with the operator's word functions.
 
 use super::operator;
-use phiano::prose::{heldout, Knowing};
-use phiano::relate::{Field, RelationModel};
+use phient::prose::{heldout, Knowing};
+use phient::relate::{Field, RelationModel};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;

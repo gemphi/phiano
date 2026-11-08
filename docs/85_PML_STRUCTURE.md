@@ -117,7 +117,7 @@ import; phinum: one bin).
 **Relation operators placed (2026-09-28, docs/93).** The first work that runs
 through phiecs, phinet and phiano at once is split by the rule above:
 `phinet::relate` (operators over rows, laws, closure, scores — no words),
-`phiano::relate` (words and kinds to rows, facet start, `.relate` files),
+`phient::relate` (words and kinds to rows, facet start, `.relate` files),
 and phiecs's `parse_tsv` as the one reader of a quest table (phiano now
 depends on phiecs; phiecs still depends on nothing). phi-cal is not used by
 it and stays the geometry child of move 2.

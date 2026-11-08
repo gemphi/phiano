@@ -9,8 +9,8 @@
 mod reader;
 pub use reader::Reader;
 
-use phiano::prose::for_each_paragraph;
-use phiano::relate::RelationModel;
+use phient::prose::for_each_paragraph;
+use phient::relate::RelationModel;
 use phiecs::quest::Row;
 use phistd::Adam;
 use phical::{FnoConfig, Tie};

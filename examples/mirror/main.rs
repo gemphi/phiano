@@ -17,7 +17,7 @@ mod operator;
 #[path = "../waves/strata.rs"]
 mod waves;
 
-use phiano::prose::{heldout, Knowing};
+use phient::prose::{heldout, Knowing};
 use phiton::conjugate::{Mirror, Moment, Told};
 use std::collections::HashMap;
 use std::io::Write;
@@ -36,9 +36,9 @@ fn log(out: &std::path::Path, line: &str) {
 /// more than `next`, the same offsets as powers of `H`.
 fn tables(k: &mut Knowing, m: &Mirror, ahead: usize, fit: &[phiecs::quest::Row]) -> String {
     let steps = ahead.max(3);
-    let mut md = waves::measure(k, &mut phiano::relate::MirrorWave::new(m.clone(), false), steps, fit);
+    let mut md = waves::measure(k, &mut phient::relate::MirrorWave::new(m.clone(), false), steps, fit);
     if ahead > 1 {
-        md += &format!("\n**The same, every offset as a power of `H`:**\n\n{}", waves::measure(k, &mut phiano::relate::MirrorWave::new(m.clone(), true), steps, fit));
+        md += &format!("\n**The same, every offset as a power of `H`:**\n\n{}", waves::measure(k, &mut phient::relate::MirrorWave::new(m.clone(), true), steps, fit));
     }
     md
 }
@@ -60,7 +60,7 @@ fn main() {
 
     let held = heldout::held(share, seed);
     let (mut story, _) = Knowing::learn_except(&root, &held);
-    story.within = phiano::relate::scopes(&within, 0);
+    story.within = phient::relate::scopes(&within, 0);
     let unseen = heldout::held(dev, seed);
     let (told, _) = operator::rows_ahead(&root, &unseen, ahead);
     let fit = if dev > share { operator::rows(&root, &|p: &str| !unseen(p) || held(p)).0 } else { told.clone() };

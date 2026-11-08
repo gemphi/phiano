@@ -11,7 +11,7 @@
 //!   thing `bin/persona_ingest` reads from a writer's books;
 //! - the sentences and the relation rows (as `about kind other`) together
 //!   train one shared lexicon;
-//! - each persona's rows train a `phiano::relate` model, saved as
+//! - each persona's rows train a `phient::relate` model, saved as
 //!   `<root>/<slug>/<slug>.relate`, scored on a held-out fifth against the
 //!   prior.
 //!
@@ -26,7 +26,7 @@ use phient::metrics::harness::{Harness, Split};
 use phiano::persona::{PersonaStore, Styles};
 use phiecs::phasor::facet::storage::Storage;
 use phient::train::trainer::Trainer;
-use phiano::relate::read_quests;
+use phient::relate::read_quests;
 use phiecs::persona::Persona;
 use std::path::Path;
 

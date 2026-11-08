@@ -20,7 +20,7 @@
 //!
 //! `cargo run --release --bin context -- [--turns 25,100,400,2000] [--needles 10] [--keys 20] [--seed 7] [--phasor 64]`
 
-use phiano::prose::Knowing;
+use phient::prose::Knowing;
 use std::time::Instant;
 
 use phiano::lab::flag;
@@ -42,7 +42,7 @@ impl Dice {
 /// Emma's paragraphs, each cut to 40 words, as the filler turns.
 fn filler() -> Vec<String> {
     let mut out = Vec::new();
-    for (_, rows) in phiano::prose::read_tree(std::path::Path::new(&phiano::data::path("text/emma"))) {
+    for (_, rows) in phient::prose::read_tree(std::path::Path::new(&phiano::data::path("text/emma"))) {
         let words: Vec<String> = rows.iter().filter(|r| r.kind == "has-word").map(|r| r.other.clone()).take(40).collect();
         if words.len() > 8 {
             out.push(words.join(" "));
@@ -93,7 +93,7 @@ fn session(dir: &std::path::Path, fill: &[String], turns: usize, needles: usize,
 
 /// The word read next after `prompt`: the top of the ranking.
 fn answer(k: &Knowing, prompt: &str) -> String {
-    let said = phiano::prose::tokens(prompt);
+    let said = phient::prose::tokens(prompt);
     k.next(&said).1.into_iter().next().map(|x| x.0).unwrap_or_default()
 }
 
@@ -105,8 +105,8 @@ fn main() {
     let seed: u64 = flag(&mut a, "--seed").and_then(|s| s.parse().ok()).unwrap_or(7);
     let phasor: Option<usize> = flag(&mut a, "--phasor").and_then(|s| s.parse().ok());
     let order = match flag(&mut a, "--order").as_deref() {
-        Some("attraction") => phiano::relate::Order::Attraction,
-        _ => phiano::relate::Order::Told,
+        Some("attraction") => phient::relate::Order::Attraction,
+        _ => phient::relate::Order::Told,
     };
     let fill = filler();
     let dir = std::env::temp_dir().join("phiano_context").join("session");
@@ -122,7 +122,7 @@ fn main() {
                 k = k.with_field(r);
                 k.order = order;
             }
-            k.within = phiano::relate::scopes("session", 0);
+            k.within = phient::relate::scopes("session", 0);
             learn_t = t0.elapsed().as_secs_f64();
             words = told.iter().map(|x| x.1).sum();
             rows = k.rows;

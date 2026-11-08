@@ -2,7 +2,7 @@
 //! returns (docs/124): the operator read with the function's words.
 
 use super::newfn::Trained;
-use phiano::relate::{kind_token, Triple};
+use phient::relate::{kind_token, Triple};
 
 fn context(table: &[phistd::Function], about: usize, kind: usize) -> phistd::Function {
     let mut f: phistd::Function = table[about].iter().zip(&table[kind]).map(|(x, y)| x + y).collect();

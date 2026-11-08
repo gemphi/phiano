@@ -1,7 +1,7 @@
 //! A story as a tree of knowing, and going on from it (docs/127). The
 //! story lies on disk as `story/<chapter>/<paragraph>/<sentence>.txt`;
-//! every word is told under its path (`phiano::prose`), counted
-//! (`phiano::relate::Tally`), and the tree of scopes is built from the
+//! every word is told under its path (`phient::prose`), counted
+//! (`phient::relate::Tally`), and the tree of scopes is built from the
 //! `within` rows (`ScopeTree`). Nothing is trained: a new paragraph on
 //! disk is new rows the moment it is read.
 //!
@@ -24,8 +24,8 @@
 mod operator;
 mod strata;
 
-use phiano::prose::Knowing;
-use phiano::relate::{Tally, ScopeTree};
+use phient::prose::Knowing;
+use phient::relate::{Tally, ScopeTree};
 
 use phiano::lab::flag;
 
@@ -52,21 +52,21 @@ fn main() {
     let kin = a.iter().position(|x| x == "--kin").map(|i| a.remove(i)).is_some();
     // `--weights breadth|path` (`--breadth`): the held-out readings again under another rule (docs/147, 149).
     let other = match (a.iter().position(|x| x == "--breadth").map(|i| a.remove(i)), flag(&mut a, "--weights").as_deref()) {
-        (Some(_), _) | (_, Some("breadth")) => Some(phiano::relate::Weighting::Breadth),
-        (_, Some("path")) => Some(phiano::relate::Weighting::Path),
+        (Some(_), _) | (_, Some("breadth")) => Some(phient::relate::Weighting::Breadth),
+        (_, Some("path")) => Some(phient::relate::Weighting::Path),
         _ => None,
     };
     let order = match flag(&mut a, "--order").as_deref() {
-        Some("attraction") => phiano::relate::Order::Attraction,
-        _ => phiano::relate::Order::Told,
+        Some("attraction") => phient::relate::Order::Attraction,
+        _ => phient::relate::Order::Told,
     };
     let root = std::path::PathBuf::from(a.first().cloned().unwrap_or_else(|| phiano::data::path("story")));
     let (mut story, told) = match held_out {
-        Some(share) => Knowing::learn_except(&root, &phiano::prose::heldout::held(share, seed)),
+        Some(share) => Knowing::learn_except(&root, &phient::prose::heldout::held(share, seed)),
         None => Knowing::learn(&root),
     };
     if let Some(w) = &within {
-        story.within = phiano::relate::scopes(w, 0);
+        story.within = phient::relate::scopes(w, 0);
     }
     story.order = order;
     if let (Some(r), None) = (phasor, held_out) {
@@ -83,7 +83,7 @@ fn main() {
         }
     }
     if let Some(p) = rows_out {
-        let tsv: String = phiano::prose::read_tree(&root).iter().flat_map(|(_, rows)| rows.iter().map(|r| format!("{}\t{}\t{}\t{:.0}\n", r.about, r.kind, r.other, r.weight))).collect();
+        let tsv: String = phient::prose::read_tree(&root).iter().flat_map(|(_, rows)| rows.iter().map(|r| format!("{}\t{}\t{}\t{:.0}\n", r.about, r.kind, r.other, r.weight))).collect();
         std::fs::write(&p, tsv).expect("write rows");
         println!("rows → {p}");
     }
@@ -93,7 +93,7 @@ fn main() {
         let words = story.unknown();
         let tsv: String = words.iter().map(|(w, around)| format!("{w}\t{around}\n")).collect();
         std::fs::write(&p, &tsv).expect("write words");
-        println!("{} words said in fewer than {} paragraphs → {p}\n{}", words.len(), phiano::prose::KNOWN, words.iter().map(|w| w.0.as_str()).collect::<Vec<_>>().join(" "));
+        println!("{} words said in fewer than {} paragraphs → {p}\n{}", words.len(), phient::prose::KNOWN, words.iter().map(|w| w.0.as_str()).collect::<Vec<_>>().join(" "));
     }
     // `--uses words.tsv <oracle…>`: the teacher shows each word in three
     // sentences, saved as `<root>/uses/<word>.txt` (one paragraph each).
@@ -108,7 +108,7 @@ fn main() {
             if file.exists() {
                 continue;
             }
-            let reply = phiecs::quest::Oracle::ask(&mut o, &phiano::prose::uses_prompt(w, around)).unwrap_or_default();
+            let reply = phiecs::quest::Oracle::ask(&mut o, &phient::prose::uses_prompt(w, around)).unwrap_or_default();
             let text = phiecs::quest::builders::strip_escapes(&reply);
             let sentences: Vec<&str> = text.lines().map(str::trim).filter(|l| l.len() > 8).collect();
             std::fs::write(&file, format!("{}\n", sentences.join(" "))).expect("write use");
@@ -119,30 +119,30 @@ fn main() {
         let n: usize = story.held.iter().map(|x| x.1.len()).sum();
         println!("{} paragraphs held out ({n} words) · seed {seed}\n\n| reading | asked | top-1 | MRR | perplexity |\n|---|---|---|---|---|", story.held.len());
         story.flat = true;
-        println!("{}", phiano::prose::heldout::score(&story).row("flat: the last word, then the last two"));
+        println!("{}", phient::prose::heldout::score(&story).row("flat: the last word, then the last two"));
         story.flat = false;
-        println!("{}", phiano::prose::heldout::score(&story).row("tree: the scopes a cast finds, then the words under them"));
+        println!("{}", phient::prose::heldout::score(&story).row("tree: the scopes a cast finds, then the words under them"));
         if let Some(w) = other {
             story.counts.weights = w;
             story.flat = true;
-            println!("{}", phiano::prose::heldout::score(&story).row(&format!("flat, {w:?} weights")));
+            println!("{}", phient::prose::heldout::score(&story).row(&format!("flat, {w:?} weights")));
             story.flat = false;
-            println!("{}", phiano::prose::heldout::score(&story).row(&format!("tree, {w:?} weights")));
-            story.counts.weights = phiano::relate::Weighting::Counted;
+            println!("{}", phient::prose::heldout::score(&story).row(&format!("tree, {w:?} weights")));
+            story.counts.weights = phient::relate::Weighting::Counted;
         }
         if let Some(r) = phasor {
             story = story.with_field(r);
-            println!("{}", phiano::prose::heldout::score(&story).row(&format!("tree, cast by phasor (R = {r})")));
+            println!("{}", phient::prose::heldout::score(&story).row(&format!("tree, cast by phasor (R = {r})")));
         }
         if kin {
             println!("{}", strata::with_kin(&mut story));
         }
         match operator {
             Some((r, epochs)) => {
-                let (told, _) = operator::rows(&root, &phiano::prose::heldout::held(held_out.unwrap_or(0.0), seed));
+                let (told, _) = operator::rows(&root, &phient::prose::heldout::held(held_out.unwrap_or(0.0), seed));
                 let (mut m, note) = operator::model(&told, r, epochs, model.as_deref());
                 let vp = story.counts.values_and_prior("next");
-                let fit = dev.map(|d| operator::rows(&root, &|p: &str| !phiano::prose::heldout::held(d, seed)(p) || phiano::prose::heldout::held(held_out.unwrap_or(0.0), seed)(p)).0);
+                let fit = dev.map(|d| operator::rows(&root, &|p: &str| !phient::prose::heldout::held(d, seed)(p) || phient::prose::heldout::held(held_out.unwrap_or(0.0), seed)(p)).0);
                 let reader = operator::Reader::fit(&mut m, fit.as_deref().unwrap_or(&told), &vp.0, &vp.1, 2000);
                 println!("\n{note}; as a base, fitted on 2,000 {} rows: {}\n", if dev.is_some() { "dev" } else { "told" }, reader.note());
                 println!("{}\n{}", strata::strata(&mut story, Some(&mut m)), strata::together(&mut story, std::rc::Rc::new(std::cell::RefCell::new(m)), reader));
@@ -163,7 +163,7 @@ fn main() {
             // told before is read again (`learn_new`, docs/137).
             story.learn_new(&root);
             let k = &story;
-            let Some(line) = phiano::prose::teach::cycle(k, &story_dir, &mut ask, 12) else { println!("cycle {}: the teacher said nothing usable", i + 1); continue };
+            let Some(line) = phient::prose::teach::cycle(k, &story_dir, &mut ask, 12) else { println!("cycle {}: the teacher said nothing usable", i + 1); continue };
             use std::io::Write;
             let mut f = std::fs::OpenOptions::new().create(true).append(true).open(&log).expect("teach.log");
             let _ = writeln!(f, "{line}");

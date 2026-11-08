@@ -8,7 +8,7 @@
 //! `cargo run --release --bin relate_ask -- <model.relate> <word> <kind> [n]`
 //! `cargo run --release --bin relate_ask -- <model.relate> <word>` asks every kind.
 
-use phiano::relate::{kind_token, RelationModel};
+use phient::relate::{kind_token, RelationModel};
 
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();

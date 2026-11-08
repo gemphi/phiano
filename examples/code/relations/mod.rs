@@ -17,7 +17,7 @@ mod newfn;
 mod readings;
 mod owner;
 
-use phiano::relate::{held_out, kind_token, RelationModel, Triple};
+use phient::relate::{held_out, kind_token, RelationModel, Triple};
 use phiecs::quest::Row;
 use phistd::Adam;
 use phical::{relate, FnoConfig, Tie};

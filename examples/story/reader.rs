@@ -14,8 +14,8 @@
 //! as well as the operator's.
 
 use super::soften;
-use phiano::prose::Base;
-use phiano::relate::{kind_token, mixture_weights, RelationModel};
+use phient::prose::Base;
+use phient::relate::{kind_token, mixture_weights, RelationModel};
 use phiecs::quest::Row;
 use std::cell::RefCell;
 use std::rc::Rc;

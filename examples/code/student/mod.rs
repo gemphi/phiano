@@ -59,8 +59,8 @@ pub fn run(a: Vec<String>) {
     let levels = a.iter().position(|x| x == "--flat").map(|i| a.remove(i)).is_none();
     // `--breadth` or `--weights breadth|path`: the levels under another rule (docs/147, docs/149).
     let weights = match (a.iter().position(|x| x == "--breadth").map(|i| a.remove(i)), score::flag(&mut a, "--weights").as_deref()) {
-        (Some(_), _) | (_, Some("breadth")) => Some(phiano::relate::Weighting::Breadth),
-        (_, Some("path")) => Some(phiano::relate::Weighting::Path),
+        (Some(_), _) | (_, Some("breadth")) => Some(phient::relate::Weighting::Breadth),
+        (_, Some("path")) => Some(phient::relate::Weighting::Path),
         _ => None,
     };
     let student = || {

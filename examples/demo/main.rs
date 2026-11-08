@@ -19,7 +19,7 @@
 mod report;
 mod train;
 
-use phiano::relate::{held_out, read_quests, RelationModel};
+use phient::relate::{held_out, read_quests, RelationModel};
 use phiecs::persona::Persona;
 use phical::{FnoConfig, Tie};
 use std::path::Path;

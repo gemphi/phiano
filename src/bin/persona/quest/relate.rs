@@ -3,7 +3,7 @@
 //! file declares under `inherit` take their is-a parents' readings, in
 //! training and in reading (docs/97 §1, docs/99).
 
-use phiano::relate::{kind_token, RelationModel, Triple};
+use phient::relate::{kind_token, RelationModel, Triple};
 use phical::relate::{self, inherit_epoch, prior, score, score_inherit, Inherit};
 use phistd::Adam;
 use phical::{FnoConfig, Tie};

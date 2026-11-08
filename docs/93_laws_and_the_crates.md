@@ -16,7 +16,7 @@ belongs to.
 |---|---|---|
 | **phiecs** | asks | the quest; `relations.tsv`; `phiecs::quest::parse_tsv`, now the one parser for that table (phiano depends on phiecs; phiecs depends on nothing) |
 | **phinet** | learns, knowing no words | `phinet::relate`: `Triple`, `example`, `pools`; `find_laws`; `closure_pairs`, `closure_epoch`; `score`, `prior`, `two_hop`, `chance` (3 tests) |
-| **phiano** | names | `phiano::relate::RelationModel`: words and kinds to table rows, a word's first function taken from the quest facet's own angles (`+facet`), `answers(word, kind)` by name, save/load `.relate` (2 tests) |
+| **phiano** | names | `phient::relate::RelationModel`: words and kinds to table rows, a word's first function taken from the quest facet's own angles (`+facet`), `answers(word, kind)` by name, save/load `.relate` (2 tests) |
 | **phical** (`phi-cal`) | exact geometry of the circle and sphere | not used by this step; it stays the geometry child of phinet (docs/85 move 2) |
 
 `bin/kind_operator` is now a thin program over the three: phiecs reads, phinet

@@ -9,7 +9,7 @@ docs/117–123 built the code writer beside the base, not on it: its own token m
 Two things are added to the base, both small:
 
 - `phiano::code` (moved from the `code_relations` binary): Rust read by its own grammar into rows. Kinds: `takes`, `returns`, `calls`, `uses-op`, `has-literal`, `has-word`, `part-of`, `has`, `holds`, `implements`. `has-word` is the words of a name (`count_above has-word count`, `has-word above`; a one-word name is its own word); `uses-op` the binary operators; `has-literal` the numbers as written (`0`, `0.0`, `2`).
-- `phiano::relate::Counts`: the D2/D4 reading of rows. A row is counted under its kind (the prior) and under each condition told about its subject (its words, its types). Asked `kind` of something new under conditions `c₁…cₙ`, the reading is `ln prior(v) + Σ ln(distᵢ(v) / prior(v))`, each condition heard only if it moves the prior by τ = 0.5 nats (a post, D2). No operator, no epochs: one told row is learned the moment it is told.
+- `phient::relate::Counts`: the D2/D4 reading of rows. A row is counted under its kind (the prior) and under each condition told about its subject (its words, its types). Asked `kind` of something new under conditions `c₁…cₙ`, the reading is `ln prior(v) + Σ ln(distᵢ(v) / prior(v))`, each condition heard only if it moves the prior by τ = 0.5 nats (a post, D2). No operator, no epochs: one told row is learned the moment it is told.
 
 ## 1. A new function from its words: the base's scoreboard
 

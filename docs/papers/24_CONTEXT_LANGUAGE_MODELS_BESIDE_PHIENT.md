@@ -10,7 +10,7 @@ badge: paper
 
 ## Context Language Models beside Phient's Phasor Language Models
 
-**Phiano Project** · `phiano::relate::Counts` · `bin/language_game` · `bin/code_student` · 2026-10-03
+**Phiano Project** · `phient::relate::Counts` · `bin/language_game` · `bin/code_student` · 2026-10-03
 
 > In Phient's world, a word (w) is a seed: what it relates to, under what conditions (c), grows from it. The Phical paradigm, X ⇒ Y, drives and composes Phient's Phasor Language Models: Phinet, Phiano, PhiTon. Phical stores no point: a word is 32–64 relations, each a complex phasor on a closed circle with a count; meaning is a side effect of pairs of words moving under a condition.
 
@@ -140,7 +140,7 @@ does the model learn *what was said in the task*. That is left in the
 context file, which is to say it is forgotten when the task ends unless the
 model wrote it into a skill.
 
-Phient's learning is the count. `phiano::relate::Counts` (docs/124) has no
+Phient's learning is the count. `phient::relate::Counts` (docs/124) has no
 epochs: a row told once is a relation with count one, and the reading is
 the prior moved by every condition that has earned a post. The code
 student built on it is told Phi-4's 253 answers and writes a new function

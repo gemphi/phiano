@@ -6,7 +6,7 @@
 //! contradicting rows; read the same held-out rows.
 
 use super::data::Table;
-use phiano::relate::{held_out, RelationModel};
+use phient::relate::{held_out, RelationModel};
 use phiecs::quest::Row;
 use phistd::Adam;
 use phical::{relate, FnoConfig, Tie};

@@ -1,14 +1,14 @@
 //! The counts readings of the relation board (docs/124, docs/126): the
-//! same told rows read by `phiano::relate::Tally`, flat or under the
+//! same told rows read by `phient::relate::Tally`, flat or under the
 //! path's scopes, scored like the operator's readings.
 
 use super::newfn::GIVEN;
-use phiano::relate::{RelationModel, Triple, Weighting};
+use phient::relate::{RelationModel, Triple, Weighting};
 use phiecs::quest::Row;
 use phical::relate;
 use std::collections::HashMap;
 
-/// `phiano::relate::Tally` read over the same rows, scored like the rest.
+/// `phient::relate::Tally` read over the same rows, scored like the rest.
 pub fn counts_score(m: &RelationModel, told: &[Triple], test: &[Triple], pool: &[usize], by_kind: &HashMap<usize, Vec<usize>>, tau: f64) -> relate::Score {
     counts_read(m, told, test, pool, by_kind, tau, false, Weighting::Breadth)
 }
@@ -20,11 +20,11 @@ pub fn counts_score(m: &RelationModel, told: &[Triple], test: &[Triple], pool: &
 pub fn counts_read(m: &RelationModel, told: &[Triple], test: &[Triple], pool: &[usize], by_kind: &HashMap<usize, Vec<usize>>, tau: f64, levels: bool, weights: Weighting) -> relate::Score {
     let row = |t: &Triple| Row { about: m.names[t.about].clone(), kind: m.names[t.kind].trim_matches(['⟨', '⟩']).to_string(), other: m.names[t.other].clone(), weight: 1.0 };
     let rows: Vec<Row> = told.iter().map(row).collect();
-    let mut c = phiano::relate::Tally::new(&GIVEN);
+    let mut c = phient::relate::Tally::new(&GIVEN);
     c.weights = weights;
     c.learn(&rows);
     // Each scope's parent, from the `within` rows between scopes.
-    let parent: HashMap<&str, &str> = rows.iter().filter(|r| r.kind == "within" && r.about.starts_with(phiano::relate::SCOPE)).map(|r| (r.about.as_str(), r.other.as_str())).collect();
+    let parent: HashMap<&str, &str> = rows.iter().filter(|r| r.kind == "within" && r.about.starts_with(phient::relate::SCOPE)).map(|r| (r.about.as_str(), r.other.as_str())).collect();
     let table: Vec<HashMap<usize, f64>> = test
         .iter()
         .map(|t| {
@@ -34,7 +34,7 @@ pub fn counts_read(m: &RelationModel, told: &[Triple], test: &[Triple], pool: &[
             let s = match levels {
                 false => c.read(&conds, &r.kind, &values, tau).0,
                 true => {
-                    let (scopes, own): (Vec<String>, Vec<String>) = conds.iter().cloned().partition(|x| x.starts_with(phiano::relate::SCOPE));
+                    let (scopes, own): (Vec<String>, Vec<String>) = conds.iter().cloned().partition(|x| x.starts_with(phient::relate::SCOPE));
                     let depth = |s: &String| std::iter::successors(Some(s.as_str()), |x| parent.get(x).copied()).count();
                     let mut scopes = scopes;
                     scopes.sort_by_key(depth);

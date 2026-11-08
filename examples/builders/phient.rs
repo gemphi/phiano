@@ -8,7 +8,7 @@
 
 use super::learners::{Action, Compose, GameCounts, Learner};
 use super::world::{Episode, ASPECTS};
-use phiano::relate::{kind_token, RelationModel};
+use phient::relate::{kind_token, RelationModel};
 use phiecs::quest::Row;
 use phical::relate::{self, Triple};
 use phistd::{Adam, Function};

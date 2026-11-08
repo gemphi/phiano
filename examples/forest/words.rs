@@ -4,8 +4,8 @@
 //! for a word the language never heard, what the forest would put in its
 //! place — read from the words on both sides of it.
 
-use phiano::prose::Knowing;
-use phiano::relate::SAYS;
+use phient::prose::Knowing;
+use phient::relate::SAYS;
 use serde_json::{json, Value};
 use std::collections::HashSet;
 

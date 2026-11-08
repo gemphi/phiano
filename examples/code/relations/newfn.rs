@@ -9,7 +9,7 @@
 //! rows are their relations not told by any other file. The prior (how often
 //! the kind named the answer) is the bar, as everywhere in `phical::relate`.
 
-use phiano::relate::{kind_token, RelationModel, Triple};
+use phient::relate::{kind_token, RelationModel, Triple};
 use phiecs::quest::Row;
 use phical::relate::{self, inherit_epoch, Inherit};
 use phistd::Adam;
@@ -119,9 +119,9 @@ pub fn board(t: &mut Trained, r: usize) -> String {
     let via = |_k: usize| vec![has_word];
     let hops = relate::two_hop(&mut m.joint, told, test, pool, by_kind, Some(&via));
     let (posts, bag) = (super::counts::counts_score(m, told, test, pool, by_kind, 0.5), super::counts::counts_score(m, told, test, pool, by_kind, 0.0));
-    let under = super::counts::counts_read(m, told, test, pool, by_kind, 0.5, true, phiano::relate::Weighting::Breadth);
-    let counted = super::counts::counts_read(m, told, test, pool, by_kind, 0.5, true, phiano::relate::Weighting::Counted);
-    let path = super::counts::counts_read(m, told, test, pool, by_kind, 0.5, true, phiano::relate::Weighting::Path);
+    let under = super::counts::counts_read(m, told, test, pool, by_kind, 0.5, true, phient::relate::Weighting::Breadth);
+    let counted = super::counts::counts_read(m, told, test, pool, by_kind, 0.5, true, phient::relate::Weighting::Counted);
+    let path = super::counts::counts_read(m, told, test, pool, by_kind, 0.5, true, phient::relate::Weighting::Path);
     let mut s = format!(
         "R = {r} · {} told · {} held out (new functions) · pool {}\n\n| reading | MRR | hit@5 | within kind |\n|---|---|---|---|\n",
         told.len(),

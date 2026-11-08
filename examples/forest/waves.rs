@@ -4,7 +4,7 @@
 //! came before, by the conjugate filter — never trained), and the two are
 //! compared with what the story actually says.
 
-use phiano::relate::{FnoWave, MirrorWave, RelationModel, Wave};
+use phient::relate::{FnoWave, MirrorWave, RelationModel, Wave};
 use phiton::conjugate::Mirror;
 use serde_json::{json, Value};
 

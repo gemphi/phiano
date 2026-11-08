@@ -11,8 +11,8 @@
 //!   was told.
 
 use super::operator::Reader;
-use phiano::relate::Wave;
-use phiano::prose::Knowing;
+use phient::relate::Wave;
+use phient::prose::Knowing;
 use phical::c64;
 use phiecs::quest::Row;
 

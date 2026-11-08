@@ -14,7 +14,7 @@ mod resemblance;
 mod rough;
 
 use data::Table;
-use phiano::relate::{held_out, RelationModel};
+use phient::relate::{held_out, RelationModel};
 use phistd::Adam;
 use phical::{relate, FnoConfig, Tie};
 
