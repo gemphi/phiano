@@ -1,0 +1,12 @@
+# How the realiser spells a determiner: kind<TAB>number<TAB>word. The kinds are
+# the det_* classes of word_class.tsv (which maps a spelling to its kind when
+# reading); this file maps a kind back to a spelling by number when writing.
+# A quantifier or owner carries its own spelling and has no row.
+definite	singular	the
+definite	plural	the
+indefinite	singular	a
+indefinite	plural	a
+near	singular	this
+near	plural	these
+far	singular	that
+far	plural	those
