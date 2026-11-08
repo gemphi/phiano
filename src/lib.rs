@@ -3,7 +3,6 @@ pub mod command;
 pub mod config;
 pub mod data;
 pub mod drivers;
-pub mod frames;
 pub mod instruction;
 pub mod model;
 pub mod persona;

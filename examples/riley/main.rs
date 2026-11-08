@@ -138,7 +138,7 @@ use phient::train::chunker::ChunkStore;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
-use phiano::frames::{collapse_small, predictive_gain, shuffle_classes};
+use phical::classes::{collapse_small, predictive_gain, shuffle_classes};
 use phient::study::class::discover_classes;
 use phistd::{fnv1a, mix64};
 use phient::train::kinds::OffsetTable;
