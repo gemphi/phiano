@@ -1,0 +1,14 @@
+# The preposition role an adjunct wh-word is stored under in a frame:
+# "where is she?" is `in=?where`, "when" is `at`, "why" is `for`, "how" is `by`.
+# wh<TAB>preposition
+# wh           the wh-word's stored name (`where`)
+# preposition  the `Via` preposition of the slot the hole fills
+# default      the preposition for any other wh-word
+#
+# The reader reads this; the realiser's wording of the same slots is
+# `wh_phrase.tsv` (how + for = "how long"), a different concept.
+where	in
+when	at
+why	for
+how	by
+default	by
