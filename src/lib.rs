@@ -3,9 +3,6 @@ pub mod seam;
 pub use phient::code;
 pub mod core;
 pub mod command;
-/// The generation engine is `phient::generate`; the read-only example
-/// `flow` still names `phiano::compose::flow::RiverFlow`.
-pub use phient::generate::compose;
 pub mod config;
 pub mod data;
 pub mod drivers;
@@ -14,9 +11,6 @@ pub mod instruction;
 pub mod lab;
 pub mod model;
 pub mod persona;
-/// The trainer is `phient::train::trainer`; the read-only example `meaning`
-/// still names `phient::train::trainer::Trainer`.
-pub use phient::train::trainer;
 #[allow(dead_code)]
 pub use phient::prose;
 #[allow(dead_code)]

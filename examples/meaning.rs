@@ -6,7 +6,7 @@
 //! the relation words, then every observed pair moves one relation channel
 //! and deposits evidence there.
 use phiecs::phasor::facet::Facet;
-use phiano::trainer::Trainer;
+use phient::train::trainer::Trainer;
 
 const WORLD: &[&str] = &[
     "the baby played with the dog on the lawn in the evening",

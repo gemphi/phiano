@@ -1,5 +1,5 @@
 //! A river flow through the generator: one prompt, three sectors, the text.
-use phiano::compose::flow::RiverFlow;
+use phient::generate::compose::flow::RiverFlow;
 use phiecs::phasor::facet::Facet;
 use phiecs::phasor::facet::storage::Storage;
 fn main() {
