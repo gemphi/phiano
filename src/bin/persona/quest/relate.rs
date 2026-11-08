@@ -3,16 +3,11 @@
 //! file declares under `inherit` take their is-a parents' readings, in
 //! training and in reading (docs/97 §1, docs/99).
 
-use phient::relate::{kind_token, RelationModel, Triple};
+use phient::relate::{held_out, kind_token, RelationModel, Triple};
 use phical::relate::{self, inherit_epoch, prior, score, score_inherit, Inherit};
 use phistd::Adam;
 use phical::{FnoConfig, Tie};
 use std::path::Path;
-
-fn held_out(r: &phiecs::quest::Row) -> bool {
-    let h = phistd::mix64(phistd::fnv1a(&format!("{}\t{}\t{}", r.about, r.kind, r.other)));
-    ((h >> 11) as f64 / (1u64 << 53) as f64) < 0.2
-}
 
 pub fn train(persona: &phiecs::persona::Persona, rows: &[phiecs::quest::Row], out: &Path) {
     let name = persona.name.as_str();

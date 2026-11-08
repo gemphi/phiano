@@ -11,22 +11,19 @@
 //!
 //! `cargo run --release --bin persona_ingest [passes] [baseline_sample]`
 #[allow(dead_code)]
-use phiano::lab as util;
-mod corpus;
+
 mod measure;
-#[allow(unused_imports)]
-use corpus::*;
 #[allow(unused_imports)]
 use measure::*;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{Harness, Split};
+use phiano::persona::corpus::{authors, sample, Author};
 use phiano::persona::{PersonaStore, Styles, LEXICON, STORE};
 use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
-use util::dir_sentences;
 
 
 pub fn run(a: Vec<String>) {

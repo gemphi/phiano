@@ -1,3 +1,4 @@
+pub mod corpus;
 pub mod dialog;
 pub mod fingerprint;
 pub mod impersonate;

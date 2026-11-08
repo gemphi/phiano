@@ -23,7 +23,7 @@ mod relate;
 
 use phiano::config::LEARNING_RATE;
 use phient::metrics::harness::{Harness, Split};
-use phiano::persona::{PersonaStore, Styles};
+use phiano::persona::{PersonaStore, Styles, LEXICON, STORE};
 use phiecs::phasor::facet::storage::Storage;
 use phient::train::trainer::Trainer;
 use phient::relate::read_quests;
@@ -63,7 +63,7 @@ pub fn run(a: Vec<String>) {
         .flat_map(|(_, rows, s)| s.iter().cloned().chain(rows.iter().map(|r| format!("{} {} {}", r.about, r.kind, r.other))))
         .collect();
     let facet = Harness::train_ranking_only(&Split { train: docs, valid: Vec::new(), test: Vec::new() }, &Trainer::new(LEARNING_RATE).with_seed(0), 3);
-    let lexicon = root.join("personas.chroma").to_string_lossy().to_string();
+    let lexicon = root.join(LEXICON).to_string_lossy().to_string();
     let mut pfacet = facet;
     let mut world = Styles::new();
     let trainer = Trainer::new(LEARNING_RATE).with_seed(1);
@@ -77,7 +77,7 @@ pub fn run(a: Vec<String>) {
         }
     }
     Storage::save(&pfacet, &lexicon).expect("save lexicon");
-    let store = root.join("personas.json").to_string_lossy().to_string();
+    let store = root.join(STORE).to_string_lossy().to_string();
     PersonaStore::save(&world, &lexicon, &store).expect("save personas");
     println!("\n{} personas → {store} (lexicon {lexicon}, {} words)", world.personas.len(), pfacet.vocabulary_size());
     println!("talk: PHIANO_PERSONAS={store} cargo run --release --bin persona_chat -- <name> \"<question>\"");
