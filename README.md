@@ -11,7 +11,7 @@ cargo run --release -p phient --example person   -- <corpus> --chunks 8     # th
 cargo run --release -p phient --example talk     -- <corpus> "a prompt"     # continuation in the learned voice
 cargo run --release -p phiano --example workshop -- murphy.txt --key ...    # the 129-unit course, graded against the Key it was never told
 cargo run --release -p phiano --example arena    -- <corpus>                # every model, one table
-cargo run --release -p phiano --example teacher  -- <corpus> --oracle ollama:phi4   # the quest loop
+cargo run --release -p phient --example teacher  -- <corpus> --oracle ollama:phi4   # the quest loop
 cargo run --release -p phient --example writer                               # judge-taught program writing
 ```
 
