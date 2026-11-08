@@ -22,7 +22,7 @@ use phient::metrics::harness::{Harness, Split};
 use phiano::persona::corpus::{authors, sample, Author};
 use phiano::persona::{PersonaStore, Styles, LEXICON, STORE};
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 

@@ -16,7 +16,7 @@ use phient::generate::{ContextWaveBuffer, Decode, Generator};
 use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use util::dir_sentences;
 
 fn main() {

@@ -51,7 +51,7 @@ use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phient::metrics::relation::{CountFloor, RelationBenchmark};
 use phient::metrics::sentence::SentenceBenchmark;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, DescentReport, Up};
 use phient::train::trainer::Trainer;
 

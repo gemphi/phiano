@@ -15,7 +15,7 @@ use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phiano::persona::Impersonator;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use util::dir_sentences;
 

@@ -12,7 +12,7 @@ use phient::train::chunker::ChunkStore;
 use phiano::config::LEARNING_RATE;
 use phient::metrics::forgetting::{ForgettingBenchmark, ForgettingReport};
 use phient::train::sources::clean_definition;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 fn show(label: &str, r: &ForgettingReport) {

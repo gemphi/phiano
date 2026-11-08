@@ -27,7 +27,7 @@ use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{ContextKind, Harness, PhianoLM, Split, SweepRow};
 use phient::metrics::baseline::kn::KneserNey;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 const BETAS: [f64; 5] = [0.5, 1.0, 2.0, 4.0, 8.0];

@@ -30,7 +30,7 @@ pub async fn chat(
         }));
     }
 
-    let tokens = crate::tokenizer::Tokenizer::tokenize(prompt);
+    let tokens = phiton::p64::words::Tokenizer::tokenize(prompt);
 
     // 1. Online Learning of the prompt into the manifold
     let (words_learned, vocab_size) = {
@@ -65,7 +65,7 @@ pub async fn chat(
 
         // Record response into context wave buffer and 16-layer memory hierarchy
         model.context_buffer.push_turn(&model.facet, &fluent_response);
-        let resp_tokens = crate::tokenizer::Tokenizer::tokenize(&fluent_response);
+        let resp_tokens = phiton::p64::words::Tokenizer::tokenize(&fluent_response);
         let resp_wave = phiecs::phasor::wave::Wave::sentence(&model.facet, &resp_tokens);
         model.memo.record((resp_wave.re, resp_wave.im), &fluent_response);
 

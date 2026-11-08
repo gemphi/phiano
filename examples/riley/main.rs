@@ -143,7 +143,7 @@ use phient::study::class::discover_classes;
 use phistd::{fnv1a, mix64};
 use phient::train::kinds::OffsetTable;
 use phient::train::sources::definition_core;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;
 use std::collections::HashMap;

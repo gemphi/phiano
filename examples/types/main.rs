@@ -64,7 +64,7 @@ use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{Harness, Split};
 use phient::train::kinds::{OffsetEstimator, KindTable};
 use phient::train::sources::definition_core;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;
 use std::collections::HashMap;

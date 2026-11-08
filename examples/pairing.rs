@@ -8,7 +8,7 @@ use phient::net::compose::{Composition, PairKey};
 use phient::net::space::{Example, FunctionSpace, Sides};
 use phistd::Adam;
 use phical::{Fno, FnoConfig};
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 const POOL_FLOOR: u32 = 25;

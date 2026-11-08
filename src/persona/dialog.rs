@@ -16,7 +16,7 @@ use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phient::generate::{ContextWaveBuffer, Decode, Generator, PersonaPrior};
 use crate::persona::{Fingerprint, Style};
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use std::rc::Rc;
 
 mod reading;

@@ -4,7 +4,7 @@
 
 use super::types::*;
 use super::markers::SearleMarker;
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 
 /// 4. SpeechActAgent - classifies illocutionary force with felicity conditions.
 pub struct SpeechActAgent;

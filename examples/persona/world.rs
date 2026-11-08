@@ -6,7 +6,7 @@ use phiano::persona::corpus::author_of;
 /// The first `n / 3` usable held-out sentences of each author, reduced to
 /// their first three words.
 pub fn held_prompts(split: &Split, contrast: &[(String, Vec<String>)], n: usize) -> Vec<String> {
-    use phiano::tokenizer::Tokenizer;
+    use phiton::p64::words::Tokenizer;
     let mut by_author: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
     for (name, s) in contrast {
         let author = author_of("contrast", name);

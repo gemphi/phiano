@@ -34,7 +34,7 @@ use crate::core::searle::CognitiveCore;
 use phiecs::phasor::facet::Facet;
 use phient::generate::{ContextWaveBuffer, Generator};
 use phiecs::phasor::layers::HierarchicalPhaseField;
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use phiecs::phasor::wave::Wave;
 use std::fmt;

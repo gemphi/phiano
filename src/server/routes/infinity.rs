@@ -92,7 +92,7 @@ pub async fn infinity_visualize(
             re: wave.re, im: wave.im, amp: wave.norm(), phase: wave.arg(),
         };
 
-        let tokens = crate::tokenizer::Tokenizer::tokenize(&text);
+        let tokens = phiton::p64::words::Tokenizer::tokenize(&text);
         let mut words = Vec::new();
         for token in tokens {
             if let Some(p) = facet.get_phasor(&token) {
@@ -117,7 +117,7 @@ pub async fn infinity_train(
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &mut *guard;
     let text = req.text.clone();
-    let tokens = crate::tokenizer::Tokenizer::tokenize(&text);
+    let tokens = phiton::p64::words::Tokenizer::tokenize(&text);
 
     let mut before_phases = std::collections::HashMap::new();
     for token in &tokens {

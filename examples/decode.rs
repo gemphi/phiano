@@ -8,7 +8,7 @@ use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phient::net::space::Sides;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 
 use phient::study::lab::sentences_of;
 

@@ -5,7 +5,7 @@
 //!
 //! `cargo run --release --bin bpe_check [vocab_dir] [corpus.txt ...]`
 use phiton::p64::bpe::Bpe;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use std::collections::HashMap;
 
 fn main() {

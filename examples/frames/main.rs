@@ -101,7 +101,7 @@ use phiano::frames::{collapse_small, predictive_gain, shuffle_classes};
 use phient::study::class::discover_classes;
 use phient::metrics::harness::Harness;
 use phient::train::kinds::{OffsetEstimator, OffsetTable};
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;
 use std::collections::HashMap;

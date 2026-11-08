@@ -4,7 +4,7 @@ use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phient::net::space::{examples, FunctionSpace, Sides};
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 
 /// Everything an arm trains and scores against.
 pub(crate) struct Data {

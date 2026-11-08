@@ -112,7 +112,7 @@ use phiecs::phasor::flow::PhaseFlow;
 use phiecs::relation::RelationVocab;
 use phiecs::phasor::relational::{RelationalFacet, WINDOW};
 use std::collections::HashMap;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;
 

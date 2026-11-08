@@ -22,7 +22,7 @@ use phistd::Adam;
 use phical::{Fno, FnoConfig};
 use phistd::hexagram::KING_WEN_MAP;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use phical::rank;
 use std::fmt::Write as _;

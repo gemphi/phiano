@@ -8,4 +8,3 @@ pub mod instruction;
 pub mod model;
 pub mod persona;
 pub mod server;
-pub mod tokenizer;

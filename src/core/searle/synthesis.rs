@@ -18,7 +18,7 @@ use super::types::*;
 use super::speech::SpeechActAgent;
 use super::selection;
 use phiecs::phasor::facet::Facet;
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 
 /// 16. MentalCausationAgent - drives output from intentional states.
 pub struct MentalCausationAgent;

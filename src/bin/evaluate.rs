@@ -8,7 +8,7 @@
 //! a single final measurement once the design is frozen.
 
 use phient::metrics::harness::Harness;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

@@ -36,7 +36,7 @@
 //!   next-sentence task needs that or it will draw a "continuation" from the
 //!   opening of an unrelated article.
 
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use std::fs;
 use std::io::Write;
 

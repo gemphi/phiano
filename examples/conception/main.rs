@@ -60,7 +60,7 @@ use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{Harness, Split};
 use phient::metrics::relation::RelationBenchmark;
 use phient::train::sources::definition_core;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 fn main() {

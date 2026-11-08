@@ -117,7 +117,7 @@ use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phient::metrics::relation::{RelationBenchmark, RelationFamily};
 use phistd::fnv1a;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;
 

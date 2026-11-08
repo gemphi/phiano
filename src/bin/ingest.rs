@@ -7,7 +7,7 @@ use phient::memory::Memo;
 use phient::train::sources::dialogue::DialogueSource;
 use phient::train::sources::phi4::Phi4Source;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use phient::train::wiki;
 

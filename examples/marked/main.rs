@@ -108,7 +108,7 @@ use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phiecs::relation::{RelationVocab, MARKER_MAX_GAP, OFFSET_CHANNELS};
 use phiecs::phasor::relational::RelationalFacet;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;
 use std::collections::HashMap;

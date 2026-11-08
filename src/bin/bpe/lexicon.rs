@@ -6,7 +6,7 @@ use phiano::config::LEARNING_RATE;
 use phient::metrics::harness::{Harness, Split};
 use phient::net::space::{examples, FunctionSpace, Sides, WordFunction};
 use phical::rank;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 use phient::study::lab::sentences_of;

@@ -9,7 +9,7 @@ use phiano::persona::Styles;
 use phient::metrics::baseline::kn::KneserNey;
 use phient::net::space::{FunctionSpace, Sides};
 use phistd::hexagram::KING_WEN_MAP;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use std::fmt::Write as _;
 
 /// One composition arm: its name, whether the operator guides it, and its

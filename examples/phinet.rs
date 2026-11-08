@@ -32,7 +32,7 @@ use phient::net::space::{examples, Example, FunctionSpace, Sides, WordFunction};
 use phical::rank;
 use phistd::Adam;
 use phical::{Fno, FnoConfig};
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 const POOL_FLOOR: u32 = 25;

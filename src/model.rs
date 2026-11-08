@@ -15,7 +15,7 @@ use phiecs::phasor::facet::Facet;
 use phient::memory::Memo;
 use crate::persona::Styles;
 use phiecs::phasor::facet::storage::Storage;
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use rustyline::Editor;
 use rustyline::history::DefaultHistory;

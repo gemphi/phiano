@@ -64,7 +64,7 @@ impl Impersonator {
             let g = Generator::deterministic(self.tokens, temperature, seed0.wrapping_add(round as u64 * 7919)).with_decode(Decode::Trigram).with_persona_examples(facet, &fingerprint.sector_histogram, examples, self.sector_weight, self.ngram_weight);
             let mut buf = ContextWaveBuffer::new(config::DEFAULT_CONTEXT_WINDOW);
             let text = g.generate(facet, &mut buf, prompt);
-            if crate::tokenizer::Tokenizer::tokenize(&text).len() < 3 {
+            if phiton::p64::words::Tokenizer::tokenize(&text).len() < 3 {
                 continue;
             }
             let fit = fingerprint.likelihood(&Fingerprint::extract(facet, std::slice::from_ref(&text)));

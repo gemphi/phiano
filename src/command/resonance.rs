@@ -26,7 +26,7 @@ impl Resonance {
         // near everything. `sentence_channels` keeps the channels apart, which
         // is what the torus representation is for; its own doc comment says so,
         // and this command was not using it.
-        let words: Vec<String> = crate::tokenizer::Tokenizer::tokenize(&text);
+        let words: Vec<String> = phiton::p64::words::Tokenizer::tokenize(&text);
         let query = Wave::sentence_channels(ctx.manifold, &words, false);
         let matches = Wave::ray_cast_channels(ctx.manifold, &query, count);
 

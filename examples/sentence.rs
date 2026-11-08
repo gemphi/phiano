@@ -17,7 +17,7 @@
 use phiano::config::LEARNING_RATE;
 use phient::metrics::harness::Harness;
 use phient::metrics::sentence::{SentenceBenchmark, CANDIDATES, CONTEXT_LEN};
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 /// Groups consecutive sentences into documents of `n`.

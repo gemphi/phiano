@@ -11,7 +11,7 @@
 use super::types::*;
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use std::f64::consts::PI;
 
 /// 10. SemanticsAgent - maps phase relationships to meaning relations.

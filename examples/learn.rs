@@ -11,7 +11,7 @@ use phiano::config::{LEARNED_FILE, LEARNING_RATE, OPERATOR_FILE};
 use phient::generate::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phient::metrics::harness::Harness;
 use phient::net::space::Sides;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 use phient::generate::learn::{CANDIDATES, WINDOW};

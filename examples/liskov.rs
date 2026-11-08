@@ -16,7 +16,7 @@ use phient::generate::learn::GenWeight;
 use phient::metrics::harness::Harness;
 use phient::metrics::baseline::kn::KneserNey;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use std::fmt::Write as _;
 
 use phient::study::lab::sentences_of;

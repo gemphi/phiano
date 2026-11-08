@@ -43,7 +43,7 @@ use phient::train::correction::CorrectionLog;
 use phient::metrics::harness::Harness;
 use phiecs::phasor::spectral::SpectralPhasor;
 use phient::train::sources::definition_core;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use std::time::{Duration, Instant};
 

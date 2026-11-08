@@ -26,7 +26,7 @@ use phient::train::curriculum::ChildCurriculum;
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phiecs::phasor::facet::storage::Storage;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 
 fn main() {

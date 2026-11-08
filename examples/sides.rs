@@ -15,7 +15,7 @@ use phient::net::lm::OperatorScorer;
 use phient::net::space::{examples, FunctionSpace, Sides, WordFunction};
 use phistd::Adam;
 use phical::{Fno, FnoConfig};
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use phical::{rank, MixtureExample};
 

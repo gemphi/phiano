@@ -78,7 +78,7 @@ impl PersonaCmd {
         }
         let name = parts[0].clone();
         let raw_text = parts[1..].join(" ");
-        let examples = crate::tokenizer::Tokenizer::split_sentences(&raw_text);
+        let examples = phiton::p64::words::Tokenizer::split_sentences(&raw_text);
         if examples.is_empty() {
             println!("  No sentences found in the text.");
             return true;

@@ -24,7 +24,7 @@
 use super::types::*;
 use phiecs::phasor::facet::Facet;
 use phiecs::phasor::spectral::{SpectralPhasor, TorusPhasor};
-use crate::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 
 /// Selector and synthesizer for intentional state-driven language generation.
 pub struct WordSelector;

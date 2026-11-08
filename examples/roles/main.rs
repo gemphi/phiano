@@ -69,7 +69,7 @@ use phient::metrics::relation::RelationBenchmark;
 use phiecs::phasor::spectral::SpectralPhasor;
 use phient::train::roles::{Role, RuleSet, RoleTable};
 use phient::train::sources::definition_core;
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use std::collections::HashMap;
 

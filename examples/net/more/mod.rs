@@ -30,7 +30,7 @@ use phient::net::lm::OperatorScorer;
 use phient::net::space::{examples, Example, FunctionSpace, WordFunction};
 use phistd::Adam;
 use phical::{Fno, FnoConfig};
-use phiano::tokenizer::Tokenizer;
+use phiton::p64::words::Tokenizer;
 use phient::train::trainer::Trainer;
 use phical::{rank, FrequencySampler};
 
