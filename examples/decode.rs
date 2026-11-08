@@ -10,7 +10,7 @@ use phient::net::space::Sides;
 use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 
-use phiano::lab::sentences_of;
+use phient::study::lab::sentences_of;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

@@ -11,7 +11,7 @@ use std::path::PathBuf;
 
 fn main() {
     let mut a: Vec<String> = std::env::args().skip(1).collect();
-    let show = phiano::lab::flag(&mut a, "--show");
+    let show = phient::study::lab::flag(&mut a, "--show");
     let (Some(root), Some(out)) = (a.first().map(PathBuf::from), a.get(1).map(PathBuf::from)) else {
         eprintln!("usage: sets <text root> <out dir> [--show scope:path]");
         std::process::exit(2);

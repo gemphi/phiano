@@ -34,7 +34,7 @@ fn kept(r: &phiecs::quest::Row, share: f64) -> bool {
     ((h >> 11) as f64 / (1u64 << 53) as f64) < share
 }
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 fn main() {
     let mut a: Vec<String> = std::env::args().skip(1).collect();

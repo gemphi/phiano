@@ -4,7 +4,7 @@ use super::models::{CountModel, POST};
 use phient::study::Score;
 use std::collections::HashMap;
 
-pub use phiano::lab::flag;
+pub use phient::study::lab::flag;
 
 /// One position of a model's distribution `p`, scored into phient's `Score`:
 /// the truth's rank among the probabilities, and its probability.

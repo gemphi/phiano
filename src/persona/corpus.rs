@@ -2,7 +2,7 @@
 //! author's 80/10/10 split, a seeded sample, and the three personas the
 //! evaluations are built on.
 use crate::config::LEARNING_RATE;
-use crate::lab::dir_sentences;
+use phient::study::lab::dir_sentences;
 use crate::persona::Styles;
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{Harness, Split};

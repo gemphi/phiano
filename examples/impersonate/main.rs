@@ -5,7 +5,7 @@
 //!
 //! `cargo run --release -p phiano --example impersonate [prompts]`
 #[allow(dead_code)]
-use phiano::lab as util;
+use phient::study::lab as util;
 #[path = "../persona/world.rs"]
 mod world;
 

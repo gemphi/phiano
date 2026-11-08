@@ -42,7 +42,7 @@ use lookup::Lookup;
 use split::Split;
 use world::Episode;
 
-use phiano::lab::flag;
+use ::phient::study::lab::flag;
 
 /// Share of episodes whose five aspects are all right.
 fn exact(l: &mut dyn Learner, test: &[Episode]) -> f64 {

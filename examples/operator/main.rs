@@ -38,7 +38,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 /// The latest save in `dir`: its epoch and path.
 fn latest(dir: &Path) -> Option<(u64, PathBuf)> {

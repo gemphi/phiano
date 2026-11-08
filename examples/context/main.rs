@@ -23,7 +23,7 @@
 use phient::prose::Knowing;
 use std::time::Instant;
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 const PLACES: [&str; 20] = ["vault", "garden", "cellar", "attic", "stable", "library", "chapel", "mill", "orchard", "tower", "bridge", "well", "barn", "gate", "harbour", "lodge", "pantry", "study", "arbour", "kitchen"];
 const KEYS: [&str; 20] = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango"];

@@ -29,7 +29,7 @@ use std::fmt::Write as _;
 
 
 mod sections;
-use phiano::lab as util;
+use phient::study::lab as util;
 use util::{chrono_free_date, dir_sentences};
 
 fn main() {

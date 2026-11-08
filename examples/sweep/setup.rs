@@ -19,7 +19,7 @@ pub(crate) struct Data {
     pub id_hit: f64,
 }
 
-use phiano::lab::sentences_of;
+use phient::study::lab::sentences_of;
 
 /// Three novels, the shipped voice lexicon, directed reading, pool of words
 /// seen 20+ times; 2,000 validation and test examples.

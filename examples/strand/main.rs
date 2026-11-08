@@ -31,7 +31,7 @@ use phient::prose::strand::{Prior, Strand};
 use std::fmt::Write;
 use std::path::PathBuf;
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 fn main() {
     let mut a: Vec<String> = std::env::args().skip(1).collect();

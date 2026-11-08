@@ -2,7 +2,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-pub(super) use phiano::lab::flag;
+pub(super) use phient::study::lab::flag;
 
 /// The scores for `truth`'s rank: 0 is first.
 pub(super) fn rank(scores: &[f64], at: usize) -> usize {

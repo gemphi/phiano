@@ -9,7 +9,7 @@ use phical::rank;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
 
-use phiano::lab::sentences_of;
+use phient::study::lab::sentences_of;
 
 fn measure(name: &str, split: &Split) {
     let t0 = std::time::Instant::now();

@@ -25,7 +25,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 
 const TYPE_SLOTS: [&str; 4] = ["takes", "returns", "holds", "implements"];
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 pub fn run(a: Vec<String>) {
     let mut a = a;

@@ -24,7 +24,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 fn log(out: &std::path::Path, line: &str) {
     print!("{line}");

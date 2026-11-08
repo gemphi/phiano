@@ -27,7 +27,7 @@ mod strata;
 use phient::prose::Knowing;
 use phient::relate::{Tally, ScopeTree};
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 fn main() {
     let mut a: Vec<String> = std::env::args().skip(1).collect();

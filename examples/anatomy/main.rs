@@ -10,7 +10,7 @@ use phiecs::kit::Kit;
 use phient::relate::{kit::said_by, Casting};
 use phient::relate::{Tally, ScopeTree};
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 
 fn print_tree(tree: &ScopeTree, counts: &Tally, scope: &str, depth: usize, max_depth: usize, width: usize) {
     let children = tree.children(scope);

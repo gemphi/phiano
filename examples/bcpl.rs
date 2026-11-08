@@ -10,7 +10,7 @@
 //! cargo run --release -p phiano --example bcpl -- <dir of .b files> <dir of .txt files> [--max-lines N]
 //! ```
 
-use phiano::lab::flag;
+use phient::study::lab::flag;
 use phient::baseline::KneserNey;
 use phient::prose::tokens;
 use std::collections::HashMap;

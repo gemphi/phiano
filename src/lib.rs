@@ -7,7 +7,6 @@ pub mod data;
 pub mod drivers;
 pub mod frames;
 pub mod instruction;
-pub mod lab;
 pub mod model;
 pub mod persona;
 pub mod sys;

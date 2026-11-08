@@ -19,7 +19,7 @@ use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use std::fmt::Write as _;
 
-use phiano::lab::sentences_of;
+use phient::study::lab::sentences_of;
 
 fn dir_sentences(dir: &str) -> Vec<String> {
     let mut out = Vec::new();

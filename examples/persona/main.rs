@@ -8,7 +8,7 @@
 //!
 //! `cargo run --release --bin persona_eval [prompts] [tokens]`
 #[allow(dead_code)]
-use phiano::lab as util;
+use phient::study::lab as util;
 mod world;
 
 use phiecs::phasor::facet::Facet;
