@@ -40,7 +40,7 @@ mod curriculum;
 
 use counting::{rank, sentences, WittenBell};
 use phient::study::Score;
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::lineup::learner::{Config, Learner};
 use phient::lineup::Count;
 use phient::prose::tokens;

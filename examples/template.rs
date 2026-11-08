@@ -10,7 +10,7 @@
 //! PHI_READ=sure cargo run --release -p phiano --example template -- <corpus> --sectors 16
 //! ```
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::prose::tokens;
 use phient::study::Reader;
 use std::collections::HashMap;

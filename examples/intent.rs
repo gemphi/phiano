@@ -14,7 +14,7 @@
 #[path = "workshop/key.rs"]
 mod key;
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phiclm::manifest::S;
 use phient::prose::tokens;
 use phient::study::Reader;

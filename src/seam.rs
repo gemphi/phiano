@@ -10,7 +10,7 @@
 //! came, away from what did not.
 //!
 //! Phient is the model those crates add up to: a phasor student
-//! ([`crate::arena::Ecs`]) that learns a voice ON THE FLY from what it is
+//! ([`phient::lineup::Ecs`]) that learns a voice ON THE FLY from what it is
 //! told, coupled with the compiler it thinks with ([`phiclm`]) for the
 //! things no model should memorize — arithmetic, loops, exactness. A person
 //! does the same: they speak from what they have heard, and reach for a pen
@@ -26,14 +26,14 @@ use phient::study::arena::Reader;
 /// The Phient model: the phasor student and the compiler, one seam.
 /// (`crate::model::Model` is a different thing: the app's whole model.)
 pub struct Seam {
-    student: crate::arena::Ecs,
+    student: phient::lineup::Ecs,
     /// Sentences told, words told — so a demo can say how much it has heard.
     pub heard: (usize, usize),
 }
 
 impl Seam {
     pub fn fresh() -> Self {
-        Self { student: crate::arena::Ecs::new(), heard: (0, 0) }
+        Self { student: phient::lineup::Ecs::new(), heard: (0, 0) }
     }
 
     /// One sentence told to the student, on the fly — no retraining, ever.

@@ -17,7 +17,7 @@
 //! cargo run --release -p phiano --example arena -- <dir of .txt> [--lines 1500] [--epochs 4]
 //! ```
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::lineup::{Concept, Count, Learner, Mirror, Operator};
 use phient::prose::tokens;
 use phient::study::{Arena, Reader};

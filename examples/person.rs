@@ -17,7 +17,7 @@
 //! cargo run --release -p phiano --example person -- <file or dir> [--chunks 10] [--prompt "you can" …]
 //! ```
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::lineup::{Concept, Count};
 use phient::prose::tokens;
 use phient::study::{Reader, Study};

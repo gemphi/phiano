@@ -1,4 +1,3 @@
-pub mod arena;
 pub mod seam;
 pub mod core;
 pub mod command;

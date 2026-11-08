@@ -24,7 +24,7 @@
 
 mod key;
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::lineup::learner::{Config, Learner};
 use phient::lineup::Count;
 use phient::prose::{family_prompt, paragraph, tokens, Knowing};

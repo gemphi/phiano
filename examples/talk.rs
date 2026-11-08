@@ -17,7 +17,7 @@
 //! cargo run --release -p phiano --example talk -- <corpus> --read "i have been"
 //! ```
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::lineup::learner::{Config, Learner};
 use phient::prose::tokens;
 use phient::study::Reader;

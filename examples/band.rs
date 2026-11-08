@@ -14,7 +14,7 @@
 //! PHI_READ=bound:0.125 cargo run --release -p phiano --example band -- <corpus> --out /tmp/b125.tsv
 //! ```
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::prose::tokens;
 use phient::study::Reader;
 use std::io::Write;

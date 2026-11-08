@@ -10,7 +10,7 @@
 //! cargo run --release -p phiano --example crowd -- <corpus> --top 300 --sectors 4
 //! ```
 
-use phiano::arena::Ecs;
+use phient::lineup::Ecs;
 use phient::prose::tokens;
 use phient::study::Reader;
 use std::collections::HashMap;
