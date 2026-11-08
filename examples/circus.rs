@@ -8,8 +8,8 @@
 //! `A` and `B` are persona names (case-insensitive: `gates`, `zuckerberg`,
 //! `"alexandr wang"`, `musk`). The script is printed, then what each heard.
 
-use phiano::sys::circus;
 use phiecs::agent::Agent;
+use phiecs::circus;
 use std::path::PathBuf;
 
 fn flag(a: &mut Vec<String>, name: &str) -> Option<String> {

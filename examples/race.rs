@@ -9,8 +9,8 @@
 //! `--engage` tells every member of a team the rows of a `relations.tsv`
 //! (what working with a team is, in rows); `--ask` reads one being's answer.
 
-use phiano::sys::race::Race;
 use phiecs::being::Being;
+use phiecs::race::Race;
 use phient::relate::being::from_file;
 use phiecs::agent::Agent;
 use std::path::PathBuf;

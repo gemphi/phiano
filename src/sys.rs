@@ -13,13 +13,11 @@
 //!   what you do by being told what the tracking system saw;
 //! - **ask** — what a word calls for under a kind, heaviest first.
 //!
-//! [`Being`] is the one concrete agent; the [`race`] runs teams of them,
-//! the [`circus`] lets two of them talk, and [`sets`] lets two of them
+//! [`Being`] is the one concrete agent; the `phiecs::race` runs teams of them,
+//! the `phiecs::circus` lets two of them talk, and [`sets`] lets two of them
 //! think — language as a set game with unions and relations.
 
-pub mod circus;
 pub mod lisp;
-pub mod race;
 pub mod set;
 
 pub use phiecs::being::Being;
