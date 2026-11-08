@@ -3,7 +3,8 @@
 //! the eye twitches, the flow field sorts the scene by parallax, and the
 //! field is told as rows. Seeing is telling, as watching the kit is.
 
-use super::{Agent, Row};
+use super::Row;
+use phiecs::agent::Agent;
 use phiecs::kit::eye::Flow;
 
 /// One twitch of the eye: `who` is told the scene under its own scope

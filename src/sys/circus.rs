@@ -9,7 +9,8 @@
 //! answer, and the answer is the next word. A speaker with nothing to say
 //! about the word changes the subject to one of its own seeds.
 
-use super::{Agent, Being, Row};
+use super::{Being, Row};
+use phiecs::agent::Agent;
 
 /// One line of the script.
 #[derive(Debug, Clone, PartialEq)]

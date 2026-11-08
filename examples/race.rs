@@ -9,7 +9,8 @@
 //! `--engage` tells every member of a team the rows of a `relations.tsv`
 //! (what working with a team is, in rows); `--ask` reads one being's answer.
 
-use phiano::sys::{race::Race, Agent, Being};
+use phiano::sys::{race::Race, Being};
+use phiecs::agent::Agent;
 use std::path::PathBuf;
 
 fn main() {

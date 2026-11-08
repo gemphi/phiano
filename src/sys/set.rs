@@ -6,7 +6,8 @@
 //! someone was told; the algebra only says which pairs stand together.
 //! The algebra is `phiclm::lisp::set`; what reads a being stays here.
 
-use super::{Agent, Being};
+use super::Being;
+use phiecs::agent::Agent;
 
 use phiclm::lisp::set::{compose, meet, union, Relation};
 

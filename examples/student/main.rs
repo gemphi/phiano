@@ -17,7 +17,8 @@
 //! cargo run --release -p phiano --example student -- [bcpl-dir]
 //! ```
 
-use phiano::sys::{Agent, Being, Persona};
+use phiano::sys::{Being, Persona};
+use phiecs::agent::Agent;
 use phiecs::Row;
 use phient::prose::{paragraph, tokens, Knowing};
 use phient::relate::scopes;

@@ -1,5 +1,6 @@
 use super::*;
-use crate::sys::{Agent, Being, Persona, Row};
+use crate::sys::{Being, Persona, Row};
+use phiecs::agent::Agent;
 
 fn machine() -> Machine {
     let mut r = Being::new(Persona::from_md("---\nname: Bertrand Russell\nseeds: set\nkinds: is-a\n---\n").unwrap());

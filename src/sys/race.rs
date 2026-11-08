@@ -8,7 +8,8 @@
 //! Engagement is rows: a team you work with (the phiace release, say) is
 //! told more, and that is the only way to pull ahead.
 
-use super::{Agent, Being};
+use super::Being;
+use phiecs::agent::Agent;
 use std::collections::BTreeMap;
 
 /// One team's standing.

@@ -6,7 +6,8 @@
 //! cargo run --release -p phiano --example think -- <quests root> <personas dir> russell whitehead
 //! ```
 
-use phiano::sys::{set, Agent};
+use phiano::sys::set;
+use phiecs::agent::Agent;
 use std::path::PathBuf;
 
 fn find(root: &PathBuf, dir: &PathBuf, who: &str) -> phiano::sys::Being {

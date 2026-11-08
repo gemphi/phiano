@@ -11,7 +11,8 @@
 //! budget.
 
 use phient::lineup::Concept;
-use crate::sys::{Agent, Being, Persona};
+use crate::sys::{Being, Persona};
+use phiecs::agent::Agent;
 use phiecs::Row;
 use phient::study::Reader;
 
@@ -77,7 +78,7 @@ impl Ecs {
     /// angle is the word's TYPE as the world reads it (docs/200) — where it
     /// sits on the circle under that condition, before any name is given.
     pub fn angle(&self, word: &str, kind: &str) -> Option<f64> {
-        use crate::sys::Agent;
+        use phiecs::agent::Agent;
         let w = self.being.world();
         let (id, k) = (w.lexicon.get(word)?, w.relations.get(kind)?);
         let p = w.read::<phiecs::phasor::Phasor>(id)?;
@@ -90,7 +91,7 @@ impl Ecs {
     /// the plain channel both sit at the mean (docs/200); sixteen angles
     /// keep the mixture apart (docs/202).
     pub fn profile(&self, word: &str, kind: &str) -> Vec<Option<f64>> {
-        use crate::sys::Agent;
+        use phiecs::agent::Agent;
         let w = self.being.world();
         let Some(id) = w.lexicon.get(word) else { return Vec::new() };
         let Some(p) = w.read::<phiecs::phasor::Phasor>(id) else { return Vec::new() };

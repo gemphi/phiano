@@ -1,4 +1,5 @@
-use super::{Agent, Persona, World};
+use super::{Persona, World};
+use phiecs::agent::Agent;
 use std::path::Path;
 
 /// The one concrete agent: a persona and the world it was told.

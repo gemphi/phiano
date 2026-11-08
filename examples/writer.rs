@@ -22,7 +22,8 @@
 //! ```
 
 use phient::scribe::{coin, Memory, Scribe};
-use phiano::sys::{Agent, Being, Persona};
+use phiano::sys::{Being, Persona};
+use phiecs::agent::Agent;
 use phiclm::token::{lex, Token};
 use phient::study::Study;
 
