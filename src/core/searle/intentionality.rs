@@ -5,7 +5,7 @@
 //! The Background is the set of pre-intentional capacities that enable intentionality -
 //! knowing *how* to do things, not knowing *that* things are the case.
 
-use super::types::*;
+use super::shape::*;
 use phiecs::phasor::facet::Facet;
 use phient::generate::ContextWaveBuffer;
 use phiton::p64::words::Tokenizer;

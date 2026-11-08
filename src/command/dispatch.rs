@@ -36,7 +36,7 @@ impl Dispatcher {
     /// Dispatches a command line to the appropriate handler.
     pub fn dispatch<'a>(line: &'a str, ctx: &mut Context<'a>) -> bool {
         // Drivers first - source/device commands are separate from core
-        if let Some(result) = crate::drivers::Driver::try_dispatch(line, ctx) {
+        if let Some(result) = crate::driver::Driver::try_dispatch(line, ctx) {
             return result;
         }
 
@@ -54,7 +54,7 @@ impl Dispatcher {
             Command::Instruct => instruction::InstructionCmd.apply(ctx),
             Command::Chat => chat::ChatCmd.apply(ctx),
             Command::Reason => reasoning::ReasoningCmd.apply(ctx),
-            Command::Layers => layers::LayersCmd.apply(ctx),
+            Command::Layers => layer::LayersCmd.apply(ctx),
             Command::Synthetic => synthetic::SyntheticCmd.apply(ctx),
             Command::Oscillator => oscillator::OscillatorCmd.apply(ctx),
             Command::Persona => persona::PersonaCmd.apply(ctx),
@@ -64,7 +64,7 @@ impl Dispatcher {
             Command::Wave => wave::WaveCmd.apply(ctx),
             Command::Save => save::Save.save(ctx),
             Command::Load => save::Save.load(ctx),
-            Command::Stat => stats::Stat.apply(ctx),
+            Command::Stat => stat::Stat.apply(ctx),
             Command::Benchmark => benchmark::Benchmark.apply(ctx),
             Command::Exit => false,
             Command::Unknown => learn::Learn.default(ctx),

@@ -2,7 +2,7 @@ pub mod core;
 pub mod command;
 pub mod config;
 pub mod data;
-pub mod drivers;
+pub mod driver;
 pub mod instruction;
 pub mod model;
 pub mod persona;

@@ -1,8 +1,8 @@
 //! Social ontology agents - Searle's theory of social reality.
 //! All markers loaded from data/searle_markers.json (no hardcoded arrays).
 
-use super::types::*;
-use super::markers::{self, SearleMarker};
+use super::shape::*;
+use super::marker::{self, SearleMarker};
 use phiecs::phasor::facet::Facet;
 
 /// 13. SocialOntologyAgent - classifies brute vs institutional facts.
@@ -15,7 +15,7 @@ impl SocialOntologyAgent {
     }
 
     pub fn process(prompt: &str) -> AgentContribution {
-        let markers = markers::load();
+        let markers = marker::load();
         let institutional = SearleMarker::count_matches(prompt, &markers.institutional_markers);
         let brute = SearleMarker::count_matches(prompt, &markers.brute_markers);
 
@@ -46,7 +46,7 @@ pub struct ObserverRelativityAgent;
 
 impl ObserverRelativityAgent {
     pub fn process(_facet: &Facet, prompt: &str) -> AgentContribution {
-        let markers = markers::load();
+        let markers = marker::load();
         let p = prompt.to_lowercase();
         let perspectives = [
             ("first_person (I)", &["i", "me", "my", "mine", "myself"][..]),

@@ -14,7 +14,7 @@
 //! The MentalCausation agent constructs intentional states from the prompt,
 //! then uses them to drive word selection and sentence construction.
 
-use super::types::*;
+use super::shape::*;
 use super::speech::SpeechActAgent;
 use super::selection;
 use phiecs::phasor::facet::Facet;

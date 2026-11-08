@@ -3,7 +3,7 @@
 //! Split from speech_acts.rs to keep files under 200 lines.
 //! These agents depend on SpeechActAgent's classification.
 
-use super::types::*;
+use super::shape::*;
 use super::speech::SpeechActAgent;
 use phiecs::phasor::facet::Facet;
 use phiton::p64::words::Tokenizer;

@@ -2,8 +2,8 @@
 //! The classifier is phiton's `SpeechAct` (read from the markers in
 //! data/searle_markers.json); this agent reports it for a prompt.
 
-use super::markers;
-use super::types::*;
+use super::marker;
+use super::shape::*;
 
 /// 4. SpeechActAgent - classifies illocutionary force with felicity conditions.
 pub struct SpeechActAgent;
@@ -11,12 +11,12 @@ pub struct SpeechActAgent;
 impl SpeechActAgent {
     /// Data-driven classification using the loaded markers.
     pub fn classify(prompt: &str) -> SpeechAct {
-        SpeechAct::classify_marked(prompt, markers::load())
+        SpeechAct::classify_marked(prompt, marker::load())
     }
 
     /// Extracts propositional content separately from illocutionary force.
     pub fn extract_propositional_content(prompt: &str) -> String {
-        markers::load().propositional_content(prompt)
+        marker::load().propositional_content(prompt)
     }
 
     /// Felicity conditions per speech act type (Searle's conditions).
@@ -31,7 +31,7 @@ impl SpeechActAgent {
 
     /// Detects literal vs speaker meaning divergence.
     pub fn speaker_vs_literal_meaning(prompt: &str) -> (String, String) {
-        markers::load().literal_and_speaker(prompt)
+        marker::load().literal_and_speaker(prompt)
     }
 
     pub fn process(prompt: &str) -> AgentContribution {

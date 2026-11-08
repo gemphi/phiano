@@ -8,7 +8,7 @@
 //! "It's raining" (assertive) and "Is it raining?" (directive) share the same
 //! propositional content "it is raining" but differ in illocutionary force.
 
-use super::types::*;
+use super::shape::*;
 use phient::train::chunker::ChunkStore;
 use phiecs::phasor::facet::Facet;
 use phiton::p64::words::Tokenizer;

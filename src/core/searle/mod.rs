@@ -17,8 +17,8 @@
 //! - reasoning.rs: multi-step reasoning chain
 //! - mod.rs: CognitiveCore coordinator
 
-pub mod types;
-pub mod markers;
+pub mod shape;
+pub mod marker;
 pub mod intentionality;
 pub mod speech;
 pub mod dof;
@@ -30,9 +30,9 @@ pub mod selection;
 pub mod reasoning;
 
 #[allow(unused_imports)]
-pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCondition};
+pub use shape::{AgentContribution, CognitiveResult, IntentionalState, FelicityCondition};
 #[allow(unused_imports)]
-pub use types::{PsychologicalMode, DirectionOfFit, SpeechAct};
+pub use shape::{PsychologicalMode, DirectionOfFit, SpeechAct};
 pub use speech::SpeechActAgent;
 #[allow(unused_imports)]
 pub use reasoning::{Chain, ChainOfThought, Thought};

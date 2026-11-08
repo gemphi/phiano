@@ -21,7 +21,7 @@
 //!   └─▶ SpeechAct (Directive / Commissive / Expressive / Declarative / Assertive)
 //! ```
 
-use super::types::*;
+use super::shape::*;
 use phiecs::phasor::facet::Facet;
 use phiecs::phasor::spectral::{SpectralPhasor, TorusPhasor};
 use phiton::p64::words::Tokenizer;

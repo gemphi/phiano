@@ -8,7 +8,7 @@
 //! These agents model the gap between syntactic processing (bigram ordering,
 //! phase matching) and semantic understanding (definition grounding, coherence).
 
-use super::types::*;
+use super::shape::*;
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phiton::p64::words::Tokenizer;
