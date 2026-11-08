@@ -1,0 +1,3 @@
+# Pro-verbs: a verb that stands for a whole clause. "what does she want to do?" asks for the clause
+# itself (phisor machine::told::nested), so a clause that is only a pro-verb and a hole is the hole.
+do
