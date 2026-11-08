@@ -5,6 +5,7 @@ Paths are under `src/` unless they say otherwise. Diagrams: [ARCHITECTURE.md](AR
 ## The arena (docs/203)
 
 - [x] The curriculum is a record the run keeps (2026-11-08, docs/220): `examples/learner --record name,lever,doc` appends the instalment to `data/curriculum/instalments.tsv`; `--propose` reads it and names the lever whose last application paid most. Note D at the learner's scale (paper 28).
+- [x] The record's first proposal followed (2026-11-08, docs/221): `guide` on `tatoeba4_guide2` → `guide_thrice`, 22.3% / 43.7% / 89.2, recorded by the run itself; the second proposal (`text+guide`) is running as `tatoeba5_guide2` (docs/222).
 
 The readers that need nothing of phiano's (counts, concepts, the mirror, the operator, the learner) moved to `phient::lineup`; their items are in phient's TODO.md. `arena` keeps `Ecs`, which reads a persona's world.
 

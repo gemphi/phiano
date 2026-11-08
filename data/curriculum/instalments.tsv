@@ -11,3 +11,4 @@ tatoeba2_guide	guide_twice	text+guide	sample80k_2	1	8	21.3	42.0	97.9	214
 forget01	tatoeba2_guide	forget	-	0	2	21.3	42.0	97.9	215
 tatoeba3_guide	tatoeba2_guide	text+guide	sample80k_3	1	8	21.6	42.3	95.3	216
 tatoeba4_guide2	tatoeba3_guide	text+guide	sample80k_4	2	8	22.1	43.3	90.9	218
+guide_thrice	tatoeba4_guide2	guide	-	1	8	22.3	43.7	89.2	221
