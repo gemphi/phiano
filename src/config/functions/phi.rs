@@ -22,60 +22,12 @@ impl PhiConfig {
         }
     }
 
-    /// Returns the configured sector resolution as a `u16`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `SECTOR_RESOLUTION` is not a power of two with exponent
-    /// ≥ `SECTOR_EXPONENT_MIN`.
-    pub fn sector_resolution() -> u16 {
-        let s = SECTOR_RESOLUTION;
-        if s < (1 << SECTOR_EXPONENT_MIN) || !s.is_power_of_two() {
-            panic!(
-                "SECTOR_RESOLUTION must be a power of 2 with exponent >= {} (min {}), got {}",
-                SECTOR_EXPONENT_MIN,
-                1u16 << SECTOR_EXPONENT_MIN,
-                s,
-            );
-        }
-        s
-    }
-
-    /// Returns the exponent `n` such that `SECTOR_RESOLUTION = 2ⁿ`.
-    pub fn sector_exponent() -> u32 {
-        Self::sector_resolution().trailing_zeros()
-    }
-
     /// Returns the number of sectors per colour band.
     ///
     /// Each colour band spans `SECTOR_RESOLUTION / COLOR_BANDS` contiguous
     /// sectors in the phase ring.
     pub fn sectors_per_color() -> u16 {
-        Self::sector_resolution() / COLOR_BANDS
-    }
-
-    /// Number of sector variations generated per composition round.
-    pub fn compose_variations() -> usize {
-        Self::sector_resolution() as usize
-    }
-
-    /// Total composition weight (for normalisation).
-    ///
-    /// Returns the sum of all `WEIGHT_*` constants:
-    /// `WEIGHT_COHERENCE + WEIGHT_NOVELTY + WEIGHT_RESONANCE
-    ///  + WEIGHT_DIVERSITY + WEIGHT_COVERAGE + WEIGHT_ALIGNMENT`.
-    pub fn total_compose_weight() -> f64 {
-        WEIGHT_COHERENCE + WEIGHT_NOVELTY + WEIGHT_RESONANCE
-            + WEIGHT_DIVERSITY + WEIGHT_COVERAGE + WEIGHT_ALIGNMENT
-    }
-
-    /// Computes the overall evaluation score from component scores.
-    ///
-    /// `score = coherence × EVAL_WEIGHT_COHERENCE
-    ///        + novelty   × EVAL_WEIGHT_NOVELTY
-    ///        + resonance × EVAL_WEIGHT_RESONANCE`
-    pub fn eval_overall(coherence: f64, novelty: f64, resonance: f64) -> f64 {
-        phient::eval::Evaluator::overall(coherence, novelty, resonance)
+        phient::generate::sector::sector_resolution() / COLOR_BANDS
     }
 
     /// Returns `true` if `word` is a stop word.
@@ -103,7 +55,7 @@ impl PhiConfig {
         println!("    golden angle  = {:.12}", GOLDEN_ANGLE);
         println!();
         println!("  sector resolution:");
-        println!("    sectors       = {} (2^{})", Self::sector_resolution(), Self::sector_exponent());
+        println!("    sectors       = {} (2^{})", phient::generate::sector::sector_resolution(), phient::generate::sector::sector_exponent());
         println!("    color bands   = {}", COLOR_BANDS);
         println!("    sectors/color = {}", Self::sectors_per_color());
         println!("    sector prime  = {}", Self::sector_prime());
@@ -116,14 +68,14 @@ impl PhiConfig {
         println!("    ingest epochs = {}", INGEST_EPOCHS);
         println!();
         println!("  composition:");
-        println!("    variations    = {}", Self::compose_variations());
+        println!("    variations    = {}", phient::generate::sector::compose_variations());
         println!("    depth default = {}", COMPOSE_DEPTH_DEFAULT);
         println!("    depth max     = {}", COMPOSE_DEPTH_MAX);
         println!("    rounds        = {}", COMPOSE_ROUNDS_DEFAULT);
         println!("    weights       = coh {:.2} + nov {:.2} + res {:.2} + div {:.2} + cov {:.2} + align {:.2} = {:.2}",
             WEIGHT_COHERENCE, WEIGHT_NOVELTY, WEIGHT_RESONANCE,
             WEIGHT_DIVERSITY, WEIGHT_COVERAGE, WEIGHT_ALIGNMENT,
-            Self::total_compose_weight());
+            phient::generate::sector::total_compose_weight());
         println!();
         println!("  persona:");
         println!("    word weight   = {}", FINGERPRINT_WORD_WEIGHT);
