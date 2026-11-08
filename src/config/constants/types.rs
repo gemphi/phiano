@@ -9,38 +9,20 @@ use super::*;
 /// The golden ratio's conjugate (1/φ = 0.618...) is phiton's too.
 pub use phiton::units::{ALPHA, PHI, PHI_CONJUGATE};
 
-/// Golden ratio squared (φ²) - 2.6180339887498948...
-pub const PHI_SQUARED: f64 = PHI * PHI;
 
 /// Golden angle in radians - 2π/φ² ≈ 2.39996 — phinet's, the one the seed uses.
 pub use phistd::GOLDEN_ANGLE;
 
-/// Pi (π) - 3.141592653589793...
-pub const PI_CONST: f64 = PI;
 
 /// Full circle (2π) — phiton's.
 pub use phiton::units::TWO_PI;
 
-/// Euler's number (e) - 2.718281828459045...
-/// Used in exponential decay/growth for novelty, sync, saturation.
-pub const E: f64 = std::f64::consts::E;
 
-// ── PRIME NUMBERS ──────────────────────────────────────────────────────────
 
-/// The first prime ≥ 64 - mixing constant for sector hashing.
-pub const PRIME_64: u64 = 67;
 
-/// The first prime ≥ 128 - mixing constant at 128-sector resolution.
-pub const PRIME_128: u64 = 131;
 
-/// The first prime ≥ 256 - mixing constant at 256-sector resolution.
-pub const PRIME_256: u64 = 257;
 
-/// The first prime ≥ 512 - mixing constant at 512-sector resolution.
-pub const PRIME_512: u64 = 521;
 
-/// The first prime ≥ 1024 - mixing constant at 1024-sector resolution.
-pub const PRIME_1024: u64 = 1031;
 
 // ── SECTOR RESOLUTION (2ⁿ where n ≥ 6) ────────────────────────────────────
 
@@ -51,8 +33,6 @@ pub use phiecs::phasor::facet::SECTOR_RESOLUTION;
 /// Minimum sector resolution exponent (2⁶ = 64).
 pub use phiecs::phasor::facet::SECTOR_EXPONENT_MIN;
 
-/// Number of color bands in the sector color wheel (always 16).
-pub const COLOR_BANDS: u16 = 16;
 
 // ── LEARNING PARAMETERS ────────────────────────────────────────────────────
 
@@ -66,7 +46,7 @@ pub use phiecs::phasor::facet::SYNTACTIC_LAG_BETA;
 
 /// Instantaneous anti-phase pulse (π rad = 180°) for live negative feedback and self-correction.
 #[allow(dead_code)]
-pub const ANTI_PHASE_PULSE: f64 = PI_CONST;
+pub const ANTI_PHASE_PULSE: f64 = PI;
 
 /// Phase convergence threshold - when |sin(φ_target - φ_old)| < this,
 /// band_n is incremented (prevents phase collapse).

@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use super::*;
+use phistd::constant::{COLOR_BANDS, E, PI_CONST, PRIME_1024, PRIME_128, PRIME_256, PRIME_512, PRIME_64};
 
 impl PhiConfig {
     /// Returns the appropriate prime mixing constant for the current sector
