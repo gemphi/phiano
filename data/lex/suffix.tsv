@@ -1,0 +1,31 @@
+# The inflection rules, tried in order per kind; the first whose condition holds
+# on the stem applies (lexicon/suffix.rs, `inflect`).
+# kind<TAB>order<TAB>condition<TAB>strip<TAB>add
+#   kind       third (verb -s), plural (noun -s), ing, past
+#   order      the order tried within the kind, lowest first
+#   condition  a named predicate over the stem and letter.tsv; * always holds
+#                ends_sibilant      stem ends in a sibilant ending
+#                ends_sibilant_o    ends_sibilant, or a verb_es ending
+#                ends_consonant_y   ends in y after a non-vowel (needs a stem)
+#                ends_vowel_y       ends in y after a vowel
+#                ends_y             ends in y
+#                ends_silent_e      ends in a silent e with a letter before it
+#                ends_single_e      ends_silent_e, and the letter before is not e
+#                doubles_final      one-syllable consonant-vowel-consonant, or a
+#                                   stressed verb in doubling_stressed.txt
+#   strip      how many letters to drop from the end of the stem
+#   add        what to write after; ~ stands for the stem's last letter
+third	1	ends_sibilant_o	0	es
+third	2	ends_consonant_y	1	ies
+third	3	*	0	s
+plural	1	ends_sibilant	0	es
+plural	2	ends_vowel_y	0	s
+plural	3	ends_y	1	ies
+plural	4	*	0	s
+ing	1	doubles_final	0	~ing
+ing	2	ends_single_e	1	ing
+ing	3	*	0	ing
+past	1	doubles_final	0	~ed
+past	2	ends_silent_e	0	d
+past	3	ends_consonant_y	1	ied
+past	4	*	0	ed

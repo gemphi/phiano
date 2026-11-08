@@ -1,0 +1,29 @@
+# Letter classes the suffix conditions read (suffix.tsv, lexicon/suffix.rs).
+# letter<TAB>class. A letter may appear on several rows; an entry of more than
+# one letter is an ending (ch, sh).
+#
+# vowel        a vowel letter: counts a syllable group, and never doubles
+# no_double    a final letter that never doubles before -ed/-ing (w, x, y)
+# sibilant     an ending that takes -es (plural and third person)
+# verb_es      a further ending that takes -es in the third person only
+# silent_e     the letter a silent e is written with
+# y_letter     the letter that turns to -ie before -s/-ed
+# qu_lead      the first letter of the digraph that counts as one consonant
+# qu_follow    the second letter of that digraph, read as a consonant
+a	vowel
+e	vowel
+i	vowel
+o	vowel
+u	vowel
+w	no_double
+x	no_double
+y	no_double
+s	sibilant
+x	sibilant
+ch	sibilant
+sh	sibilant
+o	verb_es
+e	silent_e
+y	y_letter
+q	qu_lead
+u	qu_follow
