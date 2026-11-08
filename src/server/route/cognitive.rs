@@ -1,7 +1,7 @@
 //! Cognitive, curriculum, and reasoning chain route handlers.
 
 use super::super::SharedModel;
-use super::super::types::*;
+use super::super::shape::*;
 use phient::train::curriculum::{ChildCurriculum, CurriculumResult};
 use axum::extract::State;
 use axum::http::StatusCode;

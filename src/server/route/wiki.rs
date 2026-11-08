@@ -1,7 +1,7 @@
 //! Wikipedia learning and search route handlers.
 
 use super::super::SharedModel;
-use super::super::types::*;
+use super::super::shape::*;
 use phient::eval::Evaluator;
 use axum::extract::State;
 use axum::http::StatusCode;

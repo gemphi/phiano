@@ -1,9 +1,9 @@
 mod matching;
-mod personas;
+mod persona;
 #[allow(unused_imports)]
 use matching::*;
 #[allow(unused_imports)]
-use personas::*;
+use persona::*;
 
 use phiecs::phasor::facet::Facet;
 use crate::persona::{Fingerprint, Style};

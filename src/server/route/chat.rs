@@ -1,7 +1,7 @@
 //! Chat endpoint with real-time learning, grounded knowledge retrieval, and conversational synthesis.
 
 use super::super::SharedModel;
-use super::super::types::*;
+use super::super::shape::*;
 use super::wiki::WikiParser;
 use crate::config::{
     CHUNK_STORE_DIR,

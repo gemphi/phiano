@@ -1,11 +1,11 @@
 //! Shared request/response types for all API routes.
 
-mod requests;
+mod request;
 mod response;
-mod defaults;
-pub use requests::*;
+mod default;
+pub use request::*;
 pub use response::*;
 #[allow(unused_imports)]
-use defaults::*;
+use default::*;
 
 use serde::{Deserialize, Serialize};

@@ -11,7 +11,7 @@ use extract::*;
 #[allow(unused_imports)]
 use likelihood::*;
 
-mod traits;
+mod personality;
 
 use phiecs::phasor::facet::Facet;
 use phiton::p64::words::Tokenizer;

@@ -1,5 +1,5 @@
 use super::super::SharedModel;
-use super::super::types::TextRequest;
+use super::super::shape::TextRequest;
 use phient::generate::Generator;
 use axum::extract::State;
 use axum::http::StatusCode;

@@ -1,14 +1,14 @@
 /// API router - assembles all routes from submodules.
 use super::SharedModel;
-use super::routes::core::*;
-use super::routes::oscillator::*;
-use super::routes::infinity::*;
-use super::routes::wiki::*;
-use super::routes::cognitive::*;
-use super::routes::chat::*;
-use super::routes::flow::*;
-use super::routes::stream::*;
-use super::routes::reasoning::*;
+use super::route::core::*;
+use super::route::oscillator::*;
+use super::route::infinity::*;
+use super::route::wiki::*;
+use super::route::cognitive::*;
+use super::route::chat::*;
+use super::route::flow::*;
+use super::route::stream::*;
+use super::route::reasoning::*;
 use axum::routing::{get, post};
 use axum::Router;
 

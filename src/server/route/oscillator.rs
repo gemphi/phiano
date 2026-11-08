@@ -1,7 +1,7 @@
 //! Oscillator and compose route handlers.
 
 use super::super::SharedModel;
-use super::super::types::*;
+use super::super::shape::*;
 use phient::generate::compose::Composition;
 use phiecs::phasor::oscillator::{OscillatorField, OscillatorTrainer};
 use phient::eval::oscillator::OscillatorEval;

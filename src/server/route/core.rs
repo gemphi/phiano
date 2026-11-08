@@ -6,7 +6,7 @@ pub use ingest::*;
 pub use define::*;
 
 use super::super::SharedModel;
-use super::super::types::*;
+use super::super::shape::*;
 use crate::command::{Context, Dispatcher};
 use phient::eval::Evaluator;
 use phient::generate::Generator;

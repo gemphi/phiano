@@ -49,7 +49,7 @@ impl Fingerprint {
     }
 
     pub fn personality_traits(&self) -> Vec<String> {
-        traits::PersonalityMapper::personality_traits(self)
+        personality::PersonalityMapper::personality_traits(self)
     }
 }
 

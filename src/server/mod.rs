@@ -1,6 +1,6 @@
 pub mod api;
-pub mod types;
-pub mod routes;
+pub mod shape;
+pub mod route;
 pub mod intent;
 
 use crate::model::Model;

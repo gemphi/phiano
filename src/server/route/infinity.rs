@@ -1,7 +1,7 @@
 //! Infinity resonance system types and route handlers.
 
 use super::super::SharedModel;
-use super::super::types::*;
+use super::super::shape::*;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::Json;
