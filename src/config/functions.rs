@@ -13,7 +13,7 @@
 //! # Invariants
 //!
 //! - `SECTOR_RESOLUTION` is always a power of two with exponent ≥ `SECTOR_EXPONENT_MIN`.
-//! - `sector_prime()` returns a value coprime to `SECTOR_RESOLUTION`, preventing
+//! - `phient::generate::sector::sector_prime()` returns a value coprime to `SECTOR_RESOLUTION`, preventing
 //!   aliasing in phase-to-sector mapping.
 //! - Weight sums are normalised: `phient::generate::sector::total_compose_weight()` equals the sum of all
 //!   `WEIGHT_*` constants.

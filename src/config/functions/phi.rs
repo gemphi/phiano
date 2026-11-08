@@ -1,36 +1,8 @@
 #[allow(unused_imports)]
 use super::*;
-use phistd::constant::{COLOR_BANDS, E, PI_CONST, PRIME_1024, PRIME_128, PRIME_256, PRIME_512, PRIME_64};
+use phistd::constant::{COLOR_BANDS, E, PI_CONST};
 
 impl PhiConfig {
-    /// Returns the appropriate prime mixing constant for the current sector
-    /// resolution.
-    ///
-    /// Primes are coprime to power-of-2 sector counts, preventing aliasing
-    /// artifacts in phase-to-sector mapping.
-    ///
-    /// # Invariant
-    ///
-    /// The returned value `p` satisfies `gcd(p, SECTOR_RESOLUTION) == 1`.
-    pub fn sector_prime() -> u64 {
-        match SECTOR_RESOLUTION {
-            64 => PRIME_64,
-            128 => PRIME_128,
-            256 => PRIME_256,
-            512 => PRIME_512,
-            1024 => PRIME_1024,
-            _ => PRIME_64,
-        }
-    }
-
-    /// Returns the number of sectors per colour band.
-    ///
-    /// Each colour band spans `SECTOR_RESOLUTION / COLOR_BANDS` contiguous
-    /// sectors in the phase ring.
-    pub fn sectors_per_color() -> u16 {
-        phient::generate::sector::sector_resolution() / COLOR_BANDS
-    }
-
     /// Returns `true` if `word` is a stop word.
     ///
     /// The stop-word set is lazily loaded from `STOP_WORDS_FILE` on first call
@@ -58,8 +30,8 @@ impl PhiConfig {
         println!("  sector resolution:");
         println!("    sectors       = {} (2^{})", phient::generate::sector::sector_resolution(), phient::generate::sector::sector_exponent());
         println!("    color bands   = {}", COLOR_BANDS);
-        println!("    sectors/color = {}", Self::sectors_per_color());
-        println!("    sector prime  = {}", Self::sector_prime());
+        println!("    sectors/color = {}", phient::generate::sector::sector_per_color());
+        println!("    sector prime  = {}", phient::generate::sector::sector_prime());
         println!();
         println!("  learning:");
         println!("    learning rate = {}", LEARNING_RATE);
