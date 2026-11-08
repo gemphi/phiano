@@ -25,7 +25,7 @@ impl Model {
         let mut vocab: Vec<String> = freq.iter().filter(|(_, &c)| c >= 2).map(|(w, _)| w.to_string()).collect();
         vocab.sort();
         vocab.insert(0, "⟨unk⟩".into());
-        let part = |p: &str| phistd::mix64(phiano::phasor::fnv1a(p)) % 5;
+        let part = |p: &str| phistd::mix64(phistd::fnv1a(p)) % 5;
         let (core, dev): (Vec<&(String, Vec<String>)>, Vec<_>) = all.iter().partition(|(p, _)| part(p) != 0);
         let mut w = Weighting::new(K, 0.35);
         {

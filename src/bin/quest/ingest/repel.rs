@@ -11,7 +11,7 @@
 #[allow(unused_imports)]
 use super::*;
 
-use phiano::phasor::Rounding;
+use phiecs::phasor::spectral::Rounding;
 
 /// One repulsion pass over every kind with shared answers. Returns the number
 /// of nudges applied. It reads and moves the *raw* target side: until a word

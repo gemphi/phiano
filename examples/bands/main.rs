@@ -74,7 +74,7 @@
 //! The sentence row is the same null it has been all along: every band at or
 //! below chance, 0.0946 against 0.0900 using everything.
 //!
-//! Re-measured on fixed seeds after the [`phiano::phasor::mix64`] fix, both
+//! Re-measured on fixed seeds after the [`phistd::mix64`] fix, both
 //! conclusions stand. The profile is still flat — best word band +1.30 sd, best
 //! sentence band +1.36 sd, neither near the 2 sd bar — and holographic retention
 //! is unchanged at 69% (13.1 of 18.9 points). The bottom-up arm now reads 50.7%
@@ -104,7 +104,7 @@ use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phient::metrics::relation::RelationBenchmark;
-use phiano::phasor::fnv1a;
+use phistd::fnv1a;
 use phiano::tokenizer::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;

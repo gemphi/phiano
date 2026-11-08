@@ -10,7 +10,7 @@ use phical::{FnoConfig, Tie};
 use std::path::Path;
 
 fn held_out(r: &phiecs::quest::Row) -> bool {
-    let h = phistd::mix64(phiano::phasor::fnv1a(&format!("{}\t{}\t{}", r.about, r.kind, r.other)));
+    let h = phistd::mix64(phistd::fnv1a(&format!("{}\t{}\t{}", r.about, r.kind, r.other)));
     ((h >> 11) as f64 / (1u64 << 53) as f64) < 0.2
 }
 

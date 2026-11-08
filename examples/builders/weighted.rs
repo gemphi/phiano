@@ -70,7 +70,7 @@ impl Weighted {
     }
 
     pub fn new(train: &[Episode], epochs: usize, seed: u64) -> Self {
-        let fold = |e: &Episode| (phistd::mix64(phiano::phasor::fnv1a(&e.key()) ^ seed ^ 0x3E1) % 4) as usize;
+        let fold = |e: &Episode| (phistd::mix64(phistd::fnv1a(&e.key()) ^ seed ^ 0x3E1) % 4) as usize;
         // Held-out examples: (aspect, truth index, condition, moves).
         let mut ex = Vec::new();
         for f in 0..4 {

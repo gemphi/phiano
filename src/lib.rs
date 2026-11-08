@@ -14,9 +14,6 @@ pub mod instruction;
 pub mod lab;
 pub mod model;
 pub mod persona;
-/// The spectral phasor lives in phiecs, beside the world's `Phasor`;
-/// re-exported so every `crate::phasor::…` path keeps working.
-pub use phiecs::phasor::spectral as phasor;
 /// The lexicon lives in phiecs (`phiecs::phasor::facet`) and phiano reads it
 /// from there. Two read-only examples (`flow`, `meaning`) still name
 /// `phiano::facet::Facet`; this keeps them building until they can be edited.

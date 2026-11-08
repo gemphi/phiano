@@ -42,7 +42,7 @@ use rows::*;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;
-use phiano::phasor::Rounding;
+use phiecs::phasor::spectral::Rounding;
 use phiecs::phasor::facet::storage::Storage;
 use phient::train::trainer::Trainer;
 use std::time::Instant;

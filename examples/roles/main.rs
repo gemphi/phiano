@@ -66,7 +66,7 @@ use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phient::metrics::relation::RelationBenchmark;
-use phiano::phasor::SpectralPhasor;
+use phiecs::phasor::spectral::SpectralPhasor;
 use phient::train::roles::{Role, RuleSet, RoleTable};
 use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;

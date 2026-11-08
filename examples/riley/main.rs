@@ -139,7 +139,7 @@ use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phiano::frames::{collapse_small, discover_classes, predictive_gain, shuffle_classes};
-use phiano::phasor::{fnv1a, mix64};
+use phistd::{fnv1a, mix64};
 use phient::train::kinds::OffsetTable;
 use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;

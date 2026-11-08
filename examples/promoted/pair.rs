@@ -85,7 +85,7 @@ pub(super) fn argmax(v: &[f64]) -> (usize, f64) {
         .unwrap_or((0, 0.0))
 }
 
-pub(super) fn dense_query(f: &Facet, a: &str, b: &str, c: &str) -> phiano::phasor::SpectralPhasor {
+pub(super) fn dense_query(f: &Facet, a: &str, b: &str, c: &str) -> phiecs::phasor::spectral::SpectralPhasor {
     let (pa, pb, pc) = (&f.lexicon[a], &f.lexicon[b], &f.lexicon[c]);
     let mut q = *pc;
     for k in 0..PHASE_CHANNELS {

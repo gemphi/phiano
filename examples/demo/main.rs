@@ -30,7 +30,7 @@ fn config(r: usize) -> FnoConfig {
 
 /// True for the `share` of told rows the knob trains on (same held set).
 fn kept(r: &phiecs::quest::Row, share: f64) -> bool {
-    let h = phistd::mix64(phiano::phasor::fnv1a(&format!("share\t{}\t{}\t{}", r.about, r.kind, r.other)));
+    let h = phistd::mix64(phistd::fnv1a(&format!("share\t{}\t{}\t{}", r.about, r.kind, r.other)));
     ((h >> 11) as f64 / (1u64 << 53) as f64) < share
 }
 

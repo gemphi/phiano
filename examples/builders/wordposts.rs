@@ -37,7 +37,7 @@ fn weight(delta: &HashMap<(String, usize), f64>, seen: f64, word: &str, a: usize
 
 impl WordPosts {
     pub fn new(train: &[Episode], epochs: usize, seed: u64, seen: f64) -> Self {
-        let fold = |e: &Episode| (phistd::mix64(phiano::phasor::fnv1a(&e.key()) ^ seed ^ 0x5EE) % 4) as usize;
+        let fold = |e: &Episode| (phistd::mix64(phistd::fnv1a(&e.key()) ^ seed ^ 0x5EE) % 4) as usize;
         let mut ex = Vec::new();
         for f in 0..4 {
             let c = GameCounts::new(&train.iter().filter(|e| fold(e) != f).cloned().collect::<Vec<_>>());

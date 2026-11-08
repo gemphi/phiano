@@ -49,7 +49,7 @@ use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::{Harness, Split};
 use phient::metrics::relation::{RelationBenchmark, RelationFamily};
-use phiano::phasor::fnv1a;
+use phistd::fnv1a;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
 

@@ -86,7 +86,7 @@ use variants::*;
 use phiano::config::{LEARNING_RATE, PHASE_CHANNELS};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
-use phiano::phasor::{fnv1a, mix64};
+use phistd::{fnv1a, mix64};
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
 use std::collections::HashMap;

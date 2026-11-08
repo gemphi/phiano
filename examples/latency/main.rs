@@ -41,7 +41,7 @@ use phient::train::conception::Conception;
 use phiano::config::LEARNING_RATE;
 use phient::train::correction::CorrectionLog;
 use phient::metrics::harness::Harness;
-use phiano::phasor::SpectralPhasor;
+use phiecs::phasor::spectral::SpectralPhasor;
 use phient::train::sources::definition_core;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;

@@ -127,7 +127,7 @@ pub fn report(asked: &[Asked], rs: &[usize], epochs: usize, seed: u64) -> String
 /// scored the same way, as one more predictor of Phi-4.
 pub fn student(read: &[(&Episode, [String; 5], [String; 5])], rs: &[usize], epochs: usize, seed: u64) -> (String, Vec<(String, f64)>) {
     let taught: Vec<Episode> = read.iter().map(|x| Episode { action: x.2.clone(), ..x.0.clone() }).collect();
-    let fold = |e: &Episode| (phistd::mix64(phiano::phasor::fnv1a(&e.key()) ^ seed) % 5) as usize;
+    let fold = |e: &Episode| (phistd::mix64(phistd::fnv1a(&e.key()) ^ seed) % 5) as usize;
     let mut rows: Vec<(String, usize, [usize; 5])> = Vec::new();
     let (mut rule_exact, mut rule_asp, mut n) = (0usize, [0usize; 5], 0usize);
     for f in 0..5 {

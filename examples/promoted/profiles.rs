@@ -17,7 +17,7 @@ pub(super) fn report_profiles(promoted: &Facet, pool: &[String]) {
     }
 }
 
-fn print_polygon(promoted: &Facet, w: &str, p: &phiano::phasor::SpectralPhasor) {
+fn print_polygon(promoted: &Facet, w: &str, p: &phiecs::phasor::spectral::SpectralPhasor) {
     let mut top: Vec<(usize, u32)> =
         (0..PHASE_CHANNELS).map(|k| (k, p.evidence_count(k))).collect();
     top.sort_by_key(|x| std::cmp::Reverse(x.1));

@@ -30,7 +30,7 @@ fn held_out_file(path: &str, family: bool, seed: u64) -> bool {
         true => std::path::Path::new(path).parent().map_or(path, |p| p.to_str().unwrap_or(path)),
         false => path,
     };
-    let h = phistd::mix64(phiano::phasor::fnv1a(unit) ^ seed);
+    let h = phistd::mix64(phistd::fnv1a(unit) ^ seed);
     ((h >> 11) as f64 / (1u64 << 53) as f64) < 0.2
 }
 

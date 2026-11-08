@@ -123,7 +123,7 @@ use phiano::config::{CHANNEL_PRIMES, LEARNING_RATE, PHASE_CHANNELS, TWO_PI};
 use phiecs::phasor::facet::Facet;
 use phient::metrics::harness::Harness;
 use phient::metrics::relation::RelationBenchmark;
-use phiano::phasor::{fnv1a, mix64};
+use phistd::{fnv1a, mix64};
 use phiano::tokenizer::Tokenizer;
 use phient::train::topdown::{Descent, Up};
 use phient::train::trainer::Trainer;

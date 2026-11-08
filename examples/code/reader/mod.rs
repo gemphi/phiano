@@ -51,7 +51,7 @@ pub fn run(a: Vec<String>) {
     let train_only: std::collections::HashSet<String> = extra.iter().map(|(p, _)| p.clone()).collect();
     files.extend(extra);
     let key = |p: &str| if by_dir { std::path::Path::new(p).parent().map_or(p.to_string(), |d| d.to_string_lossy().into_owned()) } else { p.to_string() };
-    let part = |p: &str| if train_only.contains(p) { 24 } else { phistd::mix64(phiano::phasor::fnv1a(&key(p)) ^ salt) % 25 }; // 0–4 test, 5–9 dev, rest train
+    let part = |p: &str| if train_only.contains(p) { 24 } else { phistd::mix64(phistd::fnv1a(&key(p)) ^ salt) % 25 }; // 0–4 test, 5–9 dev, rest train
     let enc_vocab = |train: &[&(String, Vec<String>)]| {
         let mut freq: HashMap<&str, usize> = HashMap::new();
         train.iter().for_each(|(_, t)| t.iter().for_each(|x| *freq.entry(x.as_str()).or_default() += 1));

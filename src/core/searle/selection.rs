@@ -23,7 +23,7 @@
 
 use super::types::*;
 use phiecs::phasor::facet::Facet;
-use crate::phasor::{SpectralPhasor, TorusPhasor};
+use phiecs::phasor::spectral::{SpectralPhasor, TorusPhasor};
 use crate::tokenizer::Tokenizer;
 
 /// Selector and synthesizer for intentional state-driven language generation.

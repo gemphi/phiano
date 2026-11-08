@@ -7,7 +7,7 @@
 
 use crate::config::PHASE_CHANNELS;
 use phiecs::phasor::facet::Facet;
-use crate::phasor::{fnv1a, mix64};
+use phistd::{fnv1a, mix64};
 use crate::tokenizer::Tokenizer;
 use phiecs::phasor::wave::Wave;
 use std::collections::HashMap;

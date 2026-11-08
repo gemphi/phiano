@@ -26,7 +26,7 @@ fn pct(n: usize, d: usize) -> String {
 /// Per aspect, the τ with most right answers in `inner` folds of `train`
 /// (ties to the larger τ, the side of D2 as written).
 fn choose(train: &[Episode], taus: &[f64], seed: u64) -> Vec<f64> {
-    let fold = |e: &Episode| (phistd::mix64(phiano::phasor::fnv1a(&e.key()) ^ seed ^ 0x1AA) % 4) as usize;
+    let fold = |e: &Episode| (phistd::mix64(phistd::fnv1a(&e.key()) ^ seed ^ 0x1AA) % 4) as usize;
     let mut right = vec![vec![0usize; taus.len()]; 5];
     for f in 0..4 {
         let tr: Vec<Episode> = train.iter().filter(|e| fold(e) != f).cloned().collect();
@@ -43,7 +43,7 @@ fn choose(train: &[Episode], taus: &[f64], seed: u64) -> Vec<f64> {
 
 pub fn sweep(read: &[(&Episode, [String; 5], [String; 5])], taus: &[f64], epochs: usize, seed: u64) -> String {
     let taught: Vec<Episode> = read.iter().map(|x| Episode { action: x.2.clone(), ..x.0.clone() }).collect();
-    let fold = |e: &Episode| (phistd::mix64(phiano::phasor::fnv1a(&e.key()) ^ seed) % 5) as usize;
+    let fold = |e: &Episode| (phistd::mix64(phistd::fnv1a(&e.key()) ^ seed) % 5) as usize;
     // rows: bag of words, counts at each τ, counts with τ per aspect chosen
     // inside the training folds; (exact, per aspect)
     let mut rows = vec![(0usize, [0usize; 5], 0usize); taus.len() + 3 + SEENS.len()];

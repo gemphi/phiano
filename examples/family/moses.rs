@@ -36,7 +36,7 @@ pub fn identify(t: &Table, m: &mut RelationModel, words: &[String], source: &[&R
         if mine.len() < 4 {
             continue;
         }
-        let mut kept: Vec<&&Row> = mine.iter().copied().filter(|r| (phistd::mix64(phiano::phasor::fnv1a(&feature(r))) % 1000) as f64 / 1000.0 >= drop).collect();
+        let mut kept: Vec<&&Row> = mine.iter().copied().filter(|r| (phistd::mix64(phistd::fnv1a(&feature(r))) % 1000) as f64 / 1000.0 >= drop).collect();
         if kept.is_empty() {
             kept.push(mine[0]);
         }
