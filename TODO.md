@@ -57,7 +57,7 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 - [ ] persona: `match_text` and `match_text_with` disagree when the best score is ≤ 0 (persona/world/personas.rs:100 vs persona/world/matching.rs:40).
 - [ ] phinet: `OperatorScorer` assumes 64-sample functions; a `Sides::Both` space would read the wrong words (phinet/lm.rs:53).
 - [ ] oscillator: `from_phasor` uses the raw `band_n` counter as a frequency (it reaches 1.8M); `evaluate` scores the whole field, not the given text (oscillator/mod.rs:37, oscillator/eval.rs:24).
-- [ ] curriculum: `bigrams_recorded` is overwritten each stage instead of added up (curriculum.rs:115).
+- [x] curriculum: `bigrams_recorded` looked overwritten each stage; it is the facet's running total (`ngram_entries`), so a sum of stages would double count. Read once after the last stage and documented as the total (phient `train/curriculum.rs`, 2026-11-08).
 - [ ] chunker: the progress line swaps its arguments and prints `[epoch 64/1]` (chunker.rs:135).
 - [ ] helix: n-grams are not written, so a write then a read loses them; a malformed channel number becomes 0 (helix/read.rs:12, :22).
 - [ ] bpe: `encode` silently drops pieces missing from the vocab; Phi-4's o200k digit split is not implemented (bpe/mod.rs:87, :13-16).
