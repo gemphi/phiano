@@ -32,7 +32,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--save ckpt] [--record name,lever,doc] [--propose]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--patience 2] [--save ckpt] [--record name,lever,doc] [--propose]
 //! ```
 
 mod counting;
@@ -191,7 +191,10 @@ fn main() {
         l.tell(s);
     }
     let r = l.measure(&dev);
-    println!("{config:?}\nvocabulary {}\n", l.vocabulary());
+    // The stop: this many epochs without a gain on the dev register (two
+    // since docs/203). Channels born quiet (docs/210) need more than two.
+    let patience: usize = flag("--patience").and_then(|s| s.parse().ok()).unwrap_or(2);
+    println!("{config:?}\nvocabulary {} · patience {patience}\n", l.vocabulary());
     println!("| epoch | error (train) | dev top-1 | dev perplexity | seconds |\n|---|---|---|---|---|");
     println!("| told once (online) | — | {:.1}% | {:.1} | {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
     let (mut best, mut best_ppl, mut since) = (l.clone(), r.perplexity(), 0);
@@ -206,7 +209,7 @@ fn main() {
             }
             false => {
                 since += 1;
-                if since >= 2 {
+                if since >= patience {
                     break;
                 }
             }
