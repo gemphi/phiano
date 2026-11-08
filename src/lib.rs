@@ -12,4 +12,3 @@ pub mod persona;
 pub mod sys;
 pub mod server;
 pub mod tokenizer;
-pub mod wiki;

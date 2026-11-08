@@ -9,7 +9,7 @@ use phient::train::sources::phi4::Phi4Source;
 use phiecs::phasor::facet::storage::Storage;
 use phiano::tokenizer::Tokenizer;
 use phient::train::trainer::Trainer;
-use phiano::wiki;
+use phient::train::wiki;
 
 fn load_or_new(path: &str) -> Facet {
     match Storage::load(path) {

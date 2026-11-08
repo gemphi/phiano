@@ -39,11 +39,11 @@ pub async fn ingest_all(
     }
 
     let (wiki_ok, wiki_tokens) = if wiki_topics > 0 {
-        let (extracts, _errors) = crate::wiki::WikiBulk::fetch_curriculum_extracts(Some(wiki_topics)).await;
+        let (extracts, _errors) = phient::train::wiki::WikiBulk::fetch_curriculum_extracts(Some(wiki_topics)).await;
         let wiki_ok = extracts.len();
         let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         let model = &mut *guard;
-        let wiki_tokens = crate::wiki::WikiBulk::train_extracts(&mut model.facet, &model.trainer, &extracts);
+        let wiki_tokens = phient::train::wiki::WikiBulk::train_extracts(&mut model.facet, &model.trainer, &extracts);
         (wiki_ok, wiki_tokens)
     } else {
         (0, 0)
