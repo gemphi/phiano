@@ -8,6 +8,9 @@
 
 use serde::Serialize;
 
+// The classifier's own types live in phiton; the agents here read them.
+pub use phiton::p64::{DirectionOfFit, FelicityCondition, SpeechAct};
+
 /// A single agent's contribution to the cognitive process.
 #[derive(Debug, Clone, Serialize)]
 pub struct AgentContribution {
@@ -78,82 +81,6 @@ impl PsychologicalMode {
             Self::Belief | Self::Perception => DirectionOfFit::MindToWorld,
             Self::Desire | Self::Intention => DirectionOfFit::WorldToMind,
             Self::Fear | Self::Hope => DirectionOfFit::WorldToMind,
-        }
-    }
-}
-
-/// Direction of fit - Searle's distinction.
-/// Mind→World: the mind should match the world (beliefs, assertions).
-/// World→Mind: the world should change to match the mind (desires, commands).
-/// None: no direction of fit (expressives - just express a state).
-/// Both: both directions (declaratives - create a fact by representing it).
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-pub enum DirectionOfFit {
-    MindToWorld,
-    WorldToMind,
-    None,
-    Both,
-}
-
-impl DirectionOfFit {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::MindToWorld => "mind→world",
-            Self::WorldToMind => "world→mind",
-            Self::None => "none (expressive)",
-            Self::Both => "both (declarative)",
-        }
-    }
-}
-
-/// Searle's felicity conditions for speech acts.
-/// For an illocutionary act to be successful, these must be met.
-#[derive(Debug, Clone, Serialize, Default)]
-pub struct FelicityCondition {
-    /// The propositional content must be appropriate for the act type.
-    /// E.g., promises require a future act; assertions require a proposition.
-    pub propositional_content_rule: String,
-    /// The preparatory condition - what must be true for the act to make sense.
-    /// E.g., for a command, the speaker must have authority.
-    pub preparatory_condition: String,
-    /// The sincerity condition - the speaker must have the appropriate psychological state.
-    /// E.g., for a promise, the speaker must intend to act.
-    pub sincerity_condition: String,
-    /// The essential condition - what the act counts as.
-    /// E.g., a promise counts as an undertaking of an obligation.
-    pub essential_condition: String,
-    /// Whether all conditions are met.
-    pub satisfied: bool,
-}
-
-/// Searle's 5 speech act categories with their felicity conditions.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-pub enum SpeechActType {
-    Assertive,
-    Directive,
-    Commissive,
-    Expressive,
-    Declarative,
-}
-
-impl SpeechActType {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Assertive => "assertive",
-            Self::Directive => "directive",
-            Self::Commissive => "commissive",
-            Self::Expressive => "expressive",
-            Self::Declarative => "declarative",
-        }
-    }
-
-    pub fn direction_of_fit(&self) -> DirectionOfFit {
-        match self {
-            Self::Assertive => DirectionOfFit::MindToWorld,
-            Self::Directive => DirectionOfFit::WorldToMind,
-            Self::Commissive => DirectionOfFit::WorldToMind,
-            Self::Expressive => DirectionOfFit::None,
-            Self::Declarative => DirectionOfFit::Both,
         }
     }
 }

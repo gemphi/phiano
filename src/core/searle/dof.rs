@@ -55,11 +55,11 @@ impl SatisfactionAgent {
 
         let act = SpeechActAgent::classify(prompt);
         let sat_desc = match act {
-            SpeechActType::Assertive => "Satisfied when the proposition is true",
-            SpeechActType::Directive => "Satisfied when the hearer performs the requested act",
-            SpeechActType::Commissive => "Satisfied when the speaker fulfills the commitment",
-            SpeechActType::Expressive => "Satisfied by the expression itself",
-            SpeechActType::Declarative => "Satisfied by the successful performance of the declaration",
+            SpeechAct::Assertive => "Satisfied when the proposition is true",
+            SpeechAct::Directive => "Satisfied when the hearer performs the requested act",
+            SpeechAct::Commissive => "Satisfied when the speaker fulfills the commitment",
+            SpeechAct::Expressive => "Satisfied by the expression itself",
+            SpeechAct::Declaration => "Satisfied by the successful performance of the declaration",
         };
 
         AgentContribution {

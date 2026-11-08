@@ -2,7 +2,7 @@
 //! All markers loaded from data/searle_markers.json (no hardcoded arrays).
 
 use super::types::*;
-use super::markers::SearleMarker;
+use super::markers::{self, SearleMarker};
 use phiecs::phasor::facet::Facet;
 
 /// 13. SocialOntologyAgent - classifies brute vs institutional facts.
@@ -11,15 +11,11 @@ pub struct SocialOntologyAgent;
 impl SocialOntologyAgent {
     /// Applies constitutive rules: "X counts as Y in context C".
     pub fn counts_as_rules(prompt: &str, markers: &SearleMarker) -> Vec<String> {
-        let p = prompt.to_lowercase();
-        markers.counts_as_rules.iter()
-            .filter(|(k, _)| p.contains(k.as_str()))
-            .map(|(_, v)| v.clone())
-            .collect()
+        markers.counts_as(prompt)
     }
 
     pub fn process(prompt: &str) -> AgentContribution {
-        let markers = SearleMarker::load();
+        let markers = markers::load();
         let institutional = SearleMarker::count_matches(prompt, &markers.institutional_markers);
         let brute = SearleMarker::count_matches(prompt, &markers.brute_markers);
 
@@ -50,7 +46,7 @@ pub struct ObserverRelativityAgent;
 
 impl ObserverRelativityAgent {
     pub fn process(_facet: &Facet, prompt: &str) -> AgentContribution {
-        let markers = SearleMarker::load();
+        let markers = markers::load();
         let p = prompt.to_lowercase();
         let perspectives = [
             ("first_person (I)", &["i", "me", "my", "mine", "myself"][..]),

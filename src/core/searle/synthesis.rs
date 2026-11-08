@@ -67,7 +67,7 @@ impl MentalCausationAgent {
     fn construct_intentional_states(
         facet: &Facet,
         prompt: &str,
-        act: SpeechActType,
+        act: SpeechAct,
         proposition: &str,
     ) -> Vec<IntentionalState> {
         let tokens = Tokenizer::tokenize(prompt);
@@ -81,7 +81,7 @@ impl MentalCausationAgent {
         };
 
         match act {
-            SpeechActType::Assertive => vec![
+            SpeechAct::Assertive => vec![
                 IntentionalState {
                     mode: PsychologicalMode::Belief,
                     content: format!("the world is such that {}", content),
@@ -90,7 +90,7 @@ impl MentalCausationAgent {
                     sincerity: 0.8,
                 },
             ],
-            SpeechActType::Directive => vec![
+            SpeechAct::Directive => vec![
                 IntentionalState {
                     mode: PsychologicalMode::Desire,
                     content: format!("the hearer performs action related to {}", content),
@@ -106,7 +106,7 @@ impl MentalCausationAgent {
                     sincerity: 0.7,
                 },
             ],
-            SpeechActType::Commissive => vec![
+            SpeechAct::Commissive => vec![
                 IntentionalState {
                     mode: PsychologicalMode::Intention,
                     content: format!("I will do action related to {}", content),
@@ -115,7 +115,7 @@ impl MentalCausationAgent {
                     sincerity: 0.9,
                 },
             ],
-            SpeechActType::Expressive => vec![
+            SpeechAct::Expressive => vec![
                 IntentionalState {
                     mode: PsychologicalMode::Hope,
                     content: format!("expression about {}", content),
@@ -124,7 +124,7 @@ impl MentalCausationAgent {
                     sincerity: 0.85,
                 },
             ],
-            SpeechActType::Declarative => vec![
+            SpeechAct::Declaration => vec![
                 IntentionalState {
                     mode: PsychologicalMode::Intention,
                     content: format!("I bring about the state of affairs: {}", content),

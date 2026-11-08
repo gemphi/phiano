@@ -32,7 +32,7 @@ pub mod reasoning;
 #[allow(unused_imports)]
 pub use types::{AgentContribution, CognitiveResult, IntentionalState, FelicityCondition};
 #[allow(unused_imports)]
-pub use types::{PsychologicalMode, DirectionOfFit, SpeechActType};
+pub use types::{PsychologicalMode, DirectionOfFit, SpeechAct};
 pub use speech::SpeechActAgent;
 #[allow(unused_imports)]
 pub use reasoning::{Chain, ChainOfThought, Thought};
@@ -119,7 +119,7 @@ impl CognitiveCore {
             synthesized_output,
             coherence,
             intentionality_phase: a1.phase_contribution,
-            speech_act: act_type.as_str().to_string(),
+            speech_act: act_type.label().to_string(),
             direction_of_fit: act_type.direction_of_fit().as_str().to_string(),
             satisfaction: a6.confidence,
             intentional_states,

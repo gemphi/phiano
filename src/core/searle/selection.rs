@@ -18,7 +18,7 @@
 //!   │
 //!   ▼
 //! WordSelector::synthesize()
-//!   └─▶ SpeechActType (Directive / Commissive / Expressive / Declarative / Assertive)
+//!   └─▶ SpeechAct (Directive / Commissive / Expressive / Declarative / Assertive)
 //! ```
 
 use super::types::*;
@@ -115,7 +115,7 @@ impl WordSelector {
     /// the content is drawn from the selected words.
     pub fn synthesize(
         words: &[String],
-        act: SpeechActType,
+        act: SpeechAct,
         states: &[IntentionalState],
         prompt: &str,
     ) -> String {
@@ -130,7 +130,7 @@ impl WordSelector {
         let has_belief = states.iter().any(|s| s.mode == PsychologicalMode::Belief);
 
         match act {
-            SpeechActType::Directive => {
+            SpeechAct::Directive => {
                 let mut s = Vec::new();
                 s.push(format!("{} concerns {} and {}.", w(0), w(1), w(2)));
                 if words.len() > 4 {
@@ -141,16 +141,16 @@ impl WordSelector {
                 }
                 s.join(" ")
             }
-            SpeechActType::Commissive => {
+            SpeechAct::Commissive => {
                 format!("I will address {} by examining {} and {}.", w(0), w(1), w(2))
             }
-            SpeechActType::Expressive => {
+            SpeechAct::Expressive => {
                 format!("{} evokes {} and {} - a sense of {}.", w(0), w(1), w(2), w(3))
             }
-            SpeechActType::Declarative => {
+            SpeechAct::Declaration => {
                 format!("{} is established as {}, defined through {}.", w(0), w(1), w(2))
             }
-            SpeechActType::Assertive => {
+            SpeechAct::Assertive => {
                 let mut s = Vec::new();
                 s.push(format!("{} is connected to {}.", w(0), w(1)));
                 if words.len() > 3 {
