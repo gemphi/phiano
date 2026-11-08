@@ -7,6 +7,5 @@ pub mod frames;
 pub mod instruction;
 pub mod model;
 pub mod persona;
-pub mod sys;
 pub mod server;
 pub mod tokenizer;
