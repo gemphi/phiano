@@ -3,7 +3,7 @@
 //! directory test (Requirement 2 criterion 9).
 
 use super::SEED;
-use crate::bars::{Bar, Bars, Judged, Sense, Unit};
+use crate::bar::{Bar, Bars, Judged, Sense, Unit};
 use crate::record::{page, parse, Measured, RecordError, Recorder};
 use std::collections::BTreeMap;
 

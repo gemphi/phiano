@@ -16,7 +16,7 @@
 //! reads them one hop (chance, honestly) and two hops. The facet is saved
 //! beside the table as `<table>.chroma`, which `bin/quest_ask` opens.
 mod board;
-mod categories;
+mod category;
 mod holdout;
 mod liskov;
 mod repel;
@@ -24,13 +24,13 @@ mod report;
 #[allow(unused_imports)]
 use board::*;
 #[allow(unused_imports)]
-use categories::*;
+use category::*;
 #[allow(unused_imports)]
 use repel::*;
 #[allow(unused_imports)]
 use report::*;
 mod measure;
-mod rows;
+mod row;
 #[allow(unused_imports)]
 use liskov::*;
 #[allow(unused_imports)]
@@ -38,7 +38,7 @@ use holdout::*;
 #[allow(unused_imports)]
 use measure::*;
 #[allow(unused_imports)]
-use rows::*;
+use row::*;
 
 use phiano::config::LEARNING_RATE;
 use phiecs::phasor::facet::Facet;

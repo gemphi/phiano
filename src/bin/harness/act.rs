@@ -15,7 +15,7 @@
 //! name with a NaN value and no verdict, never a zero.
 
 use super::ladder::one_decimal;
-use super::bars::{Bar, Bars, Judged, Sense, Unit};
+use super::bar::{Bar, Bars, Judged, Sense, Unit};
 use super::record::{self, Measured};
 use phisor::guide::{Part, Split};
 use std::path::Path;

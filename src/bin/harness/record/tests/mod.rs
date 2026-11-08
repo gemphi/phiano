@@ -6,7 +6,7 @@ mod figures;
 mod prop;
 mod unit;
 
-use crate::bars::{Bar, Judged, Sense, Unit};
+use crate::bar::{Bar, Judged, Sense, Unit};
 use crate::record::Measured;
 use phistd::gen::Seeded;
 

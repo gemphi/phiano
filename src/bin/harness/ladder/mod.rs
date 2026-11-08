@@ -17,7 +17,7 @@
 //! The act-height numbers stay out, since the English reader (task 13.7) is
 //! not built, so they remain unjudged exactly as the design says.
 
-use super::bars::{Bars, Unit};
+use super::bar::{Bars, Unit};
 use super::record::Measured;
 use phisor::guide::holdout::HoldoutGuard;
 use phisor::guide::{self, Split};

@@ -7,7 +7,7 @@
 //! quotes is looked up by name in the record and compared after the rounding
 //! the record uses: one decimal for a percentage, none for a count, two for a
 //! perplexity or z-score. A failure names the metric and both values.
-use crate::bars::{Bar, Judged, Sense, Unit};
+use crate::bar::{Bar, Judged, Sense, Unit};
 use crate::record::{parse::parse, Measured};
 use std::path::{Path, PathBuf};
 const DOC: &str = "docs/english_reader.md";

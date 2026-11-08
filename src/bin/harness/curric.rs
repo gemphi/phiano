@@ -12,9 +12,9 @@
 //! so the walk stays within its cap; the number is a real floor, not the
 //! learner's best possible.
 
-mod bands;
+mod band;
 
-use super::bars::{Bars, Unit};
+use super::bar::{Bars, Unit};
 use super::record::Measured;
 use phient::metrics::baseline::kn::KneserNey;
 use phient::metrics::harness::{PhianoLM, Split, DISCOUNT_GRID, GAMMA_GRID};
@@ -131,7 +131,7 @@ pub fn run(bars: &Bars) -> Vec<Measured> {
         test.len()
     );
 
-    bands::print(&lm, &train, &test);
+    band::print(&lm, &train, &test);
 
     // Only the learner's perplexity is judged against the declared Bar
     // (AtMost 84.7). The trigram's is recorded beside it with no Bar, so it
@@ -191,7 +191,7 @@ mod tests {
     fn measure_curriculum() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         std::env::set_current_dir(root).unwrap();
-        let bars = super::super::bars::Bars::read(std::path::Path::new("docs/bars.md"));
+        let bars = super::super::bar::Bars::read(std::path::Path::new("docs/bars.md"));
         for m in super::run(&bars) {
             eprintln!("{m:?}");
         }

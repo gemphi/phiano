@@ -1,7 +1,7 @@
 //! Phase-space configuration functions.
 //!
 //! Provides derived values and utilities computed from the raw constants
-//! defined in [`constants`]. Every function is an associated method on
+//! defined in [`constant`]. Every function is an associated method on
 //! [`PhiConfig`], eliminating bare standalone functions in accordance
 //! with the Diem convention that all public symbols belong to a named type.
 //!
@@ -24,7 +24,7 @@ mod kernel;
 use phi::*;
 pub use kernel::*;
 
-use super::constants::*;
+use super::constant::*;
 
 /// Central configuration façade for the Phiano phase-resonance engine.
 ///

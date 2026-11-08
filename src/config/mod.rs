@@ -3,8 +3,8 @@
 //! Constants live in `constants.rs`, derived functions in `functions.rs`.
 //! This separation ensures config values are never mixed with logic.
 
-mod constants;
-mod functions;
+mod constant;
+mod function;
 
-pub use constants::*;
-pub use functions::*;
+pub use constant::*;
+pub use function::*;

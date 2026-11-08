@@ -17,7 +17,7 @@
 //! predict stage run so it can be measured.
 
 use super::{absent, count, percent};
-use crate::bars::{Bars, Unit};
+use crate::bar::{Bars, Unit};
 use crate::record::Measured;
 use phisor::abstraction::{self, Arm, Config, Rule, Scores};
 use phisor::guide::Split;

@@ -1,7 +1,7 @@
 //! The gold-act figures: round-trip and force purity over each cut of the gold.
 
 use super::one_decimal;
-use crate::bars::{Bars, Unit};
+use crate::bar::{Bars, Unit};
 use crate::record::Measured;
 
 /// The round-trip and force-purity figures over a set of gold `(Act, text)`

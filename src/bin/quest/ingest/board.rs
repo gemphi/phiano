@@ -3,7 +3,7 @@
 //! training runs.
 //!
 //! Each kind of the quest files its words by their source angle on that
-//! kind's channel, in 64 sectors (`categories::Filing::Kind`). That filing,
+//! kind's channel, in 64 sectors (`category::Filing::Kind`). That filing,
 //! not the word's centroid, is where the quest's structure shows (docs/86
 //! §3): a kind whose words share answers should see those words share a
 //! hexagram, and *coherence* is how many times more often they do than two

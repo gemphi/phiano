@@ -22,7 +22,7 @@
 //! of the ten outcomes and the Bar verdicts, so it is tested over synthetic
 //! vectors, never by spawning cargo.
 
-use super::bars::{Bars, Judged};
+use super::bar::{Bars, Judged};
 use super::level::{self, Outcome};
 use super::record::Recorder;
 use super::spawn::{self, Capped};

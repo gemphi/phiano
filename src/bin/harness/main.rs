@@ -16,7 +16,7 @@
 #![allow(dead_code)]
 
 mod act;
-mod bars;
+mod bar;
 mod curric;
 mod curriculum;
 mod harness;
@@ -53,7 +53,7 @@ fn main() {
 /// report the overall verdict and the record page's path. This is the heavy
 /// path — ten cargo runs under the cap — kept off the ordinary test suite.
 fn run_walk() -> Result<(), Box<dyn std::error::Error>> {
-    let bars = bars::Bars::read(Path::new(BARS_PATH));
+    let bars = bar::Bars::read(Path::new(BARS_PATH));
     let recorder = record::Recorder::open(Path::new(DOCS_DIR), &bars)?;
     let mut h = harness::Harness::new(bars, recorder, harness::Caps::default());
 

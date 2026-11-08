@@ -17,7 +17,7 @@
 //! and the directory's numbered convention.
 #![allow(dead_code)]
 
-use super::bars::{Bar, Bars, Judged, Sense, Unit};
+use super::bar::{Bar, Bars, Judged, Sense, Unit};
 use std::path::{Path, PathBuf};
 
 mod page;

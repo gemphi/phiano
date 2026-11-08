@@ -8,13 +8,13 @@
 //!   π  (pi)     - circle constant (3.14159...)
 //!   2ⁿ          - power-of-2 sector resolution (2⁶ = 64 minimum)
 
-mod types;
+mod shape;
 mod novelty;
 mod update;
-mod primes;
-pub use types::*;
+mod prime;
+pub use shape::*;
 pub use novelty::*;
 pub use update::*;
-pub use primes::*;
+pub use prime::*;
 
 use std::f64::consts::PI;

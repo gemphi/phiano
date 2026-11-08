@@ -9,7 +9,7 @@
 //! test, so `cargo test -p phiano --bin harness` stays fast and offline.
 
 use super::*;
-use crate::bars::{Bar, Bars, Judged, Sense};
+use crate::bar::{Bar, Bars, Judged, Sense};
 use crate::level::Outcome;
 use crate::record::{Measured, Recorder};
 use phistd::gen::Seeded;
@@ -216,8 +216,8 @@ fn record_ladder_writes_every_number_and_returns_its_verdicts() {
     let mut h = harness_in(&dir);
 
     let numbers = vec![
-        Measured::judged("mode.learned.function_purity", 60.0, crate::bars::Unit::Percentage, h.bars()),
-        Measured::judged("curriculum.perplexity", 250.0, crate::bars::Unit::Perplexity, h.bars()),
+        Measured::judged("mode.learned.function_purity", 60.0, crate::bar::Unit::Percentage, h.bars()),
+        Measured::judged("curriculum.perplexity", 250.0, crate::bar::Unit::Perplexity, h.bars()),
     ];
     let verdicts = h.record_ladder(&numbers);
     assert_eq!(verdicts.len(), 2);
