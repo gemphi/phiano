@@ -27,7 +27,7 @@ fn main() {
     let austen_all: Vec<String> = austen.iter().flat_map(|(_, s)| s.clone()).collect();
     let split = Harness::split(austen_all, 7);
     let facet: Facet = Storage::load(&phiano::data::path("austen.chroma")).expect("run bin/austen first");
-    let (world, pfacet) = world::build(&facet, &split, &contrast);
+    let (world, pfacet) = phiano::persona::corpus::three_personas(&facet, &split, &contrast);
     let kn = KneserNey::train(&split.train);
     // Prompts from every author's held-out sentences in equal number, so the
     // prompt's own author cannot decide the verdict.

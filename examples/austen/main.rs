@@ -16,7 +16,7 @@ use phient::generate::OperatorGuide;
 use phient::generate::learn::{corpus_positions, GenWeight, Tuner, FEATURE_NAMES};
 use phient::metrics::harness::{Harness, Split};
 use phient::metrics::baseline::kn::KneserNey;
-use phiano::persona::Styles;
+use phiano::persona::corpus::{author_of, three_personas};
 use phient::net::space::{examples, FunctionSpace, Sides, WordFunction};
 use phistd::Adam;
 use phical::{Fno, FnoConfig};
@@ -76,34 +76,14 @@ fn main() {
     writeln!(md, "The markers the corpus chose as relation channels 8–31: {}.\n", (8..8 + facet.relations.markers()).map(|k| format!("*{}*", facet.relation_name(k))).collect::<Vec<_>>().join(", ")).unwrap();
 
     // ── personas ──
-    let mut world = Styles::new();
-    let mut pfacet = facet.clone();
-    let persona_trainer = Trainer::new(LEARNING_RATE).with_seed(1);
-    let sample = |v: &[String], n: usize, seed: u64| -> Vec<String> {
-        let mut idx: Vec<usize> = (0..v.len()).collect();
-        // deterministic shuffle
-        let mut s = seed | 1;
-        for i in (1..idx.len()).rev() {
-            s ^= s << 13; s ^= s >> 7; s ^= s << 17;
-            let j = (s % (i as u64 + 1)) as usize;
-            idx.swap(i, j);
-        }
-        idx.into_iter().take(n).map(|i| v[i].clone()).collect()
-    };
-    let austen_examples = sample(&split.train, 600, 11);
-    world.add_persona("Jane Austen", &austen_examples, &mut pfacet, &persona_trainer);
+    let (world, pfacet) = three_personas(&facet, &split, &contrast);
     let mut held_by_author: Vec<(String, Vec<String>)> = vec![("Jane Austen".into(), split.test.clone())];
-    // Aggregate each contrast author's sentences before splitting, so a
-    // persona is built from all of that author's books at once.
-    let mut by_author: std::collections::BTreeMap<&str, Vec<String>> = std::collections::BTreeMap::new();
+    let mut by_author: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
     for (n, s) in &contrast {
-        let author = if n.starts_with("chesterton") { "G. K. Chesterton" } else { "Lewis Carroll" };
-        by_author.entry(author).or_default().extend(s.iter().cloned());
+        by_author.entry(author_of("contrast", n)).or_default().extend(s.iter().cloned());
     }
-    for (author, sents) in &by_author {
-        let sp = Harness::split(sents.clone(), 7);
-        world.add_persona(author, &sample(&sp.train, 600, 13), &mut pfacet, &persona_trainer);
-        held_by_author.push(((*author).to_string(), sp.test.clone()));
+    for (author, sents) in by_author {
+        held_by_author.push((author, Harness::split(sents, 7).test));
     }
     writeln!(md, "## 2. The persona\n").unwrap();
     writeln!(md, "`Style::from_examples` on 600 sampled Austen sentences (and 600 each for the rival personas). A persona is a histogram over the 64 sectors of the relation circle; its entropy is its breadth; `PersonalityMapper` reads temperament off the colour bands; its Q64 name is the sector of its centroid.\n").unwrap();

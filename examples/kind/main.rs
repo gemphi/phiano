@@ -23,7 +23,7 @@
 
 mod report;
 
-use phient::relate::{find_laws, kind_token, RelationModel, Triple};
+use phient::relate::{find_laws, held_out, kind_token, RelationModel, Triple};
 use phiecs::phasor::facet::storage::Storage;
 use phical::relate::{self, chance, closure_epoch, closure_pairs, find_inverses, implied, laws_epoch, score_laws, Converse, Inherit};
 use phistd::Adam;
@@ -38,10 +38,6 @@ fn config(arm: &str) -> FnoConfig {
     }
 }
 
-fn held_out(r: &phiecs::quest::Row) -> bool {
-    let h = phistd::mix64(phistd::fnv1a(&format!("{}\t{}\t{}", r.about, r.kind, r.other)));
-    ((h >> 11) as f64 / (1u64 << 53) as f64) < 0.2
-}
 
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();

@@ -26,7 +26,7 @@ fn main() {
     let austen_all: Vec<String> = austen.iter().flat_map(|(_, s)| s.clone()).collect();
     let split = Harness::split(austen_all, 7);
     let facet: Facet = Storage::load(&phiano::data::path("austen.chroma")).expect("run bin/austen first");
-    let (world, pfacet) = world::build(&facet, &split, &contrast);
+    let (world, pfacet) = phiano::persona::corpus::three_personas(&facet, &split, &contrast);
     let kn = KneserNey::train(&split.train);
     let prompts = world::held_prompts(&split, &contrast, n_prompts);
     let mut names: Vec<String> = world.personas.keys().cloned().collect();
