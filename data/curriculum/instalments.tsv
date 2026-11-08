@@ -10,3 +10,4 @@ guide_twice_2	guide_twice	epochs	-	0	2	20.9	41.4	104.3	213
 tatoeba2_guide	guide_twice	text+guide	sample80k_2	1	8	21.3	42.0	97.9	214
 forget01	tatoeba2_guide	forget	-	0	2	21.3	42.0	97.9	215
 tatoeba3_guide	tatoeba2_guide	text+guide	sample80k_3	1	8	21.6	42.3	95.3	216
+tatoeba4_guide2	tatoeba3_guide	text+guide	sample80k_4	2	8	22.1	43.3	90.9	218
