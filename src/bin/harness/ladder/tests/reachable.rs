@@ -153,8 +153,8 @@ fn the_wrong_force_frames_are_pinned_by_index_and_confusion() {
         found.iter().filter(|f| f.1 == Force::Commit).map(|f| f.0).collect();
     assert_eq!(bare, commits, "the BareWill frames and the Commit confusions differ");
 
-    // Removing only the BareWill frames leaves 1 wrong of 115 covered (wish rows read back: was 2; task 4.3: was 6; task 4.2: was 8 of 113).
+    // Removing only the BareWill frames leaves 1 wrong of 122 covered (subject wh-questions read, 6097456: was 115; wish rows read back: was 2; task 4.3: was 6; task 4.2: was 8 of 113).
     let decidable = decidable_figure(&gold, &Bars::default()).expect("decidable figure");
     assert_eq!(decidable.name, "ladder.act.force_purity_decidable");
-    assert_eq!(decidable.value, 99.1);
+    assert_eq!(decidable.value, 99.2);
 }
