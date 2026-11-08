@@ -6,7 +6,7 @@
 //! cargo run --release -p phiano --example think -- <quests root> <personas dir> russell whitehead
 //! ```
 
-use phiano::sys::set;
+use phient::relate::set;
 use phiecs::agent::Agent;
 use std::path::PathBuf;
 

@@ -14,11 +14,10 @@
 //! - **ask** — what a word calls for under a kind, heaviest first.
 //!
 //! [`Being`] is the one concrete agent; the `phiecs::race` runs teams of them,
-//! the `phiecs::circus` lets two of them talk, and [`sets`] lets two of them
+//! the `phiecs::circus` lets two of them talk, and `phient::relate::set` lets two of them
 //! think — language as a set game with unions and relations.
 
 pub mod lisp;
-pub mod set;
 
 pub use phiecs::being::Being;
 pub use phiecs::persona::Persona;
