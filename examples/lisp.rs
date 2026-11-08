@@ -8,9 +8,10 @@
 //! With no `-e` and no file it reads forms from stdin, one per line.
 //! `--personas` may be given more than once (both rings).
 
+use phient::relate::trace;
 use phient::study::lab::flag;
 use phiano::sys::lisp::{Machine, Stage};
-use phiano::sys::{persona_files, trace, Being};
+use phiano::sys::{persona_files, Being};
 use std::io::BufRead;
 use std::path::PathBuf;
 

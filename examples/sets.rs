@@ -6,7 +6,7 @@
 //! cargo run --release -p phiano --example sets -- <text root> <out dir> [--show scope:text/emma]
 //! ```
 
-use phiano::sys::trace;
+use phient::relate::trace;
 use std::path::PathBuf;
 
 fn main() {

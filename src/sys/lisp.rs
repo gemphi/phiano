@@ -16,7 +16,7 @@ mod tests;
 pub use phiclm::lisp::{read, Env, Value};
 
 use super::set::held;
-use super::trace::Scope;
+use phient::relate::trace::Scope;
 use super::{Being, Row};
 use phiecs::agent::Agent;
 use phiclm::lisp::{arg, as_relation, as_text, Host};

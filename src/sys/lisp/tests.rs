@@ -7,7 +7,7 @@ fn machine() -> Machine {
     r.tell(&[Row::new("socrates", "is-a", "man"), Row::new("man", "is-a", "mortal")]);
     let w = Being::new(Persona::from_md("---\nname: Alfred North Whitehead\nseeds: process\nkinds: is-a\n---\n").unwrap());
     let tree = vec![("text/tale/ch1/p1".to_string(), phient::prose::paragraph("text/tale/ch1/p1", &["the cat sat".to_string()]))];
-    Machine::new().with_beings(vec![r, w]).with_scopes(crate::sys::trace::scopes_of(&tree))
+    Machine::new().with_beings(vec![r, w]).with_scopes(phient::relate::trace::scopes_of(&tree))
 }
 
 #[test]

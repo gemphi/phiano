@@ -22,7 +22,6 @@ pub mod circus;
 pub mod lisp;
 pub mod race;
 pub mod set;
-pub mod trace;
 
 pub use being::{find, persona_files, Being};
 pub use phiecs::persona::Persona;
