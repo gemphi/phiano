@@ -5,7 +5,7 @@
 //! Trained on the recommended path (`train_corpus_ranking`): the corpus picks
 //! the relation words, then every observed pair moves one relation channel
 //! and deposits evidence there.
-use phiano::facet::Facet;
+use phiecs::phasor::facet::Facet;
 use phiano::trainer::Trainer;
 
 const WORLD: &[&str] = &[

@@ -14,13 +14,6 @@ pub mod instruction;
 pub mod lab;
 pub mod model;
 pub mod persona;
-/// The lexicon lives in phiecs (`phiecs::phasor::facet`) and phiano reads it
-/// from there. Two read-only examples (`flow`, `meaning`) still name
-/// `phiano::facet::Facet`; this keeps them building until they can be edited.
-pub use phiecs::phasor::facet;
-/// The facet's files are `phiecs::phasor::facet::storage`; the read-only
-/// example `flow` still names `phiano::storage::Storage`.
-pub use phiecs::phasor::facet::storage;
 /// The trainer is `phient::train::trainer`; the read-only example `meaning`
 /// still names `phient::train::trainer::Trainer`.
 pub use phient::train::trainer;

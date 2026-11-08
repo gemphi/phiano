@@ -1,7 +1,7 @@
 //! A river flow through the generator: one prompt, three sectors, the text.
 use phiano::compose::flow::RiverFlow;
-use phiano::facet::Facet;
-use phiano::storage::Storage;
+use phiecs::phasor::facet::Facet;
+use phiecs::phasor::facet::storage::Storage;
 fn main() {
     let facet: Facet = Storage::load(&phiano::data::path("austen_voice.chroma")).expect("lexicon");
     let t0 = std::time::Instant::now();
