@@ -17,7 +17,6 @@
 //! the `phiecs::circus` lets two of them talk, and `phient::relate::set` lets two of them
 //! think — language as a set game with unions and relations.
 
-pub mod lisp;
 
 pub use phiecs::being::Being;
 pub use phiecs::persona::Persona;

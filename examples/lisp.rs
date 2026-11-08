@@ -10,7 +10,7 @@
 
 use phient::relate::trace;
 use phient::study::lab::flag;
-use phiano::sys::lisp::{Machine, Stage};
+use phient::relate::lisp::{Machine, Stage};
 use phiecs::being::persona_files;
 use phient::relate::being::from_file;
 use std::io::BufRead;
