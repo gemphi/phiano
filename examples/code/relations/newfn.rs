@@ -58,7 +58,7 @@ pub struct Split {
 /// files' body rows that no told file states.
 pub fn split(dirs: &[String], family: bool, seed: u64) -> Split {
     let mut per_file = Vec::new();
-    dirs.iter().for_each(|d| phiano::code::read_files(std::path::Path::new(d), &mut per_file));
+    dirs.iter().for_each(|d| phient::code::read_files(std::path::Path::new(d), &mut per_file));
     let (mut told, mut test) = (Vec::new(), Vec::new());
     let mut held = 0usize;
     for (path, rows) in &per_file {

@@ -1,4 +1,4 @@
-//! An answer as the student hears it: the grammar's rows (`phiano::code`),
+//! An answer as the student hears it: the grammar's rows (`phient::code`),
 //! the name's words and signature, and the lexer's tokens with Rust's
 //! two-character operators joined as the grammar counts them.
 
@@ -28,7 +28,7 @@ pub fn rows_of(text: &str) -> Option<(Vec<Row>, String)> {
         syn::Item::Fn(f) => Some(f.sig.ident.to_string()),
         _ => None,
     })?;
-    let mut r = phiano::code::Reader::default();
+    let mut r = phient::code::Reader::default();
     r.visit_file(&file);
     Some((r.rows, name))
 }

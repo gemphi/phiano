@@ -39,9 +39,9 @@ pub fn run(a: Vec<String>) {
     if held == "file" || held == "family" {
         return new_functions(&a, held == "family", &rs, epochs, seed, md.as_deref());
     }
-    let (mut reader, mut files) = (phiano::code::Reader::default(), 0usize);
+    let (mut reader, mut files) = (phient::code::Reader::default(), 0usize);
     for d in &a {
-        phiano::code::read_dir(std::path::Path::new(d), &mut reader, &mut files);
+        phient::code::read_dir(std::path::Path::new(d), &mut reader, &mut files);
     }
     // One row per distinct relation, its count as weight.
     let mut counted: BTreeMap<(String, String, String), f64> = BTreeMap::new();

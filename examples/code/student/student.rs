@@ -1,6 +1,6 @@
 //! The student of code, on the base (docs/124). It learns an answer the
 //! moment it is told: the answer's relations by the grammar
-//! (`phiano::code`), counted (`phient::relate::Tally`), and the answer
+//! (`phient::code`), counted (`phient::relate::Tally`), and the answer
 //! itself kept whole, as the builders' game student keeps a told order. It
 //! writes by one mechanism, D4 movement over those counts:
 //!
