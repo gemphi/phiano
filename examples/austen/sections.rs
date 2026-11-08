@@ -42,7 +42,7 @@ pub fn compositions(md: &mut String, voice: &Facet, learned: &GenWeight, kn: &Kn
             for (i, prompt) in prompts.iter().enumerate() {
                 let mut g = Generator::deterministic(max_tokens, 0.3, 500 + i as u64).with_weights(Some(learned.clone()));
                 if *use_op {
-                    if let Ok(mut guide) = OperatorGuide::load("data/austen_operator.fno", voice, Sides::Directed, 6) {
+                    if let Ok(mut guide) = OperatorGuide::load(&phiano::data::path("austen_operator.fno"), voice, Sides::Directed, 6) {
                         guide.novelty = *nov;
                         g = g.with_operator(guide);
                     }

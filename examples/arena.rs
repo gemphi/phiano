@@ -45,7 +45,7 @@ fn stream(dir: &str, lines: usize) -> Vec<Vec<String>> {
 
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
-    let dir = a.first().cloned().unwrap_or_else(|| "data/text".into());
+    let dir = a.first().cloned().unwrap_or_else(|| phiano::data::path("text"));
     let flag = |k: &str, d: usize| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)).and_then(|s| s.parse().ok()).unwrap_or(d);
     let lines = flag("--lines", 1500);
     let epochs = flag("--epochs", 4);

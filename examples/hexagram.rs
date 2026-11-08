@@ -18,7 +18,7 @@ use phistd::hexagram::{hexagram_of, lines, novelty};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let path = args.get(1).cloned().unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+    let path = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
     let corpus: Vec<String> = Tokenizer::split_sentences(&raw)
         .into_iter()

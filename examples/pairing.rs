@@ -15,7 +15,7 @@ const POOL_FLOOR: u32 = 25;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let path = args.get(1).cloned().unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+    let path = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let epochs: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(5);
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
     let corpus: Vec<String> = Tokenizer::split_sentences(&raw)

@@ -19,15 +19,15 @@ pub(crate) struct State {
 }
 
 pub(crate) fn best_path(arm: &Arm) -> String {
-    format!("data/sweep/{}.best.fno", arm.slug)
+    phiano::data::path(&format!("sweep/{}.best.fno", arm.slug))
 }
 
 fn ckpt_path(arm: &Arm) -> String {
-    format!("data/sweep/{}.ckpt", arm.slug)
+    phiano::data::path(&format!("sweep/{}.ckpt", arm.slug))
 }
 
 fn state_path(arm: &Arm) -> String {
-    format!("data/sweep/{}.state", arm.slug)
+    phiano::data::path(&format!("sweep/{}.state", arm.slug))
 }
 
 pub(crate) fn save_checkpoint(arm: &Arm, fno: &Fno, adam: &Adam, st: &State) {
@@ -54,22 +54,24 @@ pub(crate) fn load_checkpoint(arm: &Arm, epochs: usize) -> (Fno, Adam, State) {
     (fno, adam, st)
 }
 
-const RESULTS: &str = "data/sweep/results.md";
+fn results_path() -> String {
+    phiano::data::path("sweep/results.md")
+}
 const HEADER: &str = "| arm | params | objective | optimiser | best epoch | valid MRR ×chance | test MRR ×chance | test hit@10 | s |\n|---|---|---|---|---|---|---|---|---|\n";
 
 /// Names of the arms that already have a row.
 pub(crate) fn finished_arms() -> Vec<String> {
-    std::fs::read_to_string(RESULTS).unwrap_or_default().lines().filter(|l| l.starts_with("| ") && !l.starts_with("| arm ")).filter_map(|l| l.split('|').nth(1).map(|s| s.trim().to_string())).collect()
+    std::fs::read_to_string(results_path().as_str()).unwrap_or_default().lines().filter(|l| l.starts_with("| ") && !l.starts_with("| arm ")).filter_map(|l| l.split('|').nth(1).map(|s| s.trim().to_string())).collect()
 }
 
 pub(crate) fn append_result(row: &str) {
-    let mut text = std::fs::read_to_string(RESULTS).unwrap_or_default();
+    let mut text = std::fs::read_to_string(results_path().as_str()).unwrap_or_default();
     if text.is_empty() {
         text.push_str(HEADER);
     }
     text.push_str(row);
     text.push('\n');
-    std::fs::write(RESULTS, text).expect("write results");
+    std::fs::write(results_path().as_str(), text).expect("write results");
 }
 
 /// Copies the arm with the best validation MRR to `data/austen_operator.fno`.
@@ -83,7 +85,7 @@ pub(crate) fn save_best(data: &Data) {
         }
     }
     if let Some((m, path, name)) = best {
-        std::fs::copy(&path, "data/austen_operator.fno").expect("copy best");
+        std::fs::copy(&path, &phiano::data::path("austen_operator.fno")).expect("copy best");
         println!("\nsaved the best arm ({name}, valid {:.1}× chance) as data/austen_operator.fno", m / data.chance);
     }
 }

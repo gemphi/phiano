@@ -49,11 +49,11 @@ fn read(name: &str, w: &mut dyn Wave, values: &[String], words: &[String]) -> Va
 pub fn waves(toks: &[String]) -> Value {
     let words: Vec<String> = toks.iter().filter(|t| t.chars().any(char::is_alphanumeric)).cloned().collect();
     let mut out = Vec::new();
-    if let Ok(mut m) = RelationModel::load("data/runs/operator_r64_s7_dev10/epoch_32.relate") {
+    if let Ok(mut m) = RelationModel::load(&phiano::data::path("runs/operator_r64_s7_dev10/epoch_32.relate")) {
         let values: Vec<String> = m.names.iter().filter(|n| !n.starts_with('⟨')).cloned().collect();
         out.push(read("Joint FNO, 32 epochs", &mut FnoWave::new(&mut m), &values, &words));
     }
-    if let Ok(m) = Mirror::load("data/runs/mirror_r64_s7_dev10/epoch_128.mirror") {
+    if let Ok(m) = Mirror::load(&phiano::data::path("runs/mirror_r64_s7_dev10/epoch_128.mirror")) {
         let values = m.names.clone();
         out.push(read("mirror, 128 epochs", &mut MirrorWave::new(m, false), &values, &words));
     }

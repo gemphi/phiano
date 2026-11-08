@@ -26,10 +26,10 @@ use phiano::lab::sentences_of;
 pub(crate) fn load(train_limit: Option<usize>) -> Data {
     let mut all = Vec::new();
     for f in ["emma", "persuasion", "sense_and_sensibility"] {
-        all.extend(sentences_of(&format!("data/corpora/austen/{f}.txt")));
+        all.extend(sentences_of(&phiano::data::path(&format!("corpora/austen/{f}.txt"))));
     }
     let split = Harness::split(all, 7);
-    let voice: Facet = Storage::load("data/austen_voice.chroma").expect("run bin/austen first");
+    let voice: Facet = Storage::load(&phiano::data::path("austen_voice.chroma")).expect("run bin/austen first");
     let space = FunctionSpace::from_facet_sides(&voice, Sides::Directed);
     let pool = space.pool(20);
     let tok = |v: &Vec<String>| v.iter().map(|s| Tokenizer::tokenize(s)).collect::<Vec<_>>();

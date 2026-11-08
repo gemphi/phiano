@@ -40,7 +40,7 @@ fn main() {
         let num = |a: &mut Vec<String>, f: &str, d: u64| flag(a, f).and_then(|s| s.parse().ok()).unwrap_or(d);
         let (trials, seed, len, tol) = (num(&mut a, "--trials", 60) as usize, num(&mut a, "--seed", 7), num(&mut a, "--len", 120) as usize, num(&mut a, "--tol", 10) as usize);
         let kmin = num(&mut a, "--kmin", 2) as usize;
-        let dir = flag(&mut a, "--chapters").unwrap_or_else(|| "crates/phiano/data/text/emma".into());
+        let dir = flag(&mut a, "--chapters").unwrap_or_else(|| phiano::data::path("text/emma"));
         let out = flag(&mut a, "--out");
         let (t, tsv) = bench::run(std::path::Path::new(&dir), trials, seed, len, tol, kmin);
         print!("{}", bench::report(&t, tol));
@@ -83,12 +83,12 @@ fn main() {
         a.remove(i);
         let num = |a: &mut Vec<String>, f: &str, d: u64| flag(a, f).and_then(|s| s.parse().ok()).unwrap_or(d);
         let (trials, seed, len) = (num(&mut a, "--trials", 60) as usize, num(&mut a, "--seed", 7), num(&mut a, "--len", 120) as usize);
-        let dir = flag(&mut a, "--chapters").unwrap_or_else(|| "crates/phiano/data/text/emma".into());
+        let dir = flag(&mut a, "--chapters").unwrap_or_else(|| phiano::data::path("text/emma"));
         let prior = Prior::read(std::path::Path::new(&dir));
         print!("{}", synth::sweep(&prior, trials, seed, len, 10, &[0.05, 0.1, 0.2, 0.4]));
         return;
     }
-    let prior_dir = flag(&mut a, "--prior").unwrap_or_else(|| "crates/phiano/data/text/emma".into());
+    let prior_dir = flag(&mut a, "--prior").unwrap_or_else(|| phiano::data::path("text/emma"));
     let out = flag(&mut a, "--out").map(PathBuf::from);
     let words: usize = flag(&mut a, "--words").and_then(|s| s.parse().ok()).unwrap_or(6);
     let show: Vec<usize> = flag(&mut a, "--show")

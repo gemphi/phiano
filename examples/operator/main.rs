@@ -73,8 +73,8 @@ fn main() {
     let tie = if flag(&mut a, "--tie").as_deref() == Some("phase") { Tie::Phase } else { Tie::Circle };
     let measure = flag(&mut a, "--measure");
     let dev = num(&mut a, "--dev", share).max(share);
-    let out = PathBuf::from(flag(&mut a, "--out").unwrap_or_else(|| format!("data/runs/operator_r{space}_s{seed}")));
-    let root = PathBuf::from(a.first().map(String::as_str).unwrap_or("data/text"));
+    let out = PathBuf::from(flag(&mut a, "--out").unwrap_or_else(|| phiano::data::path(&format!("runs/operator_r{space}_s{seed}"))));
+    let root = PathBuf::from(a.first().cloned().unwrap_or_else(|| phiano::data::path("text")));
     std::fs::create_dir_all(&out).expect("out");
 
     let held = heldout::held(share, seed);

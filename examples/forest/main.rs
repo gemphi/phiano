@@ -33,8 +33,8 @@ use phiano::lab::flag;
 fn main() {
     let mut a: Vec<String> = std::env::args().skip(1).collect();
     let story = flag(&mut a, "--story").unwrap_or_else(|| "text/story/ch2".into());
-    let out = PathBuf::from(flag(&mut a, "--out").unwrap_or_else(|| "data/forest/forest.json".into()));
-    let root = PathBuf::from(a.first().map(String::as_str).unwrap_or("data/text"));
+    let out = PathBuf::from(flag(&mut a, "--out").unwrap_or_else(|| phiano::data::path("forest/forest.json")));
+    let root = PathBuf::from(a.first().cloned().unwrap_or_else(|| phiano::data::path("text")));
     let text = std::fs::read_to_string(root.parent().unwrap_or(&root).join(format!("{story}.txt"))).expect("the story");
     let toks = tokens(&text);
     // The language with the story told, and the language without it.
@@ -44,7 +44,7 @@ fn main() {
     let scopes = casts::scopes(&with, &without, &story, &toks);
     let words = words::words(&with, &without, &story, &toks);
     let world = world::world(&toks);
-    let strand = std::fs::read_to_string("data/forest/strand/levels.tsv").unwrap_or_default();
+    let strand = std::fs::read_to_string(&phiano::data::path("forest/strand/levels.tsv")).unwrap_or_default();
     // What the story measured for the trees that define a count.
     let measured = vec![
         (1usize, json!({ "casts": scopes["casts"].as_array().map_or(0, Vec::len), "best_leaf": scopes["casts"][0]["found"][0]["path"].clone() })),

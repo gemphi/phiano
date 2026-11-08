@@ -34,7 +34,7 @@ use phical::{rank, MixtureExample};
 
 pub fn run(a: Vec<String>) {
     let args: Vec<String> = std::iter::once(String::from("example")).chain(a).collect();
-    let path = args.get(1).cloned().unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+    let path = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let epochs: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(5);
 
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
@@ -152,7 +152,7 @@ pub fn run(a: Vec<String>) {
         let (m, _) = rank(&space.funcs, &fno.apply(&valid_in), &valid_ex, &pool);
         println!("    (valid MRR on the frequent pool: {m:.4})");
         if (gamma - 0.5).abs() < 1e-9 {
-            let _ = std::fs::write("data/net_residual.fno", fno.to_bytes());
+            let _ = std::fs::write(&phiano::data::path("net_residual.fno"), fno.to_bytes());
         }
     }
 

@@ -21,11 +21,11 @@ use util::dir_sentences;
 
 fn main() {
     let n_prompts = std::env::args().nth(1).and_then(|s| s.parse().ok()).unwrap_or(12);
-    let austen = dir_sentences("data/corpora/austen");
-    let contrast = dir_sentences("data/corpora/contrast");
+    let austen = dir_sentences(&phiano::data::path("corpora/austen"));
+    let contrast = dir_sentences(&phiano::data::path("corpora/contrast"));
     let austen_all: Vec<String> = austen.iter().flat_map(|(_, s)| s.clone()).collect();
     let split = Harness::split(austen_all, 7);
-    let facet: Facet = Storage::load("data/austen.chroma").expect("run bin/austen first");
+    let facet: Facet = Storage::load(&phiano::data::path("austen.chroma")).expect("run bin/austen first");
     let (world, pfacet) = world::build(&facet, &split, &contrast);
     let kn = KneserNey::train(&split.train);
     let prompts = world::held_prompts(&split, &contrast, n_prompts);

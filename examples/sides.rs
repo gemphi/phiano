@@ -31,7 +31,7 @@ fn show_sweep(label: &str, sweep: &[(f64, f64)]) {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let path = args.get(1).cloned().unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+    let path = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let epochs: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(3);
 
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
@@ -133,7 +133,7 @@ fn main() {
         };
         show_sweep("mixture-likelihood operator", &sweep);
         if sides == Sides::Directed {
-            let _ = std::fs::write("data/phinet_generate.fno", fno.to_bytes());
+            let _ = std::fs::write(&phiano::data::path("phinet_generate.fno"), fno.to_bytes());
             println!("  saved data/phinet_generate.fno (directed, mixture-trained)");
         }
     }

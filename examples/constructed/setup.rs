@@ -17,7 +17,7 @@ pub(super) fn setup() -> Setup {
     let path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/prose_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("prose_corpus.txt"));
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
     let corpus: Vec<String> = raw
         .lines()

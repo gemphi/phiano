@@ -36,7 +36,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let n: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(3000);
 
-    let raw = match std::fs::read_to_string("data/rust_book_corpus.txt") {
+    let raw = match std::fs::read_to_string(&phiano::data::path("rust_book_corpus.txt")) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("could not read the Rust Book corpus: {}", e);
@@ -50,7 +50,7 @@ fn main() {
         .take(n + n / 4)
         .collect();
 
-    let store = ChunkStore::new("data/chunks");
+    let store = ChunkStore::new(&phiano::data::path("chunks"));
     let b_all: Vec<String> = store
         .load_all()
         .into_iter()
@@ -99,7 +99,7 @@ fn main() {
     );
 
     if let Ok(j) = serde_json::to_string_pretty(&(&co, &rank)) {
-        let _ = std::fs::write("data/forgetting.json", j);
+        let _ = std::fs::write(&phiano::data::path("forgetting.json"), j);
         println!("\nwritten to data/forgetting.json");
     }
 }

@@ -54,8 +54,8 @@ fn main() {
     let pumped = a.iter().position(|x| x == "--pumped").map(|i| a.remove(i)).is_some();
     let dev = num(&mut a, "--dev", share).max(share);
     let measure = flag(&mut a, "--measure");
-    let out = PathBuf::from(flag(&mut a, "--out").unwrap_or_else(|| format!("data/runs/mirror_r{modes}_s{seed}")));
-    let root = PathBuf::from(a.first().map(String::as_str).unwrap_or("data/text"));
+    let out = PathBuf::from(flag(&mut a, "--out").unwrap_or_else(|| phiano::data::path(&format!("runs/mirror_r{modes}_s{seed}"))));
+    let root = PathBuf::from(a.first().cloned().unwrap_or_else(|| phiano::data::path("text")));
     std::fs::create_dir_all(&out).expect("out");
 
     let held = heldout::held(share, seed);

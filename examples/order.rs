@@ -109,7 +109,7 @@ fn main() {
     let path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let epochs: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(1);
 
     let raw = match std::fs::read_to_string(&path) {

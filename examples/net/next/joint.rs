@@ -56,7 +56,7 @@ pub(super) fn joint_training(facet: &Facet, split: &Split, op: &Operator, fno: F
         let op_sweep = lm2.gamma_sweep_scored(&split.valid, |t, i| scorer.score(t, i));
         show_sweep("jointly trained operator", &op_sweep);
     }
-    if std::fs::write("data/phinet_joint.fno", fno.to_bytes()).is_ok() {
+    if std::fs::write(&phiano::data::path("phinet_joint.fno"), fno.to_bytes()).is_ok() {
         println!("  saved jointly trained operator to data/phinet_joint.fno");
     }
 }

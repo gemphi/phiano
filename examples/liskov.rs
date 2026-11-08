@@ -37,9 +37,9 @@ fn dir_sentences(dir: &str) -> Vec<String> {
 }
 
 fn main() {
-    let austen = dir_sentences("data/corpora/austen");
+    let austen = dir_sentences(&phiano::data::path("corpora/austen"));
     let split = Harness::split(austen, 7);
-    let facet: Facet = Storage::load("data/austen_voice.chroma").expect("run bin/austen first");
+    let facet: Facet = Storage::load(&phiano::data::path("austen_voice.chroma")).expect("run bin/austen first");
     let kn = KneserNey::train(&split.train);
     let mut md = String::new();
     writeln!(md, "## The Liskov readings (`bin/liskov`, Austen voice lexicon)\n").unwrap();
@@ -92,7 +92,7 @@ fn main() {
     let mrr_fit_n = mrr(&|t, i| rank_by(t, i, &|w| { let (m, n) = facet.relational_fit(t, i, w); m * (n as f64).ln_1p() }));
     // The learned scorer's own trade between the store (count) and the
     // Difference-Engine reading (relational), reused as fit: w[0]·ln count + w[6]·fit.
-    let lw = GenWeight::load("data/learned_austen.json").map(|w| w.w).unwrap_or([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    let lw = GenWeight::load(&phiano::data::path("learned_austen.json")).map(|w| w.w).unwrap_or([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
     let mrr_mix = mrr(&|t, i| rank_by(t, i, &|w| lw[0] * (facet.lexicon[w].count as f64).ln() + lw[6] * facet.relational_fit(t, i, w).0));
     writeln!(md, "**Cloze** — recover a masked content word from a pool of {} (seen ≥ 40 times), {} held-out positions, chance MRR {:.4}:\n", pool.len(), positions.len(), chance).unwrap();
     writeln!(md, "| reading | MRR | × chance |\n|---|---|---|").unwrap();
@@ -130,7 +130,7 @@ fn main() {
     writeln!(md, "{}\n", examples.join("\n")).unwrap();
 
     // ── 2. endgame ──
-    let learned = GenWeight::load("data/learned_austen.json").map(|w| w.for_decoding());
+    let learned = GenWeight::load(&phiano::data::path("learned_austen.json")).map(|w| w.for_decoding());
     let mut games: Vec<(String, String)> = Vec::new();
     for s in &split.test {
         let t = Tokenizer::tokenize(s);

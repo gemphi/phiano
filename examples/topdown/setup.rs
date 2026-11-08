@@ -13,7 +13,7 @@ pub(super) fn setup() -> Setup {
     let path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/dictionary_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("dictionary_corpus.txt"));
     let seed: u64 = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(42);
 
     let raw = match std::fs::read_to_string(&path) {

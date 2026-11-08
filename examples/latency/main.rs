@@ -52,8 +52,8 @@ fn main() {
     let corpus_path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/dictionary_corpus.txt".to_string());
-    let chunks_path = args.get(2).cloned().unwrap_or_else(|| "data/chunks".to_string());
+        .unwrap_or_else(|| phiano::data::path("dictionary_corpus.txt"));
+    let chunks_path = args.get(2).cloned().unwrap_or_else(|| phiano::data::path("chunks"));
     let samples: usize = args.get(3).and_then(|s| s.parse().ok()).unwrap_or(200);
 
     let raw = match std::fs::read_to_string(&corpus_path) {

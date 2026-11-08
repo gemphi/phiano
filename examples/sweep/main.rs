@@ -33,7 +33,7 @@ fn main() {
     let budget = std::time::Duration::from_secs(arg(2).unwrap_or(480) as u64);
     let data = load(arg(3));
     let started = std::time::Instant::now();
-    std::fs::create_dir_all("data/sweep").expect("data/sweep");
+    std::fs::create_dir_all(&phiano::data::path("sweep")).expect("the sweep directory");
     let done = finished_arms();
     println!("pool {} · chance MRR {:.4} · train {} · identity valid {:.1}× test {:.1}× hit@10 {:.3}", data.pool.len(), data.chance, data.train.len(), data.id_valid / data.chance, data.id_test / data.chance, data.id_hit);
     println!("{} arm(s) already finished; budget {} s\n", done.len(), budget.as_secs());

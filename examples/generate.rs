@@ -25,7 +25,7 @@ type Arm = (&'static str, Option<&'static str>, f64, usize, usize, bool, usize);
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let path = args.get(1).cloned().unwrap_or_else(|| "data/rust_book_corpus.txt".to_string());
+    let path = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("rust_book_corpus.txt"));
     let n: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(60);
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
     let corpus: Vec<String> = Tokenizer::split_sentences(&raw)
@@ -38,13 +38,13 @@ fn main() {
     let kn = KneserNey::train(&split.train);
 
     // Round-trip through the v6 format.
-    Storage::save(&facet, "data/rust_book_v6.chroma").expect("save");
-    let facet = Storage::load("data/rust_book_v6.chroma").expect("load");
+    Storage::save(&facet, &phiano::data::path("rust_book_v6.chroma")).expect("save");
+    let facet = Storage::load(&phiano::data::path("rust_book_v6.chroma")).expect("load");
     println!(
         "lexicon: {} words, {} evidenced, saved and reloaded as v6 ({} bytes)",
         facet.vocabulary_size(),
         facet.evidenced_words(),
-        std::fs::metadata("data/rust_book_v6.chroma").map(|m| m.len()).unwrap_or(0)
+        std::fs::metadata(&phiano::data::path("rust_book_v6.chroma")).map(|m| m.len()).unwrap_or(0)
     );
 
     let prompts: Vec<String> = split
@@ -60,21 +60,22 @@ fn main() {
         let space = phient::net::space::FunctionSpace::from_facet_sides(&facet, Sides::Directed);
         let cfg = phical::FnoConfig { space: space.space(), width: 8, layers: 2, modes: 12, margin: 0.2, lr: 2e-3, tie: phical::Tie::Circle };
         let fno = phical::Fno::new(cfg, 99);
-        std::fs::write("data/phinet_untrained.fno", fno.to_bytes()).expect("write");
-        "data/phinet_untrained.fno"
+        std::fs::write(&phiano::data::path("phinet_untrained.fno"), fno.to_bytes()).expect("write");
+        phiano::data::path("phinet_untrained.fno")
     };
 
     let learned = phient::generate::learn::GenWeight::load_default();
-    println!("learned weights: {}", if learned.is_some() { "data/learned.json" } else { "none (run bin/learn)" });
+    println!("learned weights: {}", if learned.is_some() { phiano::data::path("learned.json") } else { "none (run bin/learn)".to_string() });
+    let operator: &str = Box::leak(phiano::data::path("phinet_generate.fno").into_boxed_str());
     let arms: [Arm; 8] = [
         ("hand scorer, unguided", None, 0.0, 0, 0, false, 0),
-        ("hand scorer, directed operator w=0.5", Some("data/phinet_generate.fno"), 0.5, 0, 0, false, 0),
-        ("hand, directed, 64 candidates w=1", Some("data/phinet_generate.fno"), 1.0, 0, 64, false, 0),
+        ("hand scorer, directed operator w=0.5", Some(operator), 0.5, 0, 0, false, 0),
+        ("hand, directed, 64 candidates w=1", Some(operator), 1.0, 0, 64, false, 0),
         ("learned, no operator", None, 0.0, 0, 0, true, 0),
-        ("learned + operator", Some("data/phinet_generate.fno"), 0.0, 0, 0, true, 0),
-        ("learned + operator, 64 candidates", Some("data/phinet_generate.fno"), 0.0, 0, 64, true, 0),
+        ("learned + operator", Some(operator), 0.0, 0, 0, true, 0),
+        ("learned + operator, 64 candidates", Some(operator), 0.0, 0, 64, true, 0),
         ("learned, 8 relational proposals", None, 0.0, 0, 0, true, 8),
-        ("learned + operator, 8 relational proposals", Some("data/phinet_generate.fno"), 0.0, 0, 0, true, 8),
+        ("learned + operator, 8 relational proposals", Some(operator), 0.0, 0, 0, true, 8),
     ];
     let ev = Evaluator::new();
     println!("\n  {:<32} {:>10} {:>9} {:>9} {:>8}", "arm", "KN ppl", "eval", "distinct", "tokens");

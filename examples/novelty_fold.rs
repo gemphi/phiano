@@ -29,8 +29,8 @@ fn novelty(angular: f64) -> f64 {
 
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
-    let lexicon = a.first().cloned().unwrap_or_else(|| "data/austen.chroma".into());
-    let corpus = a.get(1).cloned().unwrap_or_else(|| "data/person/murphy.txt".into());
+    let lexicon = a.first().cloned().unwrap_or_else(|| phiano::data::path("austen.chroma"));
+    let corpus = a.get(1).cloned().unwrap_or_else(|| phiano::data::path("person/murphy.txt"));
     let limit: usize = a.get(2).and_then(|s| s.parse().ok()).unwrap_or(2000);
     let text = std::fs::read_to_string(&corpus).expect("read the corpus");
     let all: Vec<&str> = text.split(['.', '!', '?', '\n']).map(str::trim).filter(|s| s.split_whitespace().count() >= 4).collect();

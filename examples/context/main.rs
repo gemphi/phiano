@@ -42,7 +42,7 @@ impl Dice {
 /// Emma's paragraphs, each cut to 40 words, as the filler turns.
 fn filler() -> Vec<String> {
     let mut out = Vec::new();
-    for (_, rows) in phiano::prose::read_tree(std::path::Path::new("data/text/emma")) {
+    for (_, rows) in phiano::prose::read_tree(std::path::Path::new(&phiano::data::path("text/emma"))) {
         let words: Vec<String> = rows.iter().filter(|r| r.kind == "has-word").map(|r| r.other.clone()).take(40).collect();
         if words.len() > 8 {
             out.push(words.join(" "));

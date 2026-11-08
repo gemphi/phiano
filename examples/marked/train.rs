@@ -13,7 +13,7 @@ pub(super) struct Trained {
 pub(super) fn train() -> Trained {
     let path = std::env::args()
         .nth(1)
-        .unwrap_or_else(|| "data/prose_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("prose_corpus.txt"));
     let raw = std::fs::read_to_string(&path).unwrap_or_default();
     let corpus: Vec<String> = raw
         .lines()

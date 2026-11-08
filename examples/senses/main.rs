@@ -96,7 +96,7 @@ fn main() {
     let path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/prose_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("prose_corpus.txt"));
     let _ = VARIANTS_CELL.set(args.get(2).and_then(|s| s.parse().ok()).unwrap_or(3));
 
     let raw = match std::fs::read_to_string(&path) {

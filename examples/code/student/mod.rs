@@ -51,7 +51,7 @@ use student::Student;
 pub fn run(a: Vec<String>) {
     let mut a = a;
     let show: usize = score::flag(&mut a, "--show").and_then(|s| s.parse().ok()).unwrap_or(4);
-    let phi4_dir = score::flag(&mut a, "--phi4").unwrap_or_else(|| "data/phi4_code".into());
+    let phi4_dir = score::flag(&mut a, "--phi4").unwrap_or_else(|| phiano::data::path("phi4_code"));
     let by_task = a.iter().position(|x| x == "--by-task").map(|i| a.remove(i)).is_some();
     let one_pointing = a.iter().position(|x| x == "--one-pointing").map(|i| a.remove(i)).is_some();
     // `--flat`: no scope tree (docs/124's reading); the default reads under

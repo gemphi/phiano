@@ -39,8 +39,8 @@ fn main() {
     let t0 = std::time::Instant::now();
 
     // ── corpora ──
-    let austen = dir_sentences("data/corpora/austen");
-    let contrast = dir_sentences("data/corpora/contrast");
+    let austen = dir_sentences(&phiano::data::path("corpora/austen"));
+    let contrast = dir_sentences(&phiano::data::path("corpora/contrast"));
     let austen_all: Vec<String> = austen.iter().flat_map(|(_, s)| s.clone()).collect();
     let mut everything: Vec<String> = austen_all.clone();
     for (_, s) in &contrast {
@@ -56,8 +56,8 @@ fn main() {
     };
     let lex_split = Split { train: train_all.clone(), valid: split.valid.clone(), test: split.test.clone() };
     let facet = Harness::train_ranking_only(&lex_split, &Trainer::new(LEARNING_RATE).with_seed(0), 3);
-    Storage::save(&facet, "data/austen.chroma").expect("save");
-    let facet = Storage::load("data/austen.chroma").expect("load");
+    Storage::save(&facet, &phiano::data::path("austen.chroma")).expect("save");
+    let facet = Storage::load(&phiano::data::path("austen.chroma")).expect("load");
     let kn = KneserNey::train(&split.train);
 
     writeln!(md, "---\nid: jane-austen-persona\ntitle: \"A Persona Called Jane Austen\"\ndescription: What the engine learns from three novels, and what it can compose in her voice — short and long, measured.\nsidebar_position: 15\nbadge: report\n---\n").unwrap();
@@ -134,8 +134,8 @@ fn main() {
     // its n-gram tables could (and did) borrow Carroll's white rabbit. What she
     // composes from is trained on her training split only.
     let voice = Harness::train_ranking_only(&split, &Trainer::new(LEARNING_RATE).with_seed(0), 3);
-    Storage::save(&voice, "data/austen_voice.chroma").expect("save voice");
-    let voice: Facet = Storage::load("data/austen_voice.chroma").expect("load voice");
+    Storage::save(&voice, &phiano::data::path("austen_voice.chroma")).expect("save voice");
+    let voice: Facet = Storage::load(&phiano::data::path("austen_voice.chroma")).expect("load voice");
     writeln!(md, "> From here on the machine reads a second lexicon, **`data/austen_voice.chroma`**, trained on Austen's training split alone ({} words, {} with relation evidence) — the attribution lexicon above holds every author, and a composer reading its tables would borrow from Carroll and Chesterton.\n", voice.vocabulary_size(), voice.evidenced_words()).unwrap();
 
     // ── operator on Austen ──
@@ -158,16 +158,16 @@ fn main() {
         let (m, _) = rank(space.table(), &fno.apply(&valid_in), &valid_ex, &pool);
         if m > best { best = m; bytes = fno.to_bytes(); }
     }
-    std::fs::write("data/austen_operator.fno", &bytes).expect("write operator");
+    std::fs::write(&phiano::data::path("austen_operator.fno"), &bytes).expect("write operator");
     writeln!(md, "## 4. The operator, on Austen\n").unwrap();
     writeln!(md, "A directed Fourier operator (8,360 parameters, hinge, 4 epochs, early-stopped) trained on Austen's training split, ranking the next word among the {} words seen ≥ 20 times. Chance MRR {:.4}. The lexicon's own directed reading, no operator: **{:.4} ({:.1}× chance)**; with the operator: **{:.4} ({:.1}× chance)**. Saved as `data/austen_operator.fno`.\n", pool.len(), chance, id_mrr, id_mrr / chance, best, best / chance).unwrap();
 
     // ── learned scorer on Austen ──
-    let mut guide_opt = OperatorGuide::load("data/austen_operator.fno", &voice, Sides::Directed, 6).ok();
+    let mut guide_opt = OperatorGuide::load(&phiano::data::path("austen_operator.fno"), &voice, Sides::Directed, 6).ok();
     let (fit, _, _) = corpus_positions(&voice, &split.valid, 30_000, &mut guide_opt);
     let (held, _, _) = corpus_positions(&voice, &split.test, 30_000, &mut guide_opt);
     let (learned, _) = Tuner::default().fit(GenWeight::counts_only().w, &fit, &held);
-    learned.save("data/learned_austen.json").expect("write learned");
+    learned.save(&phiano::data::path("learned_austen.json")).expect("write learned");
     writeln!(md, "## 5. The learning machine, on Austen\n").unwrap();
     writeln!(md, "The generator's candidate scorer fit to Austen (validation split), evaluated on her test split: perplexity among the n-gram's candidates — counts only **{:.2}**, learned **{:.2}**. The weights are the value audit for this author:\n", Tuner::nll(&GenWeight::counts_only().w, &held).exp(), learned.heldout_nll.exp()).unwrap();
     writeln!(md, "| feature | weight |\n|---|---|").unwrap();

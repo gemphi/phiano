@@ -60,7 +60,7 @@ fn main() {
         Some("attraction") => phiano::relate::Order::Attraction,
         _ => phiano::relate::Order::Told,
     };
-    let root = std::path::PathBuf::from(a.first().map(String::as_str).unwrap_or("data/story"));
+    let root = std::path::PathBuf::from(a.first().cloned().unwrap_or_else(|| phiano::data::path("story")));
     let (mut story, told) = match held_out {
         Some(share) => Knowing::learn_except(&root, &phiano::prose::heldout::held(share, seed)),
         None => Knowing::learn(&root),

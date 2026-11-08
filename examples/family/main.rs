@@ -22,7 +22,7 @@ fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
     let arg = |k: &str| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)?.parse::<u64>().ok());
     let (epochs, seed) = (arg("--epochs").unwrap_or(30) as usize, arg("--seed").unwrap_or(7));
-    let path = a.first().cloned().unwrap_or_else(|| "data/quest/night_2026-09-29/all.tsv".into());
+    let path = a.first().cloned().unwrap_or_else(|| phiano::data::path("quest/night_2026-09-29/all.tsv"));
     let out = a.get(1).filter(|x| !x.starts_with("--")).cloned().unwrap_or_else(|| "family.md".into());
     let t = Table::read(&path);
     // `--rough`: only the contradictions (§§107, 125, docs/106).

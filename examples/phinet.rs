@@ -110,7 +110,7 @@ fn run_arms(label: &str, space: &FunctionSpace, sentences: &[Vec<String>], epoch
             t0.elapsed().as_secs_f64()
         );
         if cfg.modes > 0 {
-            let path = format!("data/phinet_{}.fno", label.replace(' ', "_"));
+            let path = phiano::data::path(&format!("phinet_{}.fno", label.replace(' ', "_")));
             if std::fs::write(&path, fno.to_bytes()).is_ok() {
                 println!("  saved operator to {path}");
             }
@@ -123,9 +123,9 @@ fn run_arms(label: &str, space: &FunctionSpace, sentences: &[Vec<String>], epoch
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let path = args.get(1).cloned().unwrap_or_else(|| {
-        match std::path::Path::new("data/prose_corpus.txt").exists() {
-            true => "data/prose_corpus.txt".to_string(),
-            false => "data/rust_book_corpus.txt".to_string(),
+        match std::path::Path::new(&phiano::data::path("prose_corpus.txt")).exists() {
+            true => phiano::data::path("prose_corpus.txt"),
+            false => phiano::data::path("rust_book_corpus.txt"),
         }
     });
     let cap: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(20_000);
@@ -134,7 +134,7 @@ fn main() {
     // ---- 1. what is in the existing models ----
     println!("=== existing models ===");
     let mut shipped: Option<Facet> = None;
-    for m in ["data/manifold.chroma", "data/memory.chroma"] {
+    for m in [&phiano::data::path("manifold.chroma"), &phiano::data::path("memory.chroma")] {
         if !std::path::Path::new(m).exists() {
             println!("{m}: not present");
             continue;

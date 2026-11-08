@@ -14,7 +14,7 @@ pub(super) fn setup(families: &[RelationFamily]) -> Setup {
     let max_entries: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(20_000);
     let epochs: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(1);
 
-    let store = ChunkStore::new("data/chunks");
+    let store = ChunkStore::new(&phiano::data::path("chunks"));
     let entries = store.load_all();
     if entries.is_empty() {
         eprintln!("no dictionary entries found under data/chunks");

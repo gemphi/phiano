@@ -39,15 +39,15 @@ impl Lex {
     // `--frame sense` uses its ~45 supersenses (noun.location, verb.motion…),
     // a finer grammatical/semantic frame. Function words (the closed-class
     // core) are their own bucket "f"; a word with no entry is "u".
-    let funcs: std::collections::HashSet<String> = std::fs::read_to_string(root.join("data/lex/function.txt"))
-        .or_else(|_| std::fs::read_to_string("data/lex/function.txt"))
+    let funcs: std::collections::HashSet<String> = std::fs::read_to_string(root.join(phiano::data::path("lex/function.txt")))
+        .or_else(|_| std::fs::read_to_string(phiano::data::path("lex/function.txt")))
         .unwrap_or_default()
         .split_whitespace()
         .map(|s| s.to_string())
         .collect();
-    let lex_file = if frame == "pos" { "data/lex/pos.tsv" } else { "data/lex/sense.tsv" };
+    let lex_file = if frame == "pos" { phiano::data::path("lex/pos.tsv") } else { phiano::data::path("lex/sense.tsv") };
     let mut cat_of: std::collections::HashMap<String, String> = std::collections::HashMap::new();
-    if let Ok(text) = std::fs::read_to_string(root.join(lex_file)).or_else(|_| std::fs::read_to_string(lex_file)) {
+    if let Ok(text) = std::fs::read_to_string(root.join(&lex_file)).or_else(|_| std::fs::read_to_string(&lex_file)) {
         for line in text.lines() {
             if let Some((wd, c)) = line.split_once('\t') {
                 // pos.tsv may list several POS letters; take the first.
@@ -79,7 +79,7 @@ impl Lex {
     // The real-world prior: wordfreq's frequencies (Wikipedia, subtitles, news,
     // books — billions of words), so a word Emma never said still has a rank.
     let mut real_prior = vec![0.0f64; values.len()];
-    if let Ok(text) = std::fs::read_to_string(root.join("data/lex/freq.tsv")).or_else(|_| std::fs::read_to_string("data/lex/freq.tsv")) {
+    if let Ok(text) = std::fs::read_to_string(root.join(&phiano::data::path("lex/freq.tsv"))).or_else(|_| std::fs::read_to_string(&phiano::data::path("lex/freq.tsv"))) {
         let fr: std::collections::HashMap<&str, f64> = text.lines().filter_map(|l| l.split_once('\t')).filter_map(|(w, f)| Some((w, f.parse::<f64>().ok()?))).collect();
         for (j, v) in values.iter().enumerate() {
             real_prior[j] = *fr.get(v.as_str()).unwrap_or(&1e-9);

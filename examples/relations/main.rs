@@ -57,7 +57,7 @@ fn main() {
     print_footprint(&facet);
 
     if let Ok(j) = serde_json::to_string_pretty(&(&before, &after)) {
-        let _ = std::fs::write("data/relations.json", j);
+        let _ = std::fs::write(&phiano::data::path("relations.json"), j);
         println!("\nfull report written to data/relations.json");
     }
 }

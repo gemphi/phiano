@@ -22,11 +22,11 @@ use util::dir_sentences;
 fn main() {
     let arg = |k: usize| std::env::args().nth(k).and_then(|s| s.parse::<usize>().ok());
     let (n_prompts, tokens) = (arg(1).unwrap_or(24), arg(2).unwrap_or(30));
-    let austen = dir_sentences("data/corpora/austen");
-    let contrast = dir_sentences("data/corpora/contrast");
+    let austen = dir_sentences(&phiano::data::path("corpora/austen"));
+    let contrast = dir_sentences(&phiano::data::path("corpora/contrast"));
     let austen_all: Vec<String> = austen.iter().flat_map(|(_, s)| s.clone()).collect();
     let split = Harness::split(austen_all, 7);
-    let facet: Facet = Storage::load("data/austen.chroma").expect("run bin/austen first");
+    let facet: Facet = Storage::load(&phiano::data::path("austen.chroma")).expect("run bin/austen first");
     let (world, pfacet) = world::build(&facet, &split, &contrast);
     let kn = KneserNey::train(&split.train);
     // Prompts from every author's held-out sentences in equal number, so the

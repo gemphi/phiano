@@ -6,7 +6,7 @@ use super::*;
 /// that is the whole point. No enum, no preposition list, no labels.
 pub(super) fn gloss_pairs(facet: &Facet) -> Vec<(String, String)> {
     let args: Vec<String> = std::env::args().collect();
-    let chunks = args.get(1).cloned().unwrap_or_else(|| "data/chunks".to_string());
+    let chunks = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("chunks"));
 
     let glosses: Vec<(String, String)> = ChunkStore::new(&chunks)
         .load_all()

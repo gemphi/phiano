@@ -31,8 +31,8 @@ fn main() {
     let alpha = num(&mut a, "--alpha", 0.5);
     let gate = num(&mut a, "--gate", 0.12);
     let frame = flag(&mut a, "--frame").unwrap_or_else(|| "sense".into());
-    let near_file = flag(&mut a, "--near").unwrap_or_else(|| "data/lex/near.tsv".into());
-    let root = std::path::PathBuf::from(a.first().map(String::as_str).unwrap_or("data/text"));
+    let near_file = flag(&mut a, "--near").unwrap_or_else(|| phiano::data::path("lex/near.tsv"));
+    let root = std::path::PathBuf::from(a.first().cloned().unwrap_or_else(|| phiano::data::path("text")));
 
     let held = heldout::held(share, seed);
     let (mut story, _) = Knowing::learn_except(&root, &held);

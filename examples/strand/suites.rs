@@ -13,7 +13,8 @@ pub type Text = (Vec<String>, Vec<usize>, Prior);
 
 /// Every suite's texts, `trials` a suite (the talk once), by name.
 pub fn draw(trials: usize, seed: u64) -> Vec<(String, Vec<Text>)> {
-    let root = std::path::Path::new("crates/phiano/data/text/emma");
+    let emma = phiano::data::path("text/emma");
+    let root = std::path::Path::new(&emma);
     let (emma, pool, english) = (bench::Emma::read(root), cross::Pool::read(std::path::Path::new(".")), Prior::read(root));
     let vocab = synth::vocabulary(&english);
     let mut suite = 0u64;
@@ -28,7 +29,7 @@ pub fn draw(trials: usize, seed: u64) -> Vec<(String, Vec<Text>)> {
     for l in [0.2, 0.4] {
         add(&format!("synthetic λ={l}"), &mut |r| { let (w, truth) = synth::draw(&vocab, r, l, 120); (w, truth, english.clone()) });
     }
-    let talk = tokens(&std::fs::read_to_string("crates/phiano/data/talks/world_models_close_and_qa.txt").expect("talk"));
+    let talk = tokens(&std::fs::read_to_string(&phiano::data::path("talks/world_models_close_and_qa.txt")).expect("talk"));
     out.push(("the talk".into(), vec![(talk, Vec::new(), english)]));
     out
 }

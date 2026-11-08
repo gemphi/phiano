@@ -86,5 +86,5 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 ## Data to files (2026-11-07)
 
 - [x] `server::intent::greeting`: the seven phrase lists are `data/intent/*.txt`, read once, the whole line the entry.
-- [x] The cwd-relative `"data/…"` paths across src (2026-11-07): `phiano::data::path(rel)` resolves every one from `$PHIANO_DATA` or the crate's `data/`, so a binary run from the workspace root finds them; the eight `config` file constants are bare names resolved at the use site. The harness (another session's) and the examples' argv defaults are not converted.
+- [x] The cwd-relative `"data/…"` paths across src (2026-11-07): `phiano::data::path(rel)` resolves every one from `$PHIANO_DATA` or the crate's `data/`, so a binary run from the workspace root finds them; the eight `config` file constants are bare names resolved at the use site. The examples' defaults followed on 2026-11-08: 106 `"data/…"` literals in 55 example files, `format!` ones through `path(&format!(..))`, every example builds. The harness (another session's) is not converted.
 - [ ] `config/constants/*`: read each table of words or phrases there the same way.

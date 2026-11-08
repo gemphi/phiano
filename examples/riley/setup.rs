@@ -13,11 +13,11 @@ pub(super) struct Data {
 /// together with the gloss each came from.
 pub(super) fn setup() -> Data {
     let args: Vec<String> = std::env::args().collect();
-    let chunks = args.get(1).cloned().unwrap_or_else(|| "data/chunks".to_string());
+    let chunks = args.get(1).cloned().unwrap_or_else(|| phiano::data::path("chunks"));
     let corpus_path = args
         .get(2)
         .cloned()
-        .unwrap_or_else(|| "data/dictionary_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("dictionary_corpus.txt"));
 
     let raw = std::fs::read_to_string(&corpus_path).unwrap_or_default();
     let corpus: Vec<String> = Tokenizer::split_sentences(&raw)

@@ -45,7 +45,7 @@ fn held_out(r: &phiecs::quest::Row) -> bool {
 
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
-    let path = a.first().cloned().unwrap_or_else(|| "data/quest/synthetic.tsv".into());
+    let path = a.first().cloned().unwrap_or_else(|| phiano::data::path("quest/synthetic.tsv"));
     let epochs: usize = a.get(1).and_then(|s| s.parse().ok()).unwrap_or(30);
     let arms: Vec<String> = a.get(2).map_or(vec!["fno".into(), "fno+closure".into()], |s| s.split(',').map(String::from).collect());
     let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"));

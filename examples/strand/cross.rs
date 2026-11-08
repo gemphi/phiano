@@ -25,7 +25,8 @@ fn files(dir: &Path, ext: &str, out: &mut Vec<std::path::PathBuf>) {
 fn pool(root: &Path) -> Vec<(usize, Option<usize>, Vec<String>)> {
     let paras = |t: &str| t.split("\n\n").map(|p| p.trim().to_string()).filter(|p| tokens(p).len() >= 4).collect::<Vec<_>>();
     let mut out = Vec::new();
-    let sources = [("crates/phiano/data/text/emma", "txt"), ("crates/phiano/docs", "md"), ("crates/phiano/data/talks", "txt"), ("crates/phient/src", "rs")];
+    let (emma, talks) = (phiano::data::path("text/emma"), phiano::data::path("talks"));
+    let sources = [(emma.as_str(), "txt"), ("crates/phiano/docs", "md"), (talks.as_str(), "txt"), ("crates/phient/src", "rs")];
     for (kind, (dir, ext)) in sources.iter().enumerate() {
         let mut fs = Vec::new();
         files(&root.join(dir), ext, &mut fs);

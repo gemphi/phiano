@@ -13,7 +13,7 @@ pub(super) fn train_facet() -> Trained {
     let path = args
         .get(1)
         .cloned()
-        .unwrap_or_else(|| "data/prose_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("prose_corpus.txt"));
 
     let raw = match std::fs::read_to_string(&path) {
         Ok(r) => r,

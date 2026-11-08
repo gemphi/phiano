@@ -17,12 +17,12 @@ fn main() {
     let max_tokens: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(30);
     let k: usize = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(32);
     let mut all = Vec::new();
-    for f in ["emma", "persuasion", "sense_and_sensibility"] { all.extend(sentences_of(&format!("data/corpora/austen/{f}.txt"))); }
+    for f in ["emma", "persuasion", "sense_and_sensibility"] { all.extend(sentences_of(&phiano::data::path(&format!("corpora/austen/{f}.txt")))); }
     let split = Harness::split(all, 7);
-    let facet: Facet = Storage::load("data/austen_voice.chroma").expect("run bin/austen first");
+    let facet: Facet = Storage::load(&phiano::data::path("austen_voice.chroma")).expect("run bin/austen first");
     let kn = KneserNey::train(&split.train);
     let ev = Evaluator::new();
-    let learned = GenWeight::load("data/learned_austen.json").map(|w| w.for_decoding());
+    let learned = GenWeight::load(&phiano::data::path("learned_austen.json")).map(|w| w.for_decoding());
     let prompts: Vec<String> = split.test.iter().filter(|s| Tokenizer::tokenize(s).len() >= 8).take(40).map(|s| Tokenizer::tokenize(s)[..3].join(" ")).collect();
     let lambda: f64 = std::env::var("PHIANO_FORCING").ok().and_then(|v| v.parse().ok()).unwrap_or(1.0);
     let arms: Vec<(&str, Decode)> = vec![
@@ -37,7 +37,7 @@ fn main() {
         let (mut lp, mut e, mut d, mut len, mut novel, mut n) = (0.0, 0.0, 0.0, 0usize, 0.0, 0usize);
         let mut grams: Vec<std::collections::HashSet<String>> = Vec::new();
         for (i, prompt) in prompts.iter().enumerate() {
-            let guide = OperatorGuide::load("data/austen_operator.fno", &facet, Sides::Directed, 6).expect("operator");
+            let guide = OperatorGuide::load(&phiano::data::path("austen_operator.fno"), &facet, Sides::Directed, 6).expect("operator");
             let g = Generator::deterministic(max_tokens, 0.3, 900 + i as u64).with_weights(learned.clone()).with_operator(guide).with_decode(*decode);
             let mut buf = ContextWaveBuffer::new(64);
             let text = g.generate(&facet, &mut buf, prompt);

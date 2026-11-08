@@ -8,7 +8,7 @@ pub(super) fn train_facet() -> (Split, Facet) {
     let corpus_path = args
         .get(2)
         .cloned()
-        .unwrap_or_else(|| "data/dictionary_corpus.txt".to_string());
+        .unwrap_or_else(|| phiano::data::path("dictionary_corpus.txt"));
 
     let raw = std::fs::read_to_string(&corpus_path).unwrap_or_default();
     let corpus: Vec<String> = Tokenizer::split_sentences(&raw)
