@@ -19,8 +19,8 @@ fn flag(a: &mut Vec<String>, name: &str) -> Option<String> {
     v
 }
 
-fn find(root: &PathBuf, dir: &PathBuf, who: &str) -> phiano::sys::Being {
-    phiano::sys::find(root, dir, who).unwrap_or_else(|e| {
+fn find(root: &PathBuf, dir: &PathBuf, who: &str) -> phiecs::being::Being {
+    phient::relate::being::find(root, dir, who).unwrap_or_else(|e| {
         eprintln!("{e}");
         std::process::exit(2)
     })

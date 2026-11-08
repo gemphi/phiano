@@ -9,7 +9,9 @@
 //! `--engage` tells every member of a team the rows of a `relations.tsv`
 //! (what working with a team is, in rows); `--ask` reads one being's answer.
 
-use phiano::sys::{race::Race, Being};
+use phiano::sys::race::Race;
+use phiecs::being::Being;
+use phient::relate::being::from_file;
 use phiecs::agent::Agent;
 use std::path::PathBuf;
 
@@ -37,7 +39,7 @@ fn main() {
         .filter(|p| p.extension().is_some_and(|x| x == "md") && p.file_name().is_some_and(|n| n != "README.md"))
         .collect();
     files.sort();
-    let beings: Vec<Being> = files.iter().map(|f| Being::from_file(&root, f).unwrap_or_else(|e| panic!("{e}"))).collect();
+    let beings: Vec<Being> = files.iter().map(|f| from_file(&root, f).unwrap_or_else(|e| panic!("{e}"))).collect();
     println!("{} personas from {}, told from {}\n", beings.len(), dir.display(), root.display());
     let mut race = Race::new(beings);
     for (team, file) in &engage {

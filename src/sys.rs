@@ -17,13 +17,12 @@
 //! the [`circus`] lets two of them talk, and [`sets`] lets two of them
 //! think — language as a set game with unions and relations.
 
-mod being;
 pub mod circus;
 pub mod lisp;
 pub mod race;
 pub mod set;
 
-pub use being::{find, persona_files, Being};
+pub use phiecs::being::Being;
 pub use phiecs::persona::Persona;
 pub use phiecs::world::World;
 pub use phiecs::Row;
