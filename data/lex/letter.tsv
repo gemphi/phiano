@@ -27,3 +27,9 @@ e	silent_e
 y	y_letter
 q	qu_lead
 u	qu_follow
+y	no_undouble
+s	no_undouble
+w	no_undouble
+f	no_undouble
+z	no_undouble
+l	named_double
