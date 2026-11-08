@@ -81,9 +81,6 @@ name = "quest"
 path = "src/bin/quest/main.rs"
 
 
-[[bin]]
-name = "helix"
-path = "src/bin/helix/main.rs"
 
 [[bin]]
 name = "harness"
