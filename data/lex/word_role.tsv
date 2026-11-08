@@ -1,0 +1,30 @@
+# The single function words the reader and realiser name by role.
+# word<TAB>role
+# to      infinitive_marker  opens an infinitive ("to go")
+# be      copula_lemma       the bare copula
+# have    have_lemma         the bare perfect auxiliary / possessive verb
+# has     have_3sg           the third-person form of have_lemma
+# not     negator            the negating particle
+# never   negative_adverb    the adverb the frame stores as `never`
+# cannot  negated_can        one-word "can not"
+# did     past_do            the past do-support auxiliary
+# you     address_pronoun    an object-form pronoun that may still open a clause
+# it      expletive_pronoun  the empty subject of a weather verb
+# etc     scaffold_abbrev    an abbreviation that marks a sentence as scaffolding
+# a e i o u  vowel           vowel letters
+to	infinitive_marker
+be	copula_lemma
+have	have_lemma
+has	have_3sg
+not	negator
+never	negative_adverb
+cannot	negated_can
+did	past_do
+you	address_pronoun
+it	expletive_pronoun
+etc	scaffold_abbrev
+a	vowel
+e	vowel
+i	vowel
+o	vowel
+u	vowel
