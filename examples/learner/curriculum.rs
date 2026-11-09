@@ -11,7 +11,8 @@
 //! measured as the perplexity it took off the instalment it resumed from.
 //! A lever whose last application paid nothing is not proposed; a lever
 //! whose gain halved against its previous application is proposed with that
-//! said. The proposal is a reading of the record, not a prediction: the
+//! said. Gains are compared at a tenth, and two levers level there are
+//! ordered by the never-told register (docs/230), said too. The proposal is a reading of the record, not a prediction: the
 //! engine follows the analysis it is given and anticipates nothing.
 //!
 //! The levers, as the record names them:
@@ -122,7 +123,10 @@ pub fn propose(all: &[Instalment]) -> String {
             Some((*lever, last, before))
         })
         .collect();
-    ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    // Gains are compared at the record's resolution, a tenth. A tie on the
+    // guide's register is broken by the never-told one (docs/230): the lever
+    // whose last pull moved both registers wins, not the first by name.
+    ranked.sort_by(|a, b| tenths(b.1).cmp(&tenths(a.1)).then_with(|| tenths(held_gain(b.0, all)).cmp(&tenths(held_gain(a.0, all)))));
     out += "\n| lever | last gain | the one before |\n|---|---|---|\n";
     for (lever, last, before) in &ranked {
         out += &format!("| {lever} | {last:+.1} | {} |\n", before.map_or("—".into(), |b| format!("{b:+.1}")));
@@ -137,8 +141,35 @@ pub fn propose(all: &[Instalment]) -> String {
             why += &format!(", though that is less than half of the {b:.1} before it: the lever is paying less each time, and the guide's share is the first thing to raise beside it");
         }
     }
+    let tied: Vec<&str> = ranked.iter().skip(1).filter(|(_, g, _)| tenths(*g) == tenths(*last)).map(|(l, _, _)| *l).collect();
+    if let Some(other) = tied.first() {
+        why += &format!(", level with `{other}` there and ahead of it on the never-told register ({:+.1} beside {:+.1})", held_gain(lever, all), held_gain(other, all));
+    }
     out += &format!("\nproposal: pull `{lever}` again, resuming `{newest}` — {why}.\n");
     out + &registers(all)
+}
+
+/// A gain at the record's resolution, a tenth: what the table shows is what
+/// the proposer compares.
+fn tenths(x: f64) -> i64 {
+    match x.is_nan() {
+        true => i64::MIN,
+        false => (x * 10.0).round() as i64,
+    }
+}
+
+/// What a lever's last scored application took off the never-told register
+/// (docs/217); NaN when neither it nor its parent was scored there.
+fn held_gain(lever: &str, all: &[Instalment]) -> f64 {
+    all.iter()
+        .rev()
+        .filter(|i| i.lever == lever)
+        .find_map(|i| {
+            let parent = all.iter().find(|p| p.name == i.from)?;
+            let h = parent.held - i.held;
+            (!h.is_nan()).then_some(h)
+        })
+        .unwrap_or(f64::NAN)
 }
 
 /// Whether the newest instalment moved the never-told register with the

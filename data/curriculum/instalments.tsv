@@ -20,3 +20,4 @@ tatoeba8_guide2	guide_four	text+guide	sample80k_8	2	8	22.9	44.5	84.8	226	112.5
 widen128	tatoeba8_guide2	widen	-	1	8	22.9	44.5	84.3	227	112.8
 tatoeba9_guide2	widen128	text+guide	sample80k_9	2	8	23.2	44.8	83.2	228	110.9
 tatoeba10_guide2	tatoeba9_guide2	text+guide	sample80k_10	2	8	23.2	45.1	82.5	229	110.1
+guide_five	tatoeba10_guide2	guide	-	1	8	23.5	45.1	81.8	230	110.3
