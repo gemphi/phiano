@@ -32,7 +32,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--patience 2] [--save ckpt] [--record name,lever,doc] [--propose]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--stride 0] [--patience 2] [--save ckpt] [--record name,lever,doc] [--propose]
 //! ```
 
 mod counting;
@@ -69,6 +69,7 @@ fn main() {
         silence: num("--silence", 0.0) as f32,
         negatives: num("--negatives", 128.0) as usize,
         rate: num("--rate", 0.5) as f32,
+        stride: num("--stride", 0.0) as u32,
         epochs: num("--epochs", 16.0) as usize,
         seed: num("--seed", 7.0) as u64,
     };
@@ -164,6 +165,11 @@ fn main() {
             }
             if flag("--rate").is_some() {
                 l.config.rate = config.rate;
+            }
+            // The stride (phient's `Config::stride`, docs/231–232): lines over
+            // which an accumulator falls to a tenth, by itself; 0 as before.
+            if flag("--stride").is_some() {
+                l.config.stride = config.stride;
             }
             println!("resumed from {path}: {} lines told before, vocabulary {}\n", l.lines_told(), l.vocabulary());
             // More channels for a learner that has already learned (docs/210):
