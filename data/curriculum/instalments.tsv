@@ -23,3 +23,4 @@ tatoeba10_guide2	tatoeba9_guide2	text+guide	sample80k_10	2	8	23.2	45.1	82.5	229	
 guide_five	tatoeba10_guide2	guide	-	1	8	23.5	45.1	81.8	230	110.3
 tatoeba11_forget	guide_five	forget	sample80k_11	2	8	24.2	46.0	78.9	231	106.7
 tatoeba12_forget	tatoeba11_forget	forget	sample80k_12	2	8	24.7	46.5	76.8	232	103.1
+tatoeba13_forget	tatoeba12_forget	forget	sample80k_13	2	8	25.0	46.5	76.1	233	101.3
