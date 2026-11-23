@@ -1,0 +1,102 @@
+# The sayings' prompts (examples/learner): what the learner and the counts are asked to go on from, one a line.
+# The first seven are docs/205's; the rest are openings of the guide's own sentences (three or four words, seed 7, docs/238).
+i have been waiting
+if i had known
+when do we use the present perfect
+she has been working
+i wish i
+the man who lives next door
+we are going to
+a hard to
+a new supermarket
+ann pretended not
+are you definitely
+as the film
+at the end of
+but after some
+but each and
+can you wait
+cheaper and more
+chris suggested going
+did you go
+did you hear
+do you ever have
+do you know
+doctors recommend that
+every month my
+excuse me could
+gary went to
+go along this
+have you decided
+having finished her
+having finished her work
+he shouted to
+helen can you
+how long has
+how much is
+how old were
+i had to
+i have enough
+i left everything
+i need something
+i prefer driving
+i read the
+i tried to
+i used to
+i was annoyed
+i was surprised at
+i was warned
+i waste a
+i wish somebody
+i wish you
+if it stopped
+if you have
+investigators are trying
+is there a
+joe hurt his
+karen finally got
+longest and most
+many accidents are
+matt phoned while
+not even her
+rachel said that
+sarah has quite
+shall we go
+she is used
+some cars have
+some students were
+somebody has invented
+somebody threw an
+sue has a
+tanya would like
+the advantage of
+the boxes were
+the boy injured
+the concert in
+the earth goes
+the girl who
+the hotel where
+the internet has
+the machine that
+the police are
+the strike started
+the woman who
+the younger you are
+they gave us
+they only invited
+this brush is
+two people were
+we had a
+we have to
+we stopped at
+we tried to
+we used to live
+what do you need
+what do you suggest
+what do you want
+what time did
+when the children
+why did you
+you can borrow
+you can use
+your handwriting is

@@ -30,6 +30,9 @@
 //! watched file is never one scored by `--test-more`: a stop rule that reads
 //! the test picks the epoch that fits it.
 //!
+//! The run ends with the sayings: every prompt of `data/person/prompt.txt`
+//! gone on from by the learner and by the counts, side by side.
+//!
 //! | model | what it is |
 //! |---|---|
 //! | the most told word | the floor |
@@ -294,9 +297,12 @@ fn main() {
         println!("{r}");
     }
 
+    // The sayings: the prompts are `data/person/prompt.txt`, a hundred since
+    // docs/238 (seven in the code before), one a line, so what is asked is
+    // data and the table is long enough to read a tendency from.
     println!("\n| asked | the learner goes on | the counts go on |\n|---|---|---|");
-    for q in ["i have been waiting", "if i had known", "when do we use the present perfect", "she has been working", "i wish i", "the man who lives next door", "we are going to"] {
-        let said = tokens(q);
+    for q in phistd::lexfile::read(phiano::data::path("person/prompt.txt")) {
+        let said = tokens(&q);
         let mine = best.speak(&said, 12).join(" ");
         let mut chain: Vec<String> = said.clone();
         while chain.len() < said.len() + 12 {
