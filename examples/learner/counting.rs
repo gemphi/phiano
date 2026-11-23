@@ -3,6 +3,12 @@
 use phient::prose::tokens;
 use std::collections::HashMap;
 
+/// The file's lines as sentences: cut at the full stops, tokenised, and a
+/// token with a digit in it dropped - the guide is a grammar book, and its
+/// unit and exercise numbers ("103", "84c") were read as words and said
+/// back (docs/235). A sentence is one of at least four tokens before the
+/// drop, so the dev and test cut (one line in ten, one in twenty) falls on
+/// the same sentences as before the drop.
 pub fn sentences(path: &str) -> Vec<Vec<String>> {
     std::fs::read_to_string(path)
         .unwrap_or_default()
@@ -10,6 +16,7 @@ pub fn sentences(path: &str) -> Vec<Vec<String>> {
         .map(tokens)
         .map(|w| w.into_iter().filter(|t| t.chars().any(char::is_alphanumeric)).collect::<Vec<_>>())
         .filter(|w| w.len() >= 4)
+        .map(|w| w.into_iter().filter(|t| !t.chars().any(|c| c.is_ascii_digit())).collect())
         .collect()
 }
 
@@ -71,5 +78,23 @@ impl WittenBell {
         let mut s: Vec<(f64, &String)> = c.into_iter().map(|w| (self.p(h2, h1, w), w)).collect();
         s.sort_by(|a, b| b.0.total_cmp(&a.0).then_with(|| a.1.cmp(b.1)));
         s.into_iter().take(5).map(|(_, w)| w.clone()).collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sentences;
+
+    #[test]
+    fn a_number_is_not_a_word_and_the_cut_does_not_move() {
+        let dir = std::env::temp_dir().join("phiano_learner_sentences");
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("guide.txt");
+        std::fs::write(&path, "103 enough and too\nI have been waiting for you.\nUnit 84C enough and too + adjective\n").unwrap();
+        let s = sentences(path.to_str().unwrap());
+        assert_eq!(s.len(), 3, "a line of four tokens stays a sentence after its number is dropped");
+        assert!(s.iter().flatten().all(|t| !t.chars().any(|c| c.is_ascii_digit())), "{s:?}");
+        assert_eq!(s[0], ["enough", "and", "too"]);
+        assert_eq!(s[1].len(), 6);
     }
 }
