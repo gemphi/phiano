@@ -1,0 +1,10 @@
+# The record's levers (examples/learner --propose reads this): the lever as the record names it, the lever it is read as (- for itself), what the run did.
+# A lever renamed when the learner took it over keeps one series under the new name: forget's rows are stride's history (docs/234).
+# lever	read_as	what
+guide	-	the guide's training sentences told (again)
+text	-	other text told, the guide not
+text+guide	-	other text with the guide told beside it (--guide-times)
+epochs	-	more epochs on the same text
+widen	-	more channels (--widen)
+forget	stride	the Adagrad accumulators scaled by a flag on resume (--forget, docs/214-233)
+stride	-	the accumulators falling to a tenth over a stride of lines told, by themselves, carried in the checkpoint (Config::stride, docs/234)

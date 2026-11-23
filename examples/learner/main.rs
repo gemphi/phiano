@@ -19,9 +19,16 @@
 //! text alone, so a curriculum is two runs: the wide text first and saved,
 //! then the guide on top of it. On a resume `--epochs` and `--rate` are this
 //! run's; `--forget 0.1` scales the Adagrad accumulators so a sure learner
-//! gets its stride back (docs/214). `--record name,lever,doc` appends the run
-//! to the curriculum record and `--propose` reads the record and names the
-//! next lever (`curriculum`, paper 28).
+//! gets its stride back (docs/214), and `--stride N` has them fall to a tenth
+//! over N lines by themselves, kept in the checkpoint (docs/234). `--record
+//! name,lever,doc` appends the run to the curriculum record and `--propose`
+//! reads the record and names the next lever (`curriculum`, paper 28).
+//!
+//! The epochs are stopped on the guide's dev set; `--watch dev.txt` stops them
+//! on those sentences instead, so a run of other text is stopped by the
+//! register it moves and not by the guide's going flat (docs/223, 235). The
+//! watched file is never one scored by `--test-more`: a stop rule that reads
+//! the test picks the epoch that fits it.
 //!
 //! | model | what it is |
 //! |---|---|
@@ -32,7 +39,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--stride 0] [--patience 2] [--save ckpt] [--record name,lever,doc] [--propose]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--stride 0] [--patience 2] [--watch dev.txt] [--save ckpt] [--record name,lever,doc] [--propose]
 //! ```
 
 mod counting;
@@ -196,18 +203,29 @@ fn main() {
     for s in &train {
         l.tell(s);
     }
-    let r = l.measure(&dev);
-    // The stop: this many epochs without a gain on the dev register (two
-    // since docs/203). Channels born quiet (docs/210) need more than two.
+    // The register the stop rule reads: the guide's dev set, or the
+    // sentences `--watch` names (docs/235), never a `--test-more` file.
+    let watched = flag("--watch");
+    let (watch, register) = match &watched {
+        Some(p) => (sentences(p), std::path::Path::new(p).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default()),
+        None => (dev, "dev".to_string()),
+    };
+    if let Some(p) = watched.as_deref().filter(|p| flag("--test-more").is_some_and(|m| m.split(',').any(|t| t == *p))) {
+        eprintln!("--watch {p} is also scored by --test-more: the stop rule would pick the epoch that fits the test");
+        return;
+    }
+    let r = l.measure(&watch);
+    // The stop: this many epochs without a gain on the watched register
+    // (two since docs/203). Channels born quiet (docs/210) need more than two.
     let patience: usize = flag("--patience").and_then(|s| s.parse().ok()).unwrap_or(2);
-    println!("{config:?}\nvocabulary {} · patience {patience}\n", l.vocabulary());
-    println!("| epoch | error (train) | dev top-1 | dev perplexity | seconds |\n|---|---|---|---|---|");
+    println!("{config:?}\nvocabulary {} · patience {patience} · stopped on {register}\n", l.vocabulary());
+    println!("| epoch | error (train) | {register} top-1 | {register} perplexity | seconds |\n|---|---|---|---|---|");
     println!("| told once (online) | — | {:.1}% | {:.1} | {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
     let (mut best, mut best_ppl, mut since) = (l.clone(), r.perplexity(), 0);
     for e in 1..=config.epochs {
         let t = Instant::now();
         let loss = l.epoch();
-        let r = l.measure(&dev);
+        let r = l.measure(&watch);
         println!("| {e} | {loss:.3} | {:.1}% | {:.1} | {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
         match r.perplexity() < best_ppl {
             true => {

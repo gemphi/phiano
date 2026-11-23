@@ -15,16 +15,11 @@
 //! ordered by the never-told register (docs/230), said too. The proposal is a reading of the record, not a prediction: the
 //! engine follows the analysis it is given and anticipates nothing.
 //!
-//! The levers, as the record names them:
-//!
-//! | lever | what the run did |
-//! |---|---|
-//! | `guide` | the guide's training sentences told (again) |
-//! | `text` | other text told, the guide not |
-//! | `text+guide` | other text with the guide told beside it (`--guide-times`) |
-//! | `epochs` | more epochs on the same text |
-//! | `widen` | more channels |
-//! | `forget` | the Adagrad accumulators scaled |
+//! The levers are named in `data/curriculum/lever.tsv`, each with the lever
+//! it is read as: a lever renamed when the learner took it over keeps one
+//! series under the new name (`forget` by flag is `stride`'s history since
+//! docs/234), so the table shows the record's name and the proposer reads
+//! the series.
 
 use std::path::PathBuf;
 
@@ -109,18 +104,18 @@ pub fn propose(all: &[Instalment]) -> String {
         };
         out += &format!("| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n", i.name, i.from, i.lever, i.text, i.guide_times, pct(i.top1), pct(i.top5), num(i.ppl), g, num(i.held), i.doc);
     }
-    // Each lever's last application and the one before it.
-    let mut levers: Vec<&str> = all.iter().map(|i| i.lever.as_str()).collect();
-    levers.dedup();
+    // Each lever's last application and the one before it, a lever's
+    // series read under the name `lever.tsv` gives it.
+    let mut levers: Vec<String> = all.iter().map(|i| read_as(&i.lever)).collect();
     levers.sort_unstable();
     levers.dedup();
     let mut ranked: Vec<(&str, f64, Option<f64>)> = levers
         .iter()
         .filter_map(|lever| {
-            let gains: Vec<f64> = all.iter().filter(|i| i.lever == *lever).filter_map(|i| gain(i, all)).collect();
+            let gains: Vec<f64> = all.iter().filter(|i| read_as(&i.lever) == *lever).filter_map(|i| gain(i, all)).collect();
             let last = *gains.last()?;
             let before = gains.len().checked_sub(2).map(|k| gains[k]);
-            Some((*lever, last, before))
+            Some((lever.as_str(), last, before))
         })
         .collect();
     // Gains are compared at the record's resolution, a tenth. A tie on the
@@ -158,12 +153,26 @@ fn tenths(x: f64) -> i64 {
     }
 }
 
+/// The lever a record's lever is read as (`data/curriculum/lever.tsv`):
+/// itself unless the file names another, as it does for `forget`, whose
+/// rows are `stride`'s history since the checkpoint carries the stride
+/// (docs/234).
+fn read_as(lever: &str) -> String {
+    phistd::lexfile::cached(phiano::data::path("curriculum/lever.tsv"))
+        .iter()
+        .find_map(|line| {
+            let f: Vec<&str> = line.split('\t').collect();
+            (f.len() >= 2 && f[0] == lever && f[1] != "-").then(|| f[1].to_string())
+        })
+        .unwrap_or_else(|| lever.to_string())
+}
+
 /// What a lever's last scored application took off the never-told register
 /// (docs/217); NaN when neither it nor its parent was scored there.
 fn held_gain(lever: &str, all: &[Instalment]) -> f64 {
     all.iter()
         .rev()
-        .filter(|i| i.lever == lever)
+        .filter(|i| read_as(&i.lever) == lever)
         .find_map(|i| {
             let parent = all.iter().find(|p| p.name == i.from)?;
             let h = parent.held - i.held;
