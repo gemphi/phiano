@@ -1,5 +1,6 @@
 # The record's levers (examples/learner --propose reads this): the lever as the record names it, the lever it is read as (- for itself), what the run did.
 # A lever renamed when the learner took it over keeps one series under the new name: forget's rows are stride's history (docs/234).
+# Since docs/236 the stride is the learner's state, carried in the checkpoint, and a run is named by what it does besides (docs/235).
 # lever	read_as	what
 guide	-	the guide's training sentences told (again)
 text	-	other text told, the guide not

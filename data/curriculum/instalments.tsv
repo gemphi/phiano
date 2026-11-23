@@ -25,3 +25,4 @@ tatoeba11_forget	guide_five	forget	sample80k_11	2	8	24.2	46.0	78.9	231	106.7
 tatoeba12_forget	tatoeba11_forget	forget	sample80k_12	2	8	24.7	46.5	76.8	232	103.1
 tatoeba13_forget	tatoeba12_forget	forget	sample80k_13	2	8	25.0	46.5	76.1	233	101.3
 tatoeba14_stride	tatoeba13_forget	stride	sample80k_14	2	8	25.0	46.6	75.7	234	99.6
+tatoeba15_stride	tatoeba14_stride	stride	sample80k_15	2	8	25.5	46.8	75.3	235	98.0
