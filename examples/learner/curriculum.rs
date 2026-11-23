@@ -12,14 +12,21 @@
 //! A lever whose last application paid nothing is not proposed; a lever
 //! whose gain halved against its previous application is proposed with that
 //! said. Gains are compared at a tenth, and two levers level there are
-//! ordered by the never-told register (docs/230), said too. The proposal is a reading of the record, not a prediction: the
+//! ordered by the never-told register (docs/230), said too. A lever whose
+//! last pull paid one register with the other - the guide's gain smaller
+//! than what the never-told register lost, or the other way round - is not
+//! proposed, and the proposal says so (docs/237: the guide alone, with the
+//! stride on, took 2.2 off its own register and put 22 on the other). The proposal is a reading of the record, not a prediction: the
 //! engine follows the analysis it is given and anticipates nothing.
 //!
 //! The levers are named in `data/curriculum/lever.tsv`, each with the lever
 //! it is read as: a lever renamed when the learner took it over keeps one
 //! series under the new name (`forget` by flag is `stride`'s history since
 //! docs/234), so the table shows the record's name and the proposer reads
-//! the series.
+//! the series. A lever read as `!` is not a lever to pull but a change of
+//! measure (`reader`, docs/237: the same learner told nothing, scored on
+//! the guide read anew), kept in the record so the next row's gain is
+//! against the same reading, and never proposed.
 
 use std::path::PathBuf;
 
@@ -106,7 +113,7 @@ pub fn propose(all: &[Instalment]) -> String {
     }
     // Each lever's last application and the one before it, a lever's
     // series read under the name `lever.tsv` gives it.
-    let mut levers: Vec<String> = all.iter().map(|i| read_as(&i.lever)).collect();
+    let mut levers: Vec<String> = all.iter().map(|i| read_as(&i.lever)).filter(|l| l != "!").collect();
     levers.sort_unstable();
     levers.dedup();
     let mut ranked: Vec<(&str, f64, Option<f64>)> = levers
@@ -126,7 +133,16 @@ pub fn propose(all: &[Instalment]) -> String {
     for (lever, last, before) in &ranked {
         out += &format!("| {lever} | {last:+.1} | {} |\n", before.map_or("—".into(), |b| format!("{b:+.1}")));
     }
-    let Some((lever, last, before)) = ranked.first().filter(|(_, g, _)| *g > 0.0) else {
+    // A lever that paid one register with the other is not proposed: the
+    // sum of what its last pull took off both must be positive (docs/237).
+    let (paid, robbed): (Vec<_>, Vec<_>) = ranked.iter().partition(|(l, g, _)| {
+        let h = held_gain(l, all);
+        h.is_nan() || g + h > 0.0
+    });
+    for (l, g, _) in &robbed {
+        out += &format!("\nnot proposed: `{l}` paid the guide's register {g:+.1} with the never-told one ({:+.1}).", held_gain(l, all));
+    }
+    let Some((lever, last, before)) = paid.first().filter(|(_, g, _)| *g > 0.0) else {
         return out + "\nproposal: no lever's last application paid; the record proposes nothing — the next move is a new lever, not a repeat.\n";
     };
     let newest = all.last().map(|i| i.name.as_str()).unwrap_or("-");
@@ -136,7 +152,7 @@ pub fn propose(all: &[Instalment]) -> String {
             why += &format!(", though that is less than half of the {b:.1} before it: the lever is paying less each time, and the guide's share is the first thing to raise beside it");
         }
     }
-    let tied: Vec<&str> = ranked.iter().skip(1).filter(|(_, g, _)| tenths(*g) == tenths(*last)).map(|(l, _, _)| *l).collect();
+    let tied: Vec<&str> = paid.iter().skip(1).filter(|(_, g, _)| tenths(*g) == tenths(*last)).map(|(l, _, _)| *l).collect();
     if let Some(other) = tied.first() {
         why += &format!(", level with `{other}` there and ahead of it on the never-told register ({:+.1} beside {:+.1})", held_gain(lever, all), held_gain(other, all));
     }
@@ -196,4 +212,37 @@ fn registers(all: &[Instalment]) -> String {
         false => "against",
     };
     format!("registers: `{}` moved the never-told register {how} the guide's ({held:+.1} beside {g:+.1}).\n", i.name)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{propose, Instalment};
+
+    fn row(name: &str, from: &str, lever: &str, ppl: f64, held: f64) -> Instalment {
+        Instalment { name: name.into(), from: from.into(), lever: lever.into(), text: "-".into(), guide_times: 1, epochs: 8, top1: 20.0, top5: 40.0, ppl, doc: "0".into(), held }
+    }
+
+    #[test]
+    fn a_lever_that_paid_one_register_with_the_other_is_not_proposed() {
+        let all = vec![
+            row("a", "-", "guide", 80.0, 100.0),
+            row("b", "a", "text+guide", 79.0, 99.0),
+            row("c", "b", "guide", 77.0, 120.0),
+        ];
+        let out = propose(&all);
+        assert!(out.contains("not proposed: `guide` paid the guide's register +2.0 with the never-told one (-21.0)"), "{out}");
+        assert!(out.contains("proposal: pull `text+guide` again"), "{out}");
+    }
+
+    #[test]
+    fn a_change_of_measure_is_kept_but_never_proposed() {
+        let all = vec![
+            row("a", "-", "guide", 80.0, 100.0),
+            row("a_words", "a", "reader", 70.0, 98.0),
+            row("b", "a_words", "text+guide", 69.5, 97.5),
+        ];
+        let out = propose(&all);
+        assert!(!out.contains("pull `reader`"), "{out}");
+        assert!(out.contains("proposal: pull `text+guide` again"), "{out}");
+    }
 }
