@@ -62,17 +62,18 @@ use phient::study::Reader;
 use std::time::Instant;
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
+    // The curriculum read back and the next instalment proposed (paper 28).
+    // Before the corpus, since the proposer reads the record and nothing else.
+    if a.iter().any(|x| x == "--propose") {
+        print!("{}", curriculum::propose(&curriculum::read()));
+        return;
+    }
     let Some(path) = a.first().filter(|p| !p.starts_with("--")).cloned() else {
         eprintln!("which corpus?");
         return;
     };
     let flag = |k: &str| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)).cloned();
     let num = |k: &str, d: f64| flag(k).and_then(|s| s.parse().ok()).unwrap_or(d);
-    // The curriculum read back and the next instalment proposed (paper 28).
-    if a.iter().any(|x| x == "--propose") {
-        print!("{}", curriculum::propose(&curriculum::read()));
-        return;
-    }
     let config = Config {
         channels: num("--channels", 64.0) as usize,
         context: num("--context", 4.0) as usize,
