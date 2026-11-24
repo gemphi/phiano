@@ -7,7 +7,7 @@ pub use define::*;
 
 use super::super::SharedModel;
 use super::super::shape::*;
-use crate::command::{Context, Dispatcher};
+use crate::command::Dispatcher;
 use phient::eval::Evaluator;
 use phient::generate::Generator;
 use crate::instruction::InstructionEngine;

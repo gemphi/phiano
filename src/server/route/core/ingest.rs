@@ -87,18 +87,7 @@ pub async fn command(
     let model = &mut *guard;
     let line = req.text.clone();
     let arg = line.split_once(char::is_whitespace).map(|(_, s)| s.trim()).unwrap_or("");
-    let mut ctx = Context {
-        manifold: &mut model.facet,
-        trainer: &model.trainer,
-        memory: &mut model.memo,
-        world: &mut model.world,
-        context_buffer: &mut model.context_buffer,
-        cognitive_core: &model.cognitive_core,
-        corrections: &mut model.corrections,
-        gaps: Some(&model.envisioner.ledger),
-        arg,
-        line: &line,
-    };
+    let mut ctx = model.context(&line, arg);
     Dispatcher::dispatch(&line, &mut ctx);
     Ok(Json(CommandResponse { output: "Command executed".to_string() }))
 }

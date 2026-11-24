@@ -1,9 +1,8 @@
 mod dispatch;
 #[cfg(test)]
 mod tests;
-#[allow(unused_imports)]
-use dispatch::*;
 
+mod answer;
 pub mod benchmark;
 pub mod chat;
 pub mod cognitive;

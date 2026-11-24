@@ -50,19 +50,6 @@ pub(crate) fn draw_measured(g: &mut Seeded, i: usize) -> Measured {
     Measured { name, value, unit, bar, control, verdict }
 }
 
-/// Count the three verdicts over a set of numbers.
-pub(crate) fn count_verdicts(numbers: &[Measured]) -> (usize, usize, usize) {
-    let (mut p, mut mi, mut u) = (0, 0, 0);
-    for m in numbers {
-        match m.verdict {
-            Judged::Pass => p += 1,
-            Judged::Miss { .. } => mi += 1,
-            Judged::Unjudged => u += 1,
-        }
-    }
-    (p, mi, u)
-}
-
 /// Two floats equal, treating NaN as equal to NaN so the generator's
 /// non-finite cases round-trip.
 pub(crate) fn same(a: f64, b: f64) -> bool {

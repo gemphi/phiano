@@ -6,15 +6,9 @@ use super::*;
 #[test]
 fn reachable_cut_sits_beside_the_all_150_cut() {
     let bars = Bars::default();
-    // Prime the reader as the live walk does, so the before figures this
-    // test prints match the harness record the Realiser tasks compare
-    // against. Absent files leave the reader on its built-in classes.
-    if let Ok(pos) = std::fs::read_to_string(Path::new(POS)) {
-        phisor::lexicon::prime(&pos);
-    }
-    if let Ok(func) = std::fs::read_to_string(Path::new(FUNCTION)) {
-        phisor::lexicon::prime_function(&func);
-    }
+    // Primed as the live walk primes, so the before figures this test
+    // prints match the harness record the Realiser tasks compare against.
+    prime_reader();
     let gold = phisor::gold::read().expect("the frozen gold set loads");
 
     let all: Vec<_> = gold.pairs().collect();

@@ -7,7 +7,7 @@
 //! `-`), control name and value (or `-`), verdict, and the re-barred mark when
 //! the Bar drifts from the most recent earlier page.
 
-use super::parse::leading_number;
+use super::parse::highest;
 use super::{sense_word, unit_word, Bar, Judged, Measured, SERIES_START};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -20,22 +20,8 @@ pub(super) const SLUG: &str = "harness";
 /// continuing the numbered series from 208 (R2.3). The number is one past the
 /// highest `<nnn>_` already present, or `SERIES_START` when none is.
 pub fn next_page(dir: &Path) -> PathBuf {
-    let next = highest_number(dir).map(|n| n + 1).unwrap_or(SERIES_START);
+    let next = highest(dir).map(|(n, _)| n + 1).unwrap_or(SERIES_START);
     dir.join(format!("{next:03}_{}_{SLUG}.md", today()))
-}
-
-/// The highest leading three-digit number among the markdown pages in `dir`,
-/// or `None` when the directory holds none.
-fn highest_number(dir: &Path) -> Option<u32> {
-    let entries = std::fs::read_dir(dir).ok()?;
-    let mut best: Option<u32> = None;
-    for e in entries.flatten() {
-        let name = e.file_name();
-        if let Some(n) = leading_number(&name.to_string_lossy()) {
-            best = Some(best.map_or(n, |b| b.max(n)));
-        }
-    }
-    best
 }
 
 /// Today's date as `yyyy-mm-dd` in UTC, from the system clock with no outside
@@ -87,8 +73,10 @@ pub fn render(stamp: &str, numbers: &[Measured], previous: &BTreeMap<String, Bar
     s
 }
 
-/// The verdict partition: passes, Misses and unjudged (R2.3).
-fn partition(numbers: &[Measured]) -> (usize, usize, usize) {
+/// The verdict partition: passes, Misses and unjudged (R2.3). The
+/// property test counts with this too and asserts the three add up to the
+/// numbers recorded, so the partition stays pinned from outside.
+pub(super) fn partition(numbers: &[Measured]) -> (usize, usize, usize) {
     let (mut p, mut mi, mut u) = (0, 0, 0);
     for m in numbers {
         match m.verdict {

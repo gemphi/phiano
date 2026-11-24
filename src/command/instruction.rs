@@ -1,6 +1,5 @@
+use crate::command::answer::answer;
 use crate::command::Context;
-use phient::generate::Generator;
-use crate::instruction::InstructionEngine;
 
 /// Instruct - executes an instruction using the shared cognitive pipeline.
 ///
@@ -21,17 +20,7 @@ impl InstructionCmd {
             return true;
         }
 
-        let prompt = crate::command::Parser::strip_quotes(ctx.arg);
-        let generator = Generator::new(128, 0.15);
-
-        let response = InstructionEngine::generate_response(
-            ctx.manifold,
-            ctx.trainer,
-            ctx.cognitive_core,
-            ctx.context_buffer,
-            &generator,
-            &prompt,
-        );
+        let response = answer(ctx, ctx.arg);
 
         println!("\n  ── instruction ({:?}) ──\n", response.intent);
         println!("  {}\n", response.text);

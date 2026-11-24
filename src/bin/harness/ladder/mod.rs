@@ -45,6 +45,19 @@ const MODE: Level = Level::P16;
 /// Run the Ladder on the Guide, sweeping settings, and return the best run's
 /// numbers as Recorder `Measured`. An unreadable corpus yields no numbers, so
 /// the walk records every ladder Bar unjudged rather than failing.
+/// Primes the reader with the foundation's mined POS lexicon, so the act
+/// numbers reflect word classes learned over the corpora rather than the
+/// reader's built-in closed sets. An absent file leaves the fallback, and
+/// the test of the reachable cut primes the same way the walk does.
+pub(super) fn prime_reader() {
+    if let Ok(pos) = std::fs::read_to_string(Path::new(POS)) {
+        phisor::lexicon::prime(&pos);
+    }
+    if let Ok(func) = std::fs::read_to_string(Path::new(FUNCTION)) {
+        phisor::lexicon::prime_function(&func);
+    }
+}
+
 pub fn run(bars: &Bars) -> Vec<Measured> {
     let (Ok(text), Ok(key)) = (
         std::fs::read_to_string(Path::new(GUIDE)),
@@ -98,15 +111,7 @@ fn measure(split: &Split, bars: &Bars, settings: &Settings) -> Vec<Measured> {
     // first reader clears neither Bar, so these record honest misses rather
     // than the unjudged they were before. Coverage and per-field need a
     // baseline and stay unjudged.
-    // Prime the reader with the foundation's mined POS lexicon, so its act
-    // numbers reflect word classes learned over the corpora rather than the
-    // reader's built-in closed sets. Absent file: the reader falls back.
-    if let Ok(pos) = std::fs::read_to_string(Path::new(POS)) {
-        phisor::lexicon::prime(&pos);
-    }
-    if let Ok(func) = std::fs::read_to_string(Path::new(FUNCTION)) {
-        phisor::lexicon::prime_function(&func);
-    }
+    prime_reader();
 
     if let Ok(gold) = phisor::gold::read() {
         // All 150 frames: the headline round-trip and force purity the task

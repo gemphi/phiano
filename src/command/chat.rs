@@ -1,6 +1,5 @@
+use crate::command::answer::{answer, generator};
 use crate::command::Context;
-use crate::command::Parser;
-use phient::generate::Generator;
 use crate::instruction::InstructionEngine;
 use std::io::{BufRead, Write};
 
@@ -41,16 +40,7 @@ impl ChatCmd {
 
     /// Single-shot chat: process one prompt, print clean response.
     fn single_shot(&self, ctx: &mut Context, arg: &str, verbose: bool) -> bool {
-        let prompt = Parser::strip_quotes(arg);
-        let generator = Generator::new(128, 0.15);
-        let response = InstructionEngine::generate_response(
-            ctx.manifold,
-            ctx.trainer,
-            ctx.cognitive_core,
-            ctx.context_buffer,
-            &generator,
-            &prompt,
-        );
+        let response = answer(ctx, arg);
 
         match verbose {
             true => println!("{}", response),
@@ -68,7 +58,7 @@ impl ChatCmd {
         println!("  ╚════════════════════════════════════════════════════════╝");
         println!();
 
-        let generator = Generator::new(128, 0.15);
+        let generator = generator();
         let mut stdin = std::io::stdin().lock();
         let mut turn = 1u32;
 

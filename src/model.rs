@@ -1,9 +1,5 @@
 mod run;
 mod iterate;
-#[allow(unused_imports)]
-use run::*;
-#[allow(unused_imports)]
-use iterate::*;
 
 use phient::train::chunker::ChunkStore;
 use crate::command::{Context, Dispatcher};
@@ -51,4 +47,25 @@ pub struct Model {
     pub envisioner: Envision,
     /// Local dictionary, consulted before the user is asked about a gap.
     pub chunk_store: ChunkStore,
+}
+
+impl Model {
+    /// The command context: a view of the model's own parts under the line
+    /// being answered. Built here once, so a part added to the model
+    /// reaches every caller - the prompt loop, the one-shot help and the
+    /// server's command route each held their own copy of this literal.
+    pub fn context<'a>(&'a mut self, line: &'a str, arg: &'a str) -> Context<'a> {
+        Context {
+            manifold: &mut self.facet,
+            trainer: &self.trainer,
+            memory: &mut self.memo,
+            world: &mut self.world,
+            context_buffer: &mut self.context_buffer,
+            cognitive_core: &self.cognitive_core,
+            corrections: &mut self.corrections,
+            gaps: Some(&self.envisioner.ledger),
+            arg,
+            line,
+        }
+    }
 }

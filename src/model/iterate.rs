@@ -24,18 +24,7 @@ impl Model {
             self.context_buffer.push_turn(&self.facet, past);
         }
 
-        let mut ctx = Context {
-            manifold: &mut self.facet,
-            trainer: &self.trainer,
-            memory: &mut self.memo,
-            world: &mut self.world,
-            context_buffer: &mut self.context_buffer,
-            cognitive_core: &self.cognitive_core,
-            corrections: &mut self.corrections,
-            gaps: Some(&self.envisioner.ledger),
-            arg,
-            line,
-        };
+        let mut ctx = self.context(line, arg);
 
         match Dispatcher::dispatch(line, &mut ctx) {
             true => {}

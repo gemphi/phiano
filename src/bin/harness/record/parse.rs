@@ -100,8 +100,8 @@ pub(super) fn leading_number(name: &str) -> Option<u32> {
 /// Bars; an empty directory yields no previous Bars.
 pub fn previous_bars(dir: &Path) -> BTreeMap<String, Bar> {
     let mut out = BTreeMap::new();
-    let path = match highest_page(dir) {
-        Some(p) => p,
+    let path = match highest(dir) {
+        Some((_, p)) => p,
         None => return out,
     };
     let body = match std::fs::read_to_string(&path) {
@@ -119,21 +119,22 @@ pub fn previous_bars(dir: &Path) -> BTreeMap<String, Bar> {
 /// The value the most recent earlier page recorded for `name`, or `None` when
 /// there is no earlier page or it holds no finite value under that name.
 pub fn previous_value(dir: &Path, name: &str) -> Option<f64> {
-    let body = std::fs::read_to_string(highest_page(dir)?).ok()?;
+    let body = std::fs::read_to_string(highest(dir)?.1).ok()?;
     parse(&body).into_iter().find(|m| m.name == name && m.value.is_finite()).map(|m| m.value)
 }
 
-/// The path of the highest-numbered page in `dir`, or `None`.
-fn highest_page(dir: &Path) -> Option<PathBuf> {
-    let entries = std::fs::read_dir(dir).ok()?;
+/// The numbered page in `dir` with the greatest leading number, as
+/// `(number, path)`, or `None` when it holds none. The one scan: the next
+/// page's number is read from it (`page::next_page`) and so is the most
+/// recent earlier page's body.
+pub(super) fn highest(dir: &Path) -> Option<(u32, PathBuf)> {
     let mut best: Option<(u32, PathBuf)> = None;
-    for e in entries.flatten() {
-        let name = e.file_name();
-        if let Some(n) = leading_number(&name.to_string_lossy()) {
-            if best.as_ref().is_none_or(|(b, _)| n > *b) {
-                best = Some((n, e.path()));
-            }
+    for e in std::fs::read_dir(dir).ok()?.flatten() {
+        let Some(n) = leading_number(&e.file_name().to_string_lossy()) else { continue };
+        match best.as_ref() {
+            Some((b, _)) if n <= *b => {}
+            _ => best = Some((n, e.path())),
         }
     }
-    best.map(|(_, p)| p)
+    best
 }

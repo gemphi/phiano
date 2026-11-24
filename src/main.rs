@@ -8,7 +8,6 @@
 //! real ones. It now links the library like every other binary does.
 
 use phiano::command::help::Help;
-use phiano::command::Context;
 use phiano::model::Model;
 use phiano::server;
 
@@ -42,18 +41,7 @@ fn main() {
         return;
     }
 
-    Help.apply(&mut Context {
-        manifold: &mut model.facet,
-        trainer: &model.trainer,
-        memory: &mut model.memo,
-        world: &mut model.world,
-        context_buffer: &mut model.context_buffer,
-        cognitive_core: &model.cognitive_core,
-        corrections: &mut model.corrections,
-        gaps: Some(&model.envisioner.ledger),
-        arg: "",
-        line: "",
-    });
+    Help.apply(&mut model.context("", ""));
 
     model.run();
     model.scale();

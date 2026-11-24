@@ -1,6 +1,7 @@
 //! Property 4 and Property 5.
 
-use super::{count_verdicts, draw_measured, same, SEED};
+use super::super::page::partition;
+use super::{draw_measured, same, SEED};
 use crate::record::{cap, parse, page, Measured};
 use phistd::gen::Seeded;
 use std::collections::BTreeMap;
@@ -73,7 +74,7 @@ fn property_5_the_record_is_complete_and_its_counts_partition() {
             assert_eq!(got.verdict, want.verdict, "case {case}: verdict");
         }
 
-        let (p, mi, u) = count_verdicts(&numbers);
+        let (p, mi, u) = partition(&numbers);
         assert_eq!(p + mi + u, numbers.len(), "case {case}: the three verdicts do not partition");
         let header = format!("recorded {}; passes {p}; misses {mi}; unjudged {u}", numbers.len());
         assert!(body.contains(&header), "case {case}: the Totals header disagrees with the partition");
