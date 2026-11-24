@@ -33,6 +33,10 @@
 //! The run ends with the sayings: every prompt of `data/person/prompt.txt`
 //! gone on from by the learner and by the counts, side by side.
 //!
+//! A resumed learner drops the words the reader no longer takes for words
+//! (`Learner::drop_words`, docs/239), so a checkpoint older than the rule
+//! does not go on saying them.
+//!
 //! | model | what it is |
 //! |---|---|
 //! | the most told word | the floor |
@@ -48,7 +52,7 @@
 mod counting;
 mod curriculum;
 
-use counting::{rank, sentences, WittenBell};
+use counting::{not_a_word, rank, sentences, WittenBell};
 use phient::study::Score;
 use phient::lineup::Ecs;
 use phient::lineup::learner::{Config, Learner};
@@ -182,6 +186,14 @@ fn main() {
                 l.config.stride = config.stride;
             }
             println!("resumed from {path}: {} lines told before, vocabulary {}\n", l.lines_told(), l.vocabulary());
+            // What the reader no longer takes for a word is no longer one
+            // here either (docs/239): a checkpoint from before the rule
+            // changed holds the words it learned then, angles and all,
+            // and would still say them back.
+            let gone = l.drop_words(not_a_word);
+            if gone > 0 {
+                println!("dropped {gone} words the reader no longer tells, vocabulary {}\n", l.vocabulary());
+            }
             // More channels for a learner that has already learned (docs/210):
             // the old kept, the new born quiet, nothing learned lost.
             if let Some(wide) = flag("--widen").and_then(|s| s.parse().ok()) {

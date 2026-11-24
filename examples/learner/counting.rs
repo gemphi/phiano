@@ -16,8 +16,15 @@ pub fn sentences(path: &str) -> Vec<Vec<String>> {
         .map(tokens)
         .map(|w| w.into_iter().filter(|t| t.chars().any(char::is_alphanumeric)).collect::<Vec<_>>())
         .filter(|w| w.len() >= 4)
-        .map(|w| w.into_iter().filter(|t| !t.chars().any(|c| c.is_ascii_digit())).collect())
+        .map(|w| w.into_iter().filter(|t| !not_a_word(t)).collect())
         .collect()
+}
+
+/// What the reader does not take for a word: a token with a digit in it.
+/// The guide is a grammar book, and its unit and exercise numbers were
+/// read as words and said back (docs/235).
+pub fn not_a_word(t: &str) -> bool {
+    t.chars().any(|c| c.is_ascii_digit())
 }
 
 /// Where `truth` stands in a model's ranked answers (1 is first), for
