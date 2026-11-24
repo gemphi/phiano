@@ -20,11 +20,6 @@ pub struct OscillatorCmd;
 
 impl OscillatorCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            self.print_help();
-            return true;
-        }
-
         let parts: Vec<&str> = ctx.arg.splitn(2, char::is_whitespace).collect();
         let subcmd = parts[0].to_lowercase();
         let rest = parts.get(1).map(|s| s.trim()).unwrap_or("");
@@ -36,23 +31,15 @@ impl OscillatorCmd {
             "compare" => self.compare(ctx, rest),
             "train" => self.train(ctx, rest),
             "help" | "?" => {
-                self.print_help();
+                print!("{}", usage::forms("oscillator"));
                 true
             }
             _ => {
                 println!("  Unknown oscillator subcommand: '{}'", subcmd);
-                self.print_help();
+                print!("{}", usage::forms("oscillator"));
                 true
             }
         }
-    }
-
-    fn print_help(&self) {
-        println!("  oscillator eval \"text\"        - Evaluate text in oscillator mode");
-        println!("  oscillator sphere \"text\"      - Show sphere projection for text");
-        println!("  oscillator wheel              - Show the equatorial color wheel");
-        println!("  oscillator compare \"text\"     - Compare transform vs oscillator models");
-        println!("  oscillator train \"text\" [n]   - Train using oscillator sync (n epochs)");
     }
 
     fn eval(&self, ctx: &mut Context, rest: &str) -> bool {

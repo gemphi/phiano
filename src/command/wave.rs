@@ -1,4 +1,3 @@
-use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phiecs::phasor::wave::Wave as WaveUtil;
@@ -14,11 +13,6 @@ pub struct WaveCmd;
 impl WaveCmd {
     /// Computes and prints the wave representation of the given text.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("wave");
-            return true;
-        }
-
         let text = Parser::strip_quotes(ctx.arg);
         let w = WaveUtil::text(ctx.manifold, &text);
 

@@ -51,13 +51,13 @@
 
 mod counting;
 mod curriculum;
+mod saying;
 
-use counting::{not_a_word, rank, sentences, WittenBell};
+use counting::{not_a_word, rank, sentences};
 use phient::study::Score;
 use phient::lineup::Ecs;
 use phient::lineup::learner::{Config, Learner};
 use phient::lineup::Count;
-use phient::prose::tokens;
 use phient::study::Reader;
 use std::time::Instant;
 fn main() {
@@ -120,34 +120,15 @@ fn main() {
         format!("| {name} | {:.1}% | {:.1}% | {} |", h.top1(), h.top5(), ppl.map_or("—".into(), |p| format!("{p:.1}")))
     };
 
-    // The counters.
-    let (mut count, mut wb) = (Count::new(), WittenBell::default());
+    // The counters. The learner is measured against them, and the sayings
+    // go on from the word before, so the count outlives its own rows.
+    let mut count = Count::new();
     for l in &train {
         count.tell(l);
-        wb.tell(l);
     }
-    let mut common: Vec<(&String, &u64)> = wb.uni.iter().collect();
-    common.sort_by(|x, y| y.1.cmp(x.1).then_with(|| x.0.cmp(y.0)));
-    let common: Vec<String> = common.into_iter().take(10).map(|(w, _)| w.clone()).collect();
-    let (mut floor, mut counted, mut smooth) = (Score::default(), Score::default(), Score::default());
-    let (mut nll, mut known) = (0.0f64, 0usize);
-    for l in &test {
-        for j in 1..l.len() {
-            floor.rank(rank(&common[..common.len().min(5)], &l[j]));
-            let mut after = count.choices(&l[j - 1]);
-            after.sort_by(|x, y| y.1.cmp(&x.1).then_with(|| x.0.cmp(y.0)));
-            counted.rank(rank(&after.into_iter().take(5).map(|(w, _)| w.clone()).collect::<Vec<_>>(), &l[j]));
-            let h2 = if j >= 2 { l[j - 2].as_str() } else { "<s>" };
-            smooth.rank(rank(&wb.top5(h2, &l[j - 1], &common), &l[j]));
-            if wb.uni.contains_key(&l[j]) {
-                nll -= wb.p(h2, &l[j - 1], &l[j]).ln();
-                known += 1;
-            }
-        }
+    for (name, score, ppl) in counting::scored(&train, &test, &count) {
+        rows.push(row(&name, &score, ppl));
     }
-    rows.push(row("the most told word (floor)", &floor, None));
-    rows.push(row("phient counts (the word before)", &counted, None));
-    rows.push(row("Witten–Bell trigram (counting, smoothed)", &smooth, Some((nll / known.max(1) as f64).exp())));
 
     // The phasors as they were: moved to the mean, never corrected.
     if !a.iter().any(|x| x == "--no-ecs") {
@@ -310,22 +291,5 @@ fn main() {
         println!("{r}");
     }
 
-    // The sayings: the prompts are `data/person/prompt.txt`, a hundred since
-    // docs/238 (seven in the code before), one a line, so what is asked is
-    // data and the table is long enough to read a tendency from.
-    println!("\n| asked | the learner goes on | the counts go on |\n|---|---|---|");
-    for q in phistd::lexfile::read(phiano::data::path("person/prompt.txt")) {
-        let said = tokens(&q);
-        let mine = best.speak(&said, 12).join(" ");
-        let mut chain: Vec<String> = said.clone();
-        while chain.len() < said.len() + 12 {
-            let Some(next) = count.after(chain.last().map(String::as_str).unwrap_or("")).cloned() else { break };
-            let last = chain.last().cloned().unwrap_or_default();
-            if chain.windows(2).any(|p| p[0] == last && p[1] == next) {
-                break;
-            }
-            chain.push(next);
-        }
-        println!("| {q} | {mine} | {} |", chain[said.len()..].join(" "));
-    }
+    saying::say(&best, &count);
 }

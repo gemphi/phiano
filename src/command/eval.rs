@@ -1,4 +1,3 @@
-use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phient::train::envision::Envision;
@@ -15,11 +14,6 @@ pub struct Eval;
 impl Eval {
     /// Evaluates the provided text and prints the results.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("eval");
-            return true;
-        }
-
         let text = Parser::strip_quotes(ctx.arg);
         let eval = Evaluator::new().eval(ctx.manifold, &text);
         println!("{}", eval);

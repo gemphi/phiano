@@ -2,31 +2,33 @@
 use super::*;
 
 impl Command {
-    /// Parses a command name string into a `Command` variant.
+    /// The command a name is. One name per command: the other words each
+    /// answers to are `data/command/alias.tsv`, read by
+    /// [`usage::canonical`](super::usage::canonical) before this (docs/239).
     pub fn from_name(s: &str) -> Self {
-        match s.to_lowercase().as_str() {
-            "help" | "?" => Self::Help,
+        match s {
+            "help" => Self::Help,
             "learn" => Self::Learn,
             "define" => Self::Define,
-            "eval" | "judge" => Self::Eval,
+            "eval" => Self::Eval,
             "compose" => Self::Compose,
-            "generate" | "gen" => Self::Generate,
-            "instruct" | "instruction" | "ask" => Self::Instruct,
+            "generate" => Self::Generate,
+            "instruct" => Self::Instruct,
             "chat" => Self::Chat,
-            "reason" | "solve" | "chain" => Self::Reason,
-            "layers" | "hierarchy" | "tree" => Self::Layers,
-            "synthetic" | "synth" => Self::Synthetic,
-            "oscillator" | "om" => Self::Oscillator,
+            "reason" => Self::Reason,
+            "layers" => Self::Layers,
+            "synthetic" => Self::Synthetic,
+            "oscillator" => Self::Oscillator,
             "persona" => Self::Persona,
-            "cognitive" | "cog" => Self::Cognitive,
-            "synonym" | "synonyms" => Self::Synonym,
+            "cognitive" => Self::Cognitive,
+            "synonym" => Self::Synonym,
             "resonance" => Self::Resonance,
             "wave" => Self::Wave,
             "save" => Self::Save,
             "load" => Self::Load,
             "stats" => Self::Stat,
-            "benchmark" | "bench" => Self::Benchmark,
-            "exit" | "quit" => Self::Exit,
+            "benchmark" => Self::Benchmark,
+            "exit" => Self::Exit,
             _ => Self::Unknown,
         }
     }
@@ -41,8 +43,20 @@ impl Dispatcher {
         }
 
         let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
-        let cmd = Command::from_name(parts[0]);
+        let name = usage::canonical(parts[0]);
+        let cmd = Command::from_name(&name);
         ctx.arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
+
+        // A command that takes an argument and is asked with none is
+        // answered from the table, so no command checks for itself
+        // (docs/239). A word the table does not hold is text to learn from.
+        match ctx.arg.is_empty() && usage::wants_argument(&name) {
+            true => {
+                usage::say(&name);
+                return true;
+            }
+            false => {}
+        }
 
         match cmd {
             Command::Help => help::Help.apply(ctx),

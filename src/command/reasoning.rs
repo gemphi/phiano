@@ -1,4 +1,3 @@
-use crate::command::usage;
 use crate::command::Context;
 use philog::ReasoningEngine;
 
@@ -6,11 +5,6 @@ pub struct ReasoningCmd;
 
 impl ReasoningCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("reason");
-            return true;
-        }
-
         let problem = crate::command::Parser::strip_quotes(ctx.arg);
         let engine = ReasoningEngine;
 

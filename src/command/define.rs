@@ -1,4 +1,3 @@
-use crate::command::usage;
 use phient::train::chunker::ChunkStore;
 use crate::command::Context;
 use crate::command::Parser;
@@ -19,11 +18,6 @@ pub struct Define;
 impl Define {
     /// Fetches definitions for the given word and trains the facet.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("define");
-            return true;
-        }
-
         let word = Parser::strip_quotes(ctx.arg).to_lowercase();
         println!("  Fetching definition for '{}'...\n", word);
 

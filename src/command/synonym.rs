@@ -1,5 +1,4 @@
 use crate::command::ranked::ranked;
-use crate::command::usage;
 use crate::command::Context;
 use phiecs::phasor::wave::Wave;
 
@@ -13,11 +12,6 @@ pub struct Synonym;
 impl Synonym {
     /// Finds and prints the nearest resonant words for the given word.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("synonym");
-            return true;
-        }
-
         let (raw, count) = crate::command::Parser::text_and_count(ctx.arg, 5);
         let word = raw.to_lowercase();
 

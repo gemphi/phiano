@@ -1,0 +1,18 @@
+# The other words a command answers to: what a person types, then the
+# command it is (phiano command/usage.rs, `canonical`). Two tab-separated
+# columns. The command itself is not a row; it is the usage table's name.
+?	help
+judge	eval
+gen	generate
+instruction	instruct
+ask	instruct
+solve	reason
+chain	reason
+hierarchy	layers
+tree	layers
+synth	synthetic
+om	oscillator
+cog	cognitive
+synonyms	synonym
+bench	benchmark
+quit	exit

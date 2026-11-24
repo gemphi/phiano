@@ -1,6 +1,7 @@
 //! The counters the learner is measured against, and the corpus reader.
 
 use phient::prose::tokens;
+use phient::study::Score;
 use std::collections::HashMap;
 
 /// The file's lines as sentences: cut at the full stops, tokenised, and a
@@ -104,4 +105,50 @@ mod tests {
         assert_eq!(s[0], ["enough", "and", "too"]);
         assert_eq!(s[1].len(), 6);
     }
+}
+
+/// The three rows counting scores at the test set's positions: the most
+/// told word, the word before counted, and the smoothed trigram. The
+/// `Count` is the caller's, since the sayings go on from it after the rows
+/// are read.
+pub fn scored(
+    train: &[Vec<String>],
+    test: &[Vec<String>],
+    count: &phient::lineup::Count,
+) -> Vec<(String, Score, Option<f64>)> {
+    let mut wb = WittenBell::default();
+    for l in train {
+        wb.tell(l);
+    }
+    let mut common: Vec<(&String, &u64)> = wb.uni.iter().collect();
+    common.sort_by(|x, y| y.1.cmp(x.1).then_with(|| x.0.cmp(y.0)));
+    let common: Vec<String> = common.into_iter().take(10).map(|(w, _)| w.clone()).collect();
+    let (mut floor, mut counted, mut smooth) = (Score::default(), Score::default(), Score::default());
+    let (mut nll, mut known) = (0.0f64, 0usize);
+    for l in test {
+        for j in 1..l.len() {
+            floor.rank(rank(&common[..common.len().min(5)], &l[j]));
+            let mut after = count.choices(&l[j - 1]);
+            after.sort_by(|x, y| y.1.cmp(&x.1).then_with(|| x.0.cmp(y.0)));
+            counted.rank(rank(&after.into_iter().take(5).map(|(w, _)| w.clone()).collect::<Vec<_>>(), &l[j]));
+            let h2 = match j >= 2 {
+                true => l[j - 2].as_str(),
+                false => "<s>",
+            };
+            smooth.rank(rank(&wb.top5(h2, &l[j - 1], &common), &l[j]));
+            match wb.uni.contains_key(&l[j]) {
+                true => {
+                    nll -= wb.p(h2, &l[j - 1], &l[j]).ln();
+                    known += 1;
+                }
+                false => {}
+            }
+        }
+    }
+    let ppl = (nll / known.max(1) as f64).exp();
+    vec![
+        ("the most told word (floor)".to_string(), floor, None),
+        ("phient counts (the word before)".to_string(), counted, None),
+        ("Witten–Bell trigram (counting, smoothed)".to_string(), smooth, Some(ppl)),
+    ]
 }

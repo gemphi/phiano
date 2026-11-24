@@ -1,5 +1,4 @@
 use crate::command::ranked::ranked;
-use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phiecs::phasor::wave::Wave;
@@ -15,11 +14,6 @@ pub struct Resonance;
 impl Resonance {
     /// Finds and prints words resonating with the given text.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("resonance");
-            return true;
-        }
-
         let (text, count) = Parser::text_and_count(ctx.arg, 5);
 
         // All 64 channels, not one. `Wave::text` collapses a sentence to a

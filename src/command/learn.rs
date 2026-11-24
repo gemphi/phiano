@@ -18,12 +18,6 @@ pub struct Learn;
 impl Learn {
     /// Trains the facet on the provided text.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("learn");
-            println!("         learn multi \"text\" [epochs] [warmup]");
-            return true;
-        }
-
         if ctx.arg.starts_with("multi ") {
             return self.multi(ctx);
         }

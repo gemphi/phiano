@@ -20,11 +20,6 @@ pub struct PersonaCmd;
 
 impl PersonaCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            self.print_help();
-            return true;
-        }
-
         let parts: Vec<&str> = ctx.arg.splitn(2, char::is_whitespace).collect();
         let subcmd = parts[0].to_lowercase();
         let rest = parts.get(1).map(|s| s.trim()).unwrap_or("");
@@ -38,24 +33,16 @@ impl PersonaCmd {
             "impersonate" => self.impersonate(ctx, rest),
             "match" => self.match_text(ctx, rest),
             "chat" => super::personate::chat(ctx, rest),
-            "help" | "?" => { self.print_help(); true }
+            "help" | "?" => {
+                print!("{}", usage::forms("persona"));
+                true
+            }
             _ => {
                 println!("  Unknown persona subcommand: '{}'", subcmd);
-                self.print_help();
+                print!("{}", usage::forms("persona"));
                 true
             }
         }
-    }
-
-    fn print_help(&self) {
-        println!("  persona add <name> \"ex1\" \"ex2\" ...  - Create persona from examples");
-        println!("  persona from <name> \"block of text\"  - Create persona from a text block");
-        println!("  persona list                         - List all personas");
-        println!("  persona show <name>                  - Show persona fingerprint");
-        println!("  persona compare <a> <b>              - Compare two personas");
-        println!("  persona impersonate <name> \"prompt\"  - Compose as persona");
-        println!("  persona match \"unknown text\"         - Attribute text to a persona");
-        println!("  persona chat <name>                  - Chat with a persona interactively");
     }
 
     fn add(&self, ctx: &mut Context, rest: &str) -> bool {

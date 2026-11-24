@@ -4,7 +4,10 @@
 //! second, differently worded copy of all of them in code. The wording
 //! lives in the table now (the ruling of 2026-11-07: no data in code), and
 //! this module is the only reader: [`say`] for a command asked with no
-//! argument, [`listing`] for `help`.
+//! argument, [`listing`] for `help`, [`wants_argument`] for the dispatcher
+//! that asks the table instead of letting every command check for itself,
+//! and [`canonical`] for the other words a command answers to
+//! (`data/command/alias.tsv`, docs/239).
 
 use phistd::lexfile;
 
@@ -52,18 +55,79 @@ fn said(cell: &str) -> String {
     }
 }
 
-/// Says how `name` is used - every form of it, with its example and tip -
-/// as a command does when it is asked with no argument.
+/// Whether a row is this command's: the command itself, or one of its
+/// longer forms (`learn` is `learn` and `learn multi`; `chat --verbose` is
+/// only itself).
+fn of(u: &Usage, name: &str) -> bool {
+    u.name == name || u.name.starts_with(&format!("{name} "))
+}
+
+/// Says how `name` is used, as the dispatcher does when a command is asked
+/// with no argument: the one form with its example and tip, or, for a
+/// command of several forms (`persona`, `oscillator`), each form with what
+/// it does, as `help` lists them.
 pub fn say(name: &str) {
-    for u in all().iter().filter(|u| u.name == name) {
-        println!("  Usage: {}", u.form);
-        if !u.example.is_empty() {
-            println!("  Example: {}", u.example);
+    let table = all();
+    let rows: Vec<&Usage> = table.iter().filter(|u| of(u, name)).collect();
+    match rows.as_slice() {
+        [u] => {
+            println!("  Usage: {}", u.form);
+            if !u.example.is_empty() {
+                println!("  Example: {}", u.example);
+            }
+            if !u.note.is_empty() {
+                println!("  Tip: {}", u.note);
+            }
         }
-        if !u.note.is_empty() {
-            println!("  Tip: {}", u.note);
-        }
+        several => print!("{}", lines(several)),
     }
+}
+
+/// What a form asks for after the command word: nothing (`chat`, the
+/// interactive form), a choice in brackets (`layers [query]`), or
+/// something required (`define <word>`).
+fn asks_for(form: &str, name: &str) -> String {
+    form.strip_prefix(name).unwrap_or(form).trim().to_string()
+}
+
+/// Whether this command must be given an argument: the table holds a form
+/// of it, and no form of it stands alone or asks only for a choice.
+/// `cognitive` must, `chat` and `layers` need not, and a word the table
+/// does not hold needs none, so unknown input is still text to learn from.
+pub fn wants_argument(name: &str) -> bool {
+    let forms: Vec<Usage> = all().into_iter().filter(|u| of(u, name)).collect();
+    let alone = |u: &Usage| {
+        let asks = asks_for(&u.form, name);
+        asks.is_empty() || asks.starts_with('[')
+    };
+    !forms.is_empty() && !forms.iter().any(alone)
+}
+
+/// Every form of one command, as `help` lists them: the form, then what it
+/// does. A command with subcommands says this when it is given one it does
+/// not know.
+pub fn forms(name: &str) -> String {
+    lines(&all().iter().filter(|u| of(u, name)).collect::<Vec<&Usage>>())
+}
+
+/// Each row as a line of its own, the forms in one column.
+fn lines(rows: &[&Usage]) -> String {
+    let widest = rows.iter().map(|u| u.form.chars().count()).max().unwrap_or(0);
+    rows.iter().map(|u| format!("  {:widest$}  - {}\n", u.form, u.what)).collect()
+}
+
+/// The command a typed word is: itself, or what `alias.tsv` says it is.
+/// Lowercased, since a command is one word whatever its case.
+pub fn canonical(typed: &str) -> String {
+    let typed = typed.to_lowercase();
+    let row = |l: &String| {
+        let (a, name) = l.split_once('\t')?;
+        match a.trim() == typed {
+            true => Some(name.trim().to_string()),
+            false => None,
+        }
+    };
+    lexfile::read(crate::data::path("command/alias.tsv")).iter().find_map(row).unwrap_or(typed)
 }
 
 /// The whole listing `help` prints: every group's forms, the columns as
@@ -77,10 +141,7 @@ pub fn listing() -> String {
             continue;
         }
         out += &format!("{heading}\n");
-        let widest = of_group.iter().map(|u| u.form.chars().count()).max().unwrap_or(0);
-        for u in of_group {
-            out += &format!("  {:widest$}  - {}\n", u.form, u.what);
-        }
+        out += &lines(&of_group);
         out += "\n";
     }
     out + "  Any unrecognized input is treated as text to learn from.\n"
@@ -101,6 +162,7 @@ mod tests {
         let groups: Vec<&String> = table.iter().map(|u| &u.group).filter(|g| *g != "-").collect();
         assert!(groups.iter().all(|g| GROUP.iter().any(|(k, _)| k == *g)), "an unknown group");
         say("define");
+        say("persona");
     }
 
     #[test]
@@ -114,6 +176,47 @@ mod tests {
         let dash: Vec<usize> =
             listing.lines().filter(|l| l.starts_with("  ") && l.contains(" - ")).map(|l| l.find(" - ").unwrap()).collect();
         assert!(dash.windows(2).filter(|w| w[0] != w[1]).count() <= GROUP.len(), "the columns line up within a group");
+    }
+
+    /// The dispatcher's two questions of the table: which words are
+    /// commands at all, and which of them take an argument.
+    #[test]
+    fn the_table_says_which_commands_take_an_argument() {
+        for takes in ["cognitive", "define", "eval", "generate", "learn", "resonance", "synonym", "wave"] {
+            assert!(wants_argument(takes), "{takes} is used with an argument");
+        }
+        for alone in ["chat", "help", "save", "load", "stats", "exit", "layers", "synthetic"] {
+            assert!(!wants_argument(alone), "{alone} is used alone");
+        }
+        assert!(!wants_argument("a sentence the table never heard of"), "unknown input is text to learn from");
+    }
+
+    /// The other words a command answers to are data, so the dispatcher's
+    /// match holds one name per command (docs/239).
+    #[test]
+    fn a_typed_word_is_the_command_it_names() {
+        for (typed, command) in [("cog", "cognitive"), ("OM", "oscillator"), ("ask", "instruct"), ("?", "help")] {
+            assert_eq!(canonical(typed), command, "{typed}");
+        }
+        assert_eq!(canonical("Define"), "define", "a command is one word whatever its case");
+        assert_eq!(canonical("hello there"), "hello there", "a word the table does not hold is itself");
+    }
+
+    /// What a command with subcommands says when it is given one it does
+    /// not know: the same lines `help` lists it by.
+    #[test]
+    fn a_commands_own_forms_are_the_lines_help_lists() {
+        let oscillator = forms("oscillator");
+        for form in ["oscillator eval", "oscillator wheel", "oscillator train"] {
+            assert!(oscillator.contains(form), "{oscillator}");
+        }
+        assert!(oscillator.lines().all(|l| l.contains(" - ")), "{oscillator}");
+        assert!(forms("persona").contains("persona list"), "{}", forms("persona"));
+        assert!(forms("there-is-no-such-command").is_empty());
+        // The same table, each padded to its own widest form: one command's
+        // forms line up with each other, `help`'s with the whole group.
+        let what = "Evaluate text in oscillator mode";
+        assert!(oscillator.contains(what) && listing().contains(what), "{oscillator}");
     }
 
     /// A line the table does not hold is no usage at all, and no panic.

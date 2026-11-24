@@ -1,4 +1,3 @@
-use crate::command::usage;
 use crate::command::Context;
 use phient::generate::Generator;
 
@@ -6,11 +5,6 @@ pub struct GenerateCmd;
 
 impl GenerateCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("generate");
-            return true;
-        }
-
         let prompt = crate::command::Parser::strip_quotes(ctx.arg);
         let mut generator = Generator::new(32, 0.15);
         let mut guided = false;

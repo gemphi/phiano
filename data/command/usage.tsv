@@ -28,6 +28,7 @@ persona add	persona add <name> "example 1" "example 2" ...	Create persona from e
 persona from	persona from <name> "block of their text"	Create persona from a text block	core	-	-
 persona impersonate	persona impersonate <name> "prompt"	Compose as persona	core	-	-
 persona match	persona match "unknown text"	Attribute text to closest persona	core	-	-
+persona list	persona list	List every persona	-	-	-
 persona chat	persona chat <name>	Chat with a persona interactively	core	-	-
 persona show	persona show <name>	Show one persona's fingerprint	-	-	-
 persona compare	persona compare <name_a> <name_b>	Compare two personas	-	-	-

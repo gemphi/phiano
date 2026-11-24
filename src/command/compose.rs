@@ -22,11 +22,6 @@ pub struct Compose;
 impl Compose {
     /// Composes text via recursive sector tournament.
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("compose");
-            return true;
-        }
-
         let parts = quoted(ctx.arg);
 
         if parts.is_empty() {

@@ -1,4 +1,3 @@
-use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 
@@ -13,11 +12,6 @@ pub struct CognitiveCmd;
 
 impl CognitiveCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("cognitive");
-            return true;
-        }
-
         let text = Parser::strip_quotes(ctx.arg);
         let result = ctx.cognitive_core.process(
             ctx.manifold,

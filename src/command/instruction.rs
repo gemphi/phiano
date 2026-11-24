@@ -1,4 +1,3 @@
-use crate::command::usage;
 use crate::command::answer::answer;
 use crate::command::Context;
 
@@ -13,11 +12,6 @@ pub struct InstructionCmd;
 
 impl InstructionCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
-        if ctx.arg.is_empty() {
-            usage::say("instruct");
-            return true;
-        }
-
         let response = answer(ctx, ctx.arg);
 
         println!("\n  ── instruction ({:?}) ──\n", response.intent);
