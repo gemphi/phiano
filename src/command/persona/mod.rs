@@ -11,6 +11,7 @@
 //!   persona chat <name>
 
 
+use crate::command::word::quoted;
 use crate::command::Context;
 use crate::persona::Impersonator;
 
@@ -57,7 +58,7 @@ impl PersonaCmd {
     }
 
     fn add(&self, ctx: &mut Context, rest: &str) -> bool {
-        let parts = parse_quoted(rest);
+        let parts = quoted(rest);
         if parts.len() < 2 {
             println!("  Usage: persona add <name> \"example 1\" \"example 2\" ...");
             return true;
@@ -70,7 +71,7 @@ impl PersonaCmd {
     }
 
     fn from(&self, ctx: &mut Context, rest: &str) -> bool {
-        let parts = parse_quoted(rest);
+        let parts = quoted(rest);
         if parts.len() < 2 {
             println!("  Usage: persona from <name> \"block of their text\"");
             println!("  The text is auto-split into sentences as examples.");
@@ -133,7 +134,7 @@ impl PersonaCmd {
     }
 
     fn impersonate(&self, ctx: &mut Context, rest: &str) -> bool {
-        let parts = parse_quoted(rest);
+        let parts = quoted(rest);
         if parts.len() < 2 {
             println!("  Usage: persona impersonate <name> \"prompt\"");
             return true;
@@ -156,7 +157,7 @@ impl PersonaCmd {
     }
 
     fn match_text(&self, ctx: &mut Context, rest: &str) -> bool {
-        let parts = parse_quoted(rest);
+        let parts = quoted(rest);
         if parts.is_empty() {
             println!("  Usage: persona match \"unknown text\"");
             return true;
@@ -168,30 +169,4 @@ impl PersonaCmd {
         }
         true
     }
-}
-
-fn parse_quoted(s: &str) -> Vec<String> {
-    let mut parts = Vec::new();
-    let mut current = String::new();
-    let mut in_quotes = false;
-    let mut quote_char = '"';
-
-    for ch in s.chars() {
-        if !in_quotes && (ch == '"' || ch == '\'') {
-            in_quotes = true;
-            quote_char = ch;
-            current.clear();
-        } else if in_quotes && ch == quote_char {
-            in_quotes = false;
-            if !current.is_empty() { parts.push(current.clone()); }
-            current.clear();
-        } else if !in_quotes && ch.is_whitespace() {
-            if !current.is_empty() { parts.push(current.clone()); }
-            current.clear();
-        } else {
-            current.push(ch);
-        }
-    }
-    if !current.is_empty() { parts.push(current); }
-    parts
 }

@@ -38,12 +38,12 @@ pub(crate) fn draw_measured(g: &mut Seeded, i: usize) -> Measured {
     } else {
         None
     };
-    let verdict = if !has_bar {
-        Judged::Unjudged
-    } else if g.below(2) == 0 {
-        Judged::Pass
-    } else {
-        Judged::Miss { shortfall: (g.below(10_000) as f64) / 100.0 - 50.0 }
+    let verdict = match has_bar {
+        false => Judged::Unjudged,
+        true => match g.below(2) {
+            0 => Judged::Pass,
+            _ => Judged::Miss { shortfall: (g.below(10_000) as f64) / 100.0 - 50.0 },
+        },
     };
     let control =
         if g.below(2) == 0 { Some((format!("c.{i}"), (g.below(100_000) as f64) / 100.0)) } else { None };

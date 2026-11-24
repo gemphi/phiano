@@ -216,10 +216,10 @@ pub fn failing_names(output: &str) -> Vec<String> {
             continue;
         }
         if in_block {
-            if t.is_empty() || t.starts_with("test result:") {
-                in_block = false;
-            } else if !t.contains(' ') && !t.starts_with("----") {
-                names.push(t.to_string());
+            match t {
+                _ if t.is_empty() || t.starts_with("test result:") => in_block = false,
+                _ if !t.contains(' ') && !t.starts_with("----") => names.push(t.to_string()),
+                _ => {}
             }
         }
     }

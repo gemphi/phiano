@@ -20,7 +20,7 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 - [x] talk, workshop: run on the guide with the learner (docs/205): talk answers short and in grammar where the counted phasors run on; on the Key the learner completes 19.0% against 14.2% (counted phasors) and 17.2% (counts), one run, on the fly.
 - [ ] workshop: run with `--rehearse` (one pass over everything told after each page) and compare with the on-the-fly 19.0%.
 - [x] arena: `Operator` was missing from the lineup table (now `phient::lineup`'s table).
-- [ ] arena: `use crate::sys::Agent;` is repeated inside `Ecs::angle` and `Ecs::profile` (arena/ecs.rs).
+- [x] arena: `use crate::sys::Agent;` repeated inside `Ecs::angle` and `Ecs::profile` - the reader moved to `phient::lineup::ecs`, where the trait is already in the module's own use list, and the two copies inside the methods went (2026-11-24).
 
 ## Duplicates moved out (2026-10-27)
 
@@ -40,7 +40,7 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 ## Structure
 
 - [ ] The one cycle left: command ↔ drivers, 2 of the 15 modules, both app code (ARCHITECTURE.md), counted on code, not doc links. It was 25 (counting doc links) before the phasor, facet, wave, storage, memory, eval, metrics, the training cluster and the engine moved out.
-- [ ] The match-not-else-if rule is broken in bpe/pretokenize.rs:31, persona/fingerprint/traits.rs:31, eval/verdict.rs:12 and eval/verdict.rs:91.
+- [x] The match-not-else-if rule (2026-11-24): no else-if chain is left in phiano. `persona/fingerprint/personality.rs` (the row's `fingerprint/traits.rs`, renamed), `command/compose.rs` and `command/persona/mod.rs`, `bin/harness/curriculum.rs`, `bin/harness/spawn.rs`, `bin/harness/record/page.rs`, `record/parse.rs` and `record/tests/mod.rs`. The row's two other files left phiano with their modules: `bpe/pretokenize.rs` went to phiton with the tokeniser (the chain there is a match too, its three bpe tests pass) and `eval/verdict.rs` with eval.
 - [ ] Whole-module `#![allow(dead_code)]` hides unused parts in instruction and wiki.
 
 ## Dead or unwired modules
@@ -57,7 +57,7 @@ The readers that need nothing of phiano's (counts, concepts, the mirror, the ope
 
 - [ ] metrics: `BenchmarkRunner::run_all` trains the live facet it measures, so running the benchmark changes the model (metrics/benchmark/runner.rs:64-65, metrics/arc.rs:112-114).
 - [ ] metrics: shortcut detection runs on a fixed template, not on model output (metrics/benchmark/runner.rs:75-76).
-- [ ] wiki: `&extract[..5000]` cuts at a byte index and panics inside a multi-byte character (wiki/extracts.rs:99, :146).
+- [x] wiki: `&extract[..5000]` cut at a byte index and panicked inside a multi-byte character - the module moved to phient (`train/wiki/extracts.rs`), where `cut` now takes at most `MOST` bytes back to where a character ends, at both sites; one test, the halved character and the two edges beside it (2026-11-24).
 - [ ] server: the `flow` handler panics on a poisoned lock; the others return a status code (server/routes/flow.rs:30).
 - [ ] server: handlers build a new `ChunkStore` per request, some with a hard-coded "data/chunks" (server/routes/chat.rs:95, server/routes/cognitive.rs:53); model does the same four times (model/run.rs:45, :48, :67, :84).
 - [ ] persona: `match_text` and `match_text_with` disagree when the best score is ≤ 0 (persona/world/personas.rs:100 vs persona/world/matching.rs:40).

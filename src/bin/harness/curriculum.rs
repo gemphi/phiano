@@ -208,24 +208,21 @@ impl CurriculumRunner {
     /// For every outcome but `Measured` the weights file is asserted unchanged
     /// against the hash taken at `new`, so no new weights were written.
     pub fn classify(&self, c: &Candidate, r: &Reported) -> CandidateResult {
-        let result = if r.epochs_finished < c.epochs() {
-            CandidateResult::Incomplete {
+        let result = match r {
+            _ if r.epochs_finished < c.epochs() => CandidateResult::Incomplete {
                 epochs_finished: r.epochs_finished,
                 reason: r.stop_reason.clone(),
-            }
-        } else if r.cut != self.test.cut {
-            CandidateResult::NotComparable { used: r.cut }
-        } else if is_regression(r.top1, r.perplexity) {
-            CandidateResult::Regression {
+            },
+            _ if r.cut != self.test.cut => CandidateResult::NotComparable { used: r.cut },
+            _ if is_regression(r.top1, r.perplexity) => CandidateResult::Regression {
                 top1: one_decimal(r.top1),
                 perplexity: one_decimal(r.perplexity),
-            }
-        } else {
-            CandidateResult::Measured {
+            },
+            _ => CandidateResult::Measured {
                 top1: one_decimal(r.top1),
                 perplexity: one_decimal(r.perplexity),
                 scored: self.test.scored(),
-            }
+            },
         };
         if !matches!(result, CandidateResult::Measured { .. }) {
             assert_eq!(

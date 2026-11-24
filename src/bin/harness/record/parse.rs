@@ -67,14 +67,10 @@ fn parse_control(s: &str) -> Option<(String, f64)> {
 /// Parse the verdict cell: `pass`, `unjudged`, or `miss <shortfall>`.
 fn parse_verdict(s: &str) -> Option<Judged> {
     let s = s.trim();
-    if s == "pass" {
-        Some(Judged::Pass)
-    } else if s == "unjudged" {
-        Some(Judged::Unjudged)
-    } else if let Some(rest) = s.strip_prefix("miss ") {
-        Some(Judged::Miss { shortfall: num(rest)? })
-    } else {
-        None
+    match s {
+        "pass" => Some(Judged::Pass),
+        "unjudged" => Some(Judged::Unjudged),
+        _ => s.strip_prefix("miss ").and_then(num).map(|shortfall| Judged::Miss { shortfall }),
     }
 }
 

@@ -26,14 +26,12 @@ impl PersonalityMapper {
             let phiton_color = phient::generate::compose::SectorPalette::phiton_color(sector);
             let band = phiton_color.band;
 
-            if band.is_warm() {
-                warm += weight;
-            } else if band.is_cool() {
-                cool += weight;
-            } else if band.is_green() {
-                green += weight;
-            } else {
-                green += weight * 0.7;
+            match band {
+                _ if band.is_warm() => warm += weight,
+                _ if band.is_cool() => cool += weight,
+                _ if band.is_green() => green += weight,
+                // Whatever the band is, it leans green, but not wholly.
+                _ => green += weight * 0.7,
             }
             total += weight;
         }

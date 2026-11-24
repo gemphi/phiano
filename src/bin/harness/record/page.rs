@@ -134,16 +134,11 @@ fn row(m: &Measured, previous: &BTreeMap<String, Bar>) -> String {
 /// Format a float stably: a finite value with no trailing noise, the three
 /// non-finite values by name so the parser reads them back.
 pub(super) fn fmt(v: f64) -> String {
-    if v.is_nan() {
-        "nan".to_string()
-    } else if v.is_infinite() {
-        if v > 0.0 {
-            "inf".to_string()
-        } else {
-            "-inf".to_string()
-        }
-    } else {
-        format!("{v}")
+    match v {
+        _ if v.is_nan() => "nan".to_string(),
+        _ if v == f64::INFINITY => "inf".to_string(),
+        _ if v == f64::NEG_INFINITY => "-inf".to_string(),
+        _ => format!("{v}"),
     }
 }
 
