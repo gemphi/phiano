@@ -23,10 +23,12 @@
 //! it is read as: a lever renamed when the learner took it over keeps one
 //! series under the new name (`forget` by flag is `stride`'s history since
 //! docs/234), so the table shows the record's name and the proposer reads
-//! the series. A lever read as `!` is not a lever to pull but a change of
-//! measure (`reader`, docs/237: the same learner told nothing, scored on
-//! the guide read anew), kept in the record so the next row's gain is
-//! against the same reading, and never proposed.
+//! the series. A lever read as `!` is not a lever to pull: either a change
+//! of measure (`reader`, docs/237: the same learner told nothing, scored on
+//! the guide read anew) or the learner's own state, which every checkpoint
+//! carries and no run can pull (`stride`, and `forget` before it, docs/238).
+//! Its rows are kept, so the next row's gain is read against them, and it
+//! is never proposed.
 
 use std::path::PathBuf;
 
@@ -231,6 +233,22 @@ mod tests {
         ];
         let out = propose(&all);
         assert!(out.contains("not proposed: `guide` paid the guide's register +2.0 with the never-told one (-21.0)"), "{out}");
+        assert!(out.contains("proposal: pull `text+guide` again"), "{out}");
+    }
+
+    /// The learner's state is not a lever: `stride` is carried in every
+    /// checkpoint (docs/235), so the record must not propose pulling it
+    /// however well its rows read (docs/238).
+    #[test]
+    fn the_learners_own_state_is_not_proposed() {
+        let all = vec![
+            row("a", "-", "guide", 80.0, 100.0),
+            row("b", "a", "stride", 76.0, 96.0),
+            row("c", "b", "text+guide", 75.9, 95.9),
+        ];
+        let out = propose(&all);
+        assert!(!out.contains("pull `stride`"), "{out}");
+        assert!(!out.contains("pull `forget`"), "{out}");
         assert!(out.contains("proposal: pull `text+guide` again"), "{out}");
     }
 
