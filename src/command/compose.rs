@@ -1,3 +1,4 @@
+use crate::command::usage;
 use super::word::quoted;
 use crate::command::Context;
 use phient::generate::compose::Composition;
@@ -22,16 +23,14 @@ impl Compose {
     /// Composes text via recursive sector tournament.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: compose \"prompt\" [rounds] [\"example 1\"] [\"example 2\"] ...");
-            println!("  Generates 64 sector variations, evaluates, trains on better, recurses.");
-            println!("  Examples shape the facet before composing (learn by example).");
+            usage::say("compose");
             return true;
         }
 
         let parts = quoted(ctx.arg);
 
         if parts.is_empty() {
-            println!("  Usage: compose \"prompt\" [rounds] [\"example 1\"] ...");
+            usage::say("compose");
             return true;
         }
 

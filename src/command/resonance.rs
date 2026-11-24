@@ -1,3 +1,5 @@
+use crate::command::ranked::ranked;
+use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phiecs::phasor::wave::Wave;
@@ -14,7 +16,7 @@ impl Resonance {
     /// Finds and prints words resonating with the given text.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: resonance \"some text\" [count]");
+            usage::say("resonance");
             return true;
         }
 
@@ -30,13 +32,7 @@ impl Resonance {
         let query = Wave::sentence_channels(ctx.manifold, &words, false);
         let matches = Wave::ray_cast_channels(ctx.manifold, &query, count);
 
-        if matches.is_empty() {
-            println!("  No resonant words found.");
-        } else {
-            for (rank, (w, delta)) in matches.iter().enumerate() {
-                println!("  Rank {}: {:<15} ΔC = {:.8}", rank + 1, w, delta);
-            }
-        }
+        ranked(&matches);
         true
     }
 }

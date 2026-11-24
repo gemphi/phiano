@@ -11,6 +11,7 @@
 //!   persona chat <name>
 
 
+use crate::command::usage;
 use crate::command::word::quoted;
 use crate::command::Context;
 use crate::persona::Impersonator;
@@ -60,7 +61,7 @@ impl PersonaCmd {
     fn add(&self, ctx: &mut Context, rest: &str) -> bool {
         let parts = quoted(rest);
         if parts.len() < 2 {
-            println!("  Usage: persona add <name> \"example 1\" \"example 2\" ...");
+            usage::say("persona add");
             return true;
         }
         let name = parts[0].clone();
@@ -73,7 +74,7 @@ impl PersonaCmd {
     fn from(&self, ctx: &mut Context, rest: &str) -> bool {
         let parts = quoted(rest);
         if parts.len() < 2 {
-            println!("  Usage: persona from <name> \"block of their text\"");
+            usage::say("persona from");
             println!("  The text is auto-split into sentences as examples.");
             return true;
         }
@@ -110,7 +111,7 @@ impl PersonaCmd {
     fn show(&self, ctx: &mut Context, rest: &str) -> bool {
         let name = rest.trim();
         if name.is_empty() {
-            println!("  Usage: persona show <name>");
+            usage::say("persona show");
             return true;
         }
         match ctx.world.get(name) {
@@ -123,7 +124,7 @@ impl PersonaCmd {
     fn compare(&self, ctx: &mut Context, rest: &str) -> bool {
         let parts: Vec<&str> = rest.split_whitespace().collect();
         if parts.len() < 2 {
-            println!("  Usage: persona compare <name_a> <name_b>");
+            usage::say("persona compare");
             return true;
         }
         match ctx.world.compare(parts[0], parts[1]) {
@@ -136,7 +137,7 @@ impl PersonaCmd {
     fn impersonate(&self, ctx: &mut Context, rest: &str) -> bool {
         let parts = quoted(rest);
         if parts.len() < 2 {
-            println!("  Usage: persona impersonate <name> \"prompt\"");
+            usage::say("persona impersonate");
             return true;
         }
         let name = parts[0].clone();
@@ -159,7 +160,7 @@ impl PersonaCmd {
     fn match_text(&self, ctx: &mut Context, rest: &str) -> bool {
         let parts = quoted(rest);
         if parts.is_empty() {
-            println!("  Usage: persona match \"unknown text\"");
+            usage::say("persona match");
             return true;
         }
         let text = parts.join(" ");

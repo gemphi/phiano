@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phient::train::envision::Envision;
@@ -18,7 +19,7 @@ impl Learn {
     /// Trains the facet on the provided text.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: learn \"some text to learn from\"");
+            usage::say("learn");
             println!("         learn multi \"text\" [epochs] [warmup]");
             return true;
         }
@@ -42,7 +43,7 @@ impl Learn {
         let rest = ctx.arg.strip_prefix("multi ").unwrap_or("");
         let parts: Vec<&str> = rest.split_whitespace().collect();
         if parts.is_empty() {
-            println!("  Usage: learn multi \"text\" [epochs] [warmup]");
+            usage::say("learn multi");
             return true;
         }
 

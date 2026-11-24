@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 
@@ -13,8 +14,7 @@ pub struct CognitiveCmd;
 impl CognitiveCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: cognitive \"a sentence to analyze\"");
-            println!("  Example: cognitive \"a dog is a 4 legged animal\"");
+            usage::say("cognitive");
             return true;
         }
 

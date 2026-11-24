@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use philog::ReasoningEngine;
 
@@ -6,8 +7,7 @@ pub struct ReasoningCmd;
 impl ReasoningCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: reason <problem or question>");
-            println!("  Example: reason solve concurrency thread safety and mutex locking");
+            usage::say("reason");
             return true;
         }
 

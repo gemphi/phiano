@@ -1,3 +1,4 @@
+use crate::command::usage;
 use phient::train::chunker::ChunkStore;
 use crate::command::Context;
 use crate::command::Parser;
@@ -19,7 +20,7 @@ impl Define {
     /// Fetches definitions for the given word and trains the facet.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: define <word>");
+            usage::say("define");
             return true;
         }
 

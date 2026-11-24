@@ -1,3 +1,5 @@
+use crate::command::ranked::ranked;
+use crate::command::usage;
 use crate::command::Context;
 use phiecs::phasor::wave::Wave;
 
@@ -12,7 +14,7 @@ impl Synonym {
     /// Finds and prints the nearest resonant words for the given word.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: synonym <word> [count]");
+            usage::say("synonym");
             return true;
         }
 
@@ -26,13 +28,7 @@ impl Synonym {
 
         let matches = Wave::ray_cast_word(ctx.manifold, &word, count);
 
-        if matches.is_empty() {
-            println!("  No resonant matches found.");
-        } else {
-            for (rank, (w, delta)) in matches.iter().enumerate() {
-                println!("  Rank {}: {:<15} ΔC = {:.8}", rank + 1, w, delta);
-            }
-        }
+        ranked(&matches);
         true
     }
 }

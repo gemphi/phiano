@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use phient::train::synthetic::{SyntheticCurriculumPipeline, SyntheticGenerator};
 
@@ -25,7 +26,7 @@ impl SyntheticCmd {
                 println!("  [synthetic] successfully generated & trained on {} high-quality sentences.\n", count);
             }
             _ => {
-                println!("  Usage: synthetic [pairs | pipeline]");
+                usage::say("synthetic");
             }
         }
 

@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phiecs::phasor::wave::Wave as WaveUtil;
@@ -14,7 +15,7 @@ impl WaveCmd {
     /// Computes and prints the wave representation of the given text.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: wave \"some text\"");
+            usage::say("wave");
             return true;
         }
 

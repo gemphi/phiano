@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::answer::{answer, generator};
 use crate::command::Context;
 use crate::instruction::InstructionEngine;
@@ -27,7 +28,7 @@ impl ChatCmd {
                     let rest = ctx.arg.strip_prefix("--verbose").unwrap_or("").trim();
                     match rest.is_empty() {
                         true => {
-                            println!("  Usage: chat --verbose \"your question\"");
+                            usage::say("chat --verbose");
                             true
                         }
                         false => self.single_shot(ctx, rest, true),

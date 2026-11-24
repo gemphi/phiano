@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phient::train::envision::Envision;
@@ -15,7 +16,7 @@ impl Eval {
     /// Evaluates the provided text and prints the results.
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: eval \"some text to evaluate\"");
+            usage::say("eval");
             return true;
         }
 

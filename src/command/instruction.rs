@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::answer::answer;
 use crate::command::Context;
 
@@ -13,10 +14,7 @@ pub struct InstructionCmd;
 impl InstructionCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: instruct <instruction or question>");
-            println!("  Example: instruct explain ownership and borrowing in Rust");
-            println!("  Example: instruct write a haiku about stars");
-            println!("  Tip: use 'chat' for clean conversational mode");
+            usage::say("instruct");
             return true;
         }
 

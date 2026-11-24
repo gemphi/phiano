@@ -15,32 +15,7 @@ pub async fn cognitive(
     let mut ctx_buf = phient::generate::ContextWaveBuffer::new(4096);
     let result = guard.cognitive_core.process(&guard.facet, &mut ctx_buf, &req.text);
 
-    let agent_outputs: Vec<CognitiveAgentOutput> = result.agent_outputs.iter()
-        .map(|c| CognitiveAgentOutput {
-            agent_name: c.agent_name.to_string(),
-            agent_role: c.agent_role.to_string(),
-            confidence: c.confidence,
-            output: c.output.clone(),
-        })
-        .collect();
-
-    Ok(Json(CognitiveResponse {
-        prompt: result.prompt,
-        synthesized_output: result.synthesized_output,
-        coherence: result.coherence,
-        intentionality_phase: result.intentionality_phase,
-        speech_act: result.speech_act,
-        direction_of_fit: result.direction_of_fit,
-        satisfaction: result.satisfaction,
-        agent_outputs,
-        vocabulary: guard.facet.vocabulary_size(),
-        intentional_states: result.intentional_states,
-        felicity_conditions: result.felicity_conditions,
-        perlocutionary_effect: result.perlocutionary_effect,
-        propositional_content: result.propositional_content,
-        speaker_meaning: result.speaker_meaning,
-        literal_meaning: result.literal_meaning,
-    }))
+    Ok(Json(CognitiveResponse { result, vocabulary: guard.facet.vocabulary_size() }))
 }
 
 #[allow(dead_code)]

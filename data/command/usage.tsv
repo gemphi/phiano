@@ -1,0 +1,47 @@
+# How every command is used: the one table `help` lists and every command
+# falls back on when it is asked with no argument (phiano command/usage.rs).
+# Six tab-separated columns; "-" where there is nothing to say.
+#
+# name	form	what	group	example	note
+#
+# group: core and driver are listed by `help`, in that order; "-" is a form
+# `help` does not list, said only by the command itself.
+learn	learn "some text to learn from"	Train on a sentence (online learning)	core	-	-
+learn multi	learn multi "text" [epochs] [warmup]	Train on the same text over several epochs	-	-	-
+define	define <word>	Fetch & learn a word's definition	core	-	-
+eval	eval "some text to evaluate"	Score text: coherence, novelty, resonance	core	-	-
+compose	compose "prompt" [rounds] ["example"] ...	Recursive sector composition	core	-	64 sector variations, evaluated, the better trained on, recursed; the examples shape the facet first (learn by example)
+generate	generate <prompt>	Phase-guided sequence generation (Phase 2)	core	generate Rust concurrency and memory model	-
+instruct	instruct <instruction or question>	Execute prompt via instruction engine (verbose)	core	instruct explain ownership and borrowing in Rust	use 'chat' for clean conversational mode
+chat	chat "question"	Clean conversational response (no diagnostics)	core	-	-
+chat interactive	chat	Interactive multi-turn chat mode	core	-	-
+chat --verbose	chat --verbose "your question"	Chat with cognitive metadata	core	-	-
+reason	reason <problem or question>	Phase-space pathfinding reasoning chain (Phase 6)	core	reason solve concurrency thread safety and mutex locking	-
+layers	layers [query]	Inspect 4-layer hierarchical phase depth (Phase 3)	core	-	-
+synthetic	synthetic [pairs | pipeline]	Self-curriculum synthetic generation (Phase 5)	core	-	-
+oscillator eval	oscillator eval "text to evaluate"	Evaluate text in oscillator mode	core	-	-
+oscillator wheel	oscillator wheel	Show the oscillator colour wheel	core	-	-
+oscillator sphere	oscillator sphere "text"	Show sphere projection for text	core	-	-
+oscillator compare	oscillator compare "text"	Compare transform vs oscillator models	core	-	-
+oscillator train	oscillator train "text" [epochs]	Train using oscillator sync	core	-	-
+persona add	persona add <name> "example 1" "example 2" ...	Create persona from examples	core	-	-
+persona from	persona from <name> "block of their text"	Create persona from a text block	core	-	-
+persona impersonate	persona impersonate <name> "prompt"	Compose as persona	core	-	-
+persona match	persona match "unknown text"	Attribute text to closest persona	core	-	-
+persona chat	persona chat <name>	Chat with a persona interactively	core	-	-
+persona show	persona show <name>	Show one persona's fingerprint	-	-	-
+persona compare	persona compare <name_a> <name_b>	Compare two personas	-	-	-
+cognitive	cognitive "a sentence to analyze"	Full 16-agent cognitive analysis (Searle pipeline)	core	cognitive "a dog is a 4 legged animal"	-
+synonym	synonym <word> [count]	Find the nearest resonant words	core	-	-
+resonance	resonance "some text" [count]	Find words resonating with a sentence wave	core	-	-
+wave	wave "some text"	Show the sentence's complex wave	core	-	-
+save	save	Save facet to disk	core	-	-
+load	load	Load facet from disk	core	-	-
+stats	stats	Show facet statistics	core	-	-
+help	help	Show this help	core	-	-
+exit	exit	Save and quit	core	-	-
+ingest	ingest <file.txt>	Bulk ingest local definitions	driver	-	-
+ingest-json	ingest-json <file.json> [n]	Bulk ingest JSON dictionary	driver	-	-
+ingest-wiktionary	ingest-wiktionary <file>	Bulk ingest Wiktionary JSON/JSONL dump	driver	-	-
+chunk	chunk <dictionary.json>	Split large dictionary into data/chunks/	driver	-	-
+train	train [epochs]	Train from all chunks in parallel	driver	-	-

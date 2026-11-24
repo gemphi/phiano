@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use crate::command::Parser;
 use phiecs::phasor::oscillator::{OscillatorField, SphereView, OscillatorTrainer};
@@ -57,7 +58,7 @@ impl OscillatorCmd {
     fn eval(&self, ctx: &mut Context, rest: &str) -> bool {
         let text = Parser::strip_quotes(rest);
         if text.is_empty() {
-            println!("  Usage: oscillator eval \"text to evaluate\"");
+            usage::say("oscillator eval");
             return true;
         }
 
@@ -70,7 +71,7 @@ impl OscillatorCmd {
     fn sphere(&self, ctx: &mut Context, rest: &str) -> bool {
         let text = Parser::strip_quotes(rest);
         if text.is_empty() {
-            println!("  Usage: oscillator sphere \"text\"");
+            usage::say("oscillator sphere");
             return true;
         }
 
@@ -93,7 +94,7 @@ impl OscillatorCmd {
     fn compare(&self, ctx: &mut Context, rest: &str) -> bool {
         let text = Parser::strip_quotes(rest);
         if text.is_empty() {
-            println!("  Usage: oscillator compare \"text\"");
+            usage::say("oscillator compare");
             return true;
         }
 
@@ -106,7 +107,7 @@ impl OscillatorCmd {
         let parts: Vec<&str> = rest.splitn(2, char::is_whitespace).collect();
         let text = Parser::strip_quotes(parts.first().copied().unwrap_or(""));
         if text.is_empty() {
-            println!("  Usage: oscillator train \"text\" [epochs]");
+            usage::say("oscillator train");
             return true;
         }
         let epochs: usize = parts

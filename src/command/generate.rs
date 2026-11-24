@@ -1,3 +1,4 @@
+use crate::command::usage;
 use crate::command::Context;
 use phient::generate::Generator;
 
@@ -6,8 +7,7 @@ pub struct GenerateCmd;
 impl GenerateCmd {
     pub fn apply(&self, ctx: &mut Context) -> bool {
         if ctx.arg.is_empty() {
-            println!("  Usage: generate <prompt>");
-            println!("  Example: generate Rust concurrency and memory model");
+            usage::say("generate");
             return true;
         }
 

@@ -5,6 +5,7 @@
 //! in [`PersonaChatLoop`], following the Diem convention that all public symbols
 //! belong to named types.
 
+use crate::command::usage;
 use crate::command::Context;
 use crate::persona::Impersonator;
 use std::io::{BufRead, Write};
@@ -17,7 +18,7 @@ impl PersonaChatLoop {
     pub fn chat(ctx: &mut Context, rest: &str) -> bool {
         let name = rest.trim();
         if name.is_empty() {
-            println!("  Usage: persona chat <name>");
+            usage::say("persona chat");
             return true;
         }
 
