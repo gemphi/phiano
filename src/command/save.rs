@@ -27,7 +27,7 @@ impl Save {
 
     /// Loads the facet from disk.
     pub fn load(&self, ctx: &mut Context) -> bool {
-        match Storage::load(config::CHROMA_FILE) {
+        match Storage::load(&crate::data::path(config::CHROMA_FILE)) {
             Ok(m) => {
                 *ctx.manifold = m;
                 println!("  [loaded] {} words", ctx.manifold.vocabulary_size());

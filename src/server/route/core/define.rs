@@ -10,7 +10,7 @@ pub async fn define_word(
 
     // Multi-stage blocking auto-feed & lemmatization lookup
     let (source, final_def, plain_defs) = tokio::task::spawn_blocking(move || {
-        let api = phient::train::sources::api::ApiSource::new(crate::config::API_CACHE_FILE);
+        let api = phient::train::sources::api::ApiSource::new(&crate::data::path(crate::config::API_CACHE_FILE));
 
         // Stage 1: Exact Free Dictionary API lookup
         if let Some(rich) = api.fetch_word_rich(&word_clone) {
@@ -50,7 +50,7 @@ pub async fn define_word(
         }
 
         // Stage 5: Local Definitions Cache fallback
-        let loc = phient::train::sources::local::LocalSource::new(crate::config::DEFINITIONS_FILE);
+        let loc = phient::train::sources::local::LocalSource::new(&crate::data::path(crate::config::DEFINITIONS_FILE));
         let local_defs = loc.fetch_definitions(&word_clone);
         if !local_defs.is_empty() {
             return ("Local Definitions Cache".to_string(), local_defs.join("\n"), local_defs);

@@ -66,10 +66,13 @@ impl Model {
     }
 
     /// Persists without printing a banner — used for automatic checkpoints.
+    /// Every store goes under phiano's data folder, wherever the process was
+    /// started (a run from the workspace root wrote the memo and the
+    /// corrections into the root).
     pub(super) fn scale_quiet(&self) {
         let _ = Storage::save(&self.facet, &crate::data::path(config::CHROMA_FILE));
-        let _ = self.memo.save_to_file(config::MEMORY_FILE);
-        let _ = self.corrections.save(config::CORRECTION_FILE);
+        let _ = self.memo.save_to_file(&crate::data::path(config::MEMORY_FILE));
+        let _ = self.corrections.save(&crate::data::path(config::CORRECTION_FILE));
     }
 
     /// Envision phase: detect knowledge gaps and close them where possible.
@@ -102,21 +105,18 @@ impl Model {
     ///
     /// Called on exit to ensure all learned knowledge is saved.
     pub fn scale(&self) {
-        if let Err(e) = Storage::save(&self.facet, &crate::data::path(config::CHROMA_FILE)) {
-            eprintln!("  [ERROR] could not save {}: {}", &crate::data::path(config::CHROMA_FILE), e);
+        let [chroma, memory, correction] = [config::CHROMA_FILE, config::MEMORY_FILE, config::CORRECTION_FILE].map(crate::data::path);
+        if let Err(e) = Storage::save(&self.facet, &chroma) {
+            eprintln!("  [ERROR] could not save {}: {}", chroma, e);
             return;
         }
-        if let Err(e) = self.memo.save_to_file(config::MEMORY_FILE) {
-            eprintln!("  [ERROR] could not save {}: {}", &crate::data::path(config::MEMORY_FILE), e);
+        if let Err(e) = self.memo.save_to_file(&memory) {
+            eprintln!("  [ERROR] could not save {}: {}", memory, e);
         }
-        if let Err(e) = self.corrections.save(config::CORRECTION_FILE) {
-            eprintln!("  [ERROR] could not save {}: {}", &crate::data::path(config::CORRECTION_FILE), e);
+        if let Err(e) = self.corrections.save(&correction) {
+            eprintln!("  [ERROR] could not save {}: {}", correction, e);
         }
-        println!(
-            "  [saved] {} ({} words)",
-            &crate::data::path(config::CHROMA_FILE),
-            self.facet.vocabulary_size(),
-        );
+        println!("  [saved] {} ({} words)", chroma, self.facet.vocabulary_size());
     }
 }
 

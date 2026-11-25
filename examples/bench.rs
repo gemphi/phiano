@@ -1,4 +1,4 @@
-use phiano::config::CHROMA_FILE;
+use phiano::{config::CHROMA_FILE, data};
 use phient::eval::Evaluator;
 use phiecs::phasor::facet::Facet;
 use phient::generate::{ContextWaveBuffer, Generator};
@@ -19,7 +19,7 @@ const PROMPTS: &[&str] = &[
 fn main() {
     let path = std::env::args()
         .nth(1)
-        .unwrap_or_else(|| CHROMA_FILE.to_string());
+        .unwrap_or_else(|| data::path(CHROMA_FILE));
 
     let mut facet = match Storage::load(&path) {
         Ok(f) => f,

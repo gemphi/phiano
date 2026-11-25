@@ -6,7 +6,11 @@ impl Model {
     ///
     /// If no saved data exists, starts with an empty facet and memory.
     pub fn new() -> Self {
-        let mut facet = match Storage::load(config::CHROMA_FILE) {
+        // Every store is read from phiano's data folder, wherever the process
+        // was started: read from the working directory, a run from the
+        // workspace root found no lexicon and then saved an empty one over it.
+        let chroma = crate::data::path(config::CHROMA_FILE);
+        let mut facet = match Storage::load(&chroma) {
             Ok(m) => {
                 println!("  [loaded] {} words", m.vocabulary_size());
                 m
@@ -14,13 +18,10 @@ impl Model {
             Err(e) => {
                 // Never fail silently into an empty model: a corrupt or
                 // future-format file used to look exactly like a first run.
-                if std::path::Path::new(config::CHROMA_FILE).exists() {
-                    eprintln!(
-                        "  [WARN] could not load {}: {} — starting from an empty lexicon",
-                        &crate::data::path(config::CHROMA_FILE), e
-                    );
+                if std::path::Path::new(&chroma).exists() {
+                    eprintln!("  [WARN] could not load {}: {} — starting from an empty lexicon", chroma, e);
                 }
-                let _ = fs::create_dir_all("data");
+                let _ = fs::create_dir_all(crate::data::dir());
                 Facet::new()
             }
         };
@@ -47,13 +48,13 @@ impl Model {
 
         let cognitive_core = CognitiveCore::new(ChunkStore::new(&crate::data::path("chunks")));
 
-        let memo = Memo::load_from_file(config::MEMORY_FILE)
+        let memo = Memo::load_from_file(&crate::data::path(config::MEMORY_FILE))
             .unwrap_or_else(|_| Memo::new());
 
         // Replay what the user taught. Grounding and bootstrap both rewrite
         // phases from source data, which would otherwise silently undo every
         // correction the user has ever made.
-        let corrections = phient::train::correction::CorrectionLog::load(config::CORRECTION_FILE);
+        let corrections = phient::train::correction::CorrectionLog::load(&crate::data::path(config::CORRECTION_FILE));
         if !corrections.is_empty() {
             let trainer = Trainer::new(config::LEARNING_RATE);
             let n = corrections.replay(&mut facet, &trainer);

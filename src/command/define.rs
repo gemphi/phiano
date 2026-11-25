@@ -21,7 +21,7 @@ impl Define {
         let word = Parser::strip_quotes(ctx.arg).to_lowercase();
         println!("  Fetching definition for '{}'...\n", word);
 
-        let api = ApiSource::new(config::API_CACHE_FILE);
+        let api = ApiSource::new(&crate::data::path(config::API_CACHE_FILE));
 
         // 1. Try Free Dictionary API for rich definition
         if let Some(rich_def) = api.fetch_word_rich(&word) {
@@ -49,7 +49,7 @@ impl Define {
 
     /// Falls back to the local definitions file when API and chunks have no results.
     fn try_local(&self, ctx: &mut Context, word: &str) -> bool {
-        let local = LocalSource::new(config::DEFINITIONS_FILE);
+        let local = LocalSource::new(&crate::data::path(config::DEFINITIONS_FILE));
         let local_defs = local.fetch_definitions(word);
 
         if local_defs.is_empty() {

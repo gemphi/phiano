@@ -8,7 +8,7 @@ impl GenerateCmd {
         let prompt = crate::command::Parser::strip_quotes(ctx.arg);
         let mut generator = Generator::new(32, 0.15);
         let mut guided = false;
-        if std::path::Path::new(crate::config::OPERATOR_FILE).exists() {
+        if std::path::Path::new(&crate::data::path(crate::config::OPERATOR_FILE)).exists() {
             match phient::generate::OperatorGuide::load(
                 &crate::data::path(crate::config::OPERATOR_FILE),
                 ctx.manifold,
