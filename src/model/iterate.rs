@@ -8,15 +8,12 @@ impl Model {
     /// Parses the command, creates a context, dispatches to the appropriate
     /// command handler, then runs the envision phase to detect gaps.
     pub(super) fn iterate(&mut self, line: &str) {
-        let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
-        let cmd = parts[0].to_lowercase();
+        let cmd = crate::command::word::asked(line).0.to_lowercase();
 
         if cmd == "exit" || cmd == "quit" {
             self.scale();
             return;
         }
-
-        let arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
 
         // Prime the context wave with relevant past turns before dispatching.
         let recalled = self.recall_context(line);
@@ -24,9 +21,7 @@ impl Model {
             self.context_buffer.push_turn(&self.facet, past);
         }
 
-        let mut ctx = self.context(line, arg);
-
-        match Dispatcher::dispatch(line, &mut ctx) {
+        match self.say(line) {
             true => {}
             false => return,
         }

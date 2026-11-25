@@ -1,7 +1,19 @@
-//! The words of a line a person typed, a quoted run kept whole.
+//! The words of a line a person typed, a quoted run kept whole, and the
+//! command word a line opens with.
 //!
 //! `compose` and `persona` both took an argument apart this way, each with
-//! its own copy of the scan (2026-11-24); the scan lives here once.
+//! its own copy of the scan (2026-11-24); the scan lives here once. So did
+//! the first cut of a line - the command word and the rest - which the
+//! dispatcher, the driver dispatcher, the prompt loop and the server's
+//! command route each wrote out (2026-11-25).
+
+/// A line read as a command: the word it opens with, and the rest of it
+/// trimmed. Both are empty for an empty line, and the rest is empty for a
+/// line of one word.
+pub fn asked(line: &str) -> (&str, &str) {
+    let mut part = line.splitn(2, char::is_whitespace);
+    (part.next().unwrap_or(""), part.next().map(str::trim).unwrap_or(""))
+}
 
 /// The words of `line`: a run between a pair of quotes is one word, whichever
 /// quote opened it, and whitespace parts the rest. What was built before an
@@ -38,6 +50,19 @@ fn say(word: &mut String, said: &mut Vec<String>) {
 
 #[cfg(test)]
 mod tests {
+    use super::asked;
+
+    /// What the dispatchers read off a line, and what the argument of a
+    /// command is before the command sees it.
+    #[test]
+    fn a_line_is_a_command_word_and_the_rest() {
+        assert_eq!(asked("define cat"), ("define", "cat"));
+        assert_eq!(asked("compose   \"a prompt\" 8"), ("compose", "\"a prompt\" 8"));
+        assert_eq!(asked("stats"), ("stats", ""));
+        assert_eq!(asked(""), ("", ""));
+        assert_eq!(asked("  leading"), ("", "leading"), "a line is cut where it is");
+    }
+
     use super::quoted;
 
     #[test]

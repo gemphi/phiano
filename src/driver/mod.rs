@@ -61,9 +61,9 @@ impl Driver {
     ///
     /// Returns Some(true/false) if handled, None if not a driver command.
     pub fn try_dispatch<'a>(line: &'a str, ctx: &mut Context<'a>) -> Option<bool> {
-        let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
-        let driver = Self::from_name(parts[0])?;
-        ctx.arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
+        let (asked, arg) = crate::command::word::asked(line);
+        let driver = Self::from_name(asked)?;
+        ctx.arg = arg;
         Some(Self::dispatch(driver, ctx))
     }
 }

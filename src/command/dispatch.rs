@@ -42,10 +42,10 @@ impl Dispatcher {
             return result;
         }
 
-        let parts: Vec<&str> = line.splitn(2, char::is_whitespace).collect();
-        let name = usage::canonical(parts[0]);
+        let (asked, arg) = word::asked(line);
+        let name = usage::canonical(asked);
         let cmd = Command::from_name(&name);
-        ctx.arg = parts.get(1).map(|s| s.trim()).unwrap_or("");
+        ctx.arg = arg;
 
         // A command that takes an argument and is asked with none is
         // answered from the table, so no command checks for itself

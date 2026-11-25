@@ -68,4 +68,13 @@ impl Model {
             line,
         }
     }
+
+    /// A line dispatched against this model: the context made and the
+    /// command run, the answer being whether the prompt goes on. The
+    /// dispatchers read the command's argument off the line themselves, so
+    /// no caller works it out (2026-11-25).
+    pub fn say<'a>(&'a mut self, line: &'a str) -> bool {
+        let mut ctx = self.context(line, "");
+        Dispatcher::dispatch(line, &mut ctx)
+    }
 }

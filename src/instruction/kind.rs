@@ -75,7 +75,7 @@ pub(super) fn compose_reply(
     }
 }
 
-impl fmt::Display for ChatResponse {
+impl fmt::Display for Answer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "  {}
 ", self.text)?;

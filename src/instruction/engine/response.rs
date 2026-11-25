@@ -16,7 +16,7 @@ impl InstructionEngine {
     ///
     /// # Returns
     ///
-    /// A [`ChatResponse`] containing the reply text, cognitive metadata,
+    /// A [`Answer`] containing the reply text, cognitive metadata,
     /// speech act classification, and phase trace.
     pub fn generate_response(
         facet: &mut Facet,
@@ -25,7 +25,7 @@ impl InstructionEngine {
         context_buffer: &mut ContextWaveBuffer,
         generator: &Generator,
         prompt: &str,
-    ) -> ChatResponse {
+    ) -> Answer {
         trainer.train_online(facet, prompt);
 
         let kind = InstructionKind::parse(prompt);
@@ -44,7 +44,7 @@ impl InstructionEngine {
         context_buffer.push_turn(facet, prompt);
         context_buffer.push_turn(facet, &text);
 
-        ChatResponse {
+        Answer {
             text,
             cognitive_synthesis: cognitive_result.synthesized_output,
             intent: kind,
@@ -66,7 +66,7 @@ impl InstructionEngine {
         cognitive_core: &CognitiveCore,
         context_buffer: &mut ContextWaveBuffer,
         prompt: &str,
-    ) -> ChatResponse {
+    ) -> Answer {
         self.phase_field.build_hierarchy(facet);
         Self::generate_response(facet, _trainer, cognitive_core, context_buffer, &self.generator, prompt)
     }

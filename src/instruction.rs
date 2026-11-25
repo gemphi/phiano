@@ -17,7 +17,7 @@
 //!   │       ├─▶ lookup_definitions()       grounded knowledge
 //!   │       ├─▶ compose_reply()            torus attractor
 //!   │       └─▶ CognitiveCore::process()  intentional states
-//!   └─▶ ChatResponse                      structured output
+//!   └─▶ Answer                      structured output
 //! ```
 
 mod kind;
@@ -49,9 +49,15 @@ pub enum InstructionKind {
     Command,
 }
 
-/// ChatResponse - clean response from the chat/instruct pipeline.
-/// Separates the conversational text from cognitive metadata.
-pub struct ChatResponse {
+/// The answer the instruction engine gives: the words said, apart from
+/// what the cognitive cycle read in them.
+///
+/// It was `ChatResponse`, the name the chat route's wire shape carries
+/// (`server::shape::response::ChatResponse`), which holds other fields
+/// entirely - the words learned, the definitions, the vocabulary - and is
+/// never this one. Two types of one name in one crate, sharing two fields
+/// of eight; the wire keeps the name its family reads by (2026-11-25).
+pub struct Answer {
     /// The main response text shown to the user.
     pub text: String,
     /// The cognitive synthesis output (intentional state-driven).

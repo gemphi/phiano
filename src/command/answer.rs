@@ -7,7 +7,7 @@
 //! line as typed, so it is not this call.)
 
 use super::{Context, Parser};
-use crate::instruction::{ChatResponse, InstructionEngine};
+use crate::instruction::{Answer, InstructionEngine};
 use phient::generate::Generator;
 
 /// Channels the commands' generator speaks on.
@@ -24,7 +24,7 @@ pub(super) fn generator() -> Generator {
 
 /// The answer to `arg`: its quotes stripped, the model's parts taken from
 /// the context, and the online training the engine does on the way.
-pub(super) fn answer(ctx: &mut Context, arg: &str) -> ChatResponse {
+pub(super) fn answer(ctx: &mut Context, arg: &str) -> Answer {
     let prompt = Parser::strip_quotes(arg);
     let generator = generator();
     InstructionEngine::generate_response(

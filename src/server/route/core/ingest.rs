@@ -86,8 +86,6 @@ pub async fn command(
     let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let model = &mut *guard;
     let line = req.text.clone();
-    let arg = line.split_once(char::is_whitespace).map(|(_, s)| s.trim()).unwrap_or("");
-    let mut ctx = model.context(&line, arg);
-    Dispatcher::dispatch(&line, &mut ctx);
+    model.say(&line);
     Ok(Json(CommandResponse { output: "Command executed".to_string() }))
 }
