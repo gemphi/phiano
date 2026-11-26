@@ -51,6 +51,7 @@
 
 mod counting;
 mod curriculum;
+mod epoch;
 mod saying;
 
 use counting::{not_a_word, rank, sentences};
@@ -218,24 +219,13 @@ fn main() {
     println!("{config:?}\nvocabulary {} · patience {patience} · stopped on {register}\n", l.vocabulary());
     println!("| epoch | error (train) | {register} top-1 | {register} perplexity | seconds |\n|---|---|---|---|---|");
     println!("| told once (online) | — | {:.1}% | {:.1} | {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
-    let (mut best, mut best_ppl, mut since) = (l.clone(), r.perplexity(), 0);
-    for e in 1..=config.epochs {
-        let t = Instant::now();
-        let loss = l.epoch();
-        let r = l.measure(&watch);
-        println!("| {e} | {loss:.3} | {:.1}% | {:.1} | {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
-        match r.perplexity() < best_ppl {
-            true => {
-                (best, best_ppl, since) = (l.clone(), r.perplexity(), 0);
-            }
-            false => {
-                since += 1;
-                if since >= patience {
-                    break;
-                }
-            }
-        }
-    }
+    // `--save ckpt` keeps the best epoch as it is found, not at the end
+    // (`epoch.rs`): a run that stops costs the epoch and not the run.
+    let keep = |l: &Learner| match flag("--save") {
+        Some(path) => l.save(&path).expect("write the checkpoint"),
+        None => {}
+    };
+    let best = epoch::run(&mut l, &watch, config.epochs, patience, r.perplexity(), keep);
     let r = best.measure(&test);
     rows.push(row("**phient learner (corrected by its error)**", &r, Some(r.perplexity())));
     // Held-out sentences of another register (docs/217): the same learner,
@@ -252,8 +242,7 @@ fn main() {
         rows.push(row(&format!("the learner, on {name} ({} sentences, never told)", more.len()), &r, Some(r.perplexity())));
     }
     if let Some(path) = flag("--save") {
-        best.save(&path).expect("write the checkpoint");
-        println!("\nsaved the best epoch to {path} ({} lines told, vocabulary {})", best.lines_told(), best.vocabulary());
+        println!("\nkept the best epoch at {path} ({} lines told, vocabulary {})", best.lines_told(), best.vocabulary());
     }
     // `--record name,lever,doc`: this instalment appended to the curriculum.
     if let Some(spec) = flag("--record") {
