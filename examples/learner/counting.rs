@@ -21,6 +21,11 @@ pub fn sentences(path: &str) -> Vec<Vec<String>> {
         .collect()
 }
 
+/// A path's file name: what a register's row is named by.
+pub fn name_of(path: &str) -> String {
+    std::path::Path::new(path).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default()
+}
+
 /// What the reader does not take for a word: a token with a digit in it.
 /// The guide is a grammar book, and its unit and exercise numbers were
 /// read as words and said back (docs/235).

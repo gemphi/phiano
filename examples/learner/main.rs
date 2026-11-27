@@ -28,7 +28,10 @@
 //! on those sentences instead, so a run of other text is stopped by the
 //! register it moves and not by the guide's going flat (docs/223, 235). The
 //! watched file is never one scored by `--test-more`: a stop rule that reads
-//! the test picks the epoch that fits it.
+//! the test picks the epoch that fits it. `--beside dev2.txt` adds a second
+//! register's perplexity to the table, read by nothing: Tatoeba 19 could
+//! not tell three of its four epochs apart on the watched register and kept
+//! the one of them with the lowest top-1 (docs/241).
 //!
 //! The run ends with the sayings: every prompt of `data/person/prompt.txt`
 //! gone on from by the learner and by the counts, side by side.
@@ -46,7 +49,7 @@
 //! | phient learner | the same kind of angles, corrected by their error (`phient::lineup::learner`) |
 //!
 //! ```text
-//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--stride 0] [--patience 2] [--watch dev.txt] [--save ckpt] [--record name,lever,doc] [--propose]
+//! cargo run --release -p phiano --example learner -- crates/phiano/data/person/murphy.txt [--channels 64] [--context 4] [--epochs 16] [--block 1] [--tie] [--dropout 0.1] [--silence 0] [--negatives 128] [--rate 0.5] [--no-pair] [--no-ecs] [--more extra.txt,…] [--guide-times 1] [--no-guide] [--test-more held.txt,…] [--resume ckpt] [--widen 128] [--forget 0] [--stride 0] [--patience 2] [--watch dev.txt] [--beside dev2.txt] [--save ckpt] [--record name,lever,doc] [--propose]
 //! ```
 
 mod counting;
@@ -54,7 +57,7 @@ mod curriculum;
 mod epoch;
 mod saying;
 
-use counting::{not_a_word, rank, sentences};
+use counting::{name_of, not_a_word, rank, sentences};
 use phient::study::Score;
 use phient::lineup::Ecs;
 use phient::lineup::learner::{Config, Learner};
@@ -205,27 +208,38 @@ fn main() {
     // sentences `--watch` names (docs/235), never a `--test-more` file.
     let watched = flag("--watch");
     let (watch, register) = match &watched {
-        Some(p) => (sentences(p), std::path::Path::new(p).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default()),
+        Some(p) => (sentences(p), name_of(p)),
         None => (dev, "dev".to_string()),
     };
     if let Some(p) = watched.as_deref().filter(|p| flag("--test-more").is_some_and(|m| m.split(',').any(|t| t == *p))) {
         eprintln!("--watch {p} is also scored by --test-more: the stop rule would pick the epoch that fits the test");
         return;
     }
+    // A second register shown beside it, deciding nothing (docs/241).
+    let shown = flag("--beside");
+    let (beside, second) = match &shown {
+        Some(p) => (sentences(p), name_of(p)),
+        None => (Vec::new(), String::new()),
+    };
     let r = l.measure(&watch);
     // The stop: this many epochs without a gain on the watched register
     // (two since docs/203). Channels born quiet (docs/210) need more than two.
     let patience: usize = flag("--patience").and_then(|s| s.parse().ok()).unwrap_or(2);
     println!("{config:?}\nvocabulary {} · patience {patience} · stopped on {register}\n", l.vocabulary());
-    println!("| epoch | error (train) | {register} top-1 | {register} perplexity | seconds |\n|---|---|---|---|---|");
-    println!("| told once (online) | — | {:.1}% | {:.1} | {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
+    let (head, rule) = match beside.is_empty() {
+        true => (String::new(), ""),
+        false => (format!(" {second} perplexity |"), "---|"),
+    };
+    println!("| epoch | error (train) | {register} top-1 | {register} perplexity |{head} seconds |\n|---|---|---|---|{rule}---|");
+    println!("| told once (online) | — | {:.1}% | {:.1} |{} {:.1} |", r.top1(), r.perplexity(), epoch::beside(&l, &beside), t.elapsed().as_secs_f64());
     // `--save ckpt` keeps the best epoch as it is found, not at the end
     // (`epoch.rs`): a run that stops costs the epoch and not the run.
     let keep = |l: &Learner| match flag("--save") {
         Some(path) => l.save(&path).expect("write the checkpoint"),
         None => {}
     };
-    let best = epoch::run(&mut l, &watch, config.epochs, patience, r.perplexity(), keep);
+    let on = epoch::Register { watch: &watch, beside: &beside };
+    let best = epoch::run(&mut l, on, config.epochs, patience, r.perplexity(), keep);
     let r = best.measure(&test);
     rows.push(row("**phient learner (corrected by its error)**", &r, Some(r.perplexity())));
     // Held-out sentences of another register (docs/217): the same learner,
@@ -238,7 +252,7 @@ fn main() {
         if held.is_nan() {
             held = r.perplexity();
         }
-        let name = std::path::Path::new(extra).file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default();
+        let name = name_of(extra);
         rows.push(row(&format!("the learner, on {name} ({} sentences, never told)", more.len()), &r, Some(r.perplexity())));
     }
     if let Some(path) = flag("--save") {
