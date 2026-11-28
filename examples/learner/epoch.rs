@@ -44,12 +44,24 @@ pub fn beside(l: &Learner, on: &[Vec<String>]) -> String {
     }
 }
 
-/// Runs the epochs and answers with the best learner of them. `from` is the
-/// watched register's perplexity before the first epoch, so a run whose
-/// epochs all read worse keeps what it started with; `keep` is given each
-/// new best as it is found.
-pub fn run(l: &mut Learner, on: Register, epochs: usize, patience: usize, from: f64, keep: impl Fn(&Learner)) -> Learner {
-    let (mut best, mut best_ppl, mut since) = (l.clone(), from, 0);
+/// The kept epoch as the log names it, `run`'s second answer read out.
+pub fn named(at: usize) -> String {
+    match at {
+        0 => "the online pass".to_string(),
+        e => format!("epoch {e}"),
+    }
+}
+
+/// Runs the epochs and answers with the best learner of them and the epoch
+/// it came from - 0 for the online pass, which is what a run whose epochs
+/// all read worse keeps. `from` is the watched register's perplexity before
+/// the first epoch; `keep` is given each new best as it is found.
+///
+/// **Which epoch, not just which learner.** Two epochs of docs/243 read
+/// 68.7 and the table prints a tenth, so the log could not say which of
+/// them the run had kept. The number was here and thrown away.
+pub fn run(l: &mut Learner, on: Register, epochs: usize, patience: usize, from: f64, keep: impl Fn(&Learner)) -> (Learner, usize) {
+    let (mut best, mut best_ppl, mut since, mut at) = (l.clone(), from, 0, 0);
     keep(&best);
     for e in 1..=epochs {
         let t = Instant::now();
@@ -59,7 +71,7 @@ pub fn run(l: &mut Learner, on: Register, epochs: usize, patience: usize, from: 
         println!("| {e} | {loss:.3} | {:.1}% | {:.1} |{second} {:.1} |", r.top1(), r.perplexity(), t.elapsed().as_secs_f64());
         match r.perplexity() < best_ppl {
             true => {
-                (best, best_ppl, since) = (l.clone(), r.perplexity(), 0);
+                (best, best_ppl, since, at) = (l.clone(), r.perplexity(), 0, e);
                 keep(&best);
             }
             false => {
@@ -71,5 +83,5 @@ pub fn run(l: &mut Learner, on: Register, epochs: usize, patience: usize, from: 
             }
         }
     }
-    best
+    (best, at)
 }

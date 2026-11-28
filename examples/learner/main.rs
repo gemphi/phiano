@@ -239,7 +239,7 @@ fn main() {
         None => {}
     };
     let on = epoch::Register { watch: &watch, beside: &beside };
-    let best = epoch::run(&mut l, on, config.epochs, patience, r.perplexity(), keep);
+    let (best, at) = epoch::run(&mut l, on, config.epochs, patience, r.perplexity(), keep);
     let r = best.measure(&test);
     rows.push(row("**phient learner (corrected by its error)**", &r, Some(r.perplexity())));
     // Held-out sentences of another register (docs/217): the same learner,
@@ -256,7 +256,7 @@ fn main() {
         rows.push(row(&format!("the learner, on {name} ({} sentences, never told)", more.len()), &r, Some(r.perplexity())));
     }
     if let Some(path) = flag("--save") {
-        println!("\nkept the best epoch at {path} ({} lines told, vocabulary {})", best.lines_told(), best.vocabulary());
+        println!("\nkept {} at {path} ({} lines told, vocabulary {})", epoch::named(at), best.lines_told(), best.vocabulary());
     }
     // `--record name,lever,doc`: this instalment appended to the curriculum.
     if let Some(spec) = flag("--record") {
