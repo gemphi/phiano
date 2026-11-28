@@ -97,9 +97,9 @@ pub async fn compare_reason(
 pub async fn benchmark(
     State(state): State<SharedModel>,
 ) -> Result<Json<metrics::benchmark::runner::BenchmarkReport>, StatusCode> {
-    let mut guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let model = &mut *guard;
-    let report = metrics::benchmark::runner::BenchmarkRunner::run_all(&mut model.facet, &model.trainer);
+    let guard = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let model = &*guard;
+    let report = metrics::benchmark::runner::BenchmarkRunner::run_all(&model.facet, &model.trainer);
 
     let mut history = lifelong::history::BenchmarkHistory::load(&crate::data::path("benchmark_history.json"));
     history.record(report.clone());

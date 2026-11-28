@@ -66,55 +66,7 @@ impl Styles {
     ///
     /// This is style attribution - "who wrote this?"
     pub fn match_text(&self, facet: &Facet, text: &str) -> Option<MatchResult> {
-        if self.personas.is_empty() {
-            return None;
-        }
-
-        // Re-extract all persona fingerprints from stored examples
-        // using the current facet state for fair comparison
-        let persona_fps: Vec<(String, Fingerprint)> = self
-            .personas
-            .iter()
-            .map(|(name, persona)| {
-                let fp = Fingerprint::extract(facet, &persona.examples);
-                (name.clone(), fp)
-            })
-            .collect();
-
-        let text_fp = Fingerprint::extract(facet, &[text.to_string()]);
-
-        let mut ranked: Vec<(String, f64)> = persona_fps
-            .iter()
-            .map(|(name, fp)| {
-                let score = fp.likelihood(&text_fp);
-                (name.clone(), score)
-            })
-            .collect();
-
-        ranked.sort_by(|a, b| {
-            b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-        });
-
-        let best_name = ranked[0].0.clone();
-        let best_score = ranked[0].1;
-        let confidence = if ranked.len() > 1 {
-            let second = ranked[1].1;
-            if best_score > 0.0 {
-                (best_score - second) / best_score
-            } else {
-                0.0
-            }
-        } else {
-            1.0
-        };
-
-        Some(MatchResult {
-            text: text.to_string(),
-            ranked,
-            best_name,
-            best_score,
-            confidence,
-        })
+        self.match_text_with(facet, text, &self.fingerprints(facet))
     }
 }
 

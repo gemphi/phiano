@@ -1,6 +1,7 @@
 use super::super::SharedModel;
 use phiecs::phasor::flow::PhaseFlow;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::Json;
 use serde::{Deserialize, Serialize};
 
@@ -26,14 +27,14 @@ pub struct FlowResponse {
 pub async fn flow(
     State(state): State<SharedModel>,
     Json(req): Json<FlowRequest>,
-) -> Json<FlowResponse> {
-    let model = state.lock().expect("model lock");
+) -> Result<Json<FlowResponse>, StatusCode> {
+    let model = state.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let steps = req.steps.unwrap_or(10);
     let mut flow = PhaseFlow::build(&model.facet, &req.text);
     flow.propagate(steps);
     let novelty = flow.novelty();
 
-    Json(FlowResponse {
+    Ok(Json(FlowResponse {
         node_count: flow.nodes.len(),
         edge_count: flow.edges.len(),
         collective_phase: flow.collective_phase,
@@ -43,5 +44,5 @@ pub async fn flow(
         nodes: flow.nodes,
         edges: flow.edges,
         trajectory: flow.trajectory,
-    })
+    }))
 }
